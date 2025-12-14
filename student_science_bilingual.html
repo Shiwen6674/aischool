@@ -139,11 +139,21 @@
 
         <div class="w-full px-4 md:px-6 py-2 bg-slate-900/80 flex flex-wrap gap-2 items-center text-sm border-t border-teal-500/20 md:border-t-0 md:bg-transparent justify-end">
             <span class="text-xs font-bold text-teal-500 mr-2"><i class="fa-solid fa-filter"></i> 篩選:</span>
-            <select id="sel-stage" class="custom-select px-2 py-1 rounded w-24 text-xs font-bold" onchange="filterUnits('stage')"><option value="" disabled selected data-i18n="stage">階段</option></select>
-            <select id="sel-grade" class="custom-select px-2 py-1 rounded w-20 text-xs font-bold" onchange="filterUnits('grade')" disabled><option value="" disabled selected data-i18n="grade">年級</option></select>
-            <select id="sel-version" class="custom-select px-2 py-1 rounded w-24 text-xs font-bold" onchange="filterUnits('version')" disabled><option value="" disabled selected data-i18n="version">版本</option></select>
-            <select id="sel-semester" class="custom-select px-2 py-1 rounded w-20 text-xs font-bold" onchange="filterUnits('semester')" disabled><option value="" disabled selected data-i18n="semester">學期</option></select>
-            <select id="sel-unit" class="custom-select px-2 py-1 rounded flex-grow md:flex-grow-0 md:w-64 text-xs font-bold" onchange="loadSelectedUnit()" disabled><option value="" disabled selected data-i18n="unit">選擇單元</option></select>
+            <select id="sel-stage" class="custom-select px-2 py-1 rounded w-24 text-xs font-bold" onchange="filterUnits('stage')">
+                <option value="" disabled selected data-i18n="stage">學習階段</option>
+            </select>
+            <select id="sel-grade" class="custom-select px-2 py-1 rounded w-20 text-xs font-bold" onchange="filterUnits('grade')" disabled>
+                <option value="" disabled selected data-i18n="grade">年級</option>
+            </select>
+            <select id="sel-version" class="custom-select px-2 py-1 rounded w-24 text-xs font-bold" onchange="filterUnits('version')" disabled>
+                <option value="" disabled selected data-i18n="version">出版社</option>
+            </select>
+            <select id="sel-semester" class="custom-select px-2 py-1 rounded w-20 text-xs font-bold" onchange="filterUnits('semester')" disabled>
+                <option value="" disabled selected data-i18n="semester">學期</option>
+            </select>
+            <select id="sel-unit" class="custom-select px-2 py-1 rounded flex-grow md:flex-grow-0 md:w-64 text-xs font-bold" onchange="loadSelectedUnit()" disabled>
+                <option value="" disabled selected data-i18n="unit">選擇單元</option>
+            </select>
         </div>
     </nav>
 
@@ -202,6 +212,8 @@
         const SHEET_ID = '1cEfMEy3bvDa1tET3xmh7ShGeJy8KLUMa_JuULGBD-mk';
         const TARGET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRbgkNiMflfeLQd3KN8F4yjjIr6G2flnCAy-nUPMiC7_xDfdg_0hJ2Qzbsr92u8htlPLFR8GwwQPK_g/pub?gid=0&single=true&output=csv';
 
+        // 欄位對應（Sheet1）
+        // A(0)=學習階段, C(2)=出版社, D(3)=年級, E(4)=學期, G(6)=課別, H(7)=課名, I(8)=課文, J(9)=課文CKIP, S(18)=科學詞彙
         const COL_STAGE=0, COL_VERSION=2, COL_GRADE=3, COL_SEMESTER=4, COL_UNIT_NUM=6, COL_UNIT_NAME=7, 
               COL_CONTENT=8, COL_CKIP=9, COL_VOCAB=18;
 
@@ -209,25 +221,132 @@
         let activeVocabMap = {};
 
         const i18n = {
-            'zh-TW': { return: '返回', page_title: '科學雙語閱讀', nav: '目錄導航', vocab_title: '科學詞彙庫', select_hint: '請先選擇單元', vocab_empty: '詞彙將顯示於此', stage: '階段', grade: '年級', version: '版本', semester: '學期', unit: '選擇單元' },
-            'en': { return: 'RETURN', page_title: 'SCI-LINGUA READER', nav: 'NAVIGATION', vocab_title: 'VOCABULARY', select_hint: 'Select a unit to begin', vocab_empty: 'Terms will appear here', stage: 'Stage', grade: 'Grade', version: 'Version', semester: 'Semester', unit: 'Select Unit' },
-            'ja': { return: '戻る', page_title: '科学バイリンガル', nav: 'ナビゲーション', vocab_title: '科学用語', select_hint: '単元を選択してください', vocab_empty: '用語はここに表示されます', stage: '段階', grade: '学年', version: '版', semester: '学期', unit: '単元選択' },
-            'zh-CN': { return: '返回', page_title: '科学双语阅读', nav: '目录导航', vocab_title: '科学词汇库', select_hint: '请先选择单元', vocab_empty: '词汇将显示于此', stage: '阶段', grade: '年级', version: '版本', semester: '学期', unit: '选择单元' }
+            'zh-TW': { return: '返回', page_title: '科學雙語閱讀', nav: '目錄導航', vocab_title: '科學詞彙庫', select_hint: '請先選擇單元', vocab_empty: '詞彙將顯示於此', stage: '學習階段', grade: '年級', version: '出版社', semester: '學期', unit: '選擇單元' },
+            'en': { return: 'RETURN', page_title: 'SCI-LINGUA READER', nav: 'NAVIGATION', vocab_title: 'VOCABULARY', select_hint: 'Select a unit to begin', vocab_empty: 'Terms will appear here', stage: 'Stage', grade: 'Grade', version: 'Publisher', semester: 'Semester', unit: 'Select Unit' },
+            'ja': { return: '戻る', page_title: '科学バイリンガル', nav: 'ナビゲーション', vocab_title: '科学用語', select_hint: '単元を選択してください', vocab_empty: '用語はここに表示されます', stage: '段階', grade: '学年', version: '出版社', semester: '学期', unit: '単元選択' },
+            'zh-CN': { return: '返回', page_title: '科学双语阅读', nav: '目录导航', vocab_title: '科学词汇库', select_hint: '请先选择单元', vocab_empty: '词汇将显示于此', stage: '学习阶段', grade: '年级', version: '出版社', semester: '学期', unit: '选择单元' }
         };
 
         document.addEventListener('DOMContentLoaded', () => {
-            initCanvas(); fetchData();
+            initCanvas(); 
+            // 固定 placeholder key（避免被 populateSelect 覆蓋後失去 i18n）
+            document.getElementById('sel-stage').setAttribute('data-placeholder-key','stage');
+            document.getElementById('sel-grade').setAttribute('data-placeholder-key','grade');
+            document.getElementById('sel-version').setAttribute('data-placeholder-key','version');
+            document.getElementById('sel-semester').setAttribute('data-placeholder-key','semester');
+            document.getElementById('sel-unit').setAttribute('data-placeholder-key','unit');
+
+            changeLanguage();
+            fetchData();
             if(synth) synth.onvoiceschanged = () => synth.getVoices();
         });
 
         function goBack() { window.location.href = 'student_science.html'; }
 
+        // 主通道：PapaParse。若遇到 CORS/網路策略失效 -> 自動走備援 GViz JSONP
         function fetchData() {
             Papa.parse(TARGET_URL, {
-                download: true, header: false,
-                complete: res => { processData(res.data); document.getElementById('loader-overlay').style.display='none'; showToast("資料庫連線成功"); },
-                error: () => document.getElementById('loader-overlay').innerHTML='<div class="text-red-500">Error: Check Network</div>'
+                download: true, header: false, skipEmptyLines: true,
+                complete: (res) => {
+                    const hasFatal =
+                        !res || !res.data || res.data.length < 2 ||
+                        (Array.isArray(res.errors) && res.errors.length > 0);
+
+                    if (hasFatal) { fetchDataViaGViz(); return; }
+
+                    try {
+                        processData(res.data);
+                        onDBReady(false);
+                    } catch (e) {
+                        console.error("processData failed (PapaParse)", e);
+                        fetchDataViaGViz();
+                    }
+                },
+                error: (err) => {
+                    console.warn("PapaParse download failed, fallback to GViz.", err);
+                    fetchDataViaGViz();
+                }
             });
+
+            setTimeout(() => {
+                const overlay = document.getElementById('loader-overlay');
+                const stillLoading = overlay && overlay.style.display !== 'none';
+                const noUnitsYet = !Array.isArray(processedUnits) || processedUnits.length === 0;
+                if (stillLoading && noUnitsYet) fetchDataViaGViz();
+            }, 8000);
+        }
+
+        function fetchDataViaGViz() {
+            const cbName = "__gviz_cb_" + Date.now();
+
+            window[cbName] = (res) => {
+                try {
+                    const data = gvizTo2DArray(res);
+                    processData(data);
+                    onDBReady(true);
+                } catch (e) {
+                    onDBError(e);
+                } finally {
+                    cleanupGViz(cbName);
+                }
+            };
+
+            const script = document.createElement("script");
+            script.id = cbName;
+            script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=0&tqx=out:json;responseHandler:${cbName}`;
+            script.onerror = (e) => {
+                onDBError(e);
+                cleanupGViz(cbName);
+            };
+            document.head.appendChild(script);
+        }
+
+        function gvizTo2DArray(res) {
+            if (!res || !res.table || !Array.isArray(res.table.rows)) {
+                throw new Error("GViz 回應格式異常：找不到 table.rows");
+            }
+            const colCount = Array.isArray(res.table.cols) ? res.table.cols.length : 0;
+
+            const rows = res.table.rows.map(r => {
+                const cells = Array.isArray(r.c) ? r.c : [];
+                const arr = [];
+                for (let i = 0; i < Math.max(colCount, cells.length); i++) {
+                    const cell = cells[i];
+                    const v = cell && (cell.v ?? cell.f);
+                    arr.push(v == null ? "" : String(v));
+                }
+                return arr;
+            });
+
+            const dummy = new Array(Math.max(colCount, 1)).fill("");
+            return [dummy, ...rows];
+        }
+
+        function cleanupGViz(cbName) {
+            try { delete window[cbName]; } catch (e) {}
+            const script = document.getElementById(cbName);
+            if (script) script.remove();
+        }
+
+        function onDBReady(fromFallback) {
+            document.getElementById('loader-overlay').style.display = 'none';
+            showToast(fromFallback ? "資料庫連線成功（備援通道）" : "資料庫連線成功");
+        }
+
+        function onDBError(err) {
+            console.error("DB load failed:", err);
+            const overlay = document.getElementById('loader-overlay');
+            if (overlay) {
+                overlay.innerHTML = `
+                    <div class="text-red-500 font-bold text-lg">資料庫載入失敗</div>
+                    <div class="text-slate-400 text-sm mt-2 px-6 text-center leading-relaxed">
+                        1) 請確認試算表已「發佈到網路」或至少「任何人可檢視」<br/>
+                        2) 請確認 gid=0 指向 Sheet1<br/>
+                        3) 若網路環境封鎖 Google 服務，兩種通道都會失敗
+                    </div>
+                `;
+            }
+            showToast("資料庫載入失敗");
         }
 
         function processData(data) {
@@ -241,7 +360,10 @@
             initFilters();
         }
 
-        function initFilters() { populateSelect('sel-stage', [...new Set(processedUnits.map(u=>u.stage).filter(Boolean))]); }
+        function initFilters() { 
+            populateSelect('sel-stage', [...new Set(processedUnits.map(u=>u.stage).filter(Boolean))], 'stage'); 
+            resetSelects([document.getElementById('sel-grade'), document.getElementById('sel-version'), document.getElementById('sel-semester'), document.getElementById('sel-unit')]);
+        }
 
         function filterUnits(lvl) {
             const ids=['stage','grade','version','semester','unit'], sels=ids.map(id=>document.getElementById(`sel-${id}`));
@@ -252,20 +374,53 @@
                 if(sels[3].value && !sels[3].disabled && u.semester!==sels[3].value) return false;
                 return true;
             });
-            const update=(sel,p)=> populateSelect(sel.id, [...new Set(filtered.map(u=>u[p]).filter(Boolean))]);
-            if(lvl==='stage') { update(sels[1]); resetSelects(sels.slice(2)); }
-            else if(lvl==='grade') { update(sels[2]); resetSelects(sels.slice(3)); }
-            else if(lvl==='version') { update(sels[3]); resetSelects(sels.slice(4)); }
+
+            const update=(sel,p,placeholderKey)=> populateSelect(sel.id, [...new Set(filtered.map(u=>u[p]).filter(Boolean))], placeholderKey);
+
+            if(lvl==='stage') { update(sels[1],'grade','grade'); resetSelects(sels.slice(2)); }
+            else if(lvl==='grade') { update(sels[2],'version','version'); resetSelects(sels.slice(3)); }
+            else if(lvl==='version') { update(sels[3],'semester','semester'); resetSelects(sels.slice(4)); }
             else if(lvl==='semester') { 
-                sels[4].innerHTML='<option disabled selected data-i18n="unit">選擇單元</option>'; 
+                const lang = document.getElementById('ui-lang').value;
+                const t = i18n[lang] || i18n['en'];
+                sels[4].innerHTML = `<option value="" disabled selected data-i18n="unit">${t.unit}</option>`; 
                 filtered.forEach(u=>sels[4].add(new Option(u.title,u.id))); 
                 sels[4].disabled=false; 
-                changeLanguage(); // Update UI text
+                changeLanguage();
             }
         }
 
-        function populateSelect(id,items){ const s=document.getElementById(id); s.innerHTML=`<option disabled selected>Select</option>`; items.forEach(i=>s.add(new Option(i,i))); s.disabled=false; }
-        function resetSelects(els){ els.forEach(e=>{e.innerHTML=`<option disabled selected>...</option>`;e.disabled=true;}); }
+        // 修正點：保留 data-i18n placeholder，不再覆蓋成 "Select"
+        function populateSelect(id, items, placeholderKey) {
+            const s=document.getElementById(id);
+            const key = placeholderKey || s.getAttribute('data-placeholder-key') || '';
+            if(key) s.setAttribute('data-placeholder-key', key);
+
+            const lang = document.getElementById('ui-lang').value;
+            const t = i18n[lang] || i18n['en'];
+            const phText = (key && t[key]) ? t[key] : 'Select';
+
+            s.innerHTML = `<option value="" disabled selected data-i18n="${key}">${phText}</option>`;
+            items.forEach(i=>s.add(new Option(i,i)));
+            s.disabled=false;
+            changeLanguage();
+        }
+
+        // 修正點：reset 也保留 placeholder 的 data-i18n 與文字
+        function resetSelects(els){
+            els.forEach(e=>{
+                const key = e.getAttribute('data-placeholder-key') || '';
+                const lang = document.getElementById('ui-lang').value;
+                const t = i18n[lang] || i18n['en'];
+                const phText = (key && t[key]) ? t[key] : '...';
+                e.innerHTML = key
+                    ? `<option value="" disabled selected data-i18n="${key}">${phText}</option>`
+                    : `<option value="" disabled selected>...</option>`;
+                e.disabled=true;
+            });
+            changeLanguage();
+        }
+
         function loadSelectedUnit(){ const u=processedUnits.find(i=>i.id==document.getElementById('sel-unit').value); if(u) renderArticle(u); }
 
         async function renderArticle(unit) {
