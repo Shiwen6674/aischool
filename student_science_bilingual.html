@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW" class="dark">
 <head>
@@ -8,8 +7,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;800&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -24,16 +25,15 @@
                     colors: {
                         tech: {
                             bg: '#020617',
-                            panel: 'rgba(15, 23, 42, 0.8)',
+                            panel: 'rgba(15, 23, 42, 0.85)',
                             border: 'rgba(45, 212, 191, 0.3)',
                             accent: '#2dd4bf', // Teal
-                            highlight: 'rgba(45, 212, 191, 0.2)'
+                            highlight: 'rgba(45, 212, 191, 0.15)'
                         }
                     },
                     animation: {
-                        "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                        "pulse-slow": "pulse 3s infinite",
                         "scan": "scan 4s linear infinite",
-                        "typing": "typing 2s steps(20, end)"
                     },
                     keyframes: {
                         scan: {
@@ -49,112 +49,142 @@
         body {
             background-color: #020617;
             color: #ccfbf1;
-            overflow: hidden; /* 固定視窗，內容區捲動 */
+            overflow: hidden;
         }
-
-        /* 玻璃面板標準 */
+        
+        /* 玻璃擬態容器 */
         .glass-panel {
-            background: rgba(10, 25, 47, 0.75);
+            background: rgba(10, 25, 47, 0.85);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(45, 212, 191, 0.2);
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
         }
 
-        /* 閱讀區捲軸美化 */
+        /* 捲軸美化 */
         .scroll-area::-webkit-scrollbar { width: 6px; }
         .scroll-area::-webkit-scrollbar-track { background: rgba(2, 6, 23, 0.5); }
         .scroll-area::-webkit-scrollbar-thumb { background: #115e59; border-radius: 3px; }
         .scroll-area::-webkit-scrollbar-thumb:hover { background: #2dd4bf; }
 
-        /* 左側單元列表項目 */
-        .unit-item {
+        /* 左側導航項目 */
+        .nav-item {
             transition: all 0.3s;
             border-left: 2px solid transparent;
             cursor: pointer;
+            opacity: 0.7;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.5rem;
         }
-        .unit-item:hover, .unit-item.active {
+        .nav-item:hover, .nav-item.active {
             background: linear-gradient(90deg, rgba(45, 212, 191, 0.1), transparent);
             border-left-color: #2dd4bf;
-            padding-left: 1rem;
+            opacity: 1;
         }
-        .unit-item.active .unit-title { color: #2dd4bf; text-shadow: 0 0 10px rgba(45, 212, 191, 0.5); }
+        .nav-item.active .nav-title { color: #2dd4bf; text-shadow: 0 0 10px rgba(45, 212, 191, 0.5); }
 
-        /* 關鍵字高亮特效 (X-Ray) */
-        .keyword-xray {
+        /* 科學詞彙 X-Ray 特效 */
+        .sci-term {
             color: #2dd4bf;
             font-weight: 600;
             border-bottom: 1px dashed rgba(45, 212, 191, 0.5);
             cursor: help;
-            position: relative;
             transition: all 0.3s;
+            position: relative;
+            padding: 0 2px;
         }
-        .keyword-xray:hover {
+        .sci-term:hover {
             background-color: rgba(45, 212, 191, 0.2);
             color: #fff;
             text-shadow: 0 0 8px #2dd4bf;
+            border-radius: 4px;
         }
 
-        /* AI 側邊欄動畫 */
-        .ai-thinking {
-            display: inline-block;
-            width: 8px; height: 8px; background: #2dd4bf; border-radius: 50%;
-            margin-right: 4px;
-            animation: pulse-slow 1s infinite;
+        /* 下拉選單美化 */
+        .custom-select {
+            background-color: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(45, 212, 191, 0.3);
+            color: #ccfbf1;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%232dd4bf' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
         }
+        .custom-select:focus { border-color: #2dd4bf; box-shadow: 0 0 10px rgba(45, 212, 191, 0.2); }
+        .custom-select:disabled { opacity: 0.5; cursor: not-allowed; }
 
+        /* 聊天室 */
+        .chat-container { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s; }
+        .chat-hidden { transform: translateX(120%); opacity: 0; pointer-events: none; }
+
+        /* Canvas 層 */
         #canvas-container { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+        
+        /* 載入動畫 */
+        .loader { border: 2px solid rgba(45, 212, 191, 0.1); border-top: 2px solid #2dd4bf; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="h-screen flex flex-col font-sans selection:bg-teal-500/30 selection:text-white">
 
     <div id="canvas-container"><canvas id="molecule-canvas"></canvas></div>
 
-    <nav class="glass-panel sticky top-0 z-50 h-16 flex items-center shrink-0">
-        <div class="w-full px-6 flex justify-between items-center">
+    <nav class="glass-panel sticky top-0 z-40 h-auto md:h-16 flex flex-col md:flex-row items-center shrink-0 border-b-0">
+        <div class="w-full px-4 md:px-6 py-2 flex justify-between items-center border-b border-teal-500/20 md:border-b-0">
             <div class="flex items-center gap-4">
-                <div onclick="window.location.href='student_science.html'" class="cursor-pointer group flex items-center gap-2 opacity-80 hover:opacity-100 transition">
+                <button onclick="goBack()" class="flex items-center gap-2 text-teal-400 hover:text-white transition group">
                     <div class="p-1 rounded border border-teal-500/30 group-hover:bg-teal-500/20">
-                        <i class="fa-solid fa-chevron-left text-teal-400"></i>
+                        <i class="fa-solid fa-chevron-left"></i>
                     </div>
-                    <span class="text-sm font-tech text-teal-200 tracking-wider">RETURN TO LAB</span>
+                    <span class="text-sm font-tech tracking-wider hidden md:inline">RETURN TO LAB</span>
+                </button>
+                <div class="h-6 w-px bg-teal-500/30 hidden md:block"></div>
+                <div class="text-lg font-heading font-bold text-white tracking-widest">
+                    SCI-LINGUA <span class="text-teal-400">READER</span>
                 </div>
             </div>
-            
-            <div class="text-xl font-heading font-bold text-white tracking-widest">
-                SCI-LINGUA <span class="text-teal-400">READER</span>
-            </div>
 
-            <div class="flex bg-slate-900/80 rounded-lg p-1 border border-teal-500/30">
-                <button onclick="setMode('en')" class="mode-btn px-3 py-1 text-xs font-bold rounded text-teal-500 hover:text-white transition" id="btn-en">EN</button>
-                <button onclick="setMode('dual')" class="mode-btn px-3 py-1 text-xs font-bold rounded bg-teal-600 text-white shadow-[0_0_10px_rgba(45,212,191,0.4)]" id="btn-dual">DUAL</button>
-                <button onclick="setMode('zh')" class="mode-btn px-3 py-1 text-xs font-bold rounded text-teal-500 hover:text-white transition" id="btn-zh">ZH</button>
+            <div class="flex items-center gap-3">
+                <div class="flex items-center bg-slate-900/80 rounded-lg p-1 border border-teal-500/30">
+                    <button onclick="setVoice('male')" class="voice-btn px-2 py-1 rounded transition text-teal-400 hover:bg-teal-500/20" id="voice-male" title="Dr. Spark (權威男聲)">
+                        <i class="fa-solid fa-user-doctor"></i>
+                    </button>
+                    <button onclick="setVoice('female')" class="voice-btn px-2 py-1 rounded transition text-slate-500 hover:bg-teal-500/20" id="voice-female" title="Nova (流利女聲)">
+                        <i class="fa-solid fa-user-astronaut"></i>
+                    </button>
+                </div>
+                
+                <div class="flex bg-slate-900/80 rounded-lg p-1 border border-teal-500/30">
+                    <button onclick="setMode('en')" class="mode-btn px-3 py-1 text-xs font-bold rounded text-teal-500 hover:text-white transition" id="btn-en">EN</button>
+                    <button onclick="setMode('dual')" class="mode-btn px-3 py-1 text-xs font-bold rounded bg-teal-600 text-white shadow-[0_0_10px_rgba(45,212,191,0.4)]" id="btn-dual">DUAL</button>
+                    <button onclick="setMode('zh')" class="mode-btn px-3 py-1 text-xs font-bold rounded text-teal-500 hover:text-white transition" id="btn-zh">ZH</button>
+                </div>
             </div>
+        </div>
+
+        <div class="w-full px-4 md:px-6 py-2 bg-slate-900/60 flex flex-wrap gap-2 items-center text-sm border-t border-teal-500/20 md:border-t-0 md:bg-transparent">
+            <span class="text-xs font-tech text-teal-500 mr-2"><i class="fa-solid fa-database"></i> DATA SOURCE:</span>
+            <select id="sel-stage" class="custom-select px-3 py-1 rounded w-24" onchange="updateDropdowns('stage')"><option>Loading...</option></select>
+            <select id="sel-grade" class="custom-select px-3 py-1 rounded w-20" onchange="updateDropdowns('grade')" disabled><option>Grade</option></select>
+            <select id="sel-version" class="custom-select px-3 py-1 rounded w-24" onchange="updateDropdowns('version')" disabled><option>Version</option></select>
+            <select id="sel-unit" class="custom-select px-3 py-1 rounded flex-grow md:flex-grow-0 md:w-64" onchange="enableLoadBtn()" disabled><option>Select Unit</option></select>
+            <button id="btn-load" onclick="fetchLessonContent()" disabled class="bg-teal-600 text-white px-4 py-1 rounded font-bold hover:bg-teal-500 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-teal-500/20">
+                <i class="fa-solid fa-download"></i> LOAD
+            </button>
         </div>
     </nav>
 
-    <div class="flex-grow flex overflow-hidden p-4 gap-4">
+    <div class="flex-grow flex overflow-hidden p-4 gap-4 relative z-10">
         
         <aside class="w-64 glass-panel rounded-2xl flex flex-col overflow-hidden hidden md:flex">
             <div class="p-4 border-b border-teal-500/20 bg-slate-900/40">
-                <h3 class="text-xs font-tech text-teal-500 tracking-widest mb-1">DATA STREAM</h3>
-                <div class="text-white font-bold">Select Unit</div>
+                <h3 class="text-xs font-tech text-teal-500 tracking-widest mb-1">MISSION LOG</h3>
+                <div class="text-white font-bold text-sm truncate" id="course-title">Waiting for Data...</div>
             </div>
-            <div class="flex-grow scroll-area overflow-y-auto p-2 space-y-1">
-                <div class="unit-item active p-3 rounded-lg" onclick="loadArticle(1)">
-                    <div class="text-xs text-teal-400/70 mb-1">UNIT 01</div>
-                    <div class="unit-title font-medium text-sm text-white">Photosynthesis (光合作用)</div>
-                </div>
-                <div class="unit-item p-3 rounded-lg" onclick="loadArticle(2)">
-                    <div class="text-xs text-teal-400/70 mb-1">UNIT 02</div>
-                    <div class="unit-title font-medium text-slate-400">Newton's Laws (牛頓定律)</div>
-                </div>
-                <div class="unit-item p-3 rounded-lg" onclick="loadArticle(3)">
-                    <div class="text-xs text-teal-400/70 mb-1">UNIT 03</div>
-                    <div class="unit-title font-medium text-slate-400">Chemical Bonds (化學鍵)</div>
-                </div>
-                <div class="unit-item p-3 rounded-lg" onclick="loadArticle(4)">
-                    <div class="text-xs text-teal-400/70 mb-1">UNIT 04</div>
-                    <div class="unit-title font-medium text-slate-400">Ecosystems (生態系統)</div>
+            <div class="flex-grow scroll-area overflow-y-auto p-2 space-y-1" id="unit-list">
+                <div class="text-center text-slate-500 text-xs mt-10 p-4">
+                    Please select a unit from the top bar to initialize navigation.
                 </div>
             </div>
         </aside>
@@ -163,181 +193,358 @@
             <div class="h-12 border-b border-teal-500/20 bg-slate-900/40 flex items-center justify-between px-6">
                 <div class="flex items-center gap-2">
                     <i class="fa-solid fa-file-waveform text-teal-400"></i>
-                    <span class="text-sm font-tech text-teal-200">FILE: BIO-101.txt</span>
+                    <span class="text-xs font-tech text-teal-200" id="status-bar">SYSTEM IDLE</span>
                 </div>
                 <div class="flex items-center gap-3">
-                    <button class="text-teal-400 hover:text-white transition" title="朗讀 (AI Voice)"><i class="fa-solid fa-volume-high"></i></button>
-                    <button class="text-teal-400 hover:text-white transition" title="放大字體"><i class="fa-solid fa-font"></i></button>
+                    <div id="loading-indicator" class="hidden flex items-center gap-2 text-xs text-teal-400 mr-2">
+                        <div class="loader"></div> PROCESSING DATA...
+                    </div>
+                    <button onclick="toggleSpeech()" class="text-teal-400 hover:text-white transition group w-8 h-8 flex items-center justify-center rounded-full hover:bg-teal-500/20" id="btn-play">
+                        <i class="fa-solid fa-play"></i>
+                    </button>
+                    <button onclick="adjustFontSize(2)" class="text-teal-400 hover:text-white transition"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                    <button onclick="adjustFontSize(-2)" class="text-teal-400 hover:text-white transition"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
                 </div>
             </div>
 
-            <div class="flex-grow scroll-area overflow-y-auto p-8 md:p-12">
-                <article class="max-w-3xl mx-auto">
-                    <h1 class="text-3xl md:text-4xl font-black text-white mb-6 font-heading tracking-tight">
-                        The Process of <span class="text-teal-400">Photosynthesis</span>
+            <div class="flex-grow scroll-area overflow-y-auto p-8 md:p-12 relative" id="reading-container">
+                <article class="max-w-4xl mx-auto transition-opacity duration-500" id="article-body">
+                    <h1 class="text-3xl md:text-4xl font-black text-white mb-8 font-heading tracking-tight text-center" id="article-title">
+                        <span class="text-slate-500">Awaiting Input...</span>
                     </h1>
-                    
                     <div id="article-content" class="space-y-6 text-lg leading-relaxed text-slate-200">
-                        <div class="p-block group transition-all duration-300 hover:bg-white/5 rounded-lg p-2 -ml-2">
-                            <p class="en-text mb-2 font-medium">
-                                <span class="keyword-xray" onmouseenter="showAIAnalysis('Photosynthesis')" onmouseleave="hideAIAnalysis()">Photosynthesis</span> is the process by which green plants and some other organisms use sunlight to synthesize foods from carbon dioxide and water.
-                            </p>
-                            <p class="zh-text text-teal-100/70 text-base border-l-2 border-teal-500/30 pl-3">
-                                光合作用是綠色植物和其他某些生物利用陽光從二氧化碳和水合成養分的過程。
-                            </p>
-                        </div>
-
-                        <div class="p-block group transition-all duration-300 hover:bg-white/5 rounded-lg p-2 -ml-2">
-                            <p class="en-text mb-2 font-medium">
-                                Photosynthesis in plants generally involves the green pigment <span class="keyword-xray" onmouseenter="showAIAnalysis('Chlorophyll')" onmouseleave="hideAIAnalysis()">chlorophyll</span> and generates oxygen as a byproduct.
-                            </p>
-                            <p class="zh-text text-teal-100/70 text-base border-l-2 border-teal-500/30 pl-3">
-                                植物的光合作用通常涉及綠色色素——葉綠素，並產生氧氣作為副產品。
-                            </p>
-                        </div>
-
-                        <div class="p-block group transition-all duration-300 hover:bg-white/5 rounded-lg p-2 -ml-2">
-                            <p class="en-text mb-2 font-medium">
-                                The energy for photosynthesis originates in the sun and arrives at the earth as <span class="keyword-xray" onmouseenter="showAIAnalysis('Sunlight')" onmouseleave="hideAIAnalysis()">sunlight</span>.
-                            </p>
-                            <p class="zh-text text-teal-100/70 text-base border-l-2 border-teal-500/30 pl-3">
-                                光合作用的能量來自太陽，並以陽光的形式到達地球。
-                            </p>
+                        <div class="flex flex-col items-center justify-center h-64 text-teal-500/30">
+                            <i class="fa-solid fa-network-wired text-6xl mb-4 animate-pulse"></i>
+                            <p class="font-tech text-sm tracking-widest">CONNECTING TO KNOWLEDGE BASE</p>
                         </div>
                     </div>
                 </article>
             </div>
         </section>
 
-        <aside class="w-80 glass-panel rounded-2xl flex flex-col overflow-hidden hidden lg:flex border-l border-teal-500/30">
-            <div class="p-4 border-b border-teal-500/20 bg-gradient-to-r from-slate-900/80 to-teal-900/20">
-                <div class="flex items-center gap-2 mb-1">
-                    <div class="w-2 h-2 bg-teal-400 rounded-full animate-pulse"></div>
-                    <h3 class="text-xs font-tech text-teal-400 tracking-widest">AI CORE ANALYSIS</h3>
-                </div>
-                <div class="text-xs text-slate-400">Real-time Contextual Data</div>
+        <aside class="w-80 glass-panel rounded-2xl flex flex-col overflow-hidden hidden lg:flex border-l border-teal-500/30 relative">
+            <div class="flex border-b border-teal-500/20 bg-slate-900/60">
+                <button onclick="switchTab('vocab')" id="tab-vocab" class="flex-1 py-3 text-xs font-bold text-teal-400 border-b-2 border-teal-400 bg-teal-500/10 transition">VOCAB X-RAY</button>
+                <button onclick="switchTab('chat')" id="tab-chat" class="flex-1 py-3 text-xs font-bold text-slate-500 hover:text-teal-300 transition">AI TUTOR</button>
             </div>
 
-            <div class="flex-grow scroll-area overflow-y-auto p-4 space-y-4">
-                
-                <div class="bg-slate-800/50 rounded-xl p-4 border border-teal-500/10">
-                    <div class="flex items-start gap-3">
-                        <div class="w-8 h-8 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400">
-                            <i class="fa-solid fa-robot"></i>
-                        </div>
-                        <div>
-                            <div class="text-xs text-teal-500 font-bold mb-1">SYSTEM MESSAGE</div>
-                            <p class="text-sm text-slate-300 leading-snug">
-                                已載入單元：光合作用。<br>本篇文章難度係數：<span class="text-teal-400">Lexile 1050L</span>。建議關注「能量轉換」的過程。
-                            </p>
-                        </div>
-                    </div>
+            <div id="panel-vocab" class="flex-grow scroll-area overflow-y-auto p-4 space-y-4">
+                <div id="ai-card-placeholder" class="text-center py-10 opacity-50">
+                    <i class="fa-solid fa-atom text-4xl text-teal-500/30 mb-4 animate-spin-slow"></i>
+                    <p class="text-sm text-teal-200/50">Hover over highlighted terms<br>in the text to activate X-Ray.</p>
                 </div>
 
-                <div id="ai-card-display" class="hidden opacity-0 transition-opacity duration-300">
-                    <div class="bg-gradient-to-b from-teal-900/40 to-slate-900/80 rounded-xl p-4 border border-teal-500/30 shadow-[0_0_15px_rgba(45,212,191,0.2)]">
+                <div id="ai-card-display" class="hidden opacity-0 transition-all duration-300 transform scale-95">
+                    <div class="bg-gradient-to-b from-teal-900/40 to-slate-900/80 rounded-xl p-5 border border-teal-500/30 shadow-[0_0_20px_rgba(45,212,191,0.15)]">
                         <div class="flex justify-between items-center mb-3">
-                            <h4 class="font-bold text-white text-lg" id="ai-term-title">Chlorophyll</h4>
-                            <span class="text-xs font-tech text-teal-400 border border-teal-500/30 px-1 rounded">NOUN</span>
+                            <h4 class="font-bold text-white text-xl tracking-wide" id="ai-term-title">Term</h4>
+                            <span class="text-[10px] font-tech text-teal-400 border border-teal-500/30 px-2 py-0.5 rounded">SCI-TERM</span>
                         </div>
-                        
-                        <div class="h-24 bg-slate-950 rounded-lg mb-3 flex items-center justify-center border border-teal-500/10 relative overflow-hidden group">
-                            <div class="absolute inset-0 bg-[url('https://cdn.pixabay.com/photo/2016/11/29/03/52/atom-1867200_1280.jpg')] bg-cover bg-center opacity-40 mix-blend-luminosity"></div>
-                            <i class="fa-solid fa-leaf text-4xl text-teal-500 z-10 drop-shadow-[0_0_10px_rgba(45,212,191,0.8)] animate-pulse"></i>
-                        </div>
+                        <p class="text-sm text-slate-200 mb-3 leading-relaxed" id="ai-term-desc">Definition...</p>
+                    </div>
+                </div>
+            </div>
 
-                        <p class="text-sm text-slate-300 mb-2" id="ai-term-desc">
-                            葉綠素是植物和藻類中發現的綠色色素，對光合作用至關重要，能吸收光能。
-                        </p>
-                        <div class="text-xs text-slate-500 font-mono">
-                            > Related: Chloroplast, Pigment
+            <div id="panel-chat" class="flex-grow flex flex-col hidden">
+                <div id="chat-messages" class="flex-grow scroll-area overflow-y-auto p-4 space-y-3 bg-slate-900/30">
+                    <div class="flex items-start gap-2">
+                        <div class="w-8 h-8 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 shrink-0"><i class="fa-solid fa-robot text-xs"></i></div>
+                        <div class="bg-slate-800/80 p-3 rounded-2xl rounded-tl-none border border-teal-500/20 text-xs text-slate-200">
+                            我是您的科學 AI 助教。對這篇文章有任何疑問嗎？
                         </div>
                     </div>
                 </div>
-
-                <div class="border-t border-teal-500/10 pt-4">
-                    <h4 class="text-xs font-bold text-slate-400 mb-3 uppercase">Vocabulary List</h4>
-                    <div class="space-y-2">
-                        <div class="flex justify-between items-center text-sm p-2 hover:bg-white/5 rounded cursor-pointer group">
-                            <span class="text-teal-200">Synthesize</span>
-                            <span class="text-slate-500 group-hover:text-teal-400">合成</span>
-                        </div>
-                        <div class="flex justify-between items-center text-sm p-2 hover:bg-white/5 rounded cursor-pointer group">
-                            <span class="text-teal-200">Byproduct</span>
-                            <span class="text-slate-500 group-hover:text-teal-400">副產品</span>
-                        </div>
-                        <div class="flex justify-between items-center text-sm p-2 hover:bg-white/5 rounded cursor-pointer group">
-                            <span class="text-teal-200">Organisms</span>
-                            <span class="text-slate-500 group-hover:text-teal-400">生物體</span>
-                        </div>
-                    </div>
+                <div class="p-3 border-t border-teal-500/20 bg-slate-900/80 flex gap-2">
+                    <input type="text" id="chat-input" class="flex-1 bg-slate-800 border border-teal-500/30 rounded-full px-4 py-2 text-xs text-white focus:ring-1 focus:ring-teal-500 outline-none" placeholder="Ask AI..." onkeypress="if(event.key==='Enter') sendChat()">
+                    <button onclick="sendChat()" class="w-8 h-8 bg-teal-600 text-white rounded-full hover:bg-teal-500 transition shadow-lg"><i class="fa-solid fa-paper-plane text-xs"></i></button>
                 </div>
-
             </div>
         </aside>
+    </div>
 
+    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-slate-800/90 border border-teal-500/30 text-teal-100 px-4 py-2 rounded-full shadow-2xl transition-all duration-300 opacity-0 translate-y-10 z-50 flex items-center gap-2 pointer-events-none text-sm font-tech">
+        <i class="fa-solid fa-circle-check text-teal-400"></i> <span id="toast-msg">System Ready</span>
     </div>
 
     <script>
-        // 1. 微觀分子 Canvas (複用之前的代碼邏輯，確保背景一致)
-        const canvas = document.getElementById('molecule-canvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
+        // 您的 GAS 網址 (負責資料庫串接)
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbx3MW-IOcU-38IqgawidSakL9nVwARmov4cuK0S6Jcqbv3SJFyHUbrvrI43Y6nskJAx/exec";
 
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resize);
-        resize();
+        // ==========================
+        // 1. 全域變數
+        // ==========================
+        let allOptions = {};
+        let currentRawText = "";
+        let currentTerms = {}; // S欄詞彙表
+        let isSpeaking = false;
+        let speechUtterance = null;
+        let currentVoice = 'male'; // 'male' | 'female'
 
-        class Atom {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.vx = (Math.random() - 0.5) * 0.2;
-                this.vy = (Math.random() - 0.5) * 0.2;
-                this.size = Math.random() * 2 + 1;
-                this.color = `rgba(45, 212, 191, ${Math.random() * 0.3 + 0.1})`;
+        // ==========================
+        // 2. 初始化與資料庫連結
+        // ==========================
+        document.addEventListener('DOMContentLoaded', () => {
+            initCanvas(); // 啟動背景
+            fetchTextbookOptions(); // 連接資料庫
+            
+            // 預載語音
+            if(window.speechSynthesis) {
+                window.speechSynthesis.getVoices();
             }
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+        });
+
+        function goBack() { window.location.href = 'student_science.html'; }
+
+        // 取得下拉選單選項
+        function fetchTextbookOptions() {
+            const stageSel = document.getElementById('sel-stage');
+            stageSel.options[0].text = "Connecting...";
+            
+            fetch(GAS_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: "get_textbook_options" })
+            })
+            .then(res => res.json())
+            .then(res => {
+                if(res.result === "success") {
+                    allOptions = res.data;
+                    initStageSelect();
+                    showToast("Database Connected");
+                } else {
+                    showToast("Connection Failed", "error");
+                }
+            })
+            .catch(err => showToast("Network Error", "error"));
+        }
+
+        // 下拉選單連動邏輯
+        function initStageSelect() {
+            const sel = document.getElementById('sel-stage');
+            sel.innerHTML = `<option value="" disabled selected>Stage</option>`;
+            Object.keys(allOptions).forEach(key => sel.add(new Option(key, key)));
+            sel.disabled = false;
+        }
+
+        function updateDropdowns(source) {
+            const stage = document.getElementById('sel-stage');
+            const grade = document.getElementById('sel-grade');
+            const version = document.getElementById('sel-version');
+            const unit = document.getElementById('sel-unit');
+            const btn = document.getElementById('btn-load');
+
+            const reset = (el, txt) => { el.innerHTML = `<option value="" disabled selected>${txt}</option>`; el.disabled = true; el.value = ""; };
+            const fill = (el, items) => { items.forEach(i => el.add(new Option(i, i))); el.disabled = false; };
+
+            if (source === 'stage') {
+                reset(grade, 'Grade'); reset(version, 'Version'); reset(unit, 'Select Unit');
+                if(stage.value) fill(grade, Object.keys(allOptions[stage.value]));
+            } else if (source === 'grade') {
+                reset(version, 'Version'); reset(unit, 'Select Unit');
+                if(grade.value) fill(version, Object.keys(allOptions[stage.value][grade.value]));
+            } else if (source === 'version') {
+                // 簡化邏輯：直接取所有學期的單元 (模擬扁平化結構)
+                reset(unit, 'Select Unit');
+                if(version.value) {
+                    // 這裡假設資料結構如果有多層，我們取第一層學期
+                    const semesters = allOptions[stage.value][grade.value][version.value];
+                    // 為了範例簡單，這裡假設 semesters 是個物件，我們把所有單元攤平
+                    let allUnits = [];
+                    Object.values(semesters).forEach(uList => allUnits = allUnits.concat(uList));
+                    fill(unit, allUnits);
+                }
             }
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.fill();
-            }
         }
 
-        function initAtoms() {
-            particles = [];
-            for (let i = 0; i < 50; i++) particles.push(new Atom());
+        function enableLoadBtn() {
+            document.getElementById('btn-load').disabled = false;
         }
 
-        function animateAtoms() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => { p.update(); p.draw(); });
-            requestAnimationFrame(animateAtoms);
-        }
-        initAtoms();
-        animateAtoms();
+        // ==========================
+        // 3. 核心閱讀器邏輯 (Render & Parse)
+        // ==========================
+        function fetchLessonContent() {
+            const btn = document.getElementById('btn-load');
+            const loading = document.getElementById('loading-indicator');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
+            loading.classList.remove('hidden');
 
-        // 2. 雙語模式切換
-        function setMode(mode) {
-            // 按鈕樣式重置
-            document.querySelectorAll('.mode-btn').forEach(btn => {
-                btn.className = "mode-btn px-3 py-1 text-xs font-bold rounded text-teal-500 hover:text-white transition";
+            // 建構請求資料 (這裡簡化了 semester，實際可依需求補上)
+            const criteria = {
+                stage: document.getElementById('sel-stage').value,
+                grade: document.getElementById('sel-grade').value,
+                version: document.getElementById('sel-version').value,
+                unit: document.getElementById('sel-unit').value
+            };
+
+            fetch(GAS_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "get_lesson_content", criteria: criteria })
+            })
+            .then(res => res.json())
+            .then(res => {
+                if(res.result === "success") {
+                    renderContent(res.data);
+                    showToast("Module Loaded");
+                } else {
+                    showToast("Load Error", "error");
+                }
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-download"></i> LOAD';
+                loading.classList.add('hidden');
             });
-            // 激活按鈕樣式
-            const activeBtn = document.getElementById(`btn-${mode}`);
-            activeBtn.className = "mode-btn px-3 py-1 text-xs font-bold rounded bg-teal-600 text-white shadow-[0_0_10px_rgba(45,212,191,0.4)]";
+        }
 
-            // 內容顯示邏輯
+        function renderContent(data) {
+            currentRawText = data.content;
+            currentTerms = data.terms || {}; // 這是從 S 欄抓回來的資料 { "光合作用": "Photosynthesis", ... }
+            
+            document.getElementById('article-title').innerText = data.title;
+            document.getElementById('status-bar').innerText = "DATA LOADED: " + data.title;
+            
+            // 生成左側導航 (Smart Parsing)
+            const navList = document.getElementById('unit-list');
+            navList.innerHTML = '';
+            const lines = data.content.split('\n');
+            let contentHtml = '';
+            let navCount = 0;
+
+            lines.forEach((line, index) => {
+                line = line.trim();
+                if(!line) return;
+
+                // 處理關鍵字 X-Ray
+                let processedLine = line;
+                // 遍歷 S 欄詞彙表，將中文關鍵字加上螢光特效
+                for (let [zh, en] of Object.entries(currentTerms)) {
+                    // 避免重複替換
+                    const regex = new RegExp(zh, "g");
+                    processedLine = processedLine.replace(regex, 
+                        `<span class="sci-term" onmouseenter="showAIAnalysis('${zh}', '${en}')">${zh}</span>`
+                    );
+                }
+
+                // AI 判讀導航點：單元、活動、Unit
+                const isHeader = /^(Unit|Activity|Chapter|Lesson|活動|單元)\s/.test(line) || (line.length < 20 && !/[。！？]$/.test(line));
+                
+                if (isHeader) {
+                    const anchorId = `section-${index}`;
+                    // 左側導航按鈕
+                    const navItem = document.createElement('div');
+                    navItem.className = 'nav-item';
+                    navItem.innerHTML = `<div class="text-[10px] text-teal-500/50 mb-1">SECTION ${++navCount}</div><div class="nav-title font-bold text-sm text-slate-300 truncate">${line}</div>`;
+                    navItem.onclick = () => {
+                        document.getElementById(anchorId).scrollIntoView({behavior: 'smooth', block: 'center'});
+                        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                        navItem.classList.add('active');
+                    };
+                    navList.appendChild(navItem);
+
+                    // 內文標題樣式
+                    contentHtml += `<h2 id="${anchorId}" class="text-2xl font-bold text-teal-400 mt-8 mb-4 border-l-4 border-teal-500 pl-4 py-1">${processedLine}</h2>`;
+                } else {
+                    // 內文段落 (自動判斷雙語：這裡假設一段英一段中，或包含中文)
+                    const isChinese = /[\u4e00-\u9fa5]/.test(line);
+                    if(isChinese) {
+                        contentHtml += `<p class="zh-text text-slate-300 mb-4 pl-4 border-l border-slate-700">${processedLine}</p>`;
+                    } else {
+                        contentHtml += `<p class="en-text text-white font-medium text-lg mb-2">${processedLine}</p>`;
+                    }
+                }
+            });
+
+            document.getElementById('article-content').innerHTML = contentHtml;
+            // 預設更新雙語模式
+            setMode(currentMode);
+        }
+
+        // ==========================
+        // 4. AI 功能 (X-Ray & Audio)
+        // ==========================
+        
+        // 顯示 X-Ray 卡片
+        function showAIAnalysis(termZh, termEn) {
+            switchTab('vocab');
+            const placeholder = document.getElementById('ai-card-placeholder');
+            const card = document.getElementById('ai-card-display');
+            
+            placeholder.classList.add('hidden');
+            card.classList.remove('hidden', 'opacity-0', 'scale-95');
+            
+            document.getElementById('ai-term-title').innerText = termEn || termZh; // 顯示英文優先
+            document.getElementById('ai-term-desc').innerHTML = `
+                <strong class="text-teal-400">${termZh}</strong><br>
+                Detected scientific vocabulary.<br>
+                <span class="text-xs text-slate-400 mt-2 block">System is retrieving definition context...</span>
+            `;
+        }
+
+        // 雙人聲語音系統
+        function setVoice(gender) {
+            currentVoice = gender;
+            document.getElementById('voice-male').className = `voice-btn px-2 py-1 rounded transition ${gender === 'male' ? 'bg-teal-600 text-white shadow' : 'text-teal-400 hover:bg-teal-500/20'}`;
+            document.getElementById('voice-female').className = `voice-btn px-2 py-1 rounded transition ${gender === 'female' ? 'bg-teal-600 text-white shadow' : 'text-slate-500 hover:bg-teal-500/20'}`;
+            showToast(`Voice Module: ${gender === 'male' ? 'Dr. Spark' : 'Nova'} Active`);
+        }
+
+        function toggleSpeech() {
+            const btn = document.getElementById('btn-play');
+            if (isSpeaking) {
+                window.speechSynthesis.cancel();
+                isSpeaking = false;
+                btn.innerHTML = '<i class="fa-solid fa-play"></i>';
+            } else {
+                // 抓取純英文內容朗讀 (為了示範效果)
+                const text = document.querySelectorAll('.en-text');
+                let speechText = "";
+                text.forEach(p => speechText += p.innerText + " ");
+                
+                if(!speechText) { showToast("No English text detected", "error"); return; }
+
+                const u = new SpeechSynthesisUtterance(speechText);
+                const voices = window.speechSynthesis.getVoices();
+                
+                // 挑選語音邏輯
+                let targetVoice;
+                if (currentVoice === 'male') {
+                    // 嘗試找 Google US English 或 Microsoft David
+                    targetVoice = voices.find(v => v.name.includes("Google US English")) || voices.find(v => v.name.includes("David")) || voices[0];
+                    u.pitch = 0.9; // 壓低音調更像男教授
+                    u.rate = 1.0;
+                } else {
+                    // 嘗試找 Microsoft Zira 或 Samantha
+                    targetVoice = voices.find(v => v.name.includes("Zira")) || voices.find(v => v.name.includes("Samantha")) || voices[0];
+                    u.pitch = 1.1; // 提高音調
+                    u.rate = 1.1;  // 稍微快一點
+                }
+                
+                if(targetVoice) u.voice = targetVoice;
+                
+                u.onend = () => { isSpeaking = false; btn.innerHTML = '<i class="fa-solid fa-play"></i>'; };
+                
+                window.speechSynthesis.speak(u);
+                isSpeaking = true;
+                btn.innerHTML = '<i class="fa-solid fa-stop text-red-400"></i>';
+            }
+        }
+
+        // ==========================
+        // 5. 輔助功能 UI
+        // ==========================
+        let currentMode = 'dual';
+        function setMode(mode) {
+            currentMode = mode;
+            // 更新按鈕樣式
+            ['en', 'dual', 'zh'].forEach(m => {
+                const btn = document.getElementById(`btn-${m}`);
+                if(m === mode) btn.className = "mode-btn px-3 py-1 text-xs font-bold rounded bg-teal-600 text-white shadow-[0_0_10px_rgba(45,212,191,0.4)]";
+                else btn.className = "mode-btn px-3 py-1 text-xs font-bold rounded text-teal-500 hover:text-white transition";
+            });
+
             const enTexts = document.querySelectorAll('.en-text');
             const zhTexts = document.querySelectorAll('.zh-text');
 
@@ -347,60 +554,96 @@
             } else if (mode === 'zh') {
                 enTexts.forEach(el => el.classList.add('hidden'));
                 zhTexts.forEach(el => el.classList.remove('hidden'));
-            } else { // Dual
+            } else {
                 enTexts.forEach(el => el.classList.remove('hidden'));
                 zhTexts.forEach(el => el.classList.remove('hidden'));
             }
         }
 
-        // 3. AI 分析核心互動 (模擬)
-        const aiData = {
-            'Photosynthesis': {
-                desc: '光合作用是植物將光能轉化為化學能的過程。',
-                icon: 'fa-sun'
-            },
-            'Chlorophyll': {
-                desc: '葉綠素是植物葉片中的綠色色素，負責吸收光線。',
-                icon: 'fa-leaf'
-            },
-            'Sunlight': {
-                desc: '陽光是電磁輻射，為光合作用提供原始能量。',
-                icon: 'fa-lightbulb'
-            }
-        };
-
-        function showAIAnalysis(term) {
-            const card = document.getElementById('ai-card-display');
-            const title = document.getElementById('ai-term-title');
-            const desc = document.getElementById('ai-term-desc');
-            const icon = card.querySelector('i');
-
-            if (aiData[term]) {
-                title.innerText = term;
-                desc.innerText = aiData[term].desc;
-                // 更換 icon class
-                icon.className = `fa-solid ${aiData[term].icon} text-4xl text-teal-500 z-10 drop-shadow-[0_0_10px_rgba(45,212,191,0.8)] animate-pulse`;
-                
-                card.classList.remove('hidden');
-                // 微小的延遲讓動畫更順暢
-                setTimeout(() => card.classList.remove('opacity-0'), 10);
-            }
-        }
-
-        function hideAIAnalysis() {
-            // 這裡可以選擇不隱藏，保留最後一個查詢結果，或者延遲隱藏
-            // 為演示效果，暫不自動隱藏，讓使用者可以看清楚
-        }
-
-        function loadArticle(id) {
-            // 點擊左側單元時的模擬動作
-            document.querySelectorAll('.unit-item').forEach(el => el.classList.remove('active'));
-            event.currentTarget.classList.add('active');
+        function switchTab(tab) {
+            document.getElementById('panel-vocab').classList.toggle('hidden', tab !== 'vocab');
+            document.getElementById('panel-chat').classList.toggle('hidden', tab !== 'chat');
             
-            // 模擬載入動畫
-            const content = document.getElementById('article-content');
-            content.style.opacity = '0.5';
-            setTimeout(() => content.style.opacity = '1', 300);
+            document.getElementById('tab-vocab').className = tab === 'vocab' 
+                ? "flex-1 py-3 text-xs font-bold text-teal-400 border-b-2 border-teal-400 bg-teal-500/10 transition"
+                : "flex-1 py-3 text-xs font-bold text-slate-500 hover:text-teal-300 transition";
+            document.getElementById('tab-chat').className = tab === 'chat' 
+                ? "flex-1 py-3 text-xs font-bold text-teal-400 border-b-2 border-teal-400 bg-teal-500/10 transition"
+                : "flex-1 py-3 text-xs font-bold text-slate-500 hover:text-teal-300 transition";
+        }
+
+        function sendChat() {
+            const input = document.getElementById('chat-input');
+            const msg = input.value.trim();
+            if(!msg) return;
+            
+            const chatBox = document.getElementById('chat-messages');
+            // User Msg
+            chatBox.insertAdjacentHTML('beforeend', `<div class="flex justify-end"><div class="bg-teal-600 text-white px-3 py-2 rounded-2xl rounded-tr-none shadow-sm max-w-[85%] text-xs font-bold">${msg}</div></div>`);
+            input.value = '';
+            
+            // Bot Msg (模擬回覆)
+            setTimeout(() => {
+                chatBox.insertAdjacentHTML('beforeend', `<div class="flex items-start gap-2"><div class="w-8 h-8 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 shrink-0"><i class="fa-solid fa-robot text-xs"></i></div><div class="bg-slate-800/80 p-3 rounded-2xl rounded-tl-none border border-teal-500/20 text-xs text-slate-200">正在分析問題... (目前為模擬模式，請確認 GAS 後端 chat_bot 功能已開啟)</div></div>`);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 1000);
+        }
+
+        function adjustFontSize(delta) {
+            const el = document.getElementById('article-content');
+            const style = window.getComputedStyle(el, null).getPropertyValue('font-size');
+            const currentSize = parseFloat(style);
+            el.style.fontSize = (currentSize + delta) + 'px';
+        }
+
+        function showToast(msg, type="info") {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('opacity-0', 'translate-y-10');
+            toast.querySelector('i').className = type === 'error' ? "fa-solid fa-circle-exclamation text-red-400" : "fa-solid fa-circle-check text-teal-400";
+            setTimeout(() => toast.classList.add('opacity-0', 'translate-y-10'), 3000);
+        }
+
+        // Canvas 背景 (複用)
+        function initCanvas() {
+            const canvas = document.getElementById('molecule-canvas');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+            window.addEventListener('resize', resize); resize();
+            class Atom {
+                constructor() {
+                    this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height;
+                    this.vx = (Math.random() - 0.5) * 0.2; this.vy = (Math.random() - 0.5) * 0.2;
+                    this.size = Math.random() * 2 + 1;
+                    this.color = `rgba(45, 212, 191, ${Math.random() * 0.3 + 0.1})`;
+                }
+                update() {
+                    this.x += this.vx; this.y += this.vy;
+                    if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                    if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+                }
+                draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.fill(); }
+            }
+            for (let i = 0; i < 50; i++) particles.push(new Atom());
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => { p.update(); p.draw(); });
+                // 繪製連結線
+                particles.forEach((a, i) => {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const b = particles[j];
+                        const dist = (a.x - b.x)**2 + (a.y - b.y)**2;
+                        if (dist < 10000) {
+                            ctx.beginPath();
+                            ctx.strokeStyle = `rgba(45, 212, 191, ${0.1 - dist/100000})`;
+                            ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+                        }
+                    }
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
         }
     </script>
 </body>
