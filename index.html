@@ -842,7 +842,8 @@
                     };
                     sessionStorage.setItem("currentUser", JSON.stringify(userInfo));
                     
-                    let targetPage = 'student.html';
+                    // 修改處：若角色為 student，跳轉至 student_subject.html
+                    let targetPage = 'student_subject.html'; // 預設改為科目選擇頁
                     if (user.role === 'teacher') targetPage = 'teacher.html';
                     if (user.role === 'researcher') targetPage = 'researcher.html';
                     if (user.role === 'admin') targetPage = 'admin.html';
@@ -935,7 +936,8 @@
                     };
                     sessionStorage.setItem("currentUser", JSON.stringify(userInfo));
                     
-                    let targetPage = 'student.html';
+                    // 修改處：若角色為 student，跳轉至 student_subject.html
+                    let targetPage = 'student_subject.html';
                     if (user.role === 'teacher') targetPage = 'teacher.html';
                     if (user.role === 'researcher') targetPage = 'researcher.html';
 
