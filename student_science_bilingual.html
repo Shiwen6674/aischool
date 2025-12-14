@@ -239,6 +239,79 @@
             .replace(/[\uFEFF\u200B\u200C\u200D]/g,'')   // BOM / 零寬
             .replace(/　/g,' ')                         // 全形空白
             .trim();
+// ===== 必要新增：S欄科學詞彙解析（支援 : / ： / = / ＝ / Tab / 中文(英文)）=====
+function parseVocabPairs(vocabText){
+  const map = {};
+  if(!vocabText) return map;
+
+  vocabText.split(/[,;，；\n]+/).forEach(token=>{
+    const t = (token||"").toString().trim();
+    if(!t) return;
+
+    let zh = "", en = "";
+
+    // 1) Tab 分隔：中文<TAB>英文
+    const tabParts = t.split(/\t+/);
+    if(tabParts.length >= 2){
+      zh = tabParts[0].trim();
+      en = tabParts.slice(1).join(' ').trim();
+    } else {
+      // 2) : ： = ＝ 分隔：中文:英文
+      const sepParts = t.split(/[:：=＝]/);
+      if(sepParts.length >= 2){
+        zh = sepParts[0].trim();
+        en = sepParts.slice(1).join(':').trim();
+      } else {
+        // 3) 括號格式：中文(英文) 或 中文（英文）
+        const m = t.match(/^(.+?)[（(]\s*([^)）]+?)\s*[)）]\s*$/);
+        if(m){
+          zh = (m[1]||"").trim();
+          en = (m[2]||"").trim();
+        } else {
+          // 4) 只有中文
+          zh = t.trim();
+          en = "";
+        }
+      }
+    }
+
+    if(zh) map[zh] = en; // en 允許空字串（代表需要後續翻譯）
+  });
+
+  return map;
+}
+
+// ===== 必要新增：J欄CKIP ->（1）自然中文句子（2）含黃標HTML（逐詞比對S欄）=====
+function ckipLineToPlainAndHtml(ckipLine, vocabMap){
+  const raw = (ckipLine || "").toString().trim();
+  if(!raw) return { plain: "", html: "" };
+
+  // CKIP 多用全形空格分詞；同時容忍一般空白
+  const tokens = raw.replace(/　/g, " ").split(/\s+/).filter(Boolean);
+
+  let plain = "";
+  let html = "";
+
+  for(const tok of tokens){
+    // tok 形如：太陽(Na) ／ ，(COMMACATEGORY) ／ 1-1ﾠ(DASHCATEGORY)
+    const base = tok.replace(/[\(（].*$/, ""); // 取 '(' 或 '（' 前面的字面
+    if(!base) continue;
+
+    plain += base;
+
+    const safeBase = escapeHtml(base);
+    if(vocabMap && Object.prototype.hasOwnProperty.call(vocabMap, base)){
+      const en = (vocabMap[base] || base).toString();
+      const js = en.replace(/'/g, "\\'");
+      const title = escapeHtml((vocabMap[base] || "").toString());
+      html += `<span class="sci-term" onclick="event.stopPropagation(); speakText('${js}')" title="${title}">${safeBase}</span>`;
+    } else {
+      html += safeBase;
+    }
+  }
+
+  return { plain, html };
+}
 
         function processData(data) {
             rawData = data.slice(1);
@@ -315,8 +388,7 @@
             document.getElementById('status-bar').innerText = unit.title;
             document.getElementById('nav-title').innerText = unit.title;
 
-            activeVocabMap = {};
-            if(unit.vocab) unit.vocab.split(/[,;，；\n]/).forEach(i=>{ let p=i.split(/[:：]/); if(p[0] && p[0].trim()) activeVocabMap[p[0].trim()]=p[1]?p[1].trim():""; });
+            activeVocabMap = parseVocabPairs(unit.vocab);
 
             renderVocabSidebar();
 
@@ -324,10 +396,13 @@
             document.getElementById('unit-list').innerHTML=''; 
 
             // I 欄內容線性呈現；若 I 欄空但 J 欄 CKIP 有內容，最低限度 fallback（避免畫面空白）
-            let lines = (unit.content || "").split('\n').map(x=>x.trim()).filter(Boolean);
-            if(lines.length===0 && unit.ckip){
-                lines = unit.ckip.split('\n').map(x=>x.replace(/　/g,' ').replace(/\([^)]*\)/g,'').trim()).filter(Boolean);
-            }
+            // 依需求：中文顯示優先取 J 欄 CKIP（再去掉 POS/全形空格），J 若空才 fallback 到 I 欄
+let lines = (unit.ckip || "").split('\n').map(x=>x.trim()).filter(Boolean);
+let useCKIP = lines.length > 0;
+if(!useCKIP){
+  lines = (unit.content || "").split('\n').map(x=>x.trim()).filter(Boolean);
+}
+
 
             let secCount=0;
 
@@ -344,13 +419,41 @@
                     document.getElementById('unit-list').appendChild(navItem);
                     contentDiv.innerHTML += `<h2 id="${anchorId}" class="section-header">${line}</h2>`;
                 } else {
-                    let processed = processXRayWithCKIP(line, activeVocabMap);
-                    // ✅ 需求 #2：中文點中文、英文點英文（DUAL 下兩者各自朗讀）
-                    contentDiv.innerHTML += `
-                        <div class="content-block">
-                            <p class="zh-text" onclick="speakText(this.innerText)">${processed}</p>
-                            <p class="en-text hidden text-teal-200/80 italic text-sm mt-2" onclick="speakText(this.innerText)" data-source="${line}"></p>
-                        </div>`;
+                    if(useCKIP){
+  const out = ckipLineToPlainAndHtml(line, activeVocabMap);
+  const plainLine = out.plain.trim();
+  if(!plainLine) continue;
+
+  // 用「去POS後的自然句」判斷是否為標題/段落
+  if((plainLine.length<40 && !/[。！？.!?]$/.test(plainLine)) || plainLine.includes("活動")) {
+    secCount++;
+    const anchorId = `sec-${i}`;
+    const navItem = document.createElement('div'); navItem.className='nav-item';
+    navItem.innerText = plainLine;
+    navItem.onclick=()=>{ document.getElementById(anchorId).scrollIntoView({behavior:'smooth',block:'center'}); };
+    document.getElementById('unit-list').appendChild(navItem);
+    contentDiv.innerHTML += `<h2 id="${anchorId}" class="section-header">${escapeHtml(plainLine)}</h2>`;
+  } else {
+    contentDiv.innerHTML += `
+      <div class="content-block">
+        <p class="zh-text" onclick="speakText(this.innerText)">${out.html}</p>
+        <p class="en-text hidden text-teal-200/80 italic text-sm mt-2"
+           onclick="speakText(this.innerText)"
+           data-source="${escapeHtml(plainLine)}"></p>
+      </div>`;
+  }
+} else {
+  // fallback：沒有 CKIP 時維持原本處理（不要動其他邏輯）
+  let processed = processXRayWithCKIP(line, activeVocabMap);
+  contentDiv.innerHTML += `
+    <div class="content-block">
+      <p class="zh-text" onclick="speakText(this.innerText)">${processed}</p>
+      <p class="en-text hidden text-teal-200/80 italic text-sm mt-2"
+         onclick="speakText(this.innerText)"
+         data-source="${line}"></p>
+    </div>`;
+}
+
                 }
             }
             setMode('dual');
@@ -370,7 +473,8 @@
             const keys = Object.keys(activeVocabMap);
             if(keys.length === 0) { container.innerHTML = '<div class="text-center opacity-50 text-sm mt-10">無詞彙資料</div>'; return; }
             keys.forEach(zh => {
-                const en = activeVocabMap[zh] || "Loading...";
+                const en = (activeVocabMap[zh] && activeVocabMap[zh].trim()) ? activeVocabMap[zh].trim() : "Loading...";
+
                 const card = document.createElement('div'); card.className = "vocab-item";
                 card.innerHTML = `
   <div class="flex-1 pr-2">
@@ -395,7 +499,8 @@
 `;
 
                 container.appendChild(card);
-                if(!activeVocabMap[zh]) translateVocabItem(zh, card.querySelector('.en-term-label'));
+                if(!activeVocabMap[zh] || !activeVocabMap[zh].trim()) translateVocabItem(zh, card.querySelector('.en-term-label'));
+
             });
         }
 
