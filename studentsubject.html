@@ -1,1 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI School | 學習模組選擇</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;800&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                        tech: ['Orbitron', 'sans-serif'], // 新增科技感字體
+                    },
+                    colors: {
+                        ai: { 
+                            bg: '#020617', 
+                            card: 'rgba(15, 23, 42, 0.6)', 
+                            border: 'rgba(6, 182, 212, 0.2)' 
+                        },
+                        neon: {
+                            blue: '#3b82f6',
+                            cyan: '#06b6d4',
+                            purple: '#8b5cf6',
+                            green: '#10b981',
+                            orange: '#f97316',
+                            pink: '#ec4899'
+                        }
+                    },
+                    animation: {
+                        "float": "float 6s ease-in-out infinite",
+                        "pulse-glow": "pulseGlow 2s infinite",
+                        "scanline": "scanline 8s linear infinite",
+                    },
+                    keyframes: {
+                        float: {
+                            "0%, 100%": { transform: "translateY(0)" },
+                            "50%": { transform: "translateY(-10px)" }
+                        },
+                        pulseGlow: {
+                            "0%, 100%": { boxShadow: "0 0 5px rgba(6, 182, 212, 0.2)" },
+                            "50%": { boxShadow: "0 0 20px rgba(6, 182, 212, 0.6)" }
+                        },
+                        scanline: {
+                            "0%": { transform: "translateY(-100%)" },
+                            "100%": { transform: "translateY(100%)" }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #020617;
+            color: #e2e8f0;
+            overflow-x: hidden;
+            /* 科技感網格背景 */
+            background-image: 
+                linear-gradient(rgba(6, 182, 212, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(6, 182, 212, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
 
+        .glass-header {
+            background: rgba(2, 6, 23, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(6, 182, 212, 0.2);
+        }
+
+        /* 全像投影卡片特效 */
+        .holo-card {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+        }
+
+        .holo-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: 0.5s;
+            pointer-events: none;
+        }
+
+        .holo-card:hover::before {
+            left: 100%;
+        }
+
+        .holo-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            background: rgba(15, 23, 42, 0.7);
+            border-color: var(--theme-color);
+            box-shadow: 0 0 30px -5px var(--theme-color-glow);
+        }
+
+        .icon-container {
+            background: radial-gradient(circle, var(--theme-color-soft) 0%, transparent 70%);
+            transition: all 0.5s ease;
+        }
+        
+        .holo-card:hover .icon-container i {
+            transform: scale(1.2) rotate(5deg);
+            filter: drop-shadow(0 0 15px var(--theme-color));
+        }
+
+        /* 掃描線特效 */
+        .scan-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, transparent 50%, rgba(6, 182, 212, 0.02) 51%, transparent 52%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* 文字發光 */
+        .text-glow {
+            text-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+        }
+        
+        /* 載入動畫 */
+        #loader {
+            position: fixed; inset: 0; background: #020617; z-index: 1000;
+            display: flex; align-items: center; justify-content: center;
+            transition: opacity 0.5s ease;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans selection:bg-cyan-500/30 selection:text-cyan-100">
+
+    <div class="scan-overlay"></div>
+
+    <canvas id="bg-canvas" class="fixed inset-0 z-[-1]"></canvas>
+
+    <div id="loader">
+        <div class="text-center">
+            <i class="fa-solid fa-circle-nodes text-6xl text-cyan-400 animate-spin-slow mb-4"></i>
+            <p class="font-tech text-cyan-500 tracking-widest text-xl animate-pulse">SYSTEM INITIALIZING...</p>
+        </div>
+    </div>
+
+    <nav class="glass-header sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3 cursor-pointer group" onclick="goHome()">
+                <div class="relative w-8 h-8 flex items-center justify-center">
+                    <i class="fa-solid fa-robot text-cyan-400 text-2xl group-hover:text-cyan-300 transition-colors drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]"></i>
+                </div>
+                <span class="text-xl font-heading font-bold text-white tracking-wide group-hover:text-cyan-300 transition-colors">AI School</span>
+            </div>
+
+            <div class="flex items-center space-x-6">
+                <div class="hidden md:flex items-center space-x-3 bg-slate-800/50 px-4 py-1.5 rounded-full border border-slate-700/50 backdrop-blur-sm">
+                    <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                    <span id="user-name-display" class="text-cyan-300 font-medium text-sm">Student</span>
+                </div>
+
+                <select id="language-selector" onchange="changeLanguage()" class="bg-slate-900/80 border border-slate-600 text-cyan-100 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-cyan-500 outline-none cursor-pointer text-sm hover:bg-slate-800 transition">
+                    <option value="zh-TW">繁體中文</option>
+                    <option value="en">English</option>
+                    <option value="ja">日本語</option>
+                    <option value="zh-CN">简体中文</option>
+                </select>
+
+                <button onclick="logout()" class="text-slate-400 hover:text-red-400 font-medium text-sm transition flex items-center gap-2 group">
+                    <i class="fa-solid fa-power-off group-hover:rotate-90 transition-transform duration-300"></i>
+                    <span data-i18n="logout">登出</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto p-6 flex-grow w-full relative z-10 flex flex-col justify-center items-center">
+        
+        <div class="text-center mb-12 fade-in">
+            <div class="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-cyan-900/30 border border-cyan-500/30 text-cyan-400 text-xs font-bold tracking-[0.2em] uppercase mb-4 animate-float">
+                <i class="fa-solid fa-database"></i> <span data-i18n="knowledge_base">Knowledge Base Access</span>
+            </div>
+            <h1 class="font-heading text-4xl md:text-6xl font-black text-white mb-4 tracking-tight">
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 text-glow" data-i18n="select_subject_title">選擇學習模組</span>
+            </h1>
+            <p class="text-slate-400 text-lg max-w-2xl mx-auto" data-i18n="select_subject_desc">
+                啟動您的個人化 AI 學習引擎，請選擇科目以進入專屬學習空間。
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 w-full max-w-7xl perspective-1000">
+            
+            <div onclick="enterSubject('mandarin')" class="holo-card rounded-2xl p-6 cursor-pointer group flex flex-col items-center text-center h-80 justify-between fade-in" style="--theme-color: #f97316; --theme-color-glow: rgba(249, 115, 22, 0.4); --theme-color-soft: rgba(249, 115, 22, 0.1); animation-delay: 0.1s;">
+                <div class="w-full flex justify-end"><div class="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_10px_#f97316]"></div></div>
+                <div class="icon-container w-32 h-32 rounded-full flex items-center justify-center mb-4 relative">
+                    <div class="absolute inset-0 border border-orange-500/20 rounded-full animate-[spin_10s_linear_infinite]"></div>
+                    <i class="fa-solid fa-book-open text-6xl text-orange-400 group-hover:text-orange-300 transition-colors"></i>
+                </div>
+                <div>
+                    <h3 class="font-heading text-2xl font-bold text-white group-hover:text-orange-400 transition mb-2" data-i18n="subj_mandarin">國語文</h3>
+                    <p class="text-xs text-slate-400 font-tech uppercase tracking-wider">Language Arts</p>
+                </div>
+                <div class="w-full mt-4 h-1 bg-slate-700 rounded-full overflow-hidden">
+                    <div class="h-full bg-orange-500 w-0 group-hover:w-full transition-all duration-700 ease-out"></div>
+                </div>
+            </div>
+
+            <div onclick="enterSubject('english')" class="holo-card rounded-2xl p-6 cursor-pointer group flex flex-col items-center text-center h-80 justify-between fade-in" style="--theme-color: #a855f7; --theme-color-glow: rgba(168, 85, 247, 0.4); --theme-color-soft: rgba(168, 85, 247, 0.1); animation-delay: 0.2s;">
+                <div class="w-full flex justify-end"><div class="w-2 h-2 rounded-full bg-purple-500 shadow-[0_0_10px_#a855f7]"></div></div>
+                <div class="icon-container w-32 h-32 rounded-full flex items-center justify-center mb-4 relative">
+                    <div class="absolute inset-0 border border-purple-500/20 rounded-full animate-[spin_12s_linear_infinite_reverse]"></div>
+                    <i class="fa-solid fa-language text-6xl text-purple-400 group-hover:text-purple-300 transition-colors"></i>
+                </div>
+                <div>
+                    <h3 class="font-heading text-2xl font-bold text-white group-hover:text-purple-400 transition mb-2" data-i18n="subj_english">英語文</h3>
+                    <p class="text-xs text-slate-400 font-tech uppercase tracking-wider">Global Comm.</p>
+                </div>
+                <div class="w-full mt-4 h-1 bg-slate-700 rounded-full overflow-hidden">
+                    <div class="h-full bg-purple-500 w-0 group-hover:w-full transition-all duration-700 ease-out"></div>
+                </div>
+            </div>
+
+            <div onclick="enterSubject('math')" class="holo-card rounded-2xl p-6 cursor-pointer group flex flex-col items-center text-center h-80 justify-between fade-in" style="--theme-color: #3b82f6; --theme-color-glow: rgba(59, 130, 246, 0.4); --theme-color-soft: rgba(59, 130, 246, 0.1); animation-delay: 0.3s;">
+                <div class="w-full flex justify-end"><div class="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_10px_#3b82f6]"></div></div>
+                <div class="icon-container w-32 h-32 rounded-full flex items-center justify-center mb-4 relative">
+                    <div class="absolute inset-0 border border-blue-500/20 rounded-full animate-[spin_8s_linear_infinite]"></div>
+                    <i class="fa-solid fa-square-root-variable text-6xl text-blue-400 group-hover:text-blue-300 transition-colors"></i>
+                </div>
+                <div>
+                    <h3 class="font-heading text-2xl font-bold text-white group-hover:text-blue-400 transition mb-2" data-i18n="subj_math">數學</h3>
+                    <p class="text-xs text-slate-400 font-tech uppercase tracking-wider">Logic & Data</p>
+                </div>
+                <div class="w-full mt-4 h-1 bg-slate-700 rounded-full overflow-hidden">
+                    <div class="h-full bg-blue-500 w-0 group-hover:w-full transition-all duration-700 ease-out"></div>
+                </div>
+            </div>
+
+            <div onclick="enterSubject('science')" class="holo-card rounded-2xl p-6 cursor-pointer group flex flex-col items-center text-center h-80 justify-between fade-in" style="--theme-color: #10b981; --theme-color-glow: rgba(16, 185, 129, 0.4); --theme-color-soft: rgba(16, 185, 129, 0.1); animation-delay: 0.4s;">
+                <div class="w-full flex justify-end"><div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]"></div></div>
+                <div class="icon-container w-32 h-32 rounded-full flex items-center justify-center mb-4 relative">
+                    <div class="absolute inset-0 border border-emerald-500/20 rounded-full animate-[spin_15s_linear_infinite_reverse]"></div>
+                    <i class="fa-solid fa-atom text-6xl text-emerald-400 group-hover:text-emerald-300 transition-colors"></i>
+                </div>
+                <div>
+                    <h3 class="font-heading text-2xl font-bold text-white group-hover:text-emerald-400 transition mb-2" data-i18n="subj_science">自然科學</h3>
+                    <p class="text-xs text-slate-400 font-tech uppercase tracking-wider">Discovery</p>
+                </div>
+                <div class="w-full mt-4 h-1 bg-slate-700 rounded-full overflow-hidden">
+                    <div class="h-full bg-emerald-500 w-0 group-hover:w-full transition-all duration-700 ease-out"></div>
+                </div>
+            </div>
+
+            <div onclick="enterSubject('social')" class="holo-card rounded-2xl p-6 cursor-pointer group flex flex-col items-center text-center h-80 justify-between fade-in" style="--theme-color: #ec4899; --theme-color-glow: rgba(236, 72, 153, 0.4); --theme-color-soft: rgba(236, 72, 153, 0.1); animation-delay: 0.5s;">
+                <div class="w-full flex justify-end"><div class="w-2 h-2 rounded-full bg-pink-500 shadow-[0_0_10px_#ec4899]"></div></div>
+                <div class="icon-container w-32 h-32 rounded-full flex items-center justify-center mb-4 relative">
+                    <div class="absolute inset-0 border border-pink-500/20 rounded-full animate-[spin_10s_linear_infinite]"></div>
+                    <i class="fa-solid fa-earth-asia text-6xl text-pink-400 group-hover:text-pink-300 transition-colors"></i>
+                </div>
+                <div>
+                    <h3 class="font-heading text-2xl font-bold text-white group-hover:text-pink-400 transition mb-2" data-i18n="subj_social">社會研究</h3>
+                    <p class="text-xs text-slate-400 font-tech uppercase tracking-wider">Humanities</p>
+                </div>
+                <div class="w-full mt-4 h-1 bg-slate-700 rounded-full overflow-hidden">
+                    <div class="h-full bg-pink-500 w-0 group-hover:w-full transition-all duration-700 ease-out"></div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <footer class="text-center py-6 text-slate-600 text-xs mt-auto relative z-10 font-tech">
+        <p>SYSTEM STATUS: ONLINE | SECURE CONNECTION</p>
+        <p class="mt-1">&copy; 2024 AI School. Institute of Science Education, NDHU.</p>
+    </footer>
+
+    <script>
+        // 模擬粒子背景
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 2;
+                this.color = `rgba(6, 182, 212, ${Math.random() * 0.5})`; // Cyan 粒子
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            for (let i = 0; i < 100; i++) particles.push(new Particle());
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            // 繪製連線
+            particles.forEach((a, i) => {
+                particles.slice(i + 1).forEach(b => {
+                    const dist = Math.hypot(a.x - b.x, a.y - b.y);
+                    if (dist < 100) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(6, 182, 212, ${0.1 - dist/1000})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(a.x, a.y);
+                        ctx.lineTo(b.x, b.y);
+                        ctx.stroke();
+                    }
+                });
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        initParticles();
+        animateParticles();
+
+        // 頁面邏輯
+        const translations = {
+            "zh-TW": {
+                "logout": "登出", "knowledge_base": "知識庫存取", 
+                "select_subject_title": "選擇學習模組",
+                "select_subject_desc": "啟動您的個人化 AI 學習引擎，請選擇科目以進入專屬學習空間。",
+                "subj_mandarin": "國語文", "subj_english": "英語文", "subj_math": "數學", 
+                "subj_science": "自然科學", "subj_social": "社會研究"
+            },
+            "en": {
+                "logout": "Logout", "knowledge_base": "Knowledge Base Access",
+                "select_subject_title": "Select Module",
+                "select_subject_desc": "Initialize your personalized AI learning engine. Select a subject to enter.",
+                "subj_mandarin": "Mandarin", "subj_english": "English", "subj_math": "Mathematics",
+                "subj_science": "Science", "subj_social": "Social Studies"
+            },
+            "ja": {
+                "logout": "ログアウト", "knowledge_base": "知識ベースアクセス",
+                "select_subject_title": "学習モジュール選択",
+                "select_subject_desc": "AI学習エンジンを起動します。科目を選択してください。",
+                "subj_mandarin": "国語", "subj_english": "英語", "subj_math": "数学",
+                "subj_science": "自然科学", "subj_social": "社会科"
+            },
+            "zh-CN": {
+                "logout": "退出", "knowledge_base": "知识库访问",
+                "select_subject_title": "选择学习模块",
+                "select_subject_desc": "启动您的个性化 AI 学习引擎，请选择科目以进入专属学习空间。",
+                "subj_mandarin": "国语", "subj_english": "英语", "subj_math": "数学",
+                "subj_science": "自然科学", "subj_social": "社会研究"
+            }
+        };
+
+        // Fallback Logic
+        ["ja", "zh-CN"].forEach(lang => {
+            if(!translations[lang]) translations[lang] = JSON.parse(JSON.stringify(translations['en']));
+            else {
+                const base = JSON.parse(JSON.stringify(translations['en']));
+                Object.assign(base, translations[lang]);
+                translations[lang] = base;
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 模擬讀取延遲
+            setTimeout(() => {
+                document.getElementById('loader').style.opacity = '0';
+                setTimeout(() => document.getElementById('loader').style.display = 'none', 500);
+            }, 1000);
+
+            // 檢查是否登入 (簡單驗證)
+            const userJson = sessionStorage.getItem("currentUser");
+            if (userJson) {
+                const user = JSON.parse(userJson);
+                document.getElementById('user-name-display').textContent = user.name || "Student";
+                // 如果不是學生，可能需要警告，但這裡先允許瀏覽
+            } else {
+                // 未登入處理 (Demo 模式下先不強制跳轉，方便預覽)
+                // window.location.href = 'index.html'; 
+            }
+
+            changeLanguage();
+        });
+
+        function changeLanguage() {
+            const lang = document.getElementById("language-selector").value;
+            const t = translations[lang] || translations['en'];
+            document.querySelectorAll("[data-i18n]").forEach(el => {
+                const key = el.getAttribute("data-i18n");
+                if (t[key]) el.innerText = t[key];
+            });
+        }
+
+        function logout() {
+            if(confirm("Terminate session?")) {
+                sessionStorage.removeItem("currentUser");
+                window.location.href = 'index.html';
+            }
+        }
+
+        function goHome() {
+            window.location.href = 'index.html';
+        }
+
+        function enterSubject(subject) {
+            // 這裡可以加入更炫的轉場動畫
+            const card = event.currentTarget;
+            card.style.transform = "scale(0.95)";
+            card.style.filter = "brightness(1.5)";
+            
+            setTimeout(() => {
+                alert(`Initializing ${subject.toUpperCase()} module...`); // 替換為實際跳轉
+                // window.location.href = `${subject}.html`;
+            }, 300);
+        }
+    </script>
+</body>
+      </html>
