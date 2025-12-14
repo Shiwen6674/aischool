@@ -11,7 +11,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -85,7 +84,6 @@
             background-color: rgba(45, 212, 191, 0.2); color: #fff; text-shadow: 0 0 8px #2dd4bf; border-radius: 4px;
         }
 
-        /* 下拉選單優化 */
         .custom-select {
             background-color: rgba(15, 23, 42, 0.8);
             border: 1px solid rgba(45, 212, 191, 0.3);
@@ -120,8 +118,7 @@
 
     <div id="loader-overlay" class="absolute inset-0 bg-[#020617] z-50 flex flex-col items-center justify-center">
         <i class="fa-solid fa-satellite-dish text-5xl text-teal-400 animate-pulse mb-4"></i>
-        <div class="text-teal-500 font-tech tracking-widest">SYNCING DATABASE...</div>
-        <div class="text-xs text-slate-500 mt-2">Accessing Neural Network</div>
+        <div class="text-teal-500 font-tech tracking-widest">CONNECTING TO DATABASE...</div>
     </div>
 
     <nav class="glass-panel sticky top-0 z-40 h-auto md:h-16 flex flex-col md:flex-row items-center shrink-0 border-b-0 shadow-lg">
@@ -181,7 +178,6 @@
     </nav>
 
     <div class="flex-grow flex overflow-hidden p-4 gap-4 relative z-10">
-        
         <aside class="w-64 glass-panel rounded-2xl flex flex-col overflow-hidden hidden md:flex">
             <div class="p-4 border-b border-teal-500/20 bg-slate-900/40">
                 <h3 class="text-xs font-tech text-teal-500 tracking-widest mb-1">NAVIGATION</h3>
@@ -189,7 +185,7 @@
             </div>
             <div class="flex-grow scroll-area overflow-y-auto p-2 space-y-1" id="unit-list">
                 <div class="text-center text-slate-500 text-xs mt-10 p-4">
-                    請先在上方選擇一個單元以載入目錄。
+                    請先在上方選擇單元以載入目錄。
                 </div>
             </div>
         </aside>
@@ -198,7 +194,7 @@
             <div class="h-12 border-b border-teal-500/20 bg-slate-900/40 flex items-center justify-between px-6">
                 <div class="flex items-center gap-2">
                     <i class="fa-solid fa-file-lines text-teal-400"></i>
-                    <span class="text-xs font-tech text-teal-200" id="status-bar">SYSTEM READY</span>
+                    <span class="text-xs font-tech text-teal-200" id="status-bar">READY</span>
                 </div>
                 <div class="flex items-center gap-3">
                     <button onclick="toggleSpeech()" class="text-teal-400 hover:text-white transition group w-8 h-8 flex items-center justify-center rounded-full hover:bg-teal-500/20" id="btn-play"><i class="fa-solid fa-play"></i></button>
@@ -213,7 +209,7 @@
                         <span class="text-slate-500 opacity-50">請從上方選單選擇教材</span>
                     </h1>
                     <div id="article-content" class="space-y-6 text-lg leading-relaxed text-slate-200">
-                        </div>
+                    </div>
                 </article>
             </div>
         </section>
@@ -241,7 +237,7 @@
                         </div>
                         <p class="text-sm text-slate-200 mb-3 leading-relaxed" id="ai-term-desc">Definition...</p>
                         <button onclick="speakTerm()" class="text-xs bg-teal-500/20 hover:bg-teal-500/40 text-teal-300 px-3 py-1.5 rounded transition flex items-center gap-2">
-                            <i class="fa-solid fa-volume-high"></i> 朗讀單字
+                            <i class="fa-solid fa-volume-high"></i> Pronounce
                         </button>
                     </div>
                 </div>
@@ -261,16 +257,11 @@
         // ★ 您的試算表 ID
         const SHEET_ID = '1cEfMEy3bvDa1tET3xmh7ShGeJy8KLUMa_JuULGBD-mk';
         
-        // ★★★ 請在此處貼上您 CSV 網址 (Publish to web) ★★★
-        const PUBLISHED_CSV_URL = ''; 
-
-        // 備用連結
-        const FALLBACK_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&id=${SHEET_ID}&gid=0`;
-        const TARGET_URL = PUBLISHED_CSV_URL || FALLBACK_CSV_URL;
+        // ★ 自動轉換您的網址為 CSV 格式 (無需手動修改了)
+        const TARGET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&id=${SHEET_ID}&gid=0`;
 
         // 欄位索引 (Index - 從 0 開始算)
-        // C=2 (階段), D=3 (年級), E=4 (學期), F=5 (版本)
-        // I=8 (內容), S=18 (詞彙)
+        // C=2(階段), D=3(年級), E=4(學期), F=5(版本), I=8(內容), S=18(詞彙)
         const COL_STAGE = 2;
         const COL_GRADE = 3;
         const COL_SEMESTER = 4;
@@ -296,7 +287,7 @@
         function goBack() { window.location.href = 'student_science.html'; }
 
         // ==========================================
-        // 2. 資料處理 (Parsing)
+        // 2. 資料處理
         // ==========================================
         function fetchData() {
             Papa.parse(TARGET_URL, {
@@ -312,14 +303,17 @@
                     document.getElementById('loader-overlay').innerHTML = `
                         <div class="text-red-500 font-bold mb-2">ACCESS DENIED</div>
                         <div class="text-xs text-slate-400 max-w-md text-center">
-                            無法讀取。請確認 Google Sheet 已「發布到網路」為 CSV。
+                            無法讀取。請確認 Google Sheet 共用權限已開啟<br>
+                            「知道連結者皆可檢視」。
                         </div>`;
                 }
             });
         }
 
         function processData(data) {
-            rawData = data.slice(1); // 去標題
+            // 去掉標題列 (假設第一列是標題)
+            rawData = data.slice(1);
+            
             processedUnits = rawData.map((row, index) => {
                 let content = row[COL_CONTENT] || "";
                 let lines = content.split('\n');
@@ -329,7 +323,7 @@
                     id: index,
                     stage: (row[COL_STAGE] || "").trim(),
                     grade: (row[COL_GRADE] || "").trim(),
-                    semester: (row[COL_SEMESTER] || "").trim(),
+                    semester: (row[COL_SEMESTER] || "").trim(), // E欄
                     version: (row[COL_VERSION] || "").trim(),
                     title: title,
                     content: content,
@@ -344,7 +338,7 @@
         // 3. 篩選器邏輯 (Cascading Dropdowns)
         // ==========================================
         function initFilters() {
-            // 提取唯一值
+            // 提取第一層：學習階段
             const stages = [...new Set(processedUnits.map(u => u.stage).filter(Boolean))];
             populateSelect('sel-stage', stages, '階段');
         }
@@ -365,7 +359,7 @@
                 return true;
             });
 
-            // 依層級更新下拉選單
+            // 依層級更新下拉選單 (Stage -> Grade -> Version -> Semester -> Unit)
             if (level === 'stage') {
                 const grades = [...new Set(filtered.map(u => u.grade).filter(Boolean))];
                 populateSelect('sel-grade', grades, '年級');
@@ -457,7 +451,7 @@
                     } catch(e) {}
                 }
 
-                // 標題判斷
+                // AI 判讀標題：短行、包含"活動"、"單元"、"Unit"
                 const isHeader = (line.length < 40 && !/[。！？.!?]$/.test(line)) || line.includes("活動");
 
                 if (isHeader) {
@@ -495,8 +489,6 @@
             
             const name = gender === 'male' ? 'Teacher Spark' : 'Teacher Nova';
             showToast(`${name} 準備就緒`);
-            
-            // 喚醒
             const u = new SpeechSynthesisUtterance('');
             window.speechSynthesis.speak(u);
         }
@@ -512,7 +504,7 @@
                 const enNodes = document.querySelectorAll('.en-text');
                 const zhNodes = document.querySelectorAll('.zh-text');
                 
-                // 優先讀看得到的英文
+                // 讀可見的文字
                 if (enNodes.length > 0 && !enNodes[0].classList.contains('hidden')) {
                     enNodes.forEach(p => textToRead += p.innerText + " ");
                 } else {
@@ -526,13 +518,13 @@
                 
                 let targetVoice = null;
                 if (currentVoice === 'male') {
-                    // 男老師
+                    // 男聲：Teacher Spark
                     targetVoice = voices.find(v => v.name.includes("Google US English")) || 
                                   voices.find(v => v.name.includes("David")) || 
                                   voices.find(v => v.lang === 'en-US');
                     u.pitch = 0.95; u.rate = 0.9;
                 } else {
-                    // 女老師
+                    // 女聲：Teacher Nova
                     targetVoice = voices.find(v => v.name.includes("Zira")) || 
                                   voices.find(v => v.name.includes("Google UK English Female")) || 
                                   voices.find(v => v.lang === 'en-US'); 
