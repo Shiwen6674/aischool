@@ -372,7 +372,28 @@
             keys.forEach(zh => {
                 const en = activeVocabMap[zh] || "Loading...";
                 const card = document.createElement('div'); card.className = "vocab-item";
-                card.innerHTML = `<div><div class="text-base font-bold text-yellow-400">${zh}</div><div class="text-xs text-teal-200 en-term-label" data-zh="${zh}">${en}</div></div><button onclick="speakText('${(activeVocabMap[zh]||zh).replace(/'/g,"\\'")}')" class="text-teal-400 hover:text-white p-2 rounded-full hover:bg-white/10"><i class="fa-solid fa-volume-high"></i></button>`;
+                card.innerHTML = `
+  <div class="flex-1 pr-2">
+    <div class="text-base font-bold text-yellow-400 cursor-pointer"
+         onclick="speakText('${zh.replace(/'/g,"\\'")}')">${zh}</div>
+    <div class="text-xs text-teal-200 en-term-label cursor-pointer"
+         data-zh="${zh}"
+         onclick="speakText('${(en||'').replace(/'/g,"\\'")}')">${en}</div>
+  </div>
+
+  <div class="flex items-center gap-1">
+    <!-- 中文按鈕：念中文 -->
+    <button onclick="event.stopPropagation(); speakText('${zh.replace(/'/g,"\\'")}')"
+            class="text-teal-300 hover:text-white px-2 py-1 rounded-full hover:bg-white/10 text-xs font-bold"
+            title="念中文">中</button>
+
+    <!-- 英文按鈕：念英文 -->
+    <button onclick="event.stopPropagation(); speakText('${(en||zh).replace(/'/g,"\\'")}')"
+            class="text-teal-400 hover:text-white px-2 py-1 rounded-full hover:bg-white/10 text-xs font-bold"
+            title="Read English">EN</button>
+  </div>
+`;
+
                 container.appendChild(card);
                 if(!activeVocabMap[zh]) translateVocabItem(zh, card.querySelector('.en-term-label'));
             });
@@ -397,15 +418,19 @@
                     const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURI(src)}`);
                     const json = await res.json();
                     let txt=""; json[0].forEach(i=>txt+=i[0]);
-                    el.innerHTML = makeClickable(txt); translationCache[src]=txt;
+                    el.innerHTML = makeClickable(highlightEnglishVocabInText(txt));
+translationCache[src]=txt;
+
                 } catch(e){ el.innerText="Error"; }
             }
             load.classList.add('hidden');
         }
 
-        function makeClickable(txt) {
-            return `<span class="cursor-pointer hover:text-teal-300 transition" onclick="speakText(this.innerText)">${txt}</span>`;
-        }
+        function makeClickable(html) {
+  // ✅ 讓整段英文仍可點擊朗讀（事件冒泡），但內層 sci-term 點擊會 stopPropagation
+  return `<span class="cursor-pointer hover:text-teal-300 transition">${html}</span>`;
+}
+
 
         function toggleSpeech() {
             const btn=document.getElementById('btn-play');
@@ -419,66 +444,130 @@
                 speakText(txt);
             }
         }
+function escapeHtml(s){
+  return (s||"").toString()
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+
+// ✅ 把 activeVocabMap 的「英文值」在英文句子中黃標
+function highlightEnglishVocabInText(txt){
+  let safe = escapeHtml(txt);
+
+  // 取出英文詞彙（value），去除空/Loading
+  const terms = Object.values(activeVocabMap||{})
+    .map(v => (v||"").trim())
+    .filter(v => v && v !== "Loading..." && /[a-zA-Z]/.test(v));
+
+  const uniq = [...new Set(terms)].sort((a,b)=>b.length-a.length);
+  if(!uniq.length) return safe;
+
+  for(const term of uniq){
+    const t = escapeHtml(term);
+    const escaped = t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+
+    // 單字用 word boundary，比較不會誤標；片語就不用 boundary
+    const isSingleWord = /^[A-Za-z]+$/.test(term);
+    const re = isSingleWord ? new RegExp(`\\b(${escaped})\\b`,'gi') : new RegExp(`(${escaped})`,'gi');
+
+    safe = safe.replace(re, (m) => {
+      const js = m.replace(/'/g,"\\'");
+      return `<span class="sci-term" onclick="event.stopPropagation(); speakText('${js}')" title="${m}">${m}</span>`;
+    });
+  }
+  return safe;
+}
 
         function stopSpeech() { synth.cancel(); isSpeaking=false; document.getElementById('btn-play').innerHTML='<i class="fa-solid fa-play text-xs"></i>'; }
 
         // ✅ 需求 #7：更自然的 voice 選擇（優先 Microsoft Natural / Online，其次 Google）
-        function pickBestVoice(isEng, gender){
-            const voices = (synth && synth.getVoices) ? synth.getVoices() : [];
-            const wantLang = isEng ? ['en-US','en-GB','en'] : ['zh-TW','zh-HK','zh-CN','zh'];
-            const inLang = (v) => wantLang.some(l=> (v.lang||'').toLowerCase().includes(l.toLowerCase()));
+        // ✅ 更自然的 voice 選擇：優先 Microsoft Online/Natural，其次 Google，再其次其他
+function pickBestVoice(isEng, gender){
+  const voices = (synth && synth.getVoices) ? synth.getVoices() : [];
+  if(!voices.length) return null;
 
-            const score = (v) => {
-                const name = (v.name||'').toLowerCase();
-                let s = 0;
+  const wantLang = isEng ? ['en-us','en-gb','en'] : ['zh-tw','zh-hk','zh-cn','zh'];
+  const inLang = (v) => wantLang.some(l => (v.lang||'').toLowerCase().includes(l));
 
-                // Microsoft Natural / Online voices (Edge/Windows) 常比預設更自然
-                if(name.includes('microsoft') && (name.includes('natural') || name.includes('online'))) s += 50;
-                if(name.includes('microsoft')) s += 20;
+  const score = (v) => {
+    const name = (v.name||'').toLowerCase();
+    const lang = (v.lang||'').toLowerCase();
+    let s = 0;
 
-                // Google voices (Chrome) 次佳
-                if(name.includes('google')) s += 15;
+    // 語言匹配（中文強推 zh-TW）
+    if(isEng){
+      if(lang.includes('en-us')) s += 20;
+      if(lang.includes('en-gb')) s += 15;
+      if(lang.includes('en')) s += 10;
+    }else{
+      if(lang.includes('zh-tw')) s += 40;   // ★台灣中文最優先
+      if(lang.includes('zh-hk')) s += 20;
+      if(lang.includes('zh-cn')) s += 10;
+      if(lang.includes('zh')) s += 5;
+    }
 
-                // 避免機械感較重的關鍵字（盡量）
-                if(name.includes('robot') || name.includes('compact')) s -= 10;
+    // Microsoft Online / Natural（Edge/Windows 常見，最自然）
+    if(name.includes('microsoft') && name.includes('online')) s += 35;
+    if(name.includes('microsoft') && name.includes('natural')) s += 45;
+    if(name.includes('microsoft')) s += 10;
 
-                // 性別偏好：簡單以名稱猜測（不強求）
-                if(isEng){
-                    if(gender==='male' && (name.includes('david') || name.includes('guy'))) s += 5;
-                    if(gender==='female' && (name.includes('zira') || name.includes('susan') || name.includes('jenny'))) s += 5;
-                }else{
-                    if(name.includes('yating') || name.includes('huihui') || name.includes('hanhan')) s += 5;
-                }
+    // Google voices（Chrome 常見，次佳）
+    if(name.includes('google')) s += 12;
 
-                // lang matching
-                if(inLang(v)) s += 30;
-                return s;
-            };
+    // 常見「比較機械」的關鍵字，稍微降分
+    if(name.includes('compact')) s -= 8;
+    if(name.includes('standard')) s -= 5;
 
-            const candidates = voices.filter(v => inLang(v));
-            if(candidates.length===0) return null;
-            candidates.sort((a,b)=>score(b)-score(a));
-            return candidates[0] || null;
-        }
+    // 性別偏好（加分很小，不影響 Natural 的優先）
+    if(isEng){
+      if(gender==='male' && (name.includes('guy') || name.includes('david'))) s += 2;
+      if(gender==='female' && (name.includes('jenny') || name.includes('aria') || name.includes('zira') || name.includes('susan'))) s += 2;
+    }else{
+      // 台灣常見自然聲（名稱因系統不同，不一定會出現；有就加分）
+      if(name.includes('hsiaochen') || name.includes('yunjhe') || name.includes('yating') || name.includes('huihui')) s += 3;
+    }
 
-        function speakText(txt) {
-            synth.cancel(); 
-            const cleanTxt = (txt||"").toString().replace(/<[^>]*>/g, '');
-            const u=new SpeechSynthesisUtterance(cleanTxt);
-            const isEng=/[a-zA-Z]/.test(cleanTxt);
+    return s;
+  };
 
-            const voice = pickBestVoice(isEng, currentVoice);
-            if(voice) u.voice=voice;
+  const candidates = voices.filter(v => inLang(v));
+  if(!candidates.length) return null;
+  candidates.sort((a,b)=>score(b)-score(a));
+  return candidates[0] || null;
+}
 
-            // 稍微調整成比較「人」的範圍（仍尊重你的語速選單）
-            const baseRate = parseFloat(document.getElementById('play-rate').value);
-            u.rate = isEng ? baseRate : baseRate; 
-            u.pitch = isEng ? (currentVoice==='male' ? 1.0 : 1.06) : 1.0;
+function speakText(txt) {
+  synth.cancel();
+  const cleanTxt = (txt||"").toString().replace(/<[^>]*>/g, '').trim();
+  if(!cleanTxt) return;
 
-            u.onstart = () => { isSpeaking=true; document.getElementById('btn-play').innerHTML='<i class="fa-solid fa-pause text-xs"></i>'; };
-            u.onend = () => { isSpeaking=false; document.getElementById('btn-play').innerHTML='<i class="fa-solid fa-play text-xs"></i>'; };
-            synth.speak(u);
-        }
+  const u = new SpeechSynthesisUtterance(cleanTxt);
+  const isEng = /[a-zA-Z]/.test(cleanTxt);
+
+  const voice = pickBestVoice(isEng, currentVoice);
+  if(voice) u.voice = voice;
+
+  const uiRate = parseFloat(document.getElementById('play-rate').value);
+
+  // ✅ 讓中文更「人聲」：通常稍慢一點更自然；英文維持 UI 值
+  if(isEng){
+    u.rate = uiRate;
+    u.pitch = (currentVoice==='male') ? 1.0 : 1.03;
+  }else{
+    u.rate = Math.max(0.85, Math.min(1.05, uiRate * 0.95));
+    u.pitch = 1.0;
+  }
+
+  u.onstart = () => {
+    isSpeaking=true;
+    document.getElementById('btn-play').innerHTML='<i class="fa-solid fa-pause text-xs"></i>';
+  };
+  u.onend = () => {
+    isSpeaking=false;
+    document.getElementById('btn-play').innerHTML='<i class="fa-solid fa-play text-xs"></i>';
+  };
+  sy
+
 
         function setVoice(g) { 
             currentVoice=g; 
