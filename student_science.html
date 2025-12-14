@@ -180,7 +180,7 @@
 
                 <div onclick="enterModule('mastery')" class="holo-card p-8 cursor-pointer group flex flex-col h-64 justify-between">
                     <div class="flex justify-between items-start">
-                        <div class="icon-box w-14 h-14 rounded-2xl flex items-center justify-center text-2xl text-teal-400">
+                        <div class="icon-box w-16 h-16 rounded-2xl flex items-center justify-center text-3xl text-teal-400">
                             <i class="fa-solid fa-network-wired"></i>
                         </div>
                         <i class="fa-solid fa-arrow-right text-teal-800 group-hover:text-teal-400 transition-colors"></i>
@@ -411,22 +411,18 @@
 
         // 4. 導航邏輯 (準備連結到下一步的模組)
         function enterModule(moduleName) {
-            // 未來這裡請建立對應的 HTML 檔案
-            let targetUrl = "";
-            switch(moduleName) {
-                case 'reading': targetUrl = "science_reading.html"; break;
-                case 'mastery': targetUrl = "science_mastery.html"; break;
-                case 'quiz': targetUrl = "science_quiz.html"; break;
-                case 'lab': targetUrl = "science_lab.html"; break;
-                case 'cap': targetUrl = "science_cap.html"; break;
-                case 'gsat': targetUrl = "science_gsat.html"; break;
-                default: return;
-            }
-            
-            // 暫時提示
-            alert(`正在初始化模組: ${moduleName}\n目標檔案: ${targetUrl}`);
-            // window.location.href = targetUrl;
-        }
-    </script>
+      let targetUrl = "";
+      switch(moduleName) {
+          case 'reading': targetUrl = "student_science_bilingual.html"; break;                 // 科學雙語閱讀
+          case 'mastery': targetUrl = "science_science_unit_coreidea.html"; break;            // 單元重點
+          case 'quiz':    targetUrl = "science_adaptive_testing.html"; break;                 // AI適性測驗
+          case 'lab':     targetUrl = "science_virtural_lab.html"; break;                     // 虛擬實驗室（依你提供拼字）
+          case 'cap':     targetUrl = "science_cap.html"; break;                              // 國中會考
+          case 'gsat':    targetUrl = "science_csat.html"; break;                             // 高中學測
+          default: return;
+      }
+      window.location.href = targetUrl; // 直接跳轉
+  }
+</script>
 </body>
 </html>
