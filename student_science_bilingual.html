@@ -11,6 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -178,6 +179,7 @@
     </nav>
 
     <div class="flex-grow flex overflow-hidden p-4 gap-4 relative z-10">
+        
         <aside class="w-64 glass-panel rounded-2xl flex flex-col overflow-hidden hidden md:flex">
             <div class="p-4 border-b border-teal-500/20 bg-slate-900/40">
                 <h3 class="text-xs font-tech text-teal-500 tracking-widest mb-1">NAVIGATION</h3>
@@ -257,15 +259,28 @@
         // ★ 您的試算表 ID
         const SHEET_ID = '1cEfMEy3bvDa1tET3xmh7ShGeJy8KLUMa_JuULGBD-mk';
         
-        // ★ 自動轉換您的網址為 CSV 格式 (無需手動修改了)
-        const TARGET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&id=${SHEET_ID}&gid=0`;
+        // ★★★ 請在此處貼上您 CSV 網址 (Publish to web) ★★★
+        const PUBLISHED_CSV_URL = ''; 
 
-        // 欄位索引 (Index - 從 0 開始算)
-        // C=2(階段), D=3(年級), E=4(學期), F=5(版本), I=8(內容), S=18(詞彙)
-        const COL_STAGE = 2;
+        // 備用連結
+        const FALLBACK_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&id=${SHEET_ID}&gid=0`;
+        const TARGET_URL = PUBLISHED_CSV_URL || FALLBACK_CSV_URL;
+
+        // ★★★ 欄位索引 (Index - 從 0 開始算) ★★★
+        // A=0: 學習階段
+        // C=2: 出版社 (版本)
+        // D=3: 年級
+        // E=4: 學期
+        // G=6: 課別 (Unit Number)
+        // H=7: 課名 (Unit Name)
+        // I=8: 課文內容
+        // S=18: 科學詞彙
+        const COL_STAGE = 0;
+        const COL_VERSION = 2; // C欄
         const COL_GRADE = 3;
         const COL_SEMESTER = 4;
-        const COL_VERSION = 5;
+        const COL_UNIT_NUM = 6;
+        const COL_UNIT_NAME = 7;
         const COL_CONTENT = 8;
         const COL_VOCAB = 18;
 
@@ -277,9 +292,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             initCanvas();
             fetchData();
-            // 強制載入語音
             if(window.speechSynthesis) {
-                window.speechSynthesis.getVoices();
                 window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
             }
         });
@@ -303,8 +316,7 @@
                     document.getElementById('loader-overlay').innerHTML = `
                         <div class="text-red-500 font-bold mb-2">ACCESS DENIED</div>
                         <div class="text-xs text-slate-400 max-w-md text-center">
-                            無法讀取。請確認 Google Sheet 共用權限已開啟<br>
-                            「知道連結者皆可檢視」。
+                            無法讀取。請確認 Google Sheet 已「發布到網路」為 CSV。
                         </div>`;
                 }
             });
@@ -316,15 +328,20 @@
             
             processedUnits = rawData.map((row, index) => {
                 let content = row[COL_CONTENT] || "";
-                let lines = content.split('\n');
-                let title = (lines.length > 0 && lines[0].length < 50) ? lines[0].trim() : `Unit ${index + 1}`;
+                let unitNum = (row[COL_UNIT_NUM] || "").trim();
+                let unitName = (row[COL_UNIT_NAME] || "").trim();
+                
+                // 組合單元名稱：例如 "第一課 認識植物"
+                let title = unitNum;
+                if(unitName) title += " " + unitName;
+                if(!title) title = `Unit ${index + 1}`;
 
                 return {
                     id: index,
                     stage: (row[COL_STAGE] || "").trim(),
-                    grade: (row[COL_GRADE] || "").trim(),
-                    semester: (row[COL_SEMESTER] || "").trim(), // E欄
                     version: (row[COL_VERSION] || "").trim(),
+                    grade: (row[COL_GRADE] || "").trim(),
+                    semester: (row[COL_SEMESTER] || "").trim(),
                     title: title,
                     content: content,
                     vocab: row[COL_VOCAB] || ""
@@ -451,7 +468,7 @@
                     } catch(e) {}
                 }
 
-                // AI 判讀標題：短行、包含"活動"、"單元"、"Unit"
+                // 標題判斷
                 const isHeader = (line.length < 40 && !/[。！？.!?]$/.test(line)) || line.includes("活動");
 
                 if (isHeader) {
@@ -504,7 +521,6 @@
                 const enNodes = document.querySelectorAll('.en-text');
                 const zhNodes = document.querySelectorAll('.zh-text');
                 
-                // 讀可見的文字
                 if (enNodes.length > 0 && !enNodes[0].classList.contains('hidden')) {
                     enNodes.forEach(p => textToRead += p.innerText + " ");
                 } else {
@@ -518,13 +534,11 @@
                 
                 let targetVoice = null;
                 if (currentVoice === 'male') {
-                    // 男聲：Teacher Spark
                     targetVoice = voices.find(v => v.name.includes("Google US English")) || 
                                   voices.find(v => v.name.includes("David")) || 
                                   voices.find(v => v.lang === 'en-US');
                     u.pitch = 0.95; u.rate = 0.9;
                 } else {
-                    // 女聲：Teacher Nova
                     targetVoice = voices.find(v => v.name.includes("Zira")) || 
                                   voices.find(v => v.name.includes("Google UK English Female")) || 
                                   voices.find(v => v.lang === 'en-US'); 
