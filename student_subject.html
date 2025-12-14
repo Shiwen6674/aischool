@@ -440,10 +440,23 @@
             card.style.filter = "brightness(1.5)";
             
             setTimeout(() => {
-                alert(`Initializing ${subject.toUpperCase()} module...`); // 替換為實際跳轉
-                // window.location.href = `${subject}.html`;
+                // 定義對應的連結
+                let targetUrl = "";
+                switch(subject) {
+                    case 'mandarin': targetUrl = 'student_chinese.html'; break;
+                    case 'english': targetUrl = 'student_english.html'; break;
+                    case 'math': targetUrl = 'student_math.html'; break;
+                    case 'science': targetUrl = 'student_science.html'; break;
+                    case 'social': targetUrl = 'student_society.html'; break;
+                    default: 
+                        alert("Module under construction"); 
+                        return;
+                }
+                
+                // 執行跳轉
+                window.location.href = targetUrl;
             }, 300);
         }
     </script>
 </body>
-      </html>
+</html>
