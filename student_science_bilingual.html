@@ -383,133 +383,168 @@ function ckipLineToPlainAndHtml(ckipLine, vocabMap){
 
         function loadSelectedUnit(){ const u=processedUnits.find(i=>i.id==document.getElementById('sel-unit').value); if(u) renderArticle(u); }
 
-        async function renderArticle(unit) {
-            document.getElementById('article-title').innerText = unit.title;
-            document.getElementById('status-bar').innerText = unit.title;
-            document.getElementById('nav-title').innerText = unit.title;
+async function renderArticle(unit) {
+    document.getElementById('article-title').innerText = unit.title;
+    document.getElementById('status-bar').innerText = unit.title;
+    document.getElementById('nav-title').innerText = unit.title;
 
-            activeVocabMap = parseVocabPairs(unit.vocab);
+    activeVocabMap = parseVocabPairs(unit.vocab);
+    function renderVocabSidebar() {
+    const container = document.getElementById('vocab-container');
+    container.innerHTML = '';
+    const keys = Object.keys(activeVocabMap || {});
+    if(keys.length === 0) { 
+        container.innerHTML = '<div class="text-center opacity-50 text-sm mt-10">無詞彙資料</div>'; 
+        return; 
+    }
 
-            renderVocabSidebar();
+    keys.forEach(zh => {
+        const enVal = (activeVocabMap[zh] || "").toString().trim();
+        const showEn = enVal ? enVal : "Loading...";
 
-            const contentDiv = document.getElementById('article-content'); contentDiv.innerHTML='';
-            document.getElementById('unit-list').innerHTML=''; 
-
-            // I 欄內容線性呈現；若 I 欄空但 J 欄 CKIP 有內容，最低限度 fallback（避免畫面空白）
-            // 依需求：中文顯示優先取 J 欄 CKIP（再去掉 POS/全形空格），J 若空才 fallback 到 I 欄
-let lines = (unit.ckip || "").split('\n').map(x=>x.trim()).filter(Boolean);
-let useCKIP = lines.length > 0;
-if(!useCKIP){
-  lines = (unit.content || "").split('\n').map(x=>x.trim()).filter(Boolean);
-}
-
-
-            let secCount=0;
-
-            for(let i=0; i<lines.length; i++) {
-                let line = lines[i].trim();
-                if(!line) continue;
-
-                if((line.length<40 && !/[。！？.!?]$/.test(line)) || line.includes("活動")) {
-                    secCount++;
-                    const anchorId = `sec-${i}`;
-                    const navItem = document.createElement('div'); navItem.className='nav-item';
-                    navItem.innerText = line;
-                    navItem.onclick=()=>{ document.getElementById(anchorId).scrollIntoView({behavior:'smooth',block:'center'}); };
-                    document.getElementById('unit-list').appendChild(navItem);
-                    contentDiv.innerHTML += `<h2 id="${anchorId}" class="section-header">${line}</h2>`;
-                } else {
-                    if(useCKIP){
-  const out = ckipLineToPlainAndHtml(line, activeVocabMap);
-  const plainLine = out.plain.trim();
-  if(!plainLine) continue;
-
-  // 用「去POS後的自然句」判斷是否為標題/段落
-  if((plainLine.length<40 && !/[。！？.!?]$/.test(plainLine)) || plainLine.includes("活動")) {
-    secCount++;
-    const anchorId = `sec-${i}`;
-    const navItem = document.createElement('div'); navItem.className='nav-item';
-    navItem.innerText = plainLine;
-    navItem.onclick=()=>{ document.getElementById(anchorId).scrollIntoView({behavior:'smooth',block:'center'}); };
-    document.getElementById('unit-list').appendChild(navItem);
-    contentDiv.innerHTML += `<h2 id="${anchorId}" class="section-header">${escapeHtml(plainLine)}</h2>`;
-  } else {
-    contentDiv.innerHTML += `
-      <div class="content-block">
-        <p class="zh-text" onclick="speakText(this.innerText)">${out.html}</p>
-        <p class="en-text hidden text-teal-200/80 italic text-sm mt-2"
-           onclick="speakText(this.innerText)"
-           data-source="${escapeHtml(plainLine)}"></p>
-      </div>`;
-  }
-} else {
-  // fallback：沒有 CKIP 時維持原本處理（不要動其他邏輯）
-  let processed = processXRayWithCKIP(line, activeVocabMap);
-  contentDiv.innerHTML += `
-    <div class="content-block">
-      <p class="zh-text" onclick="speakText(this.innerText)">${processed}</p>
-      <p class="en-text hidden text-teal-200/80 italic text-sm mt-2"
-         onclick="speakText(this.innerText)"
-         data-source="${line}"></p>
-    </div>`;
-}
-
-                }
-            }
-            setMode('dual');
-        }
-
-        function processXRayWithCKIP(text, map) {
-            let clean = text.replace(/　/g,'');
-            const keys = Object.keys(map).sort((a,b)=>b.length-a.length);
-            if(keys.length===0) return clean;
-            const ptrn = new RegExp(`(${keys.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')})`,'g');
-            return clean.replace(ptrn, m=>`<span class="sci-term" onclick="event.stopPropagation(); speakText('${(map[m]||m).replace(/'/g,"\\'")}')" title="${(map[m]||'').replace(/"/g,'&quot;')}">${m}</span>`);
-        }
-
-        function renderVocabSidebar() {
-            const container = document.getElementById('vocab-container');
-            container.innerHTML = '';
-            const keys = Object.keys(activeVocabMap);
-            if(keys.length === 0) { container.innerHTML = '<div class="text-center opacity-50 text-sm mt-10">無詞彙資料</div>'; return; }
-            keys.forEach(zh => {
-                const en = (activeVocabMap[zh] && activeVocabMap[zh].trim()) ? activeVocabMap[zh].trim() : "Loading...";
-
-                const card = document.createElement('div'); card.className = "vocab-item";
-                card.innerHTML = `
+        const card = document.createElement('div'); 
+        card.className = "vocab-item";
+        card.innerHTML = `
   <div class="flex-1 pr-2">
     <div class="text-base font-bold text-yellow-400 cursor-pointer"
-         onclick="speakText('${zh.replace(/'/g,"\\'")}')">${zh}</div>
+         onclick="speakText('${zh.replace(/'/g,"\\'")}')">${escapeHtml(zh)}</div>
+
     <div class="text-xs text-teal-200 en-term-label cursor-pointer"
-         data-zh="${zh}"
-         onclick="speakText('${(en||'').replace(/'/g,"\\'")}')">${en}</div>
+         data-zh="${escapeHtml(zh)}"
+         onclick="speakVocabEn('${zh.replace(/'/g,"\\'")}', this)">${escapeHtml(showEn)}</div>
   </div>
 
   <div class="flex items-center gap-1">
-    <!-- 中文按鈕：念中文 -->
     <button onclick="event.stopPropagation(); speakText('${zh.replace(/'/g,"\\'")}')"
             class="text-teal-300 hover:text-white px-2 py-1 rounded-full hover:bg-white/10 text-xs font-bold"
             title="念中文">中</button>
 
-    <!-- 英文按鈕：念英文 -->
-    <button onclick="event.stopPropagation(); speakText('${(en||zh).replace(/'/g,"\\'")}')"
+    <button onclick="event.stopPropagation(); speakVocabEn('${zh.replace(/'/g,"\\'")}', this)"
             class="text-teal-400 hover:text-white px-2 py-1 rounded-full hover:bg-white/10 text-xs font-bold"
             title="Read English">EN</button>
   </div>
 `;
 
-                container.appendChild(card);
-                if(!activeVocabMap[zh] || !activeVocabMap[zh].trim()) translateVocabItem(zh, card.querySelector('.en-term-label'));
+        container.appendChild(card);
 
-            });
-        }
+        // 自動翻譯一次（但 EN 按鈕永遠會用最新 activeVocabMap，不會卡死）
+        if(!enVal) translateVocabItem(zh, card.querySelector('.en-term-label'));
+    });
+}
 
-        async function translateVocabItem(zh, el) {
-            try {
-                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURI(zh)}`);
-                const json = await res.json(); el.innerText = json[0][0][0]; activeVocabMap[zh] = el.innerText;
-            } catch(e){}
+async function speakVocabEn(zh, btn){
+    const card = btn && btn.closest ? btn.closest('.vocab-item') : null;
+    const label = card ? card.querySelector('.en-term-label') : null;
+
+    let en = (activeVocabMap[zh] || "").toString().trim();
+
+    // 沒英文就先翻譯一次（避免永遠卡 Loading）
+    if(!en){
+        await translateVocabItem(zh, label);
+        en = (activeVocabMap[zh] || "").toString().trim();
+    }
+
+    // 仍無英文就念中文（至少不會念 "Loading..."）
+    speakText(en || zh);
+}
+
+    const contentDiv = document.getElementById('article-content'); 
+    contentDiv.innerHTML='';
+    document.getElementById('unit-list').innerHTML=''; 
+
+    // ✅ 還原：顯示用 I 欄（課文）
+    let lines = (unit.content || "").split('\n').map(x=>x.trim()).filter(Boolean);
+
+    // 若 I 欄真的空，才 fallback（避免畫面空白）
+    if(lines.length===0 && unit.ckip){
+        lines = unit.ckip.split('\n')
+          .map(x=>x.replace(/　/g,' ').replace(/\([^)]*\)/g,'').trim())
+          .filter(Boolean);
+    }
+
+    // ✅ 只用 J 欄做「斷詞確認」：整個單元一個 token set（避免 I/J 換行不同步）
+    const unitCkipSet = unit.ckip ? getCkipTokenSet(unit.ckip) : null;
+
+    let secCount=0;
+
+    for(let i=0; i<lines.length; i++) {
+        let line = lines[i].trim();
+        if(!line) continue;
+
+        // 標題/小節
+        if((line.length<40 && !/[。！？.!?]$/.test(line)) || line.includes("活動")) {
+            secCount++;
+            const anchorId = `sec-${i}`;
+            const navItem = document.createElement('div'); 
+            navItem.className='nav-item';
+            navItem.innerText = line;
+            navItem.onclick=()=>{ document.getElementById(anchorId).scrollIntoView({behavior:'smooth',block:'center'}); };
+            document.getElementById('unit-list').appendChild(navItem);
+
+            contentDiv.innerHTML += `<h2 id="${anchorId}" class="section-header">${escapeHtml(line)}</h2>`;
+        } else {
+            // ✅ I 欄有出現科學詞彙 → 先用 J 欄 token set 確認「該詞是否是一個 token」→ 才黃標
+            let processed = processXRayWithCKIP(line, activeVocabMap, unitCkipSet);
+
+            contentDiv.innerHTML += `
+                <div class="content-block">
+                    <p class="zh-text" onclick="speakText(this.innerText)">${processed}</p>
+                    <p class="en-text hidden text-teal-200/80 italic text-sm mt-2" onclick="speakText(this.innerText)" data-source="${escapeHtml(line)}"></p>
+                </div>`;
         }
+    }
+
+    setMode('dual');
+}
+
+// 取出 J 欄 CKIP 該行的 token（去掉 POS）
+function getCkipTokenSet(ckipLine){
+  const raw = (ckipLine || "").toString().trim();
+  if(!raw) return new Set();
+  return new Set(
+    raw.replace(/　/g, " ")
+       .split(/\s+/)
+       .filter(Boolean)
+       .map(tok => tok.replace(/[\(（].*$/, "")) // '(' or '（' 前面
+       .filter(Boolean)
+  );
+}
+function processXRayWithCKIP(text, map, ckipTokenSet) {
+    let clean = (text || "").toString().replace(/　/g,'');
+    const keys = Object.keys(map || {}).sort((a,b)=>b.length-a.length);
+    if(keys.length===0) return clean;
+
+    const ptrn = new RegExp(`(${keys.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')})`,'g');
+
+    return clean.replace(ptrn, (m) => {
+        // ✅ 若有 CKIP token set：必須「在 J 欄中是單一 token」才黃標，否則不標（避免誤標）
+        if(ckipTokenSet && ckipTokenSet.size > 0 && !ckipTokenSet.has(m)) {
+            return m;
+        }
+        const speak = ((map[m]||m) + "").replace(/'/g,"\\'");
+        const title = ((map[m]||'') + "").replace(/"/g,'&quot;');
+        return `<span class="sci-term" onclick="event.stopPropagation(); speakText('${speak}')" title="${title}">${m}</span>`;
+    });
+}
+
+
+      async function translateVocabItem(zh, el) {
+    try {
+        const q = encodeURIComponent(zh); // ✅ 用 encodeURIComponent，避免中文/特殊字元導致失敗
+        const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${q}`);
+        const json = await res.json();
+        const en = (json && json[0] && json[0][0] && json[0][0][0]) ? json[0][0][0] : "";
+
+        if(el) el.innerText = en || "—";
+        activeVocabMap[zh] = en || "";
+        return en || "";
+    } catch(e) {
+        if(el) el.innerText = "—";
+        activeVocabMap[zh] = "";
+        return "";
+    }
+}
+
 
         async function translateVisibleBlocks() {
             const ens = document.querySelectorAll('.en-text'), load=document.getElementById('trans-loading');
