@@ -538,35 +538,37 @@ function pickBestVoice(isEng, gender){
 
 function speakText(txt) {
   synth.cancel();
-  const cleanTxt = (txt||"").toString().replace(/<[^>]*>/g, '').trim();
-  if(!cleanTxt) return;
+  const cleanTxt = (txt || "").toString().replace(/<[^>]*>/g, '').trim();
+  if (!cleanTxt) return;
 
   const u = new SpeechSynthesisUtterance(cleanTxt);
   const isEng = /[a-zA-Z]/.test(cleanTxt);
 
   const voice = pickBestVoice(isEng, currentVoice);
-  if(voice) u.voice = voice;
+  if (voice) u.voice = voice;
 
   const uiRate = parseFloat(document.getElementById('play-rate').value);
 
-  // ✅ 讓中文更「人聲」：通常稍慢一點更自然；英文維持 UI 值
-  if(isEng){
+  // 讓中文更自然：稍慢一點通常更像真人
+  if (isEng) {
     u.rate = uiRate;
-    u.pitch = (currentVoice==='male') ? 1.0 : 1.03;
-  }else{
+    u.pitch = (currentVoice === 'male') ? 1.0 : 1.03;
+  } else {
     u.rate = Math.max(0.85, Math.min(1.05, uiRate * 0.95));
     u.pitch = 1.0;
   }
 
   u.onstart = () => {
-    isSpeaking=true;
-    document.getElementById('btn-play').innerHTML='<i class="fa-solid fa-pause text-xs"></i>';
+    isSpeaking = true;
+    document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
   };
   u.onend = () => {
-    isSpeaking=false;
-    document.getElementById('btn-play').innerHTML='<i class="fa-solid fa-play text-xs"></i>';
+    isSpeaking = false;
+    document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
   };
-  sy
+
+  synth.speak(u);
+}
 
 
         function setVoice(g) { 
