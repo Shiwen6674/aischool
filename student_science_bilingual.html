@@ -28,7 +28,7 @@
                             panel: 'rgba(15, 23, 42, 0.95)', 
                             border: 'rgba(45, 212, 191, 0.3)',
                             accent: '#2dd4bf', 
-                            highlight: '#facc15'
+                            highlight: '#facc15' // Yellow
                         }
                     },
                     animation: {
@@ -51,16 +51,23 @@
         .nav-item:hover { background: rgba(45, 212, 191, 0.05); color: #ccfbf1; }
         .nav-item.active { background: linear-gradient(90deg, rgba(45, 212, 191, 0.1), transparent); border-left-color: #2dd4bf; color: #2dd4bf; font-weight: 700; }
 
-        /* Science Term Highlight */
-        .sci-term { color: #facc15; font-weight: 700; border-bottom: 1px dashed rgba(250, 204, 21, 0.6); cursor: pointer; transition: all 0.2s; padding: 0 2px; }
-        .sci-term:hover { background-color: rgba(250, 204, 21, 0.2); color: #fff; text-shadow: 0 0 10px #facc15; border-radius: 4px; }
+        /* Science Term Highlight (Yellow) */
+        .sci-term {
+            color: #facc15; font-weight: 700; 
+            border-bottom: 1px dashed rgba(250, 204, 21, 0.6);
+            cursor: pointer; transition: all 0.2s; padding: 0 2px;
+        }
+        .sci-term:hover {
+            background-color: rgba(250, 204, 21, 0.2); color: #fff; 
+            text-shadow: 0 0 10px #facc15; border-radius: 4px;
+        }
 
         /* Dropdowns */
         .custom-select { background-color: rgba(15, 23, 42, 0.8); border: 1px solid rgba(45, 212, 191, 0.3); color: #ccfbf1; appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%232dd4bf' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.3rem center; background-repeat: no-repeat; background-size: 1.2em 1.2em; padding-right: 1.5rem; }
         .custom-select:focus { border-color: #2dd4bf; box-shadow: 0 0 10px rgba(45, 212, 191, 0.2); }
         .custom-select:disabled { opacity: 0.4; cursor: not-allowed; border-color: rgba(255,255,255,0.1); }
 
-        /* Content Layout */
+        /* Content */
         .content-block { margin-bottom: 1rem; padding: 1rem; border-radius: 0.75rem; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.2s ease; }
         .content-block:hover { background: rgba(45, 212, 191, 0.03); border-color: rgba(45, 212, 191, 0.2); }
         .en-text { font-size: 1.1rem; color: #e2e8f0; line-height: 1.6; margin-bottom: 0.5rem; font-weight: 500; font-family: 'Inter', sans-serif; cursor: pointer; transition: color 0.2s; }
@@ -84,7 +91,7 @@
 
     <div id="loader-overlay" class="absolute inset-0 bg-[#020617] z-50 flex flex-col items-center justify-center">
         <i class="fa-solid fa-satellite-dish text-5xl text-teal-400 animate-pulse mb-4"></i>
-        <div class="text-teal-500 font-tech tracking-widest mt-2">ACCESSING DATABASE...</div>
+        <div class="text-teal-500 font-tech tracking-widest mt-2">CONNECTING TO DATABASE...</div>
     </div>
 
     <nav class="glass-panel sticky top-0 z-40 h-auto md:h-16 flex flex-col md:flex-row items-center shrink-0 border-b-0 shadow-lg">
@@ -116,7 +123,7 @@
                     <button onclick="setMode('dual')" class="mode-btn px-3 py-1 text-xs font-bold rounded bg-teal-600 text-white shadow-[0_0_10px_rgba(45,212,191,0.4)]" id="btn-dual">DUAL</button>
                     <button onclick="setMode('zh')" class="mode-btn px-3 py-1 text-xs font-bold rounded text-teal-500 hover:text-white transition" id="btn-zh">ZH</button>
                 </div>
-                
+
                 <select id="ui-lang" class="bg-slate-900/80 border border-teal-500/30 text-teal-100 rounded-lg px-2 py-1 text-xs outline-none cursor-pointer hover:bg-slate-800" onchange="changeLanguage()">
                     <option value="zh-TW">繁體中文</option>
                     <option value="en">English</option>
@@ -214,12 +221,9 @@
     </div>
 
     <script>
-        // ==========================================
-        // 1. CONFIG
-        // ==========================================
         const SHEET_ID = '1cEfMEy3bvDa1tET3xmh7ShGeJy8KLUMa_JuULGBD-mk';
-        const TARGET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&id=${SHEET_ID}&gid=0`;
-const PUBLISHED_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRbgkNiMflfeLQd3KN8F4yjjIr6G2flnCAy-nUPMiC7_xDfdg_0hJ2Qzbsr92u8htlPLFR8GwwQPK_g/pub?gid=0&single=true&output=csv';
+        const TARGET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRbgkNiMflfeLQd3KN8F4yjjIr6G2flnCAy-nUPMiC7_xDfdg_0hJ2Qzbsr92u8htlPLFR8GwwQPK_g/pub?gid=0&single=true&output=csv';
+
         const COL_STAGE=0, COL_VERSION=2, COL_GRADE=3, COL_SEMESTER=4, COL_UNIT_NUM=6, COL_UNIT_NAME=7, 
               COL_CONTENT=8, COL_CKIP=9, COL_VOCAB=18;
 
@@ -240,9 +244,6 @@ const PUBLISHED_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRbgk
 
         function goBack() { window.location.href = 'student_science.html'; }
 
-        // ==========================================
-        // 2. Data & Parsing
-        // ==========================================
         function fetchData() {
             Papa.parse(TARGET_URL, {
                 download: true, header: false,
@@ -288,9 +289,6 @@ const PUBLISHED_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRbgk
         function resetSelects(els){ els.forEach(e=>{e.innerHTML=`<option disabled selected>...</option>`;e.disabled=true;}); }
         function loadSelectedUnit(){ const u=processedUnits.find(i=>i.id==document.getElementById('sel-unit').value); if(u) renderArticle(u); }
 
-        // ==========================================
-        // 3. Rendering
-        // ==========================================
         async function renderArticle(unit) {
             document.getElementById('article-title').innerText = unit.title;
             document.getElementById('status-bar').innerText = unit.title;
@@ -299,12 +297,13 @@ const PUBLISHED_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRbgk
             activeVocabMap = {};
             if(unit.vocab) unit.vocab.split(/[,;，；\n]/).forEach(i=>{ let p=i.split(/[:：]/); if(p[0].trim()) activeVocabMap[p[0].trim()]=p[1]?p[1].trim():""; });
 
-            // Render Right Sidebar
+            // 6. Render Right Sidebar
             renderVocabSidebar();
 
             const contentDiv = document.getElementById('article-content'); contentDiv.innerHTML='';
             document.getElementById('unit-list').innerHTML=''; 
 
+            // 1. I 欄資料呈現 (Linear)
             let lines = unit.content.split('\n'), secCount=0;
 
             for(let i=0; i<lines.length; i++) {
@@ -320,18 +319,21 @@ const PUBLISHED_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRbgk
                     document.getElementById('unit-list').appendChild(navItem);
                     contentDiv.innerHTML += `<h2 id="${anchorId}" class="section-header">${line}</h2>`;
                 } else {
-                    let processed = processXRay(line);
+                    let processed = processXRayWithCKIP(line, activeVocabMap);
                     contentDiv.innerHTML += `<div class="content-block"><p class="zh-text">${processed}</p><p class="en-text hidden text-teal-200/80 italic text-sm mt-2" onclick="speakText(this.innerText)" data-source="${line}"></p></div>`;
                 }
             }
             setMode('dual');
         }
 
-        function processXRay(text) {
-            const keys = Object.keys(activeVocabMap).sort((a,b)=>b.length-a.length);
-            if(keys.length===0) return text;
+        // 5. Yellow Highlight
+        function processXRayWithCKIP(text, map) {
+            let clean = text.replace(/　/g,'');
+            const keys = Object.keys(map).sort((a,b)=>b.length-a.length);
+            if(keys.length===0) return clean;
             const ptrn = new RegExp(`(${keys.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')})`,'g');
-            return text.replace(ptrn, m=>`<span class="sci-term" onclick="speakText('${activeVocabMap[m]||m}')" title="${activeVocabMap[m]}">${m}</span>`);
+            // Change class to 'sci-term' which is defined as Yellow in CSS
+            return clean.replace(ptrn, m=>`<span class="sci-term" onclick="speakTermByClick('${map[m]||m}')" title="${map[m]}">${m}</span>`);
         }
 
         function renderVocabSidebar() {
@@ -378,19 +380,17 @@ const PUBLISHED_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRbgk
             Object.values(activeVocabMap).forEach(enTerm => {
                 if(!enTerm || enTerm.length<2) return;
                 const regex = new RegExp(`\\b(${enTerm})\\b`, 'gi');
+                // Yellow Highlight for English Terms
                 processed = processed.replace(regex, `<span class="sci-term">${enTerm}</span>`);
             });
             return makeClickable(processed);
         }
 
         function makeClickable(txt) {
-            // Updated to handle HTML tags correctly
             return `<span class="clickable-sentence" onclick="speakText(this.innerText)">${txt}</span>`;
         }
 
-        // ==========================================
-        // 5. Audio Controls
-        // ==========================================
+        // 7. Audio Controls (Play/Pause/Stop)
         function toggleSpeech() {
             const btn=document.getElementById('btn-play');
             if(synth.speaking && !synth.paused) { synth.pause(); btn.innerHTML='<i class="fa-solid fa-play text-xs"></i>'; isSpeaking=false; }
@@ -406,6 +406,7 @@ const PUBLISHED_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRbgk
 
         function stopSpeech() { synth.cancel(); isSpeaking=false; document.getElementById('btn-play').innerHTML='<i class="fa-solid fa-play text-xs"></i>'; }
 
+        // 8. Natural Voice
         function speakText(txt) {
             synth.cancel(); 
             const cleanTxt = txt.replace(/<[^>]*>/g, '');
@@ -417,7 +418,8 @@ const PUBLISHED_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRbgk
             if(isEng) {
                 if(currentVoice==='male') voice=v.find(x=>x.name.includes("Google US"))||v.find(x=>x.name.includes("David"))||v.find(x=>x.lang==='en-US');
                 else voice=v.find(x=>x.name.includes("Google UK"))||v.find(x=>x.name.includes("Zira"))||v.find(x=>x.lang==='en-US');
-                u.pitch = currentVoice==='male' ? 0.9 : 1.1;
+                // Natural Pitch Adjustment
+                u.pitch = currentVoice==='male' ? 0.95 : 1.05; 
             } else { voice=v.find(x=>x.lang==='zh-TW')||v.find(x=>x.lang.includes('zh')); }
             
             if(voice) u.voice=voice;
@@ -428,6 +430,7 @@ const PUBLISHED_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRbgk
             synth.speak(u);
         }
 
+        function speakTermByClick(t) { synth.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang=/[a-zA-Z]/.test(t)?'en-US':'zh-TW'; synth.speak(u); }
         function setVoice(g) { 
             currentVoice=g; 
             document.getElementById('btn-male').className=g==='male'?'text-teal-400 p-1':'text-slate-500 p-1'; 
@@ -449,10 +452,7 @@ const PUBLISHED_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRbgk
             const t = i18n[lang] || i18n['en'];
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const k = el.getAttribute('data-i18n');
-                if(t[k]) {
-                    if(el.tagName==='OPTION') el.text = t[k];
-                    else el.innerText = t[k];
-                }
+                if(t[k]) { if(el.tagName==='OPTION') el.text=t[k]; else el.innerText=t[k]; }
             });
         }
 
