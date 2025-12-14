@@ -1,1 +1,973 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI School | 未來教育平台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        // AI 風格霓虹配色
+                        primary: { DEFAULT: '#3b82f6', glow: '#60a5fa' }, // Blue
+                        ai: { 
+                            dark: '#0f172a', 
+                            card: 'rgba(30, 41, 59, 0.7)', 
+                            border: 'rgba(148, 163, 184, 0.1)' 
+                        },
+                        student: { light: '#22d3ee', DEFAULT: '#06b6d4', glow: 'rgba(34, 211, 238, 0.5)' }, // Cyan
+                        teacher: { light: '#34d399', DEFAULT: '#10b981', glow: 'rgba(52, 211, 153, 0.5)' }, // Emerald
+                        researcher: { light: '#a78bfa', DEFAULT: '#8b5cf6', glow: 'rgba(167, 139, 250, 0.5)' } // Violet
+                    },
+                    animation: {
+                        "spin-slow": "spin 15s linear infinite",
+                        "float": "float 6s ease-in-out infinite",
+                        "pulse-glow": "pulseGlow 3s infinite",
+                    },
+                    keyframes: {
+                        float: {
+                            "0%, 100%": { transform: "translateY(0)" },
+                            "50%": { transform: "translateY(-10px)" }
+                        },
+                        pulseGlow: {
+                            "0%, 100%": { boxShadow: "0 0 15px rgba(59, 130, 246, 0.2)" },
+                            "50%": { boxShadow: "0 0 30px rgba(59, 130, 246, 0.6)" }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 全域設定 */
+        body {
+            background-color: #020617; /* 深色背景 */
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
 
+        /* 玻璃擬態 (Glassmorphism) */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 輸入框美化 */
+        .input-ai {
+            background: rgba(2, 6, 23, 0.5);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+        .input-ai:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+            background: rgba(2, 6, 23, 0.8);
+        }
+
+        /* Canvas 背景設定 */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -10;
+            background: radial-gradient(circle at center, #1e1b4b 0%, #020617 100%);
+        }
+
+        /* 漸層文字 */
+        .text-gradient {
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hidden-section { display: none; }
+        .fade-in { animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 卡片光暈特效 */
+        .card-glow:hover::before {
+            opacity: 1;
+        }
+        .card-glow::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 1.5rem;
+            padding: 2px;
+            background: linear-gradient(45deg, transparent, var(--glow-color), transparent);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0.3;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+        
+        /* 密碼眼睛 */
+        .password-toggle { color: #94a3b8; transition: color 0.3s; }
+        .password-toggle:hover { color: #f8fafc; }
+        
+        /* 滾動條美化 */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans selection:bg-blue-500/30 selection:text-blue-200">
+
+    <div id="canvas-container">
+        <canvas id="network-canvas"></canvas>
+    </div>
+
+    <nav class="glass-panel sticky top-0 z-50 border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-4 cursor-pointer group" onclick="goHome()">
+                <div class="relative w-10 h-10 flex items-center justify-center">
+                    <i class="fa-solid fa-brain text-blue-500 text-3xl group-hover:text-blue-400 transition-colors"></i>
+                    <div class="absolute inset-0 bg-blue-500/20 blur-lg rounded-full animate-pulse"></div>
+                </div>
+                <span class="text-2xl font-heading font-bold text-white tracking-wide group-hover:text-blue-300 transition-colors" data-i18n="site_title_nav">AI School</span>
+            </div>
+            <div class="flex items-center space-x-6">
+                <select id="language-selector" onchange="changeLanguage()" class="bg-slate-800/80 border border-slate-600 text-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none cursor-pointer transition text-sm hover:bg-slate-700">
+                    <option value="zh-TW">繁體中文</option>
+                    <option value="en">English</option>
+                    <option value="ja">日本語</option>
+                    <option value="zh-CN">简体中文</option>
+                </select>
+                <div id="user-info-display" class="hidden font-medium text-blue-300 bg-blue-900/30 border border-blue-500/30 px-4 py-1.5 rounded-full text-sm"></div>
+                <button id="logout-btn" onclick="logout()" class="hidden text-red-400 hover:text-red-300 font-medium text-sm transition" data-i18n="logout">登出</button>
+                <button id="nav-login-btn" onclick="showLoginModal()" class="relative overflow-hidden group bg-blue-600 text-white px-6 py-2 rounded-full font-bold shadow-[0_0_15px_rgba(37,99,235,0.5)] transition hover:shadow-[0_0_25px_rgba(37,99,235,0.7)]" data-i18n="btn_login">
+                    <span class="relative z-10">登入</span>
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition duration-300"></div>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto p-6 flex-grow w-full relative z-10 flex flex-col justify-center">
+        
+        <div id="section-home" class="fade-in py-12 md:py-20">
+            <div class="text-center mb-16 relative">
+                <div class="inline-block mb-4 px-4 py-1 rounded-full bg-blue-900/30 border border-blue-500/30 text-blue-300 text-sm font-semibold tracking-wider uppercase animate-float">
+                    Next Generation Education
+                </div>
+                <h2 class="text-2xl md:text-3xl font-light text-slate-400 mb-2" data-i18n="welcome_prefix">歡迎來到</h2>
+                
+                <h1 class="font-heading text-6xl md:text-8xl font-black tracking-tight mb-8 text-white drop-shadow-2xl">
+                    <span class="text-gradient" data-i18n="site_title_hero">AI School</span>
+                </h1>
+                
+                <p class="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed" data-i18n="select_role">
+                    透過人工智慧賦能，選擇您的身份，開啟個人化的智能學習之旅。
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <div onclick="preSelectRole('student')" class="glass-panel rounded-3xl overflow-hidden cursor-pointer group relative hover:-translate-y-2 transition duration-500 card-glow" style="--glow-color: #06b6d4;">
+                    <div class="h-48 bg-gradient-to-b from-cyan-900/40 to-transparent flex items-center justify-center relative overflow-hidden">
+                        <div class="absolute inset-0 bg-cyan-500/10 opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                        <i class="fa-solid fa-graduation-cap text-7xl text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.6)] transform group-hover:scale-110 group-hover:rotate-3 transition duration-500"></i>
+                    </div>
+                    <div class="p-8 text-center relative z-10">
+                        <h2 class="text-3xl font-heading font-bold text-white mb-3 group-hover:text-cyan-300 transition" data-i18n="role_student">我是學生</h2>
+                        <p class="text-slate-400 text-sm leading-relaxed" data-i18n="desc_student">AI 輔助學習、智能測驗分析與個人化知識圖譜。</p>
+                        <div class="mt-6 w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center mx-auto text-cyan-400 group-hover:bg-cyan-500 group-hover:text-white transition-all duration-300">
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div onclick="preSelectRole('teacher')" class="glass-panel rounded-3xl overflow-hidden cursor-pointer group relative hover:-translate-y-2 transition duration-500 card-glow" style="--glow-color: #10b981;">
+                    <div class="h-48 bg-gradient-to-b from-emerald-900/40 to-transparent flex items-center justify-center relative overflow-hidden">
+                        <div class="absolute inset-0 bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                        <i class="fa-solid fa-chalkboard-user text-7xl text-emerald-400 drop-shadow-[0_0_15px_rgba(52,211,153,0.6)] transform group-hover:scale-110 group-hover:rotate-3 transition duration-500"></i>
+                    </div>
+                    <div class="p-8 text-center relative z-10">
+                        <h2 class="text-3xl font-heading font-bold text-white mb-3 group-hover:text-emerald-300 transition" data-i18n="role_teacher">我是教師</h2>
+                        <p class="text-slate-400 text-sm leading-relaxed" data-i18n="desc_teacher">AI 備課助手、自動化命題與班級學習數據儀表板。</p>
+                        <div class="mt-6 w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300">
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div onclick="preSelectRole('researcher')" class="glass-panel rounded-3xl overflow-hidden cursor-pointer group relative hover:-translate-y-2 transition duration-500 card-glow" style="--glow-color: #8b5cf6;">
+                    <div class="h-48 bg-gradient-to-b from-violet-900/40 to-transparent flex items-center justify-center relative overflow-hidden">
+                        <div class="absolute inset-0 bg-violet-500/10 opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                        <i class="fa-solid fa-microchip text-7xl text-violet-400 drop-shadow-[0_0_15px_rgba(139,92,246,0.6)] transform group-hover:scale-110 group-hover:rotate-3 transition duration-500"></i>
+                    </div>
+                    <div class="p-8 text-center relative z-10">
+                        <h2 class="text-3xl font-heading font-bold text-white mb-3 group-hover:text-violet-300 transition" data-i18n="role_researcher">我是研究員</h2>
+                        <p class="text-slate-400 text-sm leading-relaxed" data-i18n="desc_researcher">大數據文本挖掘、AI 模型協作與高階系統語言分析。</p>
+                        <div class="mt-6 w-10 h-10 rounded-full bg-violet-500/20 flex items-center justify-center mx-auto text-violet-400 group-hover:bg-violet-500 group-hover:text-white transition-all duration-300">
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-auth" class="hidden-section fade-in max-w-2xl mx-auto w-full mt-8">
+            <div class="glass-panel p-8 md:p-12 rounded-3xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl -z-10"></div>
+                <div class="absolute bottom-0 left-0 w-64 h-64 bg-violet-600/10 rounded-full blur-3xl -z-10"></div>
+
+                <button onclick="goHome()" class="text-slate-400 hover:text-white mb-8 flex items-center gap-2 transition group">
+                    <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition"></i> <span data-i18n="back">返回</span>
+                </button>
+            
+                <div class="flex mb-10 border-b border-slate-700">
+                    <button id="tab-login" onclick="switchAuthMode('login')" class="w-1/2 py-4 text-lg font-bold text-blue-400 border-b-2 border-blue-500 focus:outline-none transition-all" data-i18n="tab_login">登入</button>
+                    <button id="tab-register" onclick="switchAuthMode('register')" class="w-1/2 py-4 text-lg font-bold text-slate-500 hover:text-slate-300 focus:outline-none transition-all" data-i18n="tab_register">註冊新帳號</button>
+                </div>
+
+                <h2 id="login-title-text" class="text-2xl font-bold text-center text-white mb-8 hidden"></h2>
+
+                <form id="form-login" onsubmit="handleLogin(event)" class="space-y-6">
+                    <div>
+                        <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_email">Email</label>
+                        <input type="text" id="login-email" required class="input-ai w-full px-5 py-3 rounded-xl outline-none" placeholder="name@example.com 或 admin">
+                    </div>
+                    <div>
+                        <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_password">密碼</label>
+                        <div class="relative">
+                            <input type="password" id="login-password" required class="input-ai w-full px-5 py-3 rounded-xl outline-none pr-12" placeholder="••••••••">
+                            <i class="fa-solid fa-eye password-toggle absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer" onclick="togglePassword('login-password', this)"></i>
+                        </div>
+                    </div>
+                
+                    <div class="flex justify-between items-center text-sm">
+                        <button type="button" onclick="switchAuthMode('register')" class="text-slate-400 hover:text-white transition" data-i18n="not_registered">尚未註冊？</button>
+                        <button type="button" onclick="showForgotPassword()" class="text-blue-400 hover:text-blue-300 transition" data-i18n="forgot_password">忘記密碼？</button>
+                    </div>
+                
+                    <button type="submit" id="btn-do-login" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.3)] transition transform active:scale-[0.98] text-lg flex items-center justify-center gap-2" data-i18n="btn_login_action">
+                        <span>登入系統</span> <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    </button>
+                </form>
+
+                <form id="form-register" class="hidden-section space-y-6" onsubmit="handleRegister(event)">
+                    <input type="hidden" id="input-role" value="student">
+
+                    <div id="role-display-block" class="mb-6 text-center hidden">
+                        <span class="inline-block bg-blue-500/10 text-blue-300 border border-blue-500/20 px-6 py-2 rounded-full text-lg font-bold tracking-wide" id="reg-role-display-text">註冊學生帳號</span>
+                    </div>
+
+                    <div id="role-select-block" class="hidden">
+                        <select id="input-role-select" onchange="syncRoleFromSelector()" class="w-full">
+                            <option value="student" data-i18n="role_student">我是學生</option>
+                            <option value="teacher" data-i18n="role_teacher">我是教師</option>
+                            <option value="researcher" data-i18n="role_researcher">我是研究員</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_email_account">Email (帳號)</label>
+                            <input type="email" id="reg-email" required class="input-ai w-full px-4 py-3 rounded-xl outline-none" placeholder="name@example.com">
+                        </div>
+                        <div>
+                            <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_password">設定密碼</label>
+                            <div class="relative">
+                                <input type="password" id="reg-password" required class="input-ai w-full px-4 py-3 rounded-xl outline-none pr-10" placeholder="******">
+                                <i class="fa-solid fa-eye password-toggle absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer" onclick="togglePassword('reg-password', this)"></i>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_name">姓名</label>
+                            <input type="text" id="input-name" required class="input-ai w-full px-4 py-3 rounded-xl outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_confirm_password">確認密碼</label>
+                            <div class="relative">
+                                <input type="password" id="reg-password-confirm" required class="input-ai w-full px-4 py-3 rounded-xl outline-none pr-10" placeholder="******">
+                                <i class="fa-solid fa-eye password-toggle absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer" onclick="togglePassword('reg-password-confirm', this)"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_gender">性別</label>
+                        <select id="input-gender" class="input-ai w-full px-4 py-3 rounded-xl outline-none appearance-none">
+                            <option value="male" data-i18n="gender_male">男</option>
+                            <option value="female" data-i18n="gender_female">女</option>
+                            <option value="other" data-i18n="gender_other">其他</option>
+                        </select>
+                    </div>
+
+                    <div id="fields-student" class="role-fields space-y-5 p-5 bg-slate-800/40 rounded-xl border border-slate-700/50">
+                        <div>
+                            <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_country">國家/地區</label>
+                            <select id="input-country-student" onchange="updateGrades('student')" class="input-ai w-full px-4 py-3 rounded-xl outline-none"></select>
+                        </div>
+                        <div>
+                            <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_school_student">就讀學校 (縣市+校名)</label>
+                            <input type="text" id="input-school-student" class="input-ai w-full px-4 py-3 rounded-xl outline-none" placeholder="例如：花蓮縣東華附小">
+                        </div>
+                        <div>
+                            <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_grade_student">就讀年級</label>
+                            <select id="input-grade-student" class="input-ai w-full px-4 py-3 rounded-xl outline-none"></select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-5">
+                            <div><label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_class">班級</label><input type="text" id="input-class" class="input-ai w-full px-4 py-3 rounded-xl outline-none" placeholder="例如: 601"></div>
+                            <div><label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_student_id">學號</label><input type="text" id="input-student-id" class="input-ai w-full px-4 py-3 rounded-xl outline-none" placeholder="自填"></div>
+                        </div>
+                    </div>
+
+                    <div id="fields-teacher" class="role-fields hidden-section space-y-5 p-5 bg-slate-800/40 rounded-xl border border-slate-700/50">
+                        <div>
+                            <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_country">國家/地區</label>
+                            <select id="input-country-teacher" onchange="updateGrades('teacher')" class="input-ai w-full px-4 py-3 rounded-xl outline-none"></select>
+                        </div>
+                        <div><label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_school_teacher">服務學校 (縣市+校名)</label><input type="text" id="input-school-teacher" class="input-ai w-full px-4 py-3 rounded-xl outline-none" placeholder="例如：花蓮縣花崗國中"></div>
+                        <div class="grid grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_position">職稱</label>
+                                <select id="input-position" class="input-ai w-full px-4 py-3 rounded-xl outline-none">
+                                    <option value="Principal" data-i18n="pos_principal">校長</option><option value="Director" data-i18n="pos_director">主任</option>
+                                    <option value="SectionChief" data-i18n="pos_section_chief">組長</option><option value="HomeroomTeacher" data-i18n="pos_homeroom">導師</option>
+                                    <option value="SubjectTeacher" data-i18n="pos_subject">科任</option>
+                                </select>
+                            </div>
+                            <div><label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_teaching_grade">教學年級</label><select id="input-teaching-grade" class="input-ai w-full px-4 py-3 rounded-xl outline-none"></select></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-5">
+                            <div><label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_subject">教學科目</label><input type="text" id="input-subject" class="input-ai w-full px-4 py-3 rounded-xl outline-none" placeholder="例如: 自然"></div>
+                            <div>
+                                <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_seniority">教學年資</label>
+                                <select id="input-seniority" class="input-ai w-full px-4 py-3 rounded-xl outline-none">
+                                    <option value="0-5" data-i18n="exp_0_5">5年以下</option><option value="6-10" data-i18n="exp_6_10">6-10 年</option><option value="11-15" data-i18n="exp_11_15">11-15 年</option><option value="16-20" data-i18n="exp_16_20">16-20 年</option><option value="21-25" data-i18n="exp_21_25">21-25 年</option><option value="25+" data-i18n="exp_25_plus">25 年以上</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="fields-researcher" class="role-fields hidden-section space-y-5 p-5 bg-slate-800/40 rounded-xl border border-slate-700/50">
+                        <div>
+                            <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_country">國家/地區</label>
+                            <select id="input-country-researcher" class="input-ai w-full px-4 py-3 rounded-xl outline-none"></select>
+                        </div>
+                        <div><label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_unit">服務單位</label><input type="text" id="input-unit" class="input-ai w-full px-4 py-3 rounded-xl outline-none" placeholder="例如：國立東華大學"></div>
+                        <div class="grid grid-cols-2 gap-5">
+                            <div><label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_research_title">職稱</label><input type="text" id="input-research-title" class="input-ai w-full px-4 py-3 rounded-xl outline-none" placeholder="例如: 教授"></div>
+                            <div><label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_field">研究領域</label><input type="text" id="input-field" class="input-ai w-full px-4 py-3 rounded-xl outline-none" placeholder="例如：科學教育"></div>
+                        </div>
+                    </div>
+
+                    <button id="btn-do-register" type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition transform active:scale-[0.98] mt-4 text-lg" data-i18n="btn_register_action">註冊並登入</button>
+                </form>
+
+                <form id="form-forgot-password" class="hidden-section space-y-6" onsubmit="handleForgotPassword(event)">
+                    <h3 class="text-2xl font-bold text-white text-center mb-4" data-i18n="forgot_password_title">重設密碼</h3>
+                    <p class="text-slate-400 text-center mb-6" data-i18n="forgot_password_desc">請輸入您註冊時的 Email，系統將發送驗證信給您。</p>
+                    <div>
+                        <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_email">Email</label>
+                        <input type="email" id="forgot-email" required class="input-ai w-full px-5 py-3 rounded-xl outline-none" placeholder="name@example.com">
+                    </div>
+                    <button type="submit" id="btn-do-forgot" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl shadow-lg transition" data-i18n="btn_send_verify">發送驗證信</button>
+                    <div class="text-center mt-4">
+                        <button type="button" onclick="showLoginModal()" class="text-slate-400 hover:text-white underline text-sm transition" data-i18n="back_to_login">返回登入</button>
+                    </div>
+                </form>
+            
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-8 text-slate-500 text-sm mt-auto glass-panel border-t-0 relative z-10">
+        <div class="flex flex-col gap-2">
+            <p>&copy; 2024 AI School. All rights reserved.</p>
+            <p class="font-medium text-slate-400">Institute of Science Education, NDHU, Taiwan</p>
+            <p><a href="mailto:shiwen@gms.ndhu.edu.tw" class="text-blue-400 hover:text-blue-300 transition flex justify-center items-center gap-2"><i class="fa-regular fa-envelope"></i> shiwen@gms.ndhu.edu.tw</a></p>
+        </div>
+    </footer>
+
+    <div id="logout-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm overflow-y-auto h-full w-full z-[60] flex items-center justify-center transition-opacity">
+        <div class="relative p-8 border border-slate-700 w-full max-w-sm shadow-2xl rounded-2xl bg-slate-900 transform transition-all scale-100">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-red-900/30 mb-5">
+                    <i class="fa-solid fa-right-from-bracket text-red-500 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3" data-i18n="logout">登出</h3>
+                <p class="text-slate-400 mb-6" data-i18n="msg_logout_confirm">你確定要登出嗎？</p>
+                <div class="flex gap-3 justify-center">
+                    <button onclick="confirmLogout()" class="w-full px-5 py-2.5 bg-red-600 text-white font-bold rounded-lg shadow hover:bg-red-700 transition" data-i18n="btn_confirm">確定</button>
+                    <button onclick="closeLogoutModal()" class="w-full px-5 py-2.5 bg-slate-800 text-slate-300 font-bold rounded-lg border border-slate-700 hover:bg-slate-700 transition" data-i18n="btn_cancel">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('network-canvas');
+        const ctx = canvas.getContext('2d');
+        let particlesArray;
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        class Particle {
+            constructor(x, y, directionX, directionY, size, color) {
+                this.x = x;
+                this.y = y;
+                this.directionX = directionX;
+                this.directionY = directionY;
+                this.size = size;
+                this.color = color;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+            update() {
+                if (this.x > canvas.width || this.x < 0) this.directionX = -this.directionX;
+                if (this.y > canvas.height || this.y < 0) this.directionY = -this.directionY;
+                this.x += this.directionX;
+                this.y += this.directionY;
+                this.draw();
+            }
+        }
+
+        function init() {
+            particlesArray = [];
+            let numberOfParticles = (canvas.height * canvas.width) / 9000;
+            for (let i = 0; i < numberOfParticles; i++) {
+                let size = (Math.random() * 2) + 1;
+                let x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
+                let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
+                let directionX = (Math.random() * 1) - 0.5;
+                let directionY = (Math.random() * 1) - 0.5;
+                let color = 'rgba(66, 153, 225, 0.4)'; // Blueish
+                particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            ctx.clearRect(0, 0, innerWidth, innerHeight);
+
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+            }
+            connect();
+        }
+
+        function connect() {
+            let opacityValue = 1;
+            for (let a = 0; a < particlesArray.length; a++) {
+                for (let b = a; b < particlesArray.length; b++) {
+                    let distance = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x)) + 
+                                   ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
+                    if (distance < (canvas.width / 7) * (canvas.height / 7)) {
+                        opacityValue = 1 - (distance / 20000);
+                        ctx.strokeStyle = 'rgba(66, 153, 225,' + opacityValue * 0.2 + ')'; // 連線顏色
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                        ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        window.addEventListener('resize', function() {
+            canvas.width = innerWidth;
+            canvas.height = innerHeight;
+            init();
+        });
+
+        init();
+        animate();
+    </script>
+
+    <script>
+        // *** 1. 全域變數宣告 ***
+        let currentUser = null;
+        let targetRole = null;
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbzcDKkz8Tilzb3qbx0_fDR7QoG4-c2JCtsa4p9V8_1gBjZaEMlvQHd72OD0kZq_jW8H/exec"; 
+
+        // *** 2. 資料庫 ***
+        const countryList = [
+            { code: "TW", nameKey: "country_tw" },
+            { code: "AU", nameKey: "country_au" },
+            { code: "CA", nameKey: "country_ca" },
+            { code: "CN", nameKey: "country_cn" },
+            { code: "HK", nameKey: "country_hk" },
+            { code: "IN", nameKey: "country_in" },
+            { code: "ID", nameKey: "country_id" },
+            { code: "JP", nameKey: "country_jp" },
+            { code: "KR", nameKey: "country_kr" },
+            { code: "MO", nameKey: "country_mo" },
+            { code: "MY", nameKey: "country_my" },
+            { code: "NZ", nameKey: "country_nz" },
+            { code: "SG", nameKey: "country_sg" },
+            { code: "TH", nameKey: "country_th" },
+            { code: "GB", nameKey: "country_gb" },
+            { code: "US", nameKey: "country_us" },
+            { code: "VN", nameKey: "country_vn" },
+            { code: "OTHER", nameKey: "country_other" }
+        ];
+
+        const educationSystems = {
+            "TW": [ {key: "grade_tw_E", range: [1,6]}, {key: "grade_tw_J", range: [7,9]}, {key: "grade_tw_S", range: [10,12]} ],
+            "CN": [ {key: "grade_cn_P", range: [1,6]}, {key: "grade_cn_J", range: [7,9]}, {key: "grade_cn_S", range: [10,12]} ],
+            "HK": [ {key: "grade_hk_P", range: [1,6]}, {key: "grade_hk_S", range: [1,6]} ],
+            "JP": [ {key: "grade_jp_E", range: [1,6]}, {key: "grade_jp_J", range: [1,3]}, {key: "grade_jp_H", range: [1,3]} ],
+            "KR": [ {key: "grade_kr_E", range: [1,6]}, {key: "grade_kr_M", range: [1,3]}, {key: "grade_kr_H", range: [1,3]} ],
+            "US": [ {key: "grade_us_K", range: [0,0]}, {key: "grade_us_G", range: [1,12]} ],
+            "GB": [ {key: "grade_gb_Y", range: [1,13]} ],
+            "OTHER": [ {key: "grade_intl_G", range: [1,12]} ]
+        };
+
+        const translations = {
+            "zh-TW": {
+                "site_title_nav": "AI School", "site_title_hero": "AI School", "welcome_prefix": "歡迎來到",
+                "logout": "登出", "btn_login": "登入", "back": "返回", 
+                "tab_login": "登入", "tab_register": "註冊新帳號", "btn_login_action": "登入系統", "btn_register_action": "註冊並登入",
+                "select_role": "透過人工智慧賦能，選擇您的身份，開啟個人化的智能學習之旅。",
+                "label_select_role": "註冊身分", "role_student": "學生", "role_teacher": "教師", "role_researcher": "研究員",
+                "reg_title_student": "學生帳號註冊", "reg_title_teacher": "教師帳號註冊", "reg_title_researcher": "研究員帳號註冊",
+                "desc_student": "AI 輔助學習、智能測驗分析與個人化知識圖譜。", "desc_teacher": "AI 備課助手、自動化命題與班級學習數據儀表板。", "desc_researcher": "大數據文本挖掘、AI 模型協作與高階系統語言分析。",
+                "label_name": "姓名", "label_gender": "性別", "gender_male": "男", "gender_female": "女", "gender_other": "其他",
+                "label_email": "Email", "label_email_account": "Email (帳號)", "label_password": "密碼", "label_confirm_password": "確認密碼",
+                "msg_loading": "正在連接資料庫...",
+                "label_school_student": "就讀學校 (縣市+校名)", "label_grade_student": "就讀年級",
+                "label_school_teacher": "服務學校 (縣市+校名)", "label_position": "職稱", "label_teaching_grade": "教學年級", "label_subject": "教學科目", "label_seniority": "教學年資",
+                "label_unit": "服務單位", "label_research_title": "職稱", "label_field": "研究領域",
+                "forgot_password": "忘記密碼？", "forgot_password_title": "重設密碼", "forgot_password_desc": "請輸入您註冊時的 Email，系統將發送驗證信給您。",
+                "btn_send_verify": "發送驗證信", "back_to_login": "返回登入",
+                "msg_logout_confirm": "你確定要登出嗎？", "btn_confirm": "確定", "btn_cancel": "取消", "not_registered": "尚未註冊？",
+                "country_tw": "台灣", "country_cn": "中國", "country_hk": "香港", "country_mo": "澳門", "country_jp": "日本", "country_kr": "韓國", "country_us": "美國", "country_gb": "英國", "country_sg": "新加坡", "country_my": "馬來西亞", "country_vn": "越南", "country_id": "印尼", "country_th": "泰國", "country_in": "印度", "country_au": "澳洲", "country_ca": "加拿大", "country_nz": "紐西蘭", "country_other": "其他國家",
+                "grade_tw_E": "國小", "grade_tw_J": "國中", "grade_tw_S": "高中", "grade_cn_P": "小學", "grade_cn_J": "初中", "grade_cn_S": "高中", "grade_hk_P": "小學", "grade_hk_S": "中學", "grade_jp_E": "小學", "grade_jp_J": "中學", "grade_jp_H": "高校", "grade_kr_E": "初等學校", "grade_kr_M": "中學校", "grade_kr_H": "高等學校", "grade_us_K": "幼兒園", "grade_us_G": "年級", "grade_gb_Y": "年級", "grade_intl_G": "年級"
+            },
+            "en": {
+                "site_title_nav": "AI School", "site_title_hero": "AI School", "welcome_prefix": "Welcome to",
+                "logout": "Logout", "btn_login": "Login", "back": "Back", "tab_login": "Login", "tab_register": "Sign Up",
+                "btn_login_action": "Login", "btn_register_action": "Register & Login", "select_role": "Empowered by AI. Select your role to start your intelligent learning journey.",
+                "label_select_role": "Role", "role_student": "Student", "role_teacher": "Teacher", "role_researcher": "Researcher",
+                "reg_title_student": "Student Registration", "reg_title_teacher": "Teacher Registration", "reg_title_researcher": "Researcher Registration",
+                "desc_student": "AI-assisted learning, intelligent assessment analysis, and personalized knowledge graphs.", "desc_teacher": "AI lesson planning assistant, automated question generation, and class data dashboards.", "desc_researcher": "Big data text mining, AI model collaboration, and advanced system analysis.",
+                "label_name": "Name", "label_gender": "Gender", "gender_male": "Male", "gender_female": "Female", "gender_other": "Other",
+                "label_email": "Email", "label_email_account": "Email (Account)", "label_password": "Password", "label_confirm_password": "Confirm Password",
+                "msg_loading": "Connecting...",
+                "label_school_student": "School Name (City+Name)", "label_grade_student": "Grade",
+                "label_school_teacher": "School Name (City+Name)", "label_position": "Title", "label_teaching_grade": "Teaching Grade", "label_subject": "Subject", "label_seniority": "Seniority",
+                "label_unit": "Institution", "label_research_title": "Title", "label_field": "Research Field",
+                "forgot_password": "Forgot Password?", "forgot_password_title": "Reset Password", "forgot_password_desc": "Enter your email to receive verification.",
+                "btn_send_verify": "Send Email", "back_to_login": "Back to Login",
+                "msg_logout_confirm": "Are you sure you want to logout?", "btn_confirm": "Confirm", "btn_cancel": "Cancel", "not_registered": "Not registered?",
+                "country_tw": "Taiwan", "country_cn": "China", "country_hk": "Hong Kong", "country_mo": "Macau", "country_jp": "Japan", "country_kr": "Korea", "country_us": "USA", "country_gb": "UK", "country_sg": "Singapore", "country_my": "Malaysia", "country_vn": "Vietnam", "country_id": "Indonesia", "country_th": "Thailand", "country_in": "India", "country_au": "Australia", "country_ca": "Canada", "country_nz": "New Zealand", "country_other": "Other",
+                "grade_tw_E": "Elementary G", "grade_tw_J": "Junior High G", "grade_tw_S": "Senior High G", "grade_cn_P": "Primary G", "grade_cn_J": "Junior High G", "grade_cn_S": "Senior High G", "grade_hk_P": "Primary P", "grade_hk_S": "Secondary S", "grade_jp_E": "Elementary G", "grade_jp_J": "Junior High G", "grade_jp_H": "High School G", "grade_kr_E": "Elementary G", "grade_kr_M": "Middle School G", "grade_kr_H": "High School G", "grade_us_K": "Kindergarten", "grade_us_G": "Grade", "grade_gb_Y": "Year", "grade_intl_G": "Grade"
+            },
+            "ja": {
+                "site_title_nav": "AI School", "site_title_hero": "AI School", "welcome_prefix": "ようこそ",
+                "logout": "ログアウト", "btn_login": "ログイン", "back": "戻る", "tab_login": "ログイン", "tab_register": "新規登録",
+                "btn_login_action": "ログイン", "btn_register_action": "登録＆ログイン", "select_role": "AIによってエンパワーされた、パーソナライズされた学習の旅を始めましょう。",
+                "label_select_role": "役割", "role_student": "学生", "role_teacher": "教師", "role_researcher": "研究者",
+                "reg_title_student": "学生登録", "reg_title_teacher": "教師登録", "reg_title_researcher": "研究者登録",
+                "desc_student": "AI学習支援、インテリジェントな評価分析、パーソナライズされたナレッジグラフ。", "desc_teacher": "AI授業準備アシスタント、自動問題作成、クラスデータダッシュボード。", "desc_researcher": "ビッグデータテキストマイニング、AIモデルコラボレーション、高度なシステム分析。",
+                "label_name": "氏名", "label_gender": "性別", "gender_male": "男性", "gender_female": "女性", "gender_other": "その他",
+                "label_email": "メールアドレス", "label_email_account": "メールアドレス (アカウント)", "label_password": "パスワード", "label_confirm_password": "確認用パスワード",
+                "msg_loading": "接続中...",
+                "label_school_student": "学校名", "label_grade_student": "学年",
+                "label_school_teacher": "勤務先学校名", "label_position": "役職", "label_teaching_grade": "担当学年", "label_subject": "担当科目", "label_seniority": "指導経験",
+                "label_unit": "所属機関", "label_research_title": "役職", "label_field": "研究分野",
+                "forgot_password": "パスワードを忘れた場合", "forgot_password_title": "パスワードをリセット", "forgot_password_desc": "登録したメールアドレスを入力してください。",
+                "btn_send_verify": "メール送信", "back_to_login": "ログインへ戻る",
+                "msg_logout_confirm": "ログアウトしますか？", "btn_confirm": "OK", "btn_cancel": "キャンセル", "not_registered": "未登録ですか？",
+                "country_tw": "台湾", "country_cn": "中国", "country_hk": "香港", "country_mo": "マカオ", "country_jp": "日本", "country_kr": "韓国", "country_us": "アメリカ", "country_gb": "イギリス", "country_sg": "シンガポール", "country_my": "マレーシア", "country_vn": "ベトナム", "country_id": "インドネシア", "country_th": "タイ", "country_in": "インド", "country_au": "オーストラリア", "country_ca": "カナダ", "country_nz": "ニュージーランド", "country_other": "その他",
+                "grade_tw_E": "小学校", "grade_tw_J": "中学校", "grade_tw_S": "高校", "grade_cn_P": "小学校", "grade_cn_J": "中学校", "grade_cn_S": "高校", "grade_hk_P": "Primary P", "grade_hk_S": "Secondary S", "grade_jp_E": "小学校", "grade_jp_J": "中学校", "grade_jp_H": "高校", "grade_kr_E": "初等学校", "grade_kr_M": "中学校", "grade_kr_H": "高等学校", "grade_us_K": "幼稚園", "grade_us_G": "学年", "grade_gb_Y": "年", "grade_intl_G": "学年"
+            },
+            "zh-CN": {
+                "site_title_nav": "AI School", "site_title_hero": "AI School", "welcome_prefix": "欢迎来到",
+                "logout": "退出", "btn_login": "登录", "back": "返回", "tab_login": "登录", "tab_register": "注册新账号",
+                "btn_login_action": "登录系统", "btn_register_action": "注册并登录", "select_role": "通过人工智能赋能，选择您的身份，开启个性化的智能学习之旅。",
+                "label_select_role": "注册身份", "role_student": "学生", "role_teacher": "教师", "role_researcher": "研究员",
+                "reg_title_student": "学生账号注册", "reg_title_teacher": "教师账号注册", "reg_title_researcher": "研究员账号注册",
+                "desc_student": "AI 辅助学习、智能测验分析与个性化知识图谱。", "desc_teacher": "AI 备课助手、自动化命题与班级学习数据仪表板。", "desc_researcher": "大数据文本挖掘、AI 模型协作与高阶系统语言分析。",
+                "label_name": "姓名", "label_gender": "性别", "gender_male": "男", "gender_female": "女", "gender_other": "其他",
+                "label_email": "Email", "label_email_account": "Email (账号)", "label_password": "密码", "label_confirm_password": "确认密码",
+                "msg_loading": "正在连接数据库...",
+                "label_school_student": "就读学校 (省市+校名)", "label_grade_student": "就读年级",
+                "label_school_teacher": "服务学校 (省市+校名)", "label_position": "职称", "label_teaching_grade": "教学年级", "label_subject": "教学科目", "label_seniority": "教学年资",
+                "label_unit": "服务单位", "label_research_title": "职称", "label_field": "研究领域",
+                "forgot_password": "忘记密码？", "forgot_password_title": "重置密码", "forgot_password_desc": "请输入您注册时的 Email，系统将发送验证信给您。",
+                "btn_send_verify": "发送验证信", "back_to_login": "返回登录",
+                "msg_logout_confirm": "您确定要退出吗？", "btn_confirm": "确定", "btn_cancel": "取消", "not_registered": "尚未注册？",
+                "country_tw": "台湾", "country_cn": "中国", "country_hk": "香港", "country_mo": "澳门", "country_jp": "日本", "country_kr": "韩国", "country_us": "美国", "country_gb": "英国", "country_sg": "新加坡", "country_my": "马来西亚", "country_vn": "越南", "country_id": "印度尼西亚", "country_th": "泰国", "country_in": "印度", "country_au": "澳大利亚", "country_ca": "加拿大", "country_nz": "新西兰", "country_other": "其他国家",
+                "grade_tw_E": "小学", "grade_tw_J": "初中", "grade_tw_S": "高中", "grade_cn_P": "小学", "grade_cn_J": "初中", "grade_cn_S": "高中", "grade_hk_P": "小学", "grade_hk_S": "中学", "grade_jp_E": "小学", "grade_jp_J": "中学", "grade_jp_H": "高校", "grade_kr_E": "初等学校", "grade_kr_M": "中学校", "grade_kr_H": "高等学校", "grade_us_K": "幼儿园", "grade_us_G": "年级", "grade_gb_Y": "年级", "grade_intl_G": "年级"
+            }
+        };
+
+        // Fallback Logic
+        ["ja", "zh-CN"].forEach(lang => {
+            if(!translations[lang]) translations[lang] = JSON.parse(JSON.stringify(translations['en']));
+            else {
+                const base = JSON.parse(JSON.stringify(translations['en']));
+                Object.assign(base, translations[lang]);
+                translations[lang] = base;
+            }
+        });
+
+        let currentLang = 'zh-TW';
+
+        function changeLanguage() {
+            const langSelector = document.getElementById("language-selector");
+            if (!langSelector) return;
+            const lang = langSelector.value;
+            currentLang = lang;
+            const t = translations[lang] || translations['en'];
+
+            document.querySelectorAll("[data-i18n]").forEach(el => {
+                const key = el.getAttribute("data-i18n");
+                if (t[key]) {
+                    if(el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                        // placeholder
+                    } else {
+                        el.innerText = t[key];
+                    }
+                }
+            });
+            
+            syncRoleFromSelector(); 
+            
+            populateCountries('student', lang);
+            populateCountries('teacher', lang);
+            populateCountries('researcher', lang);
+            updateGrades('student', true);
+            updateGrades('teacher', true);
+        }
+        
+        function populateCountries(role, lang) {
+            const selectId = `input-country-${role}`;
+            const select = document.getElementById(selectId);
+            if(!select) return;
+            const currentVal = select.value || 'TW'; 
+            const t = translations[lang] || translations['en'];
+
+            select.innerHTML = "";
+            countryList.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.code;
+                opt.textContent = t[c.nameKey] || c.code;
+                select.appendChild(opt);
+            });
+            select.value = currentVal;
+        }
+
+        function updateGrades(role, preserveValue = false) {
+             const countryId = `input-country-${role}`;
+            const gradeId = role === 'student' ? `input-grade-student` : `input-teaching-grade`;
+            const countrySelect = document.getElementById(countryId);
+            const gradeSelect = document.getElementById(gradeId);
+            if (!countrySelect || !gradeSelect) return;
+
+            const countryCode = countrySelect.value;
+            const lang = document.getElementById('language-selector').value;
+            const t = translations[lang] || translations['en'];
+            
+            const system = educationSystems[countryCode] || educationSystems["OTHER"];
+            const currentGrade = gradeSelect.value;
+            
+            gradeSelect.innerHTML = "";
+
+            system.forEach(sys => {
+                const prefixKey = sys.key; 
+                let prefix = t[prefixKey] || (sys.key.split('_')[2] || "Grade"); 
+                const start = sys.range[0];
+                const end = sys.range[1];
+
+                if (start === 0 && end === 0) { 
+                      const opt = document.createElement('option');
+                      opt.value = sys.key;
+                      opt.textContent = prefix;
+                      gradeSelect.appendChild(opt);
+                } else {
+                    for (let i = start; i <= end; i++) {
+                        const opt = document.createElement('option');
+                        opt.value = `${countryCode}_${sys.key}_${i}`; 
+                        let displayText = prefix + " " + i; 
+                        opt.textContent = displayText;
+                        gradeSelect.appendChild(opt);
+                    }
+                }
+            });
+             if(preserveValue && currentGrade) {
+               for(let i=0; i<gradeSelect.options.length; i++) {
+                   if(gradeSelect.options[i].value === currentGrade) {
+                       gradeSelect.selectedIndex = i;
+                       break;
+                   }
+               }
+            }
+        }
+
+        // *** 頁面邏輯 ***
+        document.addEventListener('DOMContentLoaded', () => { 
+            changeLanguage(); 
+        });
+
+        function goHome() { 
+            document.getElementById('section-home').classList.remove('hidden-section'); 
+            document.getElementById('section-auth').classList.add('hidden-section'); 
+            document.getElementById('section-home').classList.add('fade-in'); 
+        }
+        
+        function preSelectRole(role) { 
+            targetRole = role; 
+            document.getElementById('section-home').classList.add('hidden-section'); 
+            document.getElementById('section-auth').classList.remove('hidden-section'); 
+            
+            switchAuthMode('login'); 
+            
+            const roleSelect = document.getElementById('input-role-select'); 
+            roleSelect.value = role; 
+            syncRoleFromSelector(); 
+        }
+        
+        function syncRoleFromSelector() { 
+            const role = document.getElementById('input-role-select').value; 
+            targetRole = role; 
+            document.getElementById('input-role').value = role; 
+            const t = translations[document.getElementById('language-selector').value] || translations['en']; 
+            // Dynamic Title Update
+            const roleName = t[`role_${role}`] || role; 
+            const tabRegText = t['tab_register'] || "Register";
+            document.getElementById('reg-role-display-text').textContent = tabRegText + " - " + roleName; 
+            
+            document.querySelectorAll('.role-fields').forEach(el => el.classList.add('hidden-section')); 
+            document.getElementById(`fields-${role}`).classList.remove('hidden-section'); 
+        }
+        
+       function switchAuthMode(mode) { 
+            const tabLogin = document.getElementById('tab-login'); 
+            const tabRegister = document.getElementById('tab-register'); 
+            const formLogin = document.getElementById('form-login'); 
+            const formRegister = document.getElementById('form-register'); 
+            const roleDisplay = document.getElementById('role-display-block'); 
+            const roleSelect = document.getElementById('role-select-block'); 
+            
+            if (mode === 'login') { 
+                tabLogin.className = "w-1/2 py-4 text-lg font-bold text-blue-400 border-b-2 border-blue-500 focus:outline-none transition-all"; 
+                tabRegister.className = "w-1/2 py-4 text-lg font-bold text-slate-500 hover:text-slate-300 focus:outline-none transition-all"; 
+                formLogin.classList.remove('hidden-section'); 
+                formRegister.classList.add('hidden-section'); 
+                roleDisplay.classList.add('hidden'); 
+                roleSelect.classList.add('hidden'); 
+            } else { 
+                tabRegister.className = "w-1/2 py-4 text-lg font-bold text-emerald-400 border-b-2 border-emerald-500 focus:outline-none transition-all"; 
+                tabLogin.className = "w-1/2 py-4 text-lg font-bold text-slate-500 hover:text-slate-300 focus:outline-none transition-all"; 
+                formLogin.classList.add('hidden-section'); 
+                formRegister.classList.remove('hidden-section'); 
+                roleDisplay.classList.remove('hidden'); 
+                roleSelect.classList.add('hidden'); 
+                
+                if(!targetRole) preSelectRole('student'); else syncRoleFromSelector(); 
+            } 
+        }
+        
+        function togglePassword(inputId, icon) { 
+            const input = document.getElementById(inputId); 
+            if (input.type === "password") { input.type = "text"; icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); } 
+            else { input.type = "password"; icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); } 
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            if (!email || !password) {
+                alert("請輸入 Email/帳號 和密碼");
+                return;
+            }
+
+            const btn = document.getElementById('btn-do-login');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> 驗證中...';
+            btn.disabled = true;
+
+            try {
+                const payload = {
+                    type: 'login',
+                    email: email,
+                    password: password,
+                    targetRole: targetRole || null
+                };
+
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+
+                const text = await response.text();
+                const result = JSON.parse(text);
+
+                if (result.result === 'success') {
+                    const user = result.user;
+                    
+                    const userInfo = {
+                        email: user.email,
+                        name: user.name,
+                        role: user.role
+                    };
+                    sessionStorage.setItem("currentUser", JSON.stringify(userInfo));
+                    
+                    let targetPage = 'student.html';
+                    if (user.role === 'teacher') targetPage = 'teacher.html';
+                    if (user.role === 'researcher') targetPage = 'researcher.html';
+                    if (user.role === 'admin') targetPage = 'admin.html';
+
+                    alert(result.message);
+                    window.location.href = targetPage;
+                    
+                } else {
+                    alert(result.message);
+                }
+
+            } catch (error) {
+                alert("登入處理錯誤，請檢查 GAS 連結或連線問題: " + error.toString());
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+        
+        async function handleRegister(e) { 
+            e.preventDefault(); 
+            
+            const role = document.getElementById('input-role').value || 'student';
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const confirmPassword = document.getElementById('reg-password-confirm').value;
+            
+            if (password !== confirmPassword) {
+                alert('密碼和確認密碼不一致！');
+                return;
+            }
+            
+            let registrationData = {
+                type: 'register',
+                role: role,
+                email: email,
+                password: password,
+                name: document.getElementById('input-name').value.trim(),
+                gender: document.getElementById('input-gender').value,
+                language: currentLang,
+                countryCode: '' 
+            };
+            
+            if (role === 'student') {
+                registrationData.countryCode = document.getElementById('input-country-student').value;
+                registrationData.schoolName = document.getElementById('input-school-student').value.trim();
+                registrationData.gradeLevel = document.getElementById('input-grade-student').value;
+                registrationData.class = document.getElementById('input-class').value.trim();
+                registrationData.studentID = document.getElementById('input-student-id').value.trim();
+            } else if (role === 'teacher') {
+                registrationData.countryCode = document.getElementById('input-country-teacher').value;
+                registrationData.orgName = document.getElementById('input-school-teacher').value.trim();
+                registrationData.position = document.getElementById('input-position').value;
+                registrationData.gradeLevel = document.getElementById('input-teaching-grade').value;
+                registrationData.subject = document.getElementById('input-subject').value.trim();
+                registrationData.seniority = document.getElementById('input-seniority').value;
+            } else if (role === 'researcher') {
+                registrationData.countryCode = document.getElementById('input-country-researcher').value;
+                registrationData.orgName = document.getElementById('input-unit').value.trim();
+                registrationData.position = document.getElementById('input-research-title').value.trim();
+                registrationData.researchField = document.getElementById('input-field').value.trim();
+            }
+            
+            if (!registrationData.name || !registrationData.email || !registrationData.password || !registrationData.countryCode) {
+                alert('請填寫所有基礎必填欄位 (Email, 密碼, 姓名, 國家/地區)。');
+                return;
+            }
+            
+            const btn = document.getElementById('btn-do-register');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> 註冊中...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(registrationData)
+                });
+
+                const text = await response.text();
+                const result = JSON.parse(text);
+
+                if (result.result === 'success') {
+                    const user = result.user;
+                    
+                    const userInfo = {
+                        email: user.email,
+                        name: user.name,
+                        role: user.role
+                    };
+                    sessionStorage.setItem("currentUser", JSON.stringify(userInfo));
+                    
+                    let targetPage = 'student.html';
+                    if (user.role === 'teacher') targetPage = 'teacher.html';
+                    if (user.role === 'researcher') targetPage = 'researcher.html';
+
+                    alert(result.message + "\n即將跳轉至您的專屬頁面。");
+                    window.location.href = targetPage;
+                } else {
+                    alert("註冊失敗: " + result.message);
+                }
+            } catch (error) {
+                alert("註冊處理錯誤，請檢查 GAS 連結或連線問題: " + error.toString());
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function showForgotPassword() { alert("Please contact admin."); }
+        function showLoginModal() { 
+            document.getElementById('section-home').classList.add('hidden-section'); 
+            document.getElementById('section-auth').classList.remove('hidden-section'); 
+            switchAuthMode('login'); 
+        }
+        function logout() { 
+            document.getElementById('logout-modal').classList.remove('hidden');
+        }
+        function closeLogoutModal() {
+            document.getElementById('logout-modal').classList.add('hidden');
+        }
+        function confirmLogout() {
+            sessionStorage.removeItem("currentUser");
+            location.reload();
+        }
+    </script>
+</body>
+  </html>
