@@ -30,7 +30,7 @@
                         },
                         student: { light: '#22d3ee', DEFAULT: '#06b6d4', glow: 'rgba(34, 211, 238, 0.5)' }, // Cyan
                         teacher: { light: '#34d399', DEFAULT: '#10b981', glow: 'rgba(52, 211, 153, 0.5)' }, // Emerald
-                        researcher: { light: '#a78bfa', DEFAULT: '#8b5cf6', glow: 'rgba(167, 139, 250, 0.5)' } // Violet
+                        researcher: { light: '#a78bfa', DEFAULT: '#8b5cf6', glow: 'rgba(167, 139, 250, 0.5)' } // Violet (Professor Color)
                     },
                     animation: {
                         "spin-slow": "spin 15s linear infinite",
@@ -216,11 +216,11 @@
                 <div onclick="preSelectRole('researcher')" class="glass-panel rounded-3xl overflow-hidden cursor-pointer group relative hover:-translate-y-2 transition duration-500 card-glow" style="--glow-color: #8b5cf6;">
                     <div class="h-48 bg-gradient-to-b from-violet-900/40 to-transparent flex items-center justify-center relative overflow-hidden">
                         <div class="absolute inset-0 bg-violet-500/10 opacity-0 group-hover:opacity-100 transition duration-500"></div>
-                        <i class="fa-solid fa-microchip text-7xl text-violet-400 drop-shadow-[0_0_15px_rgba(139,92,246,0.6)] transform group-hover:scale-110 group-hover:rotate-3 transition duration-500"></i>
+                        <i class="fa-solid fa-user-tie text-7xl text-violet-400 drop-shadow-[0_0_15px_rgba(139,92,246,0.6)] transform group-hover:scale-110 group-hover:rotate-3 transition duration-500"></i>
                     </div>
                     <div class="p-8 text-center relative z-10">
-                        <h2 class="text-3xl font-heading font-bold text-white mb-3 group-hover:text-violet-300 transition" data-i18n="role_researcher">我是研究員</h2>
-                        <p class="text-slate-400 text-sm leading-relaxed" data-i18n="desc_researcher">大數據文本挖掘、AI 模型協作與高階系統語言分析。</p>
+                        <h2 class="text-3xl font-heading font-bold text-white mb-3 group-hover:text-violet-300 transition" data-i18n="role_researcher">我是教授</h2>
+                        <p class="text-slate-400 text-sm leading-relaxed" data-i18n="desc_researcher">大數據文本挖掘、學術論文協作與高階系統語言分析。</p>
                         <div class="mt-6 w-10 h-10 rounded-full bg-violet-500/20 flex items-center justify-center mx-auto text-violet-400 group-hover:bg-violet-500 group-hover:text-white transition-all duration-300">
                             <i class="fa-solid fa-arrow-right"></i>
                         </div>
@@ -279,7 +279,7 @@
                         <select id="input-role-select" onchange="syncRoleFromSelector()" class="w-full">
                             <option value="student" data-i18n="role_student">我是學生</option>
                             <option value="teacher" data-i18n="role_teacher">我是教師</option>
-                            <option value="researcher" data-i18n="role_researcher">我是研究員</option>
+                            <option value="researcher" data-i18n="role_researcher">我是教授</option>
                         </select>
                     </div>
 
@@ -553,9 +553,9 @@
                 "logout": "登出", "btn_login": "登入", "back": "返回", 
                 "tab_login": "登入", "tab_register": "註冊新帳號", "btn_login_action": "登入系統", "btn_register_action": "註冊並登入",
                 "select_role": "透過人工智慧賦能，選擇您的身份，開啟個人化的智能學習之旅。",
-                "label_select_role": "註冊身分", "role_student": "學生", "role_teacher": "教師", "role_researcher": "研究員",
-                "reg_title_student": "學生帳號註冊", "reg_title_teacher": "教師帳號註冊", "reg_title_researcher": "研究員帳號註冊",
-                "desc_student": "AI 輔助學習、智能測驗分析與個人化知識圖譜。", "desc_teacher": "AI 備課助手、自動化命題與班級學習數據儀表板。", "desc_researcher": "大數據文本挖掘、AI 模型協作與高階系統語言分析。",
+                "label_select_role": "註冊身分", "role_student": "學生", "role_teacher": "教師", "role_researcher": "教授",
+                "reg_title_student": "學生帳號註冊", "reg_title_teacher": "教師帳號註冊", "reg_title_researcher": "教授帳號註冊",
+                "desc_student": "AI 輔助學習、智能測驗分析與個人化知識圖譜。", "desc_teacher": "AI 備課助手、自動化命題與班級學習數據儀表板。", "desc_researcher": "大數據文本挖掘、學術論文協作與高階系統語言分析。",
                 "label_name": "姓名", "label_gender": "性別", "gender_male": "男", "gender_female": "女", "gender_other": "其他",
                 "label_email": "Email", "label_email_account": "Email (帳號)", "label_password": "密碼", "label_confirm_password": "確認密碼",
                 "msg_loading": "正在連接資料庫...",
@@ -572,9 +572,9 @@
                 "site_title_nav": "AI School", "site_title_hero": "AI School", "welcome_prefix": "Welcome to",
                 "logout": "Logout", "btn_login": "Login", "back": "Back", "tab_login": "Login", "tab_register": "Sign Up",
                 "btn_login_action": "Login", "btn_register_action": "Register & Login", "select_role": "Empowered by AI. Select your role to start your intelligent learning journey.",
-                "label_select_role": "Role", "role_student": "Student", "role_teacher": "Teacher", "role_researcher": "Researcher",
-                "reg_title_student": "Student Registration", "reg_title_teacher": "Teacher Registration", "reg_title_researcher": "Researcher Registration",
-                "desc_student": "AI-assisted learning, intelligent assessment analysis, and personalized knowledge graphs.", "desc_teacher": "AI lesson planning assistant, automated question generation, and class data dashboards.", "desc_researcher": "Big data text mining, AI model collaboration, and advanced system analysis.",
+                "label_select_role": "Role", "role_student": "Student", "role_teacher": "Teacher", "role_researcher": "Professor",
+                "reg_title_student": "Student Registration", "reg_title_teacher": "Teacher Registration", "reg_title_researcher": "Professor Registration",
+                "desc_student": "AI-assisted learning, intelligent assessment analysis, and personalized knowledge graphs.", "desc_teacher": "AI lesson planning assistant, automated question generation, and class data dashboards.", "desc_researcher": "Big data text mining, academic collaboration, and advanced system analysis.",
                 "label_name": "Name", "label_gender": "Gender", "gender_male": "Male", "gender_female": "Female", "gender_other": "Other",
                 "label_email": "Email", "label_email_account": "Email (Account)", "label_password": "Password", "label_confirm_password": "Confirm Password",
                 "msg_loading": "Connecting...",
@@ -591,9 +591,9 @@
                 "site_title_nav": "AI School", "site_title_hero": "AI School", "welcome_prefix": "ようこそ",
                 "logout": "ログアウト", "btn_login": "ログイン", "back": "戻る", "tab_login": "ログイン", "tab_register": "新規登録",
                 "btn_login_action": "ログイン", "btn_register_action": "登録＆ログイン", "select_role": "AIによってエンパワーされた、パーソナライズされた学習の旅を始めましょう。",
-                "label_select_role": "役割", "role_student": "学生", "role_teacher": "教師", "role_researcher": "研究者",
-                "reg_title_student": "学生登録", "reg_title_teacher": "教師登録", "reg_title_researcher": "研究者登録",
-                "desc_student": "AI学習支援、インテリジェントな評価分析、パーソナライズされたナレッジグラフ。", "desc_teacher": "AI授業準備アシスタント、自動問題作成、クラスデータダッシュボード。", "desc_researcher": "ビッグデータテキストマイニング、AIモデルコラボレーション、高度なシステム分析。",
+                "label_select_role": "役割", "role_student": "学生", "role_teacher": "教師", "role_researcher": "教授",
+                "reg_title_student": "学生登録", "reg_title_teacher": "教師登録", "reg_title_researcher": "教授登録",
+                "desc_student": "AI学習支援、インテリジェントな評価分析、パーソナライズされたナレッジグラフ。", "desc_teacher": "AI授業準備アシスタント、自動問題作成、クラスデータダッシュボード。", "desc_researcher": "ビッグデータテキストマイニング、学術論文コラボレーション、高度なシステム分析。",
                 "label_name": "氏名", "label_gender": "性別", "gender_male": "男性", "gender_female": "女性", "gender_other": "その他",
                 "label_email": "メールアドレス", "label_email_account": "メールアドレス (アカウント)", "label_password": "パスワード", "label_confirm_password": "確認用パスワード",
                 "msg_loading": "接続中...",
@@ -610,9 +610,9 @@
                 "site_title_nav": "AI School", "site_title_hero": "AI School", "welcome_prefix": "欢迎来到",
                 "logout": "退出", "btn_login": "登录", "back": "返回", "tab_login": "登录", "tab_register": "注册新账号",
                 "btn_login_action": "登录系统", "btn_register_action": "注册并登录", "select_role": "通过人工智能赋能，选择您的身份，开启个性化的智能学习之旅。",
-                "label_select_role": "注册身份", "role_student": "学生", "role_teacher": "教师", "role_researcher": "研究员",
-                "reg_title_student": "学生账号注册", "reg_title_teacher": "教师账号注册", "reg_title_researcher": "研究员账号注册",
-                "desc_student": "AI 辅助学习、智能测验分析与个性化知识图谱。", "desc_teacher": "AI 备课助手、自动化命题与班级学习数据仪表板。", "desc_researcher": "大数据文本挖掘、AI 模型协作与高阶系统语言分析。",
+                "label_select_role": "注册身份", "role_student": "学生", "role_teacher": "教师", "role_researcher": "教授",
+                "reg_title_student": "学生账号注册", "reg_title_teacher": "教师账号注册", "reg_title_researcher": "教授账号注册",
+                "desc_student": "AI 辅助学习、智能测验分析与个性化知识图谱。", "desc_teacher": "AI 备课助手、自动化命题与班级学习数据仪表板。", "desc_researcher": "大数据文本挖掘、学术论文协作与高阶系统语言分析。",
                 "label_name": "姓名", "label_gender": "性别", "gender_male": "男", "gender_female": "女", "gender_other": "其他",
                 "label_email": "Email", "label_email_account": "Email (账号)", "label_password": "密码", "label_confirm_password": "确认密码",
                 "msg_loading": "正在连接数据库...",
@@ -970,4 +970,4 @@
         }
     </script>
 </body>
-  </html>
+</html>
