@@ -26,7 +26,7 @@
                     colors: {
                         tech: {
                             bg: '#020617',
-                            panel: 'rgba(15, 23, 42, 0.9)', // 稍微加深面板顏色以提升文字對比
+                            panel: 'rgba(15, 23, 42, 0.9)', 
                             border: 'rgba(45, 212, 191, 0.3)',
                             accent: '#2dd4bf', 
                             highlight: 'rgba(45, 212, 191, 0.15)'
@@ -61,7 +61,6 @@
         .scroll-area::-webkit-scrollbar-thumb { background: #115e59; border-radius: 3px; }
         .scroll-area::-webkit-scrollbar-thumb:hover { background: #2dd4bf; }
 
-        /* 導航項目 */
         .nav-item {
             transition: all 0.3s;
             border-left: 2px solid transparent;
@@ -78,7 +77,6 @@
         }
         .nav-item.active .nav-title { color: #2dd4bf; text-shadow: 0 0 10px rgba(45, 212, 191, 0.5); }
 
-        /* 詞彙 X-Ray */
         .sci-term {
             color: #2dd4bf; font-weight: 600; border-bottom: 1px dashed rgba(45, 212, 191, 0.5);
             cursor: help; transition: all 0.3s; position: relative; padding: 0 2px;
@@ -87,7 +85,6 @@
             background-color: rgba(45, 212, 191, 0.2); color: #fff; text-shadow: 0 0 8px #2dd4bf; border-radius: 4px;
         }
 
-        /* 下拉選單 */
         .custom-select {
             background-color: rgba(15, 23, 42, 0.8);
             border: 1px solid rgba(45, 212, 191, 0.3);
@@ -100,7 +97,6 @@
 
         #canvas-container { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
         
-        /* 閱讀段落美化 */
         .content-block {
             margin-bottom: 2rem;
             padding: 1.5rem;
@@ -141,8 +137,12 @@
 
             <div class="flex items-center gap-3">
                 <div class="flex items-center bg-slate-900/80 rounded-lg p-1 border border-teal-500/30">
-                    <button onclick="setVoice('male')" class="voice-btn px-2 py-1 rounded transition text-teal-400 hover:bg-teal-500/20" id="voice-male" title="Dr. Spark"><i class="fa-solid fa-user-doctor"></i></button>
-                    <button onclick="setVoice('female')" class="voice-btn px-2 py-1 rounded transition text-slate-500 hover:bg-teal-500/20" id="voice-female" title="Nova"><i class="fa-solid fa-user-astronaut"></i></button>
+                    <button onclick="setVoice('male')" class="voice-btn px-2 py-1 rounded transition text-teal-400 hover:bg-teal-500/20" id="voice-male" title="Teacher Spark (男老師)">
+                        <i class="fa-solid fa-user-tie"></i>
+                    </button>
+                    <button onclick="setVoice('female')" class="voice-btn px-2 py-1 rounded transition text-slate-500 hover:bg-teal-500/20" id="voice-female" title="Teacher Nova (女老師)">
+                        <i class="fa-solid fa-user-graduate"></i>
+                    </button>
                 </div>
                 <div class="flex bg-slate-900/80 rounded-lg p-1 border border-teal-500/30">
                     <button onclick="setMode('en')" class="mode-btn px-3 py-1 text-xs font-bold rounded text-teal-500 hover:text-white transition" id="btn-en">EN</button>
@@ -154,8 +154,12 @@
 
         <div class="w-full px-4 md:px-6 py-2 bg-slate-900/60 flex flex-wrap gap-2 items-center text-sm border-t border-teal-500/20 md:border-t-0 md:bg-transparent">
             <span class="text-xs font-tech text-teal-500 mr-2"><i class="fa-solid fa-filter"></i> FILTER:</span>
-            <select id="sel-semester" class="custom-select px-3 py-1 rounded w-24" onchange="filterData()"><option value="all">All Semesters</option><option value="上">上學期 (1st)</option><option value="下">下學期 (2nd)</option></select>
-            <select id="sel-unit" class="custom-select px-3 py-1 rounded flex-grow md:flex-grow-0 md:w-64" onchange="loadSelectedUnit()"><option value="" disabled selected>Select Unit</option></select>
+            <select id="sel-semester" class="custom-select px-3 py-1 rounded w-24" onchange="filterData()">
+                <option value="all">全學年</option>
+                <option value="上">上學期</option>
+                <option value="下">下學期</option>
+            </select>
+            <select id="sel-unit" class="custom-select px-3 py-1 rounded flex-grow md:flex-grow-0 md:w-64" onchange="loadSelectedUnit()"><option value="" disabled selected>請選擇單元</option></select>
         </div>
     </nav>
 
@@ -186,7 +190,7 @@
             <div class="flex-grow scroll-area overflow-y-auto p-8 md:p-12 relative" id="reading-container">
                 <article class="max-w-4xl mx-auto transition-opacity duration-500" id="article-body">
                     <h1 class="text-3xl md:text-4xl font-black text-white mb-8 font-heading tracking-tight text-center" id="article-title">
-                        <span class="text-slate-500 opacity-50">Select a Unit to Begin Reading</span>
+                        <span class="text-slate-500 opacity-50">請從上方選擇單元開始</span>
                     </h1>
                     <div id="article-content" class="space-y-6 text-lg leading-relaxed text-slate-200"></div>
                 </article>
@@ -232,15 +236,25 @@
         // ==========================================
         // 1. 設定與初始化
         // ==========================================
-        // 使用您提供的 Sheet ID
+        
+        // ★ 您的試算表 ID (已預填)
         const SHEET_ID = '1cEfMEy3bvDa1tET3xmh7ShGeJy8KLUMa_JuULGBD-mk';
-        const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&id=${SHEET_ID}&gid=0`;
+        
+        // ★★★ 請在此處貼上您發布為 CSV 的網址，以確保 100% 讀取成功 ★★★
+        // 格式範例: https://docs.google.com/spreadsheets/d/e/2PACX-....../pub?output=csv
+        const PUBLISHED_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRbgkNiMflfeLQd3KN8F4yjjIr6G2flnCAy-nUPMiC7_xDfdg_0hJ2Qzbsr92u8htlPLFR8GwwQPK_g/pub?gid=0&single=true&output=csv'; // <--- 貼在這裡 (如果沒貼，會自動嘗試用下方的備用連結)
 
-        // 欄位索引 (根據您的描述更新)
-        // 假設: 單元名稱在內容開頭, 學期在 E 欄 (Index 4), 內容在 I 欄 (Index 8), 詞彙在 S 欄 (Index 18)
-        const COL_SEMESTER = 4; // E欄
-        const COL_CONTENT = 8;  // I欄
-        const COL_VOCAB = 18;   // S欄
+        // 備用連結 (Fallback) - 權限需設為「知道連結者皆可檢視」
+        const FALLBACK_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&id=${SHEET_ID}&gid=0`;
+
+        // 決定使用哪個連結
+        const TARGET_URL = PUBLISHED_CSV_URL || FALLBACK_CSV_URL;
+
+        // 欄位索引 (Index) - 依據您的試算表結構
+        // E欄=學期(Index 4), I欄=內容(Index 8), S欄=詞彙(Index 18)
+        const COL_SEMESTER = 4;
+        const COL_CONTENT = 8;
+        const COL_VOCAB = 18;
 
         let rawData = [];
         let processedUnits = []; 
@@ -251,68 +265,81 @@
         document.addEventListener('DOMContentLoaded', () => {
             initCanvas();
             fetchData();
-            if(window.speechSynthesis) window.speechSynthesis.getVoices();
+            if(window.speechSynthesis) {
+                window.speechSynthesis.onvoiceschanged = () => console.log("Voices loaded");
+            }
         });
 
         function goBack() { window.location.href = 'student_science.html'; }
 
         // ==========================================
-        // 2. 資料處理 (Data Handling)
+        // 2. 資料處理
         // ==========================================
         function fetchData() {
-            Papa.parse(SHEET_CSV_URL, {
+            console.log("Fetching from:", TARGET_URL);
+            
+            Papa.parse(TARGET_URL, {
                 download: true,
-                header: false, // 假設第一行可能是標題，我們手動處理
+                header: false,
                 complete: function(results) {
                     processData(results.data);
                     document.getElementById('loader-overlay').style.display = 'none';
+                    showToast("資料庫連線成功");
                 },
                 error: function(err) {
                     console.error("CSV Error:", err);
-                    alert("無法讀取資料庫。請確認 Google Sheet 權限設定為「公開 (知道連結者皆可檢視)」。");
-                    document.getElementById('loader-overlay').innerHTML = `<div class="text-red-500">DATABASE ACCESS DENIED</div>`;
+                    // 如果是用 Fallback 失敗，提示使用者去發布
+                    if (!PUBLISHED_CSV_URL) {
+                        document.getElementById('loader-overlay').innerHTML = `
+                            <div class="text-red-500 font-bold mb-2">ACCESS DENIED</div>
+                            <div class="text-xs text-slate-400 max-w-md text-center">
+                                自動連線失敗。請務必執行：<br>
+                                檔案 > 共用 > 發布到網路 > CSV<br>
+                                並將網址貼入程式碼的 PUBLISHED_CSV_URL 中。
+                            </div>`;
+                    } else {
+                        showToast("連線錯誤，請檢查網址", "error");
+                    }
                 }
             });
         }
 
         function processData(data) {
-            rawData = data.slice(1); // 去掉可能的標題列
-            // 整理資料：根據「單元名稱」分組
-            // 由於您說內容在 I 欄，且單元名稱在內容開頭，我們這裡做一個簡單的萃取
-            // 邏輯：每一列視為一個獨立的學習單元/文章 (或者您可以根據特定欄位分組)
+            // 去掉標題列 (假設第一列是標題)
+            rawData = data.slice(1);
             
             processedUnits = rawData.map((row, index) => {
                 let content = row[COL_CONTENT] || "";
-                let semester = row[COL_SEMESTER] || "";
+                let semester = row[COL_SEMESTER] || ""; // 學期: "上" 或 "下"
                 let vocab = row[COL_VOCAB] || "";
                 
-                // 嘗試從內容第一行提取標題，若無則用預設
+                // 嘗試從內容第一行提取單元標題
                 let title = `Unit ${index + 1}`;
                 let lines = content.split('\n');
                 if (lines.length > 0 && lines[0].length < 50) {
-                    title = lines[0].trim(); // 假設第一行是標題
+                    title = lines[0].trim();
                 }
 
                 return {
                     id: index,
                     title: title,
-                    semester: semester.trim(), // 上/下
+                    semester: semester.trim(),
                     content: content,
                     vocab: vocab
                 };
-            }).filter(u => u.content.length > 10); // 過濾掉空行
+            }).filter(u => u.content.length > 10); // 過濾無效內容
 
-            filterData(); // 初始篩選
+            filterData();
         }
 
         function filterData() {
             const semesterFilter = document.getElementById('sel-semester').value;
             const unitSelect = document.getElementById('sel-unit');
-            unitSelect.innerHTML = '<option value="" disabled selected>Select Unit</option>';
+            unitSelect.innerHTML = '<option value="" disabled selected>請選擇單元</option>';
 
             const filtered = processedUnits.filter(u => {
                 if (semesterFilter === 'all') return true;
-                return u.semester.includes(semesterFilter);
+                return u.semester.includes(semesterFilter); // 只要包含 "上" 或 "下"
             });
 
             filtered.forEach(u => {
@@ -322,7 +349,7 @@
                 unitSelect.add(opt);
             });
             
-            showToast(`Loaded ${filtered.length} Units`);
+            if(filtered.length === 0) showToast("查無此學期資料", "error");
         }
 
         function loadSelectedUnit() {
@@ -332,7 +359,7 @@
         }
 
         // ==========================================
-        // 3. 內容渲染 (Rendering & Parsing)
+        // 3. 內容渲染
         // ==========================================
         function renderArticle(unit) {
             currentUnitIndex = unit.id;
@@ -340,21 +367,17 @@
             document.getElementById('status-bar').innerText = `READING: ${unit.title}`;
 
             // 解析 S 欄詞彙
-            // 假設格式為 "光合作用:Photosynthesis, 葉綠素:Chlorophyll"
             let vocabMap = {};
             if (unit.vocab) {
-                let items = unit.vocab.split(/[,;，；]/);
+                let items = unit.vocab.split(/[,;，；\n]/);
                 items.forEach(item => {
                     let parts = item.split(/[:：]/);
-                    if (parts.length >= 1) {
-                        let key = parts[0].trim();
-                        let val = parts[1] ? parts[1].trim() : "Scientific Term";
-                        if(key) vocabMap[key] = val;
-                    }
+                    let key = parts[0].trim();
+                    let val = parts[1] ? parts[1].trim() : "Scientific Term";
+                    if(key) vocabMap[key] = val;
                 });
             }
 
-            // 解析內文並生成導航
             const contentDiv = document.getElementById('article-content');
             const navList = document.getElementById('unit-list');
             contentDiv.innerHTML = '';
@@ -370,15 +393,17 @@
                 // X-Ray 關鍵字處理
                 let processedLine = line;
                 for (let [key, val] of Object.entries(vocabMap)) {
-                    const regex = new RegExp(`(${key})`, 'gi');
-                    processedLine = processedLine.replace(regex, 
-                        `<span class="sci-term" onmouseenter="showAIAnalysis('${key}', '${val}')">$1</span>`
-                    );
+                    // 使用正則表達式進行替換，加上螢光特效
+                    try {
+                        const regex = new RegExp(`(${key})`, 'gi');
+                        processedLine = processedLine.replace(regex, 
+                            `<span class="sci-term" onmouseenter="showAIAnalysis('${key}', '${val}')">$1</span>`
+                        );
+                    } catch(e) {}
                 }
 
-                // 判斷是否為標題 (簡單邏輯：長度短或是活動名稱)
-                // 您提到 "活動名稱" 在內容開頭
-                const isHeader = line.length < 30 || line.includes("活動");
+                // AI 判讀標題：短行、包含"活動"
+                const isHeader = (line.length < 40 && !/[。！？.!?]$/.test(line)) || line.includes("活動");
 
                 if (isHeader) {
                     sectionCount++;
@@ -396,20 +421,20 @@
                     navList.appendChild(navItem);
 
                     // 內文標題
-                    contentDiv.innerHTML += `<h2 id="${anchorId}" class="text-2xl font-bold text-teal-400 mt-8 mb-4 border-l-4 border-teal-500 pl-4">${processedLine}</h2>`;
+                    contentDiv.innerHTML += `<h2 id="${anchorId}" class="text-2xl font-bold text-teal-400 mt-8 mb-4 border-l-4 border-teal-500 pl-4 bg-teal-500/5 py-2 rounded-r-lg">${processedLine}</h2>`;
                 } else {
-                    // 內文段落 (自動包裝為卡片)
-                    // 偵測中文/英文 (這裡簡單全部視為雙語混合內容)
-                    const pClass = /[a-zA-Z]/.test(line) ? "text-slate-100 font-medium en-text" : "text-slate-300 zh-text";
+                    // 內文段落 (自動判斷中英樣式)
+                    const isEnglish = /^[A-Za-z\s.,?!'"()-]+$/.test(line);
+                    const pClass = isEnglish ? "text-slate-100 font-medium en-text text-lg" : "text-slate-300 zh-text text-base";
+                    
                     contentDiv.innerHTML += `
                         <div class="content-block">
-                            <p class="${pClass} text-lg leading-loose">${processedLine}</p>
+                            <p class="${pClass} leading-loose">${processedLine}</p>
                         </div>
                     `;
                 }
             });
             
-            // 預設語言模式
             setMode('dual');
         }
 
@@ -420,7 +445,13 @@
             currentVoice = gender;
             document.getElementById('voice-male').className = `voice-btn px-2 py-1 rounded transition ${gender === 'male' ? 'bg-teal-600 text-white shadow' : 'text-teal-400 hover:bg-teal-500/20'}`;
             document.getElementById('voice-female').className = `voice-btn px-2 py-1 rounded transition ${gender === 'female' ? 'bg-teal-600 text-white shadow' : 'text-slate-500 hover:bg-teal-500/20'}`;
-            showToast(`Voice: ${gender === 'male' ? 'Dr. Spark' : 'Nova'} Active`);
+            
+            const name = gender === 'male' ? 'Teacher Spark' : 'Teacher Nova';
+            showToast(`${name} 準備就緒`);
+            
+            // 喚醒 iOS 語音
+            const u = new SpeechSynthesisUtterance('');
+            window.speechSynthesis.speak(u);
         }
 
         function toggleSpeech() {
@@ -430,32 +461,47 @@
                 isSpeaking = false;
                 btn.innerHTML = '<i class="fa-solid fa-play"></i>';
             } else {
-                // 抓取當前顯示的文字
                 let textToRead = "";
-                // 根據當前模式抓取
-                if (!document.querySelector('.en-text.hidden')) {
-                    document.querySelectorAll('.en-text').forEach(p => textToRead += p.innerText + " ");
+                // 優先朗讀可見的英文
+                const enNodes = document.querySelectorAll('.en-text');
+                const zhNodes = document.querySelectorAll('.zh-text');
+                
+                // 檢查英文是否隱藏
+                const enVisible = enNodes.length > 0 && !enNodes[0].classList.contains('hidden');
+                
+                if (enVisible) {
+                    enNodes.forEach(p => textToRead += p.innerText + " ");
                 } else {
-                    document.querySelectorAll('.zh-text').forEach(p => textToRead += p.innerText + " ");
+                    zhNodes.forEach(p => textToRead += p.innerText + " ");
                 }
 
-                if(!textToRead) { showToast("No text to read", "error"); return; }
+                if(!textToRead) { showToast("沒有可朗讀的文字", "error"); return; }
 
                 const u = new SpeechSynthesisUtterance(textToRead);
                 const voices = window.speechSynthesis.getVoices();
                 
-                // 簡單的語音選擇邏輯
-                let targetVoice;
-                if(currentVoice === 'male') {
-                    u.pitch = 0.9; u.rate = 1.0;
-                    targetVoice = voices.find(v => v.name.includes("Google") && v.lang.includes("en")) || voices[0];
+                let targetVoice = null;
+                if (currentVoice === 'male') {
+                    // 男老師 (Google US / Microsoft David)
+                    targetVoice = voices.find(v => v.name.includes("Google US English")) || 
+                                  voices.find(v => v.name.includes("David")) || 
+                                  voices.find(v => v.lang === 'en-US');
+                    u.pitch = 0.95; // 稍微低沈穩重
+                    u.rate = 0.9;   // 語速適中
                 } else {
-                    u.pitch = 1.1; u.rate = 1.1;
-                    targetVoice = voices.find(v => v.name.includes("Microsoft") && v.lang.includes("en")) || voices[0];
+                    // 女老師 (Google UK / Microsoft Zira)
+                    targetVoice = voices.find(v => v.name.includes("Zira")) || 
+                                  voices.find(v => v.name.includes("Google UK English Female")) || 
+                                  voices.find(v => v.lang === 'en-US'); 
+                    u.pitch = 1.05; // 親切
+                    u.rate = 1.0;   // 語速標準
                 }
+                
                 if(targetVoice) u.voice = targetVoice;
 
                 u.onend = () => { isSpeaking = false; btn.innerHTML = '<i class="fa-solid fa-play"></i>'; };
+                u.onerror = (e) => { console.log(e); isSpeaking = false; btn.innerHTML = '<i class="fa-solid fa-play"></i>'; };
+                
                 window.speechSynthesis.speak(u);
                 isSpeaking = true;
                 btn.innerHTML = '<i class="fa-solid fa-stop text-red-400"></i>';
@@ -470,7 +516,7 @@
             card.classList.remove('hidden', 'opacity-0');
             
             document.getElementById('ai-term-title').innerText = term;
-            document.getElementById('ai-term-desc').innerText = definition || "Fetching AI definition...";
+            document.getElementById('ai-term-desc').innerText = definition || "讀取中...";
         }
 
         function speakTerm() {
@@ -480,9 +526,10 @@
             window.speechSynthesis.speak(u);
         }
 
-        // 輔助功能
+        // ==========================================
+        // 5. 輔助功能
+        // ==========================================
         function setMode(mode) {
-            // 切換 CSS class 隱藏/顯示 en-text 或 zh-text
             const en = document.querySelectorAll('.en-text');
             const zh = document.querySelectorAll('.zh-text');
             
@@ -492,14 +539,14 @@
             });
 
             if(mode === 'en') {
-                en.forEach(e => e.parentElement.classList.remove('hidden'));
-                zh.forEach(z => z.parentElement.classList.add('hidden'));
+                en.forEach(e => e.classList.remove('hidden'));
+                zh.forEach(z => z.classList.add('hidden'));
             } else if (mode === 'zh') {
-                en.forEach(e => e.parentElement.classList.add('hidden'));
-                zh.forEach(z => z.parentElement.classList.remove('hidden'));
+                en.forEach(e => e.classList.add('hidden'));
+                zh.forEach(z => z.classList.remove('hidden'));
             } else {
-                en.forEach(e => e.parentElement.classList.remove('hidden'));
-                zh.forEach(z => z.parentElement.classList.remove('hidden'));
+                en.forEach(e => e.classList.remove('hidden'));
+                zh.forEach(z => z.classList.remove('hidden'));
             }
         }
 
@@ -518,7 +565,6 @@
             setTimeout(() => toast.classList.add('opacity-0', 'translate-y-10'), 3000);
         }
 
-        // 背景動畫 (維持一致性)
         function initCanvas() {
             const canvas = document.getElementById('molecule-canvas');
             const ctx = canvas.getContext('2d');
