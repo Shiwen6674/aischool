@@ -6,7 +6,7 @@
     <title>AI School | 科學雙語閱讀</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&family=Orbitron:wght@500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,9 +18,7 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
-                        heading: ['Outfit', 'sans-serif'],
-                        tech: ['Orbitron', 'sans-serif'],
+                        sans: ['Noto Sans TC', 'Inter', 'sans-serif'],
                     },
                     colors: {
                         tech: {
@@ -28,11 +26,8 @@
                             panel: 'rgba(15, 23, 42, 0.95)', 
                             border: 'rgba(45, 212, 191, 0.3)',
                             accent: '#2dd4bf', 
-                            highlight: '#facc15' // Yellow
+                            highlight: '#facc15'
                         }
-                    },
-                    animation: {
-                        "pulse-slow": "pulse 3s infinite",
                     }
                 }
             }
@@ -44,41 +39,28 @@
         .scroll-area::-webkit-scrollbar { width: 6px; }
         .scroll-area::-webkit-scrollbar-track { background: rgba(2, 6, 23, 0.5); }
         .scroll-area::-webkit-scrollbar-thumb { background: #115e59; border-radius: 3px; }
-        .scroll-area::-webkit-scrollbar-thumb:hover { background: #2dd4bf; }
-
-        /* Navigation */
-        .nav-item { transition: all 0.2s; border-left: 3px solid transparent; cursor: pointer; padding: 0.6rem 0.8rem; margin-bottom: 0.25rem; border-radius: 0 0.5rem 0.5rem 0; font-size: 0.9rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .nav-item { transition: all 0.2s; border-left: 3px solid transparent; cursor: pointer; padding: 0.6rem 0.8rem; margin-bottom: 0.25rem; font-size: 0.9rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .nav-item:hover { background: rgba(45, 212, 191, 0.05); color: #ccfbf1; }
         .nav-item.active { background: linear-gradient(90deg, rgba(45, 212, 191, 0.1), transparent); border-left-color: #2dd4bf; color: #2dd4bf; font-weight: 700; }
 
-        /* Science Term Highlight (Yellow) */
-        .sci-term {
-            color: #facc15; font-weight: 700; 
-            border-bottom: 1px dashed rgba(250, 204, 21, 0.6);
-            cursor: pointer; transition: all 0.2s; padding: 0 2px;
-        }
-        .sci-term:hover {
-            background-color: rgba(250, 204, 21, 0.2); color: #fff; 
-            text-shadow: 0 0 10px #facc15; border-radius: 4px;
-        }
+        /* 黃色標示 */
+        .sci-term { color: #facc15; font-weight: 700; border-bottom: 1px dashed rgba(250, 204, 21, 0.6); cursor: pointer; transition: all 0.2s; padding: 0 2px; }
+        .sci-term:hover { background-color: rgba(250, 204, 21, 0.2); color: #fff; text-shadow: 0 0 10px #facc15; border-radius: 4px; }
 
-        /* Dropdowns */
-        .custom-select { background-color: rgba(15, 23, 42, 0.8); border: 1px solid rgba(45, 212, 191, 0.3); color: #ccfbf1; appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%232dd4bf' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.3rem center; background-repeat: no-repeat; background-size: 1.2em 1.2em; padding-right: 1.5rem; }
-        .custom-select:focus { border-color: #2dd4bf; box-shadow: 0 0 10px rgba(45, 212, 191, 0.2); }
-        .custom-select:disabled { opacity: 0.4; cursor: not-allowed; border-color: rgba(255,255,255,0.1); }
-
-        /* Content */
+        .custom-select { background-color: rgba(15, 23, 42, 0.8); border: 1px solid rgba(45, 212, 191, 0.3); color: #ccfbf1; appearance: none; padding-right: 1.5rem; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%232dd4bf' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.3rem center; background-repeat: no-repeat; background-size: 1.2em 1.2em; }
+        
         .content-block { margin-bottom: 1rem; padding: 1rem; border-radius: 0.75rem; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.2s ease; }
-        .content-block:hover { background: rgba(45, 212, 191, 0.03); border-color: rgba(45, 212, 191, 0.2); }
         .en-text { font-size: 1.1rem; color: #e2e8f0; line-height: 1.6; margin-bottom: 0.5rem; font-weight: 500; font-family: 'Inter', sans-serif; cursor: pointer; transition: color 0.2s; }
         .en-text:hover { color: #2dd4bf; }
         .zh-text { font-size: 1rem; color: #94a3b8; line-height: 1.6; padding-left: 8px; border-left: 3px solid rgba(45, 212, 191, 0.3); }
-        .section-header { font-size: 1.25rem; font-weight: 800; color: #fff; margin-top: 1.5rem; margin-bottom: 0.75rem; padding-bottom: 0.25rem; border-bottom: 1px solid rgba(45, 212, 191, 0.3); display: flex; align-items: center; gap: 0.5rem; }
-        .section-header::before { content: ''; display: block; width: 4px; height: 20px; background: #2dd4bf; border-radius: 2px; }
         
-        /* Vocab Card */
-        .vocab-card { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(45, 212, 191, 0.2); border-radius: 8px; padding: 10px; margin-bottom: 8px; transition: all 0.2s; }
-        .vocab-card:hover { border-color: #facc15; background: rgba(250, 204, 21, 0.05); }
+        .section-header { font-size: 1.4rem; font-weight: 800; color: #fff; margin-top: 2rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(45, 212, 191, 0.3); display: flex; align-items: center; gap: 0.5rem; }
+        .section-header::before { content: ''; display: block; width: 5px; height: 24px; background: #2dd4bf; border-radius: 2px; }
+        
+        /* Vocab List Style */
+        .vocab-item { background: rgba(15, 23, 42, 0.6); border-bottom: 1px solid rgba(45, 212, 191, 0.1); padding: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .vocab-item:hover { background: rgba(250, 204, 21, 0.05); }
 
         #canvas-container { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
         .loader { border: 2px solid rgba(45, 212, 191, 0.1); border-top: 2px solid #2dd4bf; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; }
@@ -91,7 +73,7 @@
 
     <div id="loader-overlay" class="absolute inset-0 bg-[#020617] z-50 flex flex-col items-center justify-center">
         <i class="fa-solid fa-satellite-dish text-5xl text-teal-400 animate-pulse mb-4"></i>
-        <div class="text-teal-500 font-tech tracking-widest mt-2">CONNECTING TO DATABASE...</div>
+        <div class="text-teal-500 tracking-widest mt-2 font-bold">資料庫連線中...</div>
     </div>
 
     <nav class="glass-panel sticky top-0 z-40 h-auto md:h-16 flex flex-col md:flex-row items-center shrink-0 border-b-0 shadow-lg">
@@ -101,29 +83,51 @@
                     <div class="p-1 rounded border border-teal-500/30 group-hover:bg-teal-500/20">
                         <i class="fa-solid fa-chevron-left"></i>
                     </div>
-                    <span class="text-sm font-tech tracking-wider hidden md:inline" data-i18n="return">RETURN</span>
+                    <span class="text-sm font-bold tracking-wider hidden md:inline" data-i18n="return">返回</span>
                 </button>
                 <div class="flex items-center gap-2 cursor-default">
                     <div class="w-8 h-8 rounded-lg bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400">
                         <i class="fa-solid fa-book-journal-whills"></i>
                     </div>
-                    <span class="text-lg font-heading font-bold text-white tracking-wide">SCI-LINGUA <span class="text-teal-400">READER</span></span>
+                    <span class="text-lg font-bold text-white tracking-wide" data-i18n="page_title">科學雙語閱讀</span>
                 </div>
             </div>
 
-            <div class="flex-grow flex justify-center px-4">
-                <select id="sel-unit" class="custom-select px-3 py-1.5 rounded w-full md:w-80 text-sm font-bold bg-slate-900/80 border-teal-500/50 focus:border-teal-400 transition" onchange="loadSelectedUnit()" disabled>
-                    <option value="" disabled selected data-i18n="unit">請先選擇上方篩選條件...</option>
+            <div class="flex items-center gap-4 bg-slate-900/50 rounded-full px-4 py-1.5 border border-teal-500/20">
+                <select id="play-rate" class="bg-transparent text-xs font-bold text-teal-400 outline-none cursor-pointer w-14" title="語速">
+                    <option value="0.5">0.5x</option>
+                    <option value="0.75">0.75x</option>
+                    <option value="1.0" selected>1.0x</option>
+                    <option value="1.25">1.25x</option>
+                    <option value="1.5">1.5x</option>
                 </select>
+                
+                <div class="h-4 w-px bg-teal-500/30"></div>
+
+                <div class="flex items-center gap-1">
+                    <button onclick="setVoice('male')" id="btn-male" class="text-teal-400 p-1 hover:text-white" title="男聲"><i class="fa-solid fa-user-tie"></i></button>
+                    <button onclick="setVoice('female')" id="btn-female" class="text-slate-500 p-1 hover:text-white" title="女聲"><i class="fa-solid fa-user-graduate"></i></button>
+                </div>
+
+                <div class="h-4 w-px bg-teal-500/30"></div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleSpeech()" class="w-8 h-8 flex items-center justify-center rounded-full bg-teal-600 hover:bg-teal-500 text-white transition shadow-lg" id="btn-play" title="播放/暫停">
+                        <i class="fa-solid fa-play text-xs"></i>
+                    </button>
+                    <button onclick="stopSpeech()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-700 hover:bg-red-500 text-white transition shadow-lg" title="停止">
+                        <i class="fa-solid fa-stop text-xs"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="flex items-center gap-3">
                 <div class="flex bg-slate-900/80 rounded-lg p-1 border border-teal-500/30">
-                    <button onclick="setMode('en')" class="mode-btn px-3 py-1 text-xs font-bold rounded text-teal-500 hover:text-white transition" id="btn-en">EN</button>
-                    <button onclick="setMode('dual')" class="mode-btn px-3 py-1 text-xs font-bold rounded bg-teal-600 text-white shadow-[0_0_10px_rgba(45,212,191,0.4)]" id="btn-dual">DUAL</button>
-                    <button onclick="setMode('zh')" class="mode-btn px-3 py-1 text-xs font-bold rounded text-teal-500 hover:text-white transition" id="btn-zh">ZH</button>
+                    <button onclick="setMode('en')" class="mode-btn px-2 py-1 text-xs font-bold rounded text-teal-500 hover:text-white transition" id="btn-en">EN</button>
+                    <button onclick="setMode('dual')" class="mode-btn px-2 py-1 text-xs font-bold rounded bg-teal-600 text-white shadow-[0_0_10px_rgba(45,212,191,0.4)]" id="btn-dual">DUAL</button>
+                    <button onclick="setMode('zh')" class="mode-btn px-2 py-1 text-xs font-bold rounded text-teal-500 hover:text-white transition" id="btn-zh">ZH</button>
                 </div>
-
+                
                 <select id="ui-lang" class="bg-slate-900/80 border border-teal-500/30 text-teal-100 rounded-lg px-2 py-1 text-xs outline-none cursor-pointer hover:bg-slate-800" onchange="changeLanguage()">
                     <option value="zh-TW">繁體中文</option>
                     <option value="en">English</option>
@@ -134,11 +138,12 @@
         </div>
 
         <div class="w-full px-4 md:px-6 py-2 bg-slate-900/80 flex flex-wrap gap-2 items-center text-sm border-t border-teal-500/20 md:border-t-0 md:bg-transparent justify-end">
-            <span class="text-xs font-tech text-teal-500 mr-2"><i class="fa-solid fa-filter"></i> FILTER:</span>
+            <span class="text-xs font-bold text-teal-500 mr-2"><i class="fa-solid fa-filter"></i> 篩選:</span>
             <select id="sel-stage" class="custom-select px-2 py-1 rounded w-24 text-xs font-bold" onchange="filterUnits('stage')"><option value="" disabled selected data-i18n="stage">階段</option></select>
             <select id="sel-grade" class="custom-select px-2 py-1 rounded w-20 text-xs font-bold" onchange="filterUnits('grade')" disabled><option value="" disabled selected data-i18n="grade">年級</option></select>
             <select id="sel-version" class="custom-select px-2 py-1 rounded w-24 text-xs font-bold" onchange="filterUnits('version')" disabled><option value="" disabled selected data-i18n="version">版本</option></select>
             <select id="sel-semester" class="custom-select px-2 py-1 rounded w-20 text-xs font-bold" onchange="filterUnits('semester')" disabled><option value="" disabled selected data-i18n="semester">學期</option></select>
+            <select id="sel-unit" class="custom-select px-2 py-1 rounded flex-grow md:flex-grow-0 md:w-64 text-xs font-bold" onchange="loadSelectedUnit()" disabled><option value="" disabled selected data-i18n="unit">選擇單元</option></select>
         </div>
     </nav>
 
@@ -146,53 +151,27 @@
         
         <aside class="w-64 glass-panel rounded-2xl flex flex-col overflow-hidden hidden md:flex">
             <div class="p-4 border-b border-teal-500/20 bg-slate-900/40">
-                <h3 class="text-xs font-tech text-teal-500 tracking-widest mb-1" data-i18n="nav">NAVIGATION</h3>
-                <div class="text-white font-bold text-sm truncate" id="nav-title">Outline</div>
+                <h3 class="text-xs font-bold text-teal-500 tracking-widest mb-1" data-i18n="nav">目錄導航</h3>
+                <div class="text-white font-bold text-sm truncate" id="nav-title">請選擇單元</div>
             </div>
             <div class="flex-grow scroll-area overflow-y-auto p-2 space-y-1" id="unit-list">
-                <div class="text-center text-slate-500 text-xs mt-10 p-4" data-i18n="select_hint">請先選擇單元。</div>
+                <div class="text-center text-slate-500 text-xs mt-10 p-4" data-i18n="select_hint">請先從上方選擇單元。</div>
             </div>
         </aside>
 
         <section class="flex-grow glass-panel rounded-2xl flex flex-col relative overflow-hidden">
-            <div class="h-12 border-b border-teal-500/20 bg-slate-900/40 flex items-center justify-between px-6">
+            <div class="h-10 border-b border-teal-500/20 bg-slate-900/40 flex items-center justify-between px-6">
                 <div class="flex items-center gap-2">
                     <i class="fa-solid fa-file-lines text-teal-400"></i>
-                    <span class="text-xs font-tech text-teal-200" id="status-bar">READY</span>
+                    <span class="text-xs font-bold text-teal-200" id="status-bar">READY</span>
                     <span id="trans-loading" class="hidden text-xs text-teal-400 flex items-center gap-1 ml-2"><div class="loader"></div> Translating...</span>
-                </div>
-                
-                <div class="flex items-center gap-4 bg-slate-900/50 rounded-full px-3 py-1 border border-teal-500/20">
-                    <div class="flex items-center gap-1 border-r border-teal-500/30 pr-2">
-                        <button onclick="setVoice('male')" id="btn-male" class="text-teal-400 p-1 hover:text-white" title="Teacher Spark (Male)"><i class="fa-solid fa-user-tie"></i></button>
-                        <button onclick="setVoice('female')" id="btn-female" class="text-slate-500 p-1 hover:text-white" title="Teacher Nova (Female)"><i class="fa-solid fa-user-graduate"></i></button>
-                    </div>
-
-                    <select id="play-rate" class="bg-transparent text-xs font-bold text-teal-400 outline-none cursor-pointer w-14" title="Speed">
-                        <option value="0.5">0.5x</option>
-                        <option value="0.75">0.75x</option>
-                        <option value="1.0" selected>1.0x</option>
-                        <option value="1.25">1.25x</option>
-                        <option value="1.5">1.5x</option>
-                    </select>
-                    
-                    <div class="h-4 w-px bg-teal-500/30"></div>
-
-                    <div class="flex items-center gap-2">
-                        <button onclick="toggleSpeech()" class="w-8 h-8 flex items-center justify-center rounded-full bg-teal-600 hover:bg-teal-500 text-white transition shadow-lg" id="btn-play" title="Play/Pause">
-                            <i class="fa-solid fa-play text-xs"></i>
-                        </button>
-                        <button onclick="stopSpeech()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-700 hover:bg-red-500 text-white transition shadow-lg" title="Stop">
-                            <i class="fa-solid fa-stop text-xs"></i>
-                        </button>
-                    </div>
                 </div>
             </div>
 
             <div class="flex-grow scroll-area overflow-y-auto p-6 md:p-8 relative" id="reading-container">
                 <article class="max-w-4xl mx-auto transition-opacity duration-500" id="article-body">
                     <h1 class="text-2xl md:text-3xl font-black text-white mb-6 font-heading tracking-tight text-center" id="article-title">
-                        <span class="text-slate-500 opacity-50" data-i18n="select_hint">請從上方選單選擇教材</span>
+                        <span class="text-slate-500 opacity-50" data-i18n="select_hint">請先從上方選擇單元</span>
                     </h1>
                     <div id="article-content" class="space-y-4"></div>
                 </article>
@@ -203,20 +182,19 @@
             <div class="p-4 border-b border-teal-500/20 bg-gradient-to-r from-slate-900/80 to-teal-900/20">
                 <div class="flex items-center gap-2 mb-1">
                     <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
-                    <h3 class="text-xs font-tech text-teal-400 tracking-widest" data-i18n="vocab_title">VOCABULARY</h3>
+                    <h3 class="text-xs font-bold text-teal-400 tracking-widest" data-i18n="vocab_title">科學詞彙庫</h3>
                 </div>
-                <div class="text-xs text-slate-400">Scientific Terms</div>
             </div>
 
-            <div class="flex-grow scroll-area overflow-y-auto p-4" id="vocab-container">
+            <div class="flex-grow scroll-area overflow-y-auto" id="vocab-container">
                 <div class="text-center py-10 opacity-50 text-sm text-teal-200/50" data-i18n="vocab_empty">
-                    Terms will appear here.
+                    詞彙將顯示於此
                 </div>
             </div>
         </aside>
     </div>
 
-    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-slate-800/90 border border-teal-500/30 text-teal-100 px-4 py-2 rounded-full shadow-2xl transition-all duration-300 opacity-0 translate-y-10 z-50 flex items-center gap-2 pointer-events-none text-sm font-tech">
+    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-slate-800/90 border border-teal-500/30 text-teal-100 px-4 py-2 rounded-full shadow-2xl transition-all duration-300 opacity-0 translate-y-10 z-50 flex items-center gap-2 pointer-events-none text-sm font-bold">
         <i class="fa-solid fa-circle-check text-teal-400"></i> <span id="toast-msg">Ready</span>
     </div>
 
@@ -231,10 +209,10 @@
         let activeVocabMap = {};
 
         const i18n = {
-            'zh-TW': { return: '返回', nav: '課程導航', vocab_title: '科學詞彙庫', select_hint: '請先選擇單元', vocab_empty: '詞彙將顯示於此', stage: '階段', grade: '年級', version: '版本', semester: '學期', unit: '選擇單元' },
-            'en': { return: 'RETURN', nav: 'NAVIGATION', vocab_title: 'VOCABULARY', select_hint: 'Select a unit to begin', vocab_empty: 'Terms will appear here', stage: 'Stage', grade: 'Grade', version: 'Version', semester: 'Semester', unit: 'Select Unit' },
-            'ja': { return: '戻る', nav: 'ナビゲーション', vocab_title: '科学用語', select_hint: '単元を選択してください', vocab_empty: '用語はここに表示されます', stage: '段階', grade: '学年', version: '版', semester: '学期', unit: '単元選択' },
-            'zh-CN': { return: '返回', nav: '课程导航', vocab_title: '科学词汇库', select_hint: '请先选择单元', vocab_empty: '词汇将显示于此', stage: '阶段', grade: '年级', version: '版本', semester: '学期', unit: '选择单元' }
+            'zh-TW': { return: '返回', page_title: '科學雙語閱讀', nav: '目錄導航', vocab_title: '科學詞彙庫', select_hint: '請先選擇單元', vocab_empty: '詞彙將顯示於此', stage: '階段', grade: '年級', version: '版本', semester: '學期', unit: '選擇單元' },
+            'en': { return: 'RETURN', page_title: 'SCI-LINGUA READER', nav: 'NAVIGATION', vocab_title: 'VOCABULARY', select_hint: 'Select a unit to begin', vocab_empty: 'Terms will appear here', stage: 'Stage', grade: 'Grade', version: 'Version', semester: 'Semester', unit: 'Select Unit' },
+            'ja': { return: '戻る', page_title: '科学バイリンガル', nav: 'ナビゲーション', vocab_title: '科学用語', select_hint: '単元を選択してください', vocab_empty: '用語はここに表示されます', stage: '段階', grade: '学年', version: '版', semester: '学期', unit: '単元選択' },
+            'zh-CN': { return: '返回', page_title: '科学双语阅读', nav: '目录导航', vocab_title: '科学词汇库', select_hint: '请先选择单元', vocab_empty: '词汇将显示于此', stage: '阶段', grade: '年级', version: '版本', semester: '学期', unit: '选择单元' }
         };
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -247,13 +225,14 @@
         function fetchData() {
             Papa.parse(TARGET_URL, {
                 download: true, header: false,
-                complete: res => { processData(res.data); document.getElementById('loader-overlay').style.display='none'; showToast("Connected"); },
-                error: () => document.getElementById('loader-overlay').innerHTML='<div class="text-red-500">Error</div>'
+                complete: res => { processData(res.data); document.getElementById('loader-overlay').style.display='none'; showToast("資料庫連線成功"); },
+                error: () => document.getElementById('loader-overlay').innerHTML='<div class="text-red-500">Error: Check Network</div>'
             });
         }
 
         function processData(data) {
             rawData = data.slice(1);
+            // 嚴格線性處理：不進行任何排序，保留原始 CSV 順序
             processedUnits = rawData.map((row, i) => {
                 let content = row[COL_CONTENT]||"", ckip = row[COL_CKIP]||"", unitNum = (row[COL_UNIT_NUM]||"").trim(), unitName = (row[COL_UNIT_NAME]||"").trim();
                 let title = unitNum + (unitName ? " " + unitName : "") || `Unit ${i+1}`;
@@ -278,10 +257,10 @@
             else if(lvl==='grade') { update(sels[2]); resetSelects(sels.slice(3)); }
             else if(lvl==='version') { update(sels[3]); resetSelects(sels.slice(4)); }
             else if(lvl==='semester') { 
-                sels[4].innerHTML='<option disabled selected data-i18n="unit">請選擇單元</option>'; 
+                sels[4].innerHTML='<option disabled selected data-i18n="unit">選擇單元</option>'; 
                 filtered.forEach(u=>sels[4].add(new Option(u.title,u.id))); 
                 sels[4].disabled=false; 
-                changeLanguage(); // Refresh i18n
+                changeLanguage(); // Update UI text
             }
         }
 
@@ -292,24 +271,24 @@
         async function renderArticle(unit) {
             document.getElementById('article-title').innerText = unit.title;
             document.getElementById('status-bar').innerText = unit.title;
-            
-            // Build Vocab Map
+            document.getElementById('nav-title').innerText = unit.title;
+
             activeVocabMap = {};
             if(unit.vocab) unit.vocab.split(/[,;，；\n]/).forEach(i=>{ let p=i.split(/[:：]/); if(p[0].trim()) activeVocabMap[p[0].trim()]=p[1]?p[1].trim():""; });
 
-            // 6. Render Right Sidebar
-            renderVocabSidebar();
+            renderVocabSidebar(); // Show Vocab List
 
             const contentDiv = document.getElementById('article-content'); contentDiv.innerHTML='';
             document.getElementById('unit-list').innerHTML=''; 
 
-            // 1. I 欄資料呈現 (Linear)
+            // I 欄內容線性呈現
             let lines = unit.content.split('\n'), secCount=0;
 
             for(let i=0; i<lines.length; i++) {
                 let line = lines[i].trim();
                 if(!line) continue;
 
+                // 標題判斷
                 if((line.length<40 && !/[。！？.!?]$/.test(line)) || line.includes("活動")) {
                     secCount++;
                     const anchorId = `sec-${i}`;
@@ -319,6 +298,7 @@
                     document.getElementById('unit-list').appendChild(navItem);
                     contentDiv.innerHTML += `<h2 id="${anchorId}" class="section-header">${line}</h2>`;
                 } else {
+                    // 內容區塊
                     let processed = processXRayWithCKIP(line, activeVocabMap);
                     contentDiv.innerHTML += `<div class="content-block"><p class="zh-text">${processed}</p><p class="en-text hidden text-teal-200/80 italic text-sm mt-2" onclick="speakText(this.innerText)" data-source="${line}"></p></div>`;
                 }
@@ -326,25 +306,25 @@
             setMode('dual');
         }
 
-        // 5. Yellow Highlight
+        // Yellow Highlight
         function processXRayWithCKIP(text, map) {
             let clean = text.replace(/　/g,'');
             const keys = Object.keys(map).sort((a,b)=>b.length-a.length);
             if(keys.length===0) return clean;
             const ptrn = new RegExp(`(${keys.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')})`,'g');
-            // Change class to 'sci-term' which is defined as Yellow in CSS
-            return clean.replace(ptrn, m=>`<span class="sci-term" onclick="speakTermByClick('${map[m]||m}')" title="${map[m]}">${m}</span>`);
+            // Class: sci-term (Yellow)
+            return clean.replace(ptrn, m=>`<span class="sci-term" onclick="speakText('${map[m]||m}')" title="${map[m]}">${m}</span>`);
         }
 
         function renderVocabSidebar() {
             const container = document.getElementById('vocab-container');
             container.innerHTML = '';
             const keys = Object.keys(activeVocabMap);
-            if(keys.length === 0) { container.innerHTML = '<div class="text-center opacity-50 text-sm">No terms found.</div>'; return; }
+            if(keys.length === 0) { container.innerHTML = '<div class="text-center opacity-50 text-sm mt-10">無詞彙資料</div>'; return; }
             keys.forEach(zh => {
-                const en = activeVocabMap[zh] || "Translating...";
-                const card = document.createElement('div'); card.className = "vocab-card";
-                card.innerHTML = `<div class="flex justify-between items-start"><div><div class="text-lg font-bold text-yellow-400">${zh}</div><div class="text-sm text-teal-200 en-term-label" data-zh="${zh}">${en}</div></div><button onclick="speakText('${en||zh}')" class="text-teal-400 hover:text-white p-1"><i class="fa-solid fa-volume-high"></i></button></div>`;
+                const en = activeVocabMap[zh] || "Loading...";
+                const card = document.createElement('div'); card.className = "vocab-item";
+                card.innerHTML = `<div><div class="text-base font-bold text-yellow-400">${zh}</div><div class="text-xs text-teal-200 en-term-label" data-zh="${zh}">${en}</div></div><button onclick="speakText('${en||zh}')" class="text-teal-400 hover:text-white p-2 rounded-full hover:bg-white/10"><i class="fa-solid fa-volume-high"></i></button>`;
                 container.appendChild(card);
                 if(!activeVocabMap[zh]) translateVocabItem(zh, card.querySelector('.en-term-label'));
             });
@@ -369,28 +349,17 @@
                     const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURI(src)}`);
                     const json = await res.json();
                     let txt=""; json[0].forEach(i=>txt+=i[0]);
-                    el.innerHTML = highlightEnglishTerms(txt); translationCache[src]=txt;
+                    el.innerHTML = makeClickable(txt); translationCache[src]=txt;
                 } catch(e){ el.innerText="Error"; }
             }
             load.classList.add('hidden');
         }
 
-        function highlightEnglishTerms(text) {
-            let processed = text;
-            Object.values(activeVocabMap).forEach(enTerm => {
-                if(!enTerm || enTerm.length<2) return;
-                const regex = new RegExp(`\\b(${enTerm})\\b`, 'gi');
-                // Yellow Highlight for English Terms
-                processed = processed.replace(regex, `<span class="sci-term">${enTerm}</span>`);
-            });
-            return makeClickable(processed);
-        }
-
         function makeClickable(txt) {
-            return `<span class="clickable-sentence" onclick="speakText(this.innerText)">${txt}</span>`;
+            return `<span class="cursor-pointer hover:text-teal-300 transition" onclick="speakText(this.innerText)">${txt}</span>`;
         }
 
-        // 7. Audio Controls (Play/Pause/Stop)
+        // Play/Pause/Stop Logic
         function toggleSpeech() {
             const btn=document.getElementById('btn-play');
             if(synth.speaking && !synth.paused) { synth.pause(); btn.innerHTML='<i class="fa-solid fa-play text-xs"></i>'; isSpeaking=false; }
@@ -406,7 +375,6 @@
 
         function stopSpeech() { synth.cancel(); isSpeaking=false; document.getElementById('btn-play').innerHTML='<i class="fa-solid fa-play text-xs"></i>'; }
 
-        // 8. Natural Voice
         function speakText(txt) {
             synth.cancel(); 
             const cleanTxt = txt.replace(/<[^>]*>/g, '');
@@ -418,8 +386,7 @@
             if(isEng) {
                 if(currentVoice==='male') voice=v.find(x=>x.name.includes("Google US"))||v.find(x=>x.name.includes("David"))||v.find(x=>x.lang==='en-US');
                 else voice=v.find(x=>x.name.includes("Google UK"))||v.find(x=>x.name.includes("Zira"))||v.find(x=>x.lang==='en-US');
-                // Natural Pitch Adjustment
-                u.pitch = currentVoice==='male' ? 0.95 : 1.05; 
+                u.pitch = currentVoice==='male' ? 0.95 : 1.1;
             } else { voice=v.find(x=>x.lang==='zh-TW')||v.find(x=>x.lang.includes('zh')); }
             
             if(voice) u.voice=voice;
@@ -430,7 +397,6 @@
             synth.speak(u);
         }
 
-        function speakTermByClick(t) { synth.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang=/[a-zA-Z]/.test(t)?'en-US':'zh-TW'; synth.speak(u); }
         function setVoice(g) { 
             currentVoice=g; 
             document.getElementById('btn-male').className=g==='male'?'text-teal-400 p-1':'text-slate-500 p-1'; 
