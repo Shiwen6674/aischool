@@ -27,8 +27,8 @@
                             bg: '#020617',
                             panel: 'rgba(15, 23, 42, 0.95)', 
                             border: 'rgba(45, 212, 191, 0.3)',
-                            accent: '#2dd4bf', // Teal
-                            highlight: '#facc15' // Yellow for Science Terms
+                            accent: '#2dd4bf', 
+                            highlight: '#facc15'
                         }
                     },
                     animation: {
@@ -41,8 +41,6 @@
     <style>
         body { background-color: #020617; color: #ccfbf1; overflow: hidden; }
         .glass-panel { background: rgba(10, 25, 47, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(45, 212, 191, 0.2); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); }
-        
-        /* Scrollbar */
         .scroll-area::-webkit-scrollbar { width: 6px; }
         .scroll-area::-webkit-scrollbar-track { background: rgba(2, 6, 23, 0.5); }
         .scroll-area::-webkit-scrollbar-thumb { background: #115e59; border-radius: 3px; }
@@ -53,17 +51,9 @@
         .nav-item:hover { background: rgba(45, 212, 191, 0.05); color: #ccfbf1; }
         .nav-item.active { background: linear-gradient(90deg, rgba(45, 212, 191, 0.1), transparent); border-left-color: #2dd4bf; color: #2dd4bf; font-weight: 700; }
 
-        /* ★★★ Science Term Highlight (Yellow) ★★★ */
-        .sci-term {
-            color: #facc15; /* Yellow-400 */
-            font-weight: 700; 
-            border-bottom: 1px dashed rgba(250, 204, 21, 0.6);
-            cursor: pointer; transition: all 0.2s; padding: 0 2px;
-        }
-        .sci-term:hover {
-            background-color: rgba(250, 204, 21, 0.2); color: #fff; 
-            text-shadow: 0 0 10px #facc15; border-radius: 4px;
-        }
+        /* Science Term Highlight */
+        .sci-term { color: #facc15; font-weight: 700; border-bottom: 1px dashed rgba(250, 204, 21, 0.6); cursor: pointer; transition: all 0.2s; padding: 0 2px; }
+        .sci-term:hover { background-color: rgba(250, 204, 21, 0.2); color: #fff; text-shadow: 0 0 10px #facc15; border-radius: 4px; }
 
         /* Dropdowns */
         .custom-select { background-color: rgba(15, 23, 42, 0.8); border: 1px solid rgba(45, 212, 191, 0.3); color: #ccfbf1; appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%232dd4bf' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.3rem center; background-repeat: no-repeat; background-size: 1.2em 1.2em; padding-right: 1.5rem; }
@@ -73,24 +63,14 @@
         /* Content Layout */
         .content-block { margin-bottom: 1rem; padding: 1rem; border-radius: 0.75rem; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.2s ease; }
         .content-block:hover { background: rgba(45, 212, 191, 0.03); border-color: rgba(45, 212, 191, 0.2); }
-        
         .en-text { font-size: 1.1rem; color: #e2e8f0; line-height: 1.6; margin-bottom: 0.5rem; font-weight: 500; font-family: 'Inter', sans-serif; cursor: pointer; transition: color 0.2s; }
         .en-text:hover { color: #2dd4bf; }
         .zh-text { font-size: 1rem; color: #94a3b8; line-height: 1.6; padding-left: 8px; border-left: 3px solid rgba(45, 212, 191, 0.3); }
-        
-        /* Section Header */
         .section-header { font-size: 1.25rem; font-weight: 800; color: #fff; margin-top: 1.5rem; margin-bottom: 0.75rem; padding-bottom: 0.25rem; border-bottom: 1px solid rgba(45, 212, 191, 0.3); display: flex; align-items: center; gap: 0.5rem; }
         .section-header::before { content: ''; display: block; width: 4px; height: 20px; background: #2dd4bf; border-radius: 2px; }
         
-        /* Vocab Card in Sidebar */
-        .vocab-card {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(45, 212, 191, 0.2);
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 8px;
-            transition: all 0.2s;
-        }
+        /* Vocab Card */
+        .vocab-card { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(45, 212, 191, 0.2); border-radius: 8px; padding: 10px; margin-bottom: 8px; transition: all 0.2s; }
         .vocab-card:hover { border-color: #facc15; background: rgba(250, 204, 21, 0.05); }
 
         #canvas-container { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
@@ -124,38 +104,34 @@
                 </div>
             </div>
 
+            <div class="flex-grow flex justify-center px-4">
+                <select id="sel-unit" class="custom-select px-3 py-1.5 rounded w-full md:w-80 text-sm font-bold bg-slate-900/80 border-teal-500/50 focus:border-teal-400 transition" onchange="loadSelectedUnit()" disabled>
+                    <option value="" disabled selected data-i18n="unit">請先選擇上方篩選條件...</option>
+                </select>
+            </div>
+
             <div class="flex items-center gap-3">
+                <div class="flex bg-slate-900/80 rounded-lg p-1 border border-teal-500/30">
+                    <button onclick="setMode('en')" class="mode-btn px-3 py-1 text-xs font-bold rounded text-teal-500 hover:text-white transition" id="btn-en">EN</button>
+                    <button onclick="setMode('dual')" class="mode-btn px-3 py-1 text-xs font-bold rounded bg-teal-600 text-white shadow-[0_0_10px_rgba(45,212,191,0.4)]" id="btn-dual">DUAL</button>
+                    <button onclick="setMode('zh')" class="mode-btn px-3 py-1 text-xs font-bold rounded text-teal-500 hover:text-white transition" id="btn-zh">ZH</button>
+                </div>
+                
                 <select id="ui-lang" class="bg-slate-900/80 border border-teal-500/30 text-teal-100 rounded-lg px-2 py-1 text-xs outline-none cursor-pointer hover:bg-slate-800" onchange="changeLanguage()">
                     <option value="zh-TW">繁體中文</option>
                     <option value="en">English</option>
                     <option value="ja">日本語</option>
                     <option value="zh-CN">简体中文</option>
                 </select>
-
-                <div class="flex items-center bg-slate-900/80 rounded-lg p-1 border border-teal-500/30">
-                    <button onclick="setVoice('male')" class="voice-btn px-2 py-1 rounded transition text-teal-400 hover:bg-teal-500/20" id="voice-male" title="Teacher Spark (Male)">
-                        <i class="fa-solid fa-user-tie"></i>
-                    </button>
-                    <button onclick="setVoice('female')" class="voice-btn px-2 py-1 rounded transition text-slate-500 hover:bg-teal-500/20" id="voice-female" title="Teacher Nova (Female)">
-                        <i class="fa-solid fa-user-graduate"></i>
-                    </button>
-                </div>
-                
-                <div class="flex bg-slate-900/80 rounded-lg p-1 border border-teal-500/30">
-                    <button onclick="setMode('en')" class="mode-btn px-3 py-1 text-xs font-bold rounded text-teal-500 hover:text-white transition" id="btn-en">EN</button>
-                    <button onclick="setMode('dual')" class="mode-btn px-3 py-1 text-xs font-bold rounded bg-teal-600 text-white shadow-[0_0_10px_rgba(45,212,191,0.4)]" id="btn-dual">DUAL</button>
-                    <button onclick="setMode('zh')" class="mode-btn px-3 py-1 text-xs font-bold rounded text-teal-500 hover:text-white transition" id="btn-zh">ZH</button>
-                </div>
             </div>
         </div>
 
         <div class="w-full px-4 md:px-6 py-2 bg-slate-900/80 flex flex-wrap gap-2 items-center text-sm border-t border-teal-500/20 md:border-t-0 md:bg-transparent justify-end">
-            <span class="text-xs font-tech text-teal-500 mr-2"><i class="fa-solid fa-filter"></i></span>
+            <span class="text-xs font-tech text-teal-500 mr-2"><i class="fa-solid fa-filter"></i> FILTER:</span>
             <select id="sel-stage" class="custom-select px-2 py-1 rounded w-24 text-xs font-bold" onchange="filterUnits('stage')"><option value="" disabled selected data-i18n="stage">階段</option></select>
             <select id="sel-grade" class="custom-select px-2 py-1 rounded w-20 text-xs font-bold" onchange="filterUnits('grade')" disabled><option value="" disabled selected data-i18n="grade">年級</option></select>
             <select id="sel-version" class="custom-select px-2 py-1 rounded w-24 text-xs font-bold" onchange="filterUnits('version')" disabled><option value="" disabled selected data-i18n="version">版本</option></select>
             <select id="sel-semester" class="custom-select px-2 py-1 rounded w-20 text-xs font-bold" onchange="filterUnits('semester')" disabled><option value="" disabled selected data-i18n="semester">學期</option></select>
-            <select id="sel-unit" class="custom-select px-2 py-1 rounded flex-grow md:flex-grow-0 md:w-48 text-xs font-bold" onchange="loadSelectedUnit()" disabled><option value="" disabled selected data-i18n="unit">選擇單元</option></select>
         </div>
     </nav>
 
@@ -180,6 +156,11 @@
                 </div>
                 
                 <div class="flex items-center gap-4 bg-slate-900/50 rounded-full px-3 py-1 border border-teal-500/20">
+                    <div class="flex items-center gap-1 border-r border-teal-500/30 pr-2">
+                        <button onclick="setVoice('male')" id="btn-male" class="text-teal-400 p-1 hover:text-white" title="Teacher Spark (Male)"><i class="fa-solid fa-user-tie"></i></button>
+                        <button onclick="setVoice('female')" id="btn-female" class="text-slate-500 p-1 hover:text-white" title="Teacher Nova (Female)"><i class="fa-solid fa-user-graduate"></i></button>
+                    </div>
+
                     <select id="play-rate" class="bg-transparent text-xs font-bold text-teal-400 outline-none cursor-pointer w-14" title="Speed">
                         <option value="0.5">0.5x</option>
                         <option value="0.75">0.75x</option>
@@ -239,14 +220,12 @@
         const SHEET_ID = '1cEfMEy3bvDa1tET3xmh7ShGeJy8KLUMa_JuULGBD-mk';
         const TARGET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&id=${SHEET_ID}&gid=0`;
 
-        // Column Indexes
         const COL_STAGE=0, COL_VERSION=2, COL_GRADE=3, COL_SEMESTER=4, COL_UNIT_NUM=6, COL_UNIT_NAME=7, 
               COL_CONTENT=8, COL_CKIP=9, COL_VOCAB=18;
 
         let rawData=[], processedUnits=[], isSpeaking=false, currentVoice='male', translationCache={}, synth=window.speechSynthesis;
         let activeVocabMap = {};
 
-        // UI Translations
         const i18n = {
             'zh-TW': { return: '返回', nav: '課程導航', vocab_title: '科學詞彙庫', select_hint: '請先選擇單元', vocab_empty: '詞彙將顯示於此', stage: '階段', grade: '年級', version: '版本', semester: '學期', unit: '選擇單元' },
             'en': { return: 'RETURN', nav: 'NAVIGATION', vocab_title: 'VOCABULARY', select_hint: 'Select a unit to begin', vocab_empty: 'Terms will appear here', stage: 'Stage', grade: 'Grade', version: 'Version', semester: 'Semester', unit: 'Select Unit' },
@@ -297,15 +276,20 @@
             if(lvl==='stage') { update(sels[1]); resetSelects(sels.slice(2)); }
             else if(lvl==='grade') { update(sels[2]); resetSelects(sels.slice(3)); }
             else if(lvl==='version') { update(sels[3]); resetSelects(sels.slice(4)); }
-            else if(lvl==='semester') { sels[4].innerHTML='<option disabled selected>...</option>'; filtered.forEach(u=>sels[4].add(new Option(u.title,u.id))); sels[4].disabled=false; }
+            else if(lvl==='semester') { 
+                sels[4].innerHTML='<option disabled selected data-i18n="unit">請選擇單元</option>'; 
+                filtered.forEach(u=>sels[4].add(new Option(u.title,u.id))); 
+                sels[4].disabled=false; 
+                changeLanguage(); // Refresh i18n
+            }
         }
 
-        function populateSelect(id,items){ const s=document.getElementById(id); s.innerHTML=`<option disabled selected>Select</option>`; items.forEach(i=>s.add(new Option(i,i))); s.disabled=false; changeLanguage(); } // trigger text update
+        function populateSelect(id,items){ const s=document.getElementById(id); s.innerHTML=`<option disabled selected>Select</option>`; items.forEach(i=>s.add(new Option(i,i))); s.disabled=false; }
         function resetSelects(els){ els.forEach(e=>{e.innerHTML=`<option disabled selected>...</option>`;e.disabled=true;}); }
         function loadSelectedUnit(){ const u=processedUnits.find(i=>i.id==document.getElementById('sel-unit').value); if(u) renderArticle(u); }
 
         // ==========================================
-        // 3. Rendering (Linear Layout & Vocab Grid)
+        // 3. Rendering
         // ==========================================
         async function renderArticle(unit) {
             document.getElementById('article-title').innerText = unit.title;
@@ -315,32 +299,27 @@
             activeVocabMap = {};
             if(unit.vocab) unit.vocab.split(/[,;，；\n]/).forEach(i=>{ let p=i.split(/[:：]/); if(p[0].trim()) activeVocabMap[p[0].trim()]=p[1]?p[1].trim():""; });
 
-            // Render Right Sidebar (Grid)
+            // Render Right Sidebar
             renderVocabSidebar();
 
             const contentDiv = document.getElementById('article-content'); contentDiv.innerHTML='';
             document.getElementById('unit-list').innerHTML=''; 
 
-            // Strict Linear Parsing from I Column
             let lines = unit.content.split('\n'), secCount=0;
 
             for(let i=0; i<lines.length; i++) {
                 let line = lines[i].trim();
                 if(!line) continue;
 
-                // Simple Header Detection
                 if((line.length<40 && !/[。！？.!?]$/.test(line)) || line.includes("活動")) {
                     secCount++;
                     const anchorId = `sec-${i}`;
-                    // Add Nav Item
                     const navItem = document.createElement('div'); navItem.className='nav-item';
                     navItem.innerText = line;
                     navItem.onclick=()=>{ document.getElementById(anchorId).scrollIntoView({behavior:'smooth',block:'center'}); };
                     document.getElementById('unit-list').appendChild(navItem);
-                    // Add Header
                     contentDiv.innerHTML += `<h2 id="${anchorId}" class="section-header">${line}</h2>`;
                 } else {
-                    // Process Text
                     let processed = processXRay(line);
                     contentDiv.innerHTML += `<div class="content-block"><p class="zh-text">${processed}</p><p class="en-text hidden text-teal-200/80 italic text-sm mt-2" onclick="speakText(this.innerText)" data-source="${line}"></p></div>`;
                 }
@@ -348,39 +327,23 @@
             setMode('dual');
         }
 
-        // Apply Yellow Highlight to Terms
         function processXRay(text) {
             const keys = Object.keys(activeVocabMap).sort((a,b)=>b.length-a.length);
             if(keys.length===0) return text;
             const ptrn = new RegExp(`(${keys.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')})`,'g');
-            // Yellow Highlight: text-yellow-400
             return text.replace(ptrn, m=>`<span class="sci-term" onclick="speakText('${activeVocabMap[m]||m}')" title="${activeVocabMap[m]}">${m}</span>`);
         }
 
-        // Render Right Sidebar
         function renderVocabSidebar() {
             const container = document.getElementById('vocab-container');
             container.innerHTML = '';
             const keys = Object.keys(activeVocabMap);
-            if(keys.length === 0) {
-                container.innerHTML = '<div class="text-center opacity-50 text-sm">No terms found.</div>';
-                return;
-            }
+            if(keys.length === 0) { container.innerHTML = '<div class="text-center opacity-50 text-sm">No terms found.</div>'; return; }
             keys.forEach(zh => {
                 const en = activeVocabMap[zh] || "Translating...";
-                const card = document.createElement('div');
-                card.className = "vocab-card";
-                card.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <div class="text-lg font-bold text-yellow-400">${zh}</div>
-                            <div class="text-sm text-teal-200 en-term-label" data-zh="${zh}">${en}</div>
-                        </div>
-                        <button onclick="speakText('${en||zh}')" class="text-teal-400 hover:text-white p-1"><i class="fa-solid fa-volume-high"></i></button>
-                    </div>
-                `;
+                const card = document.createElement('div'); card.className = "vocab-card";
+                card.innerHTML = `<div class="flex justify-between items-start"><div><div class="text-lg font-bold text-yellow-400">${zh}</div><div class="text-sm text-teal-200 en-term-label" data-zh="${zh}">${en}</div></div><button onclick="speakText('${en||zh}')" class="text-teal-400 hover:text-white p-1"><i class="fa-solid fa-volume-high"></i></button></div>`;
                 container.appendChild(card);
-                // If no english, try translate later
                 if(!activeVocabMap[zh]) translateVocabItem(zh, card.querySelector('.en-term-label'));
             });
         }
@@ -388,43 +351,41 @@
         async function translateVocabItem(zh, el) {
             try {
                 const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURI(zh)}`);
-                const json = await res.json();
-                el.innerText = json[0][0][0];
-                activeVocabMap[zh] = el.innerText; // Cache
+                const json = await res.json(); el.innerText = json[0][0][0]; activeVocabMap[zh] = el.innerText;
             } catch(e){}
         }
 
-        // ==========================================
-        // 4. Translation & Highlight English
-        // ==========================================
         async function translateVisibleBlocks() {
             const ens = document.querySelectorAll('.en-text'), load=document.getElementById('trans-loading');
             let need=false; ens.forEach(e=>{if(!e.innerText)need=true}); if(!need)return;
             load.classList.remove('hidden');
             for(let el of ens) {
                 if(el.innerText) continue;
-                let src=el.getAttribute('data-source');
-                if(translationCache[src]) { el.innerHTML=highlightEnglishTerms(translationCache[src]); continue; }
+                let src=el.getAttribute('data-source').replace(/　/g,'');
+                if(translationCache[src]) { el.innerHTML=makeClickable(translationCache[src]); continue; }
                 try {
                     const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURI(src)}`);
                     const json = await res.json();
                     let txt=""; json[0].forEach(i=>txt+=i[0]);
-                    el.innerHTML = highlightEnglishTerms(txt); 
-                    translationCache[src]=txt;
+                    el.innerHTML = highlightEnglishTerms(txt); translationCache[src]=txt;
                 } catch(e){ el.innerText="Error"; }
             }
             load.classList.add('hidden');
         }
 
         function highlightEnglishTerms(text) {
-            // Find English terms from vocab map and highlight them yellow
             let processed = text;
             Object.values(activeVocabMap).forEach(enTerm => {
                 if(!enTerm || enTerm.length<2) return;
                 const regex = new RegExp(`\\b(${enTerm})\\b`, 'gi');
                 processed = processed.replace(regex, `<span class="sci-term">${enTerm}</span>`);
             });
-            return processed;
+            return makeClickable(processed);
+        }
+
+        function makeClickable(txt) {
+            // Updated to handle HTML tags correctly
+            return `<span class="clickable-sentence" onclick="speakText(this.innerText)">${txt}</span>`;
         }
 
         // ==========================================
@@ -443,25 +404,19 @@
             }
         }
 
-        function stopSpeech() {
-            synth.cancel(); isSpeaking=false;
-            document.getElementById('btn-play').innerHTML='<i class="fa-solid fa-play text-xs"></i>';
-        }
+        function stopSpeech() { synth.cancel(); isSpeaking=false; document.getElementById('btn-play').innerHTML='<i class="fa-solid fa-play text-xs"></i>'; }
 
         function speakText(txt) {
             synth.cancel(); 
-            // 移除 HTML 標籤
             const cleanTxt = txt.replace(/<[^>]*>/g, '');
             const u=new SpeechSynthesisUtterance(cleanTxt);
             const isEng=/[a-zA-Z]/.test(cleanTxt);
             const v=synth.getVoices();
             let voice=null;
             
-            // Better Voice Selection
             if(isEng) {
                 if(currentVoice==='male') voice=v.find(x=>x.name.includes("Google US"))||v.find(x=>x.name.includes("David"))||v.find(x=>x.lang==='en-US');
                 else voice=v.find(x=>x.name.includes("Google UK"))||v.find(x=>x.name.includes("Zira"))||v.find(x=>x.lang==='en-US');
-                // Natural pitch
                 u.pitch = currentVoice==='male' ? 0.9 : 1.1;
             } else { voice=v.find(x=>x.lang==='zh-TW')||v.find(x=>x.lang.includes('zh')); }
             
@@ -480,9 +435,6 @@
             stopSpeech();
         }
 
-        // ==========================================
-        // 6. UI & Localization
-        // ==========================================
         function setMode(m) {
             ['en','dual','zh'].forEach(x=>document.getElementById(`btn-${x}`).className=x===m?"mode-btn px-2 py-1 text-xs font-bold rounded bg-teal-600 text-white":"mode-btn px-2 py-1 text-xs font-bold rounded text-teal-500 hover:text-white");
             if(m!=='zh') translateVisibleBlocks();
@@ -497,13 +449,14 @@
             const t = i18n[lang] || i18n['en'];
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const k = el.getAttribute('data-i18n');
-                if(t[k]) el.innerText = t[k];
+                if(t[k]) {
+                    if(el.tagName==='OPTION') el.text = t[k];
+                    else el.innerText = t[k];
+                }
             });
         }
 
-        function adjustFontSize(d) { const e=document.getElementById('article-content'); const s=parseFloat(window.getComputedStyle(e).fontSize); e.style.fontSize=(s+d)+'px'; }
         function showToast(m) { const T=document.getElementById('toast'); document.getElementById('toast-msg').innerText=m; T.classList.remove('opacity-0','translate-y-10'); setTimeout(()=>T.classList.add('opacity-0','translate-y-10'),2000); }
-        
         function initCanvas() {
             const c=document.getElementById('molecule-canvas'),x=c.getContext('2d');
             let p=[]; function r(){c.width=window.innerWidth;c.height=window.innerHeight;}
