@@ -19,7 +19,7 @@
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
-                        heading: ['Outfit', 'Noto Sans TC', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
                         tech: ['Orbitron', 'sans-serif'],
                     },
                     colors: {
@@ -42,7 +42,7 @@
         body { background-color: #020617; color: #ccfbf1; overflow: hidden; }
         
         .glass-panel {
-            background: rgba(10, 25, 47, 0.9);
+            background: rgba(10, 25, 47, 0.95);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(45, 212, 191, 0.2);
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
@@ -59,11 +59,12 @@
             transition: all 0.2s;
             border-left: 3px solid transparent;
             cursor: pointer;
-            padding: 0.6rem 0.8rem;
+            padding: 0.5rem 0.75rem; /* 縮小間距 */
             margin-bottom: 0.25rem;
             border-radius: 0 0.5rem 0.5rem 0;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: #94a3b8;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .nav-item:hover { background: rgba(45, 212, 191, 0.05); color: #ccfbf1; }
         .nav-item.active {
@@ -71,10 +72,6 @@
             border-left-color: #2dd4bf;
             color: #2dd4bf;
             font-weight: 700;
-        }
-        .nav-header {
-            font-size: 0.75rem; color: #5eead4; margin-top: 1rem; margin-bottom: 0.5rem; 
-            padding-left: 0.8rem; font-weight: 800; opacity: 0.7; letter-spacing: 0.05em;
         }
 
         /* X-Ray 關鍵字 */
@@ -102,10 +99,10 @@
 
         #canvas-container { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
         
-        /* 內容區塊排版優化 */
+        /* 內容區塊排版 (更緊湊) */
         .content-block {
-            margin-bottom: 1rem; /* 縮小間距 */
-            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
             border-radius: 0.75rem;
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid rgba(255, 255, 255, 0.05);
@@ -116,40 +113,26 @@
             border-color: rgba(45, 212, 191, 0.2);
         }
         
-        /* 英文段落 */
         .en-text {
-            font-size: 1.1rem;
-            color: #e2e8f0; 
-            line-height: 1.6;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            font-family: 'Inter', sans-serif;
+            font-size: 1.1rem; color: #e2e8f0; line-height: 1.5; margin-bottom: 0.5rem; font-weight: 500; font-family: 'Inter', sans-serif;
+            min-height: 1.5rem; /* 確保即使還沒翻譯也有高度 */
         }
-        
-        /* 中文段落 */
         .zh-text {
-            font-size: 1rem;
-            color: #94a3b8; 
-            line-height: 1.6;
-            padding-left: 10px;
-            border-left: 3px solid rgba(45, 212, 191, 0.3);
+            font-size: 1rem; color: #94a3b8; line-height: 1.6; padding-left: 8px; border-left: 3px solid rgba(45, 212, 191, 0.3);
         }
         
         /* 標題樣式 */
         .section-header {
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: #fff;
-            margin-top: 2.5rem;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
+            font-size: 1.25rem; font-weight: 800; color: #fff;
+            margin-top: 1.5rem; margin-bottom: 0.75rem; padding-bottom: 0.25rem;
             border-bottom: 1px solid rgba(45, 212, 191, 0.3);
-            font-family: 'Noto Sans TC', sans-serif;
             display: flex; align-items: center; gap: 0.5rem;
         }
-        .section-header::before {
-            content: ''; display: block; width: 6px; height: 24px; background: #2dd4bf; border-radius: 2px;
-        }
+        .section-header::before { content: ''; display: block; width: 4px; height: 20px; background: #2dd4bf; border-radius: 2px; }
+        
+        /* 載入動畫 */
+        .loader { border: 2px solid rgba(45, 212, 191, 0.1); border-top: 2px solid #2dd4bf; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="h-screen flex flex-col font-sans selection:bg-teal-500/30 selection:text-white">
@@ -158,7 +141,7 @@
 
     <div id="loader-overlay" class="absolute inset-0 bg-[#020617] z-50 flex flex-col items-center justify-center">
         <i class="fa-solid fa-satellite-dish text-5xl text-teal-400 animate-pulse mb-4"></i>
-        <div class="text-teal-500 font-tech tracking-widest">LOADING SCIENCE DATA...</div>
+        <div class="text-teal-500 font-tech tracking-widest">CONNECTING TO DATABASE...</div>
     </div>
 
     <nav class="glass-panel sticky top-0 z-40 h-auto md:h-16 flex flex-col md:flex-row items-center shrink-0 border-b-0 shadow-lg">
@@ -183,10 +166,10 @@
                 </select>
 
                 <div class="flex items-center bg-slate-900/80 rounded-lg p-1 border border-teal-500/30">
-                    <button onclick="setVoice('male')" class="voice-btn px-2 py-1 rounded transition text-teal-400 hover:bg-teal-500/20" id="voice-male" title="Teacher Spark (男)">
+                    <button onclick="setVoice('male')" class="voice-btn px-2 py-1 rounded transition text-teal-400 hover:bg-teal-500/20" id="voice-male" title="Teacher Spark">
                         <i class="fa-solid fa-user-tie"></i>
                     </button>
-                    <button onclick="setVoice('female')" class="voice-btn px-2 py-1 rounded transition text-slate-500 hover:bg-teal-500/20" id="voice-female" title="Teacher Nova (女)">
+                    <button onclick="setVoice('female')" class="voice-btn px-2 py-1 rounded transition text-slate-500 hover:bg-teal-500/20" id="voice-female" title="Teacher Nova">
                         <i class="fa-solid fa-user-graduate"></i>
                     </button>
                 </div>
@@ -201,12 +184,11 @@
 
         <div class="w-full px-4 md:px-6 py-2 bg-slate-900/80 flex flex-wrap gap-2 items-center text-sm border-t border-teal-500/20 md:border-t-0 md:bg-transparent justify-end">
             <span class="text-xs font-tech text-teal-500 mr-2"><i class="fa-solid fa-filter"></i></span>
-            
             <select id="sel-stage" class="custom-select px-2 py-1 rounded w-24 text-xs font-bold" onchange="filterUnits('stage')"><option value="" disabled selected>階段</option></select>
             <select id="sel-grade" class="custom-select px-2 py-1 rounded w-20 text-xs font-bold" onchange="filterUnits('grade')" disabled><option value="" disabled selected>年級</option></select>
             <select id="sel-version" class="custom-select px-2 py-1 rounded w-24 text-xs font-bold" onchange="filterUnits('version')" disabled><option value="" disabled selected>版本</option></select>
             <select id="sel-semester" class="custom-select px-2 py-1 rounded w-20 text-xs font-bold" onchange="filterUnits('semester')" disabled><option value="" disabled selected>學期</option></select>
-            <select id="sel-unit" class="custom-select px-2 py-1 rounded flex-grow md:flex-grow-0 md:w-64 text-xs font-bold" onchange="loadSelectedUnit()" disabled><option value="" disabled selected>選擇單元</option></select>
+            <select id="sel-unit" class="custom-select px-2 py-1 rounded flex-grow md:flex-grow-0 md:w-48 text-xs font-bold" onchange="loadSelectedUnit()" disabled><option value="" disabled selected>選擇單元</option></select>
         </div>
     </nav>
 
@@ -214,11 +196,12 @@
         
         <aside class="w-64 glass-panel rounded-2xl flex flex-col overflow-hidden hidden md:flex">
             <div class="p-4 border-b border-teal-500/20 bg-slate-900/40">
-                <h3 class="text-xs font-tech text-teal-500 tracking-widest mb-1">UNIT OUTLINE</h3>
-                <div class="text-white font-bold text-sm truncate" id="nav-title">請選擇單元</div>
+                <h3 class="text-xs font-tech text-teal-500 tracking-widest mb-1">NAVIGATION</h3>
+                <div class="text-white font-bold text-sm truncate" id="nav-title">Outline</div>
             </div>
-            <div class="flex-grow scroll-area overflow-y-auto p-2" id="unit-list">
-                </div>
+            <div class="flex-grow scroll-area overflow-y-auto p-2 space-y-1" id="unit-list">
+                <div class="text-center text-slate-500 text-xs mt-10 p-4">請先選擇單元。</div>
+            </div>
         </aside>
 
         <section class="flex-grow glass-panel rounded-2xl flex flex-col relative overflow-hidden">
@@ -226,21 +209,21 @@
                 <div class="flex items-center gap-2">
                     <i class="fa-solid fa-file-lines text-teal-400"></i>
                     <span class="text-xs font-tech text-teal-200" id="status-bar">READY</span>
+                    <span id="trans-loading" class="hidden text-xs text-teal-400 flex items-center gap-1 ml-2"><div class="loader"></div> Translating...</span>
                 </div>
                 <div class="flex items-center gap-3">
-                    <button onclick="toggleSpeech()" class="text-teal-400 hover:text-white transition group w-8 h-8 flex items-center justify-center rounded-full hover:bg-teal-500/20" id="btn-play" title="播放內容"><i class="fa-solid fa-play"></i></button>
+                    <button onclick="toggleSpeech()" class="text-teal-400 hover:text-white transition group w-8 h-8 flex items-center justify-center rounded-full hover:bg-teal-500/20" id="btn-play" title="播放"><i class="fa-solid fa-play"></i></button>
                     <button onclick="adjustFontSize(2)" class="text-teal-400 hover:text-white transition"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
                     <button onclick="adjustFontSize(-2)" class="text-teal-400 hover:text-white transition"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
                 </div>
             </div>
 
-            <div class="flex-grow scroll-area overflow-y-auto p-8 md:p-12 relative" id="reading-container">
+            <div class="flex-grow scroll-area overflow-y-auto p-6 md:p-8 relative" id="reading-container">
                 <article class="max-w-4xl mx-auto transition-opacity duration-500" id="article-body">
-                    <h1 class="text-3xl md:text-4xl font-black text-white mb-8 font-heading tracking-tight text-center" id="article-title">
+                    <h1 class="text-2xl md:text-3xl font-black text-white mb-6 font-heading tracking-tight text-center" id="article-title">
                         <span class="text-slate-500 opacity-50">請從上方選單選擇教材</span>
                     </h1>
-                    <div id="article-content" class="space-y-4 text-lg leading-relaxed text-slate-200">
-                        </div>
+                    <div id="article-content" class="space-y-4"></div>
                 </article>
             </div>
         </section>
@@ -251,13 +234,13 @@
                     <div class="w-2 h-2 bg-teal-400 rounded-full animate-pulse"></div>
                     <h3 class="text-xs font-tech text-teal-400 tracking-widest">AI X-RAY</h3>
                 </div>
-                <div class="text-xs text-slate-400">Scientific Vocabulary</div>
+                <div class="text-xs text-slate-400">Vocabulary & Analysis</div>
             </div>
 
             <div class="flex-grow scroll-area overflow-y-auto p-4 space-y-4">
                 <div id="ai-card-placeholder" class="text-center py-10 opacity-50">
                     <i class="fa-solid fa-dna text-4xl text-teal-500/30 mb-4 animate-float"></i>
-                    <p class="text-sm text-teal-200/50">滑鼠移至螢光單字上方<br>查看詳細解釋 (English & Chinese)</p>
+                    <p class="text-sm text-teal-200/50">滑鼠移至螢光單字上方<br>即可啟動分析</p>
                 </div>
 
                 <div id="ai-card-display" class="hidden opacity-0 transition-all duration-300">
@@ -267,7 +250,7 @@
                             <span class="text-[10px] font-tech text-teal-400 border border-teal-500/30 px-2 py-0.5 rounded">SCI-TERM</span>
                         </div>
                         <p class="text-sm text-slate-200 mb-3 leading-relaxed" id="ai-term-desc">Definition...</p>
-                        <button onclick="speakTerm()" class="text-xs bg-teal-500/20 hover:bg-teal-500/40 text-teal-300 px-3 py-1.5 rounded transition flex items-center gap-2 w-full justify-center font-bold">
+                        <button onclick="speakTerm()" class="text-xs bg-teal-500/20 hover:bg-teal-500/40 text-teal-300 px-3 py-1.5 rounded transition flex items-center gap-2 justify-center w-full">
                             <i class="fa-solid fa-volume-high"></i> Pronounce
                         </button>
                     </div>
@@ -282,51 +265,47 @@
 
     <script>
         // ==========================================
-        // 1. 設定與初始化
+        // 1. 設定與資料庫 (CONFIG)
         // ==========================================
         
         // ★ 您的試算表 ID
         const SHEET_ID = '1cEfMEy3bvDa1tET3xmh7ShGeJy8KLUMa_JuULGBD-mk';
         
         // ★★★ 請在此處貼上您發布為 CSV 的網址 (確保 CORS 正常) ★★★
+        // 格式範例: https://docs.google.com/spreadsheets/d/e/2PACX-....../pub?output=csv
         const PUBLISHED_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRbgkNiMflfeLQd3KN8F4yjjIr6G2flnCAy-nUPMiC7_xDfdg_0hJ2Qzbsr92u8htlPLFR8GwwQPK_g/pub?gid=0&single=true&output=csv'; 
 
-        // 備用連結
+        // 備用連結 (可能會被擋)
         const FALLBACK_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&id=${SHEET_ID}&gid=0`;
         const TARGET_URL = PUBLISHED_CSV_URL || FALLBACK_CSV_URL;
 
-        // ★★★ 欄位索引 (Index - 從 0 開始算) ★★★
-        // 根據您的圖片校對：
-        // A=0(階段), C=2(版本), D=3(年級), E=4(學期)
-        // G=6(課別), H=7(課名) -> 用來組合成選單標題
-        // I=8(課文內容) -> 核心內容
-        // S=18(科學詞彙) -> X-Ray
+        // 欄位索引
         const COL_STAGE = 0;
         const COL_VERSION = 2; 
         const COL_GRADE = 3;
         const COL_SEMESTER = 4;
         const COL_UNIT_NUM = 6;
         const COL_UNIT_NAME = 7;
-        const COL_CONTENT = 8;
-        const COL_VOCAB = 18;
+        const COL_CONTENT = 8; // I欄 (中文課文)
+        const COL_VOCAB = 18;  // S欄
 
         let rawData = [];
         let processedUnits = []; 
         let isSpeaking = false;
         let currentVoice = 'male';
+        // 翻譯快取 (避免重複呼叫 API)
+        let translationCache = {};
 
         document.addEventListener('DOMContentLoaded', () => {
             initCanvas();
             fetchData();
-            if(window.speechSynthesis) {
-                window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
-            }
+            if(window.speechSynthesis) window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
         });
 
         function goBack() { window.location.href = 'student_science.html'; }
 
         // ==========================================
-        // 2. 資料處理 (Parsing)
+        // 2. 資料處理 (Data)
         // ==========================================
         function fetchData() {
             Papa.parse(TARGET_URL, {
@@ -335,7 +314,7 @@
                 complete: function(results) {
                     processData(results.data);
                     document.getElementById('loader-overlay').style.display = 'none';
-                    showToast("Database Connected");
+                    showToast("資料庫連線成功");
                 },
                 error: function(err) {
                     console.error("CSV Error:", err);
@@ -350,18 +329,14 @@
         }
 
         function processData(data) {
-            // 去掉標題列 (假設第一列是標題)
             rawData = data.slice(1);
-            
             processedUnits = rawData.map((row, index) => {
                 let content = row[COL_CONTENT] || "";
                 let unitNum = (row[COL_UNIT_NUM] || "").trim();
                 let unitName = (row[COL_UNIT_NAME] || "").trim();
-                
-                // 組合選單標題： "第一課 認識植物"
                 let title = unitNum;
                 if(unitName) title += " " + unitName;
-                if(!title || title.length < 2) title = `Unit ${index + 1}`; // 防呆
+                if(!title || title.length < 2) title = `Unit ${index + 1}`;
 
                 return {
                     id: index,
@@ -373,13 +348,12 @@
                     content: content,
                     vocab: row[COL_VOCAB] || ""
                 };
-            }).filter(u => u.content.length > 5); // 只要有內容就保留
-
+            }).filter(u => u.content.length > 5);
             initFilters();
         }
 
         // ==========================================
-        // 3. 篩選器邏輯 (Cascading)
+        // 3. 篩選器 (Filters)
         // ==========================================
         function initFilters() {
             const stages = [...new Set(processedUnits.map(u => u.stage).filter(Boolean))];
@@ -387,13 +361,9 @@
         }
 
         function filterUnits(level) {
-            const selStage = document.getElementById('sel-stage');
-            const selGrade = document.getElementById('sel-grade');
-            const selVersion = document.getElementById('sel-version');
-            const selSemester = document.getElementById('sel-semester');
-            const selUnit = document.getElementById('sel-unit');
+            const sels = ['stage', 'grade', 'version', 'semester', 'unit'].map(id => document.getElementById(`sel-${id}`));
+            const [selStage, selGrade, selVersion, selSemester, selUnit] = sels;
 
-            // 根據當前選擇過濾資料
             let filtered = processedUnits.filter(u => {
                 if (selStage.value && u.stage !== selStage.value) return false;
                 if (selGrade.value && !selGrade.disabled && u.grade !== selGrade.value) return false;
@@ -402,31 +372,17 @@
                 return true;
             });
 
-            // 依層級更新下拉選單 (Stage -> Grade -> Version -> Semester -> Unit)
-            if (level === 'stage') {
-                const grades = [...new Set(filtered.map(u => u.grade).filter(Boolean))];
-                populateSelect('sel-grade', grades, '年級');
-                resetSelects(['sel-version', 'sel-semester', 'sel-unit']);
-            } 
-            else if (level === 'grade') {
-                const versions = [...new Set(filtered.map(u => u.version).filter(Boolean))];
-                populateSelect('sel-version', versions, '版本');
-                resetSelects(['sel-semester', 'sel-unit']);
-            } 
-            else if (level === 'version') {
-                const semesters = [...new Set(filtered.map(u => u.semester).filter(Boolean))];
-                populateSelect('sel-semester', semesters, '學期');
-                resetSelects(['sel-unit']);
-            } 
-            else if (level === 'semester') {
-                // 最後填入單元
+            const updateNext = (nextSel, prop, placeholder) => {
+                const items = [...new Set(filtered.map(u => u[prop]).filter(Boolean))];
+                populateSelect(nextSel.id, items, placeholder);
+            };
+
+            if (level === 'stage') { updateNext(selGrade, 'grade', '年級'); resetSelects([selVersion, selSemester, selUnit]); }
+            else if (level === 'grade') { updateNext(selVersion, 'version', '版本'); resetSelects([selSemester, selUnit]); }
+            else if (level === 'version') { updateNext(selSemester, 'semester', '學期'); resetSelects([selUnit]); }
+            else if (level === 'semester') { 
                 selUnit.innerHTML = '<option value="" disabled selected>請選擇單元</option>';
-                filtered.forEach(u => {
-                    const opt = document.createElement('option');
-                    opt.value = u.id;
-                    opt.text = u.title;
-                    selUnit.add(opt);
-                });
+                filtered.forEach(u => selUnit.add(new Option(u.title, u.id)));
                 selUnit.disabled = false;
             }
         }
@@ -438,12 +394,8 @@
             sel.disabled = false;
         }
 
-        function resetSelects(ids) {
-            ids.forEach(id => {
-                const sel = document.getElementById(id);
-                sel.innerHTML = `<option value="" disabled selected>${sel.options[0].text}</option>`;
-                sel.disabled = true;
-            });
+        function resetSelects(elements) {
+            elements.forEach(el => { el.innerHTML = `<option value="" disabled selected>${el.options[0].text}</option>`; el.disabled = true; });
         }
 
         function loadSelectedUnit() {
@@ -453,24 +405,20 @@
         }
 
         // ==========================================
-        // 4. 內容渲染 (核心修復：語言分離與排版)
+        // 4. 內容渲染與自動翻譯 (Core & Translate)
         // ==========================================
-        function renderArticle(unit) {
+        async function renderArticle(unit) {
             document.getElementById('article-title').innerText = unit.title;
             document.getElementById('status-bar').innerText = `READING: ${unit.title}`;
             document.getElementById('nav-title').innerText = unit.title;
 
-            // S 欄詞彙表解析
+            // 解析詞彙
             let vocabMap = {};
             if (unit.vocab) {
-                // 支援多種分隔符，處理可能的中英對照
-                // 假設格式: "葉綠素:Chlorophyll"
                 let items = unit.vocab.split(/[,;，；\n]/);
                 items.forEach(item => {
                     let parts = item.split(/[:：]/);
-                    let key = parts[0].trim();
-                    let val = parts.length > 1 ? parts[1].trim() : ""; // 這裡val是英文
-                    if(key.length > 0) vocabMap[key] = val;
+                    if(parts[0].trim()) vocabMap[parts[0].trim()] = parts[1] ? parts[1].trim() : "Sci-Term";
                 });
             }
 
@@ -482,37 +430,20 @@
             let lines = unit.content.split('\n');
             let sectionCount = 0;
 
-            lines.forEach((line, idx) => {
-                line = line.trim();
-                if (!line) return;
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+                if (!line) continue;
 
-                // 2. X-Ray 關鍵字處理 (僅針對中文內容，因為詞彙表key通常是中文)
-                // 修正：如果單字是 "Chlorophyll:葉綠素"，也要能反向處理
-                let processedLine = line;
-                for (let [key, val] of Object.entries(vocabMap)) {
-                    // key=中文, val=英文
-                    // 避免在HTML標籤內替換
-                    try {
-                        const regex = new RegExp(`(${key})`, 'gi');
-                        // 顯示時：中文(英文)
-                        processedLine = processedLine.replace(regex, 
-                            `<span class="sci-term" onmouseenter="showAIAnalysis('${key}', '${val}')">$1</span>`
-                        );
-                    } catch(e) {}
-                }
-
-                // 3. AI 判讀：是否為標題？
-                // 條件：包含 "活動" 或 "Unit" 或長度很短且沒標點
+                // 標題判定
                 const isHeader = (line.length < 40 && !/[。！？.!?]$/.test(line)) || line.includes("活動");
 
                 if (isHeader) {
                     sectionCount++;
-                    const anchorId = `sec-${idx}`;
-                    
+                    const anchorId = `sec-${i}`;
                     // 左側導航
                     const navItem = document.createElement('div');
                     navItem.className = 'nav-item';
-                    navItem.innerHTML = `<div class="nav-title truncate">${line}</div>`;
+                    navItem.innerHTML = `<div class="text-[10px] text-teal-500/50">SEC ${sectionCount}</div><div class="nav-title truncate">${line}</div>`;
                     navItem.onclick = () => {
                         document.getElementById(anchorId).scrollIntoView({behavior: 'smooth', block: 'center'});
                         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -520,40 +451,80 @@
                     };
                     navList.appendChild(navItem);
 
-                    contentDiv.innerHTML += `<div id="${anchorId}" class="section-header">${processedLine}</div>`;
+                    contentDiv.innerHTML += `<h2 id="${anchorId}" class="section-header">${line}</h2>`;
                 } else {
-                    // 4. 內容處理：自動偵測語言
-                    // 判斷邏輯：英文字母數量 > 中文字數量 = 英文
-                    const enCount = (line.match(/[a-zA-Z]/g) || []).length;
-                    const zhCount = (line.match(/[\u4e00-\u9fa5]/g) || []).length;
-                    const isEnglish = enCount > zhCount;
-
-                    const pClass = isEnglish ? "en-text" : "zh-text";
-                    
-                    // 這裡不使用 innerHTML += 避免重繪效能問題，但量少沒關係
+                    // 內容區塊：預備雙語結構
+                    // 這裡先生成中文，英文等切換模式時自動翻譯填充
                     contentDiv.innerHTML += `
-                        <div class="content-block">
-                            <p class="${pClass}">${processedLine}</p>
+                        <div class="content-block" id="block-${i}">
+                            <p class="zh-text">${processXRay(line, vocabMap)}</p>
+                            <p class="en-text hidden text-teal-200/80 italic text-sm mt-2" data-source="${line}"></p>
                         </div>
                     `;
                 }
-            });
+            }
+            setMode('dual'); // 預設模式
+        }
+
+        function processXRay(text, vocabMap) {
+            for (let [key, val] of Object.entries(vocabMap)) {
+                try {
+                    const regex = new RegExp(`(${key})`, 'gi');
+                    text = text.replace(regex, `<span class="sci-term" onmouseenter="showAIAnalysis('${key}', '${val}')">$1</span>`);
+                } catch(e){}
+            }
+            return text;
+        }
+
+        // ★★★ 自動翻譯核心 ★★★
+        async function translateVisibleBlocks() {
+            const enBlocks = document.querySelectorAll('.en-text');
+            const loading = document.getElementById('trans-loading');
             
-            setMode('dual'); // 預設顯示雙語
+            // 檢查是否需要翻譯 (如果內容是空的)
+            let needsTranslation = false;
+            enBlocks.forEach(el => { if(!el.innerText) needsTranslation = true; });
+
+            if (!needsTranslation) return;
+
+            loading.classList.remove('hidden');
+            
+            // 使用 Google Translate API (Free Endpoint)
+            for (let el of enBlocks) {
+                if (el.innerText) continue; // 已翻譯過則跳過
+                const sourceText = el.getAttribute('data-source');
+                
+                // 檢查快取
+                if (translationCache[sourceText]) {
+                    el.innerText = translationCache[sourceText];
+                    continue;
+                }
+
+                try {
+                    // 簡單的 fetch 請求
+                    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURI(sourceText)}`;
+                    const res = await fetch(url);
+                    const json = await res.json();
+                    const translatedText = json[0][0][0];
+                    
+                    el.innerText = translatedText;
+                    translationCache[sourceText] = translatedText; // 存入快取
+                } catch (e) {
+                    console.error("Translation failed", e);
+                    el.innerText = "[Translation Error]";
+                }
+            }
+            loading.classList.add('hidden');
         }
 
         // ==========================================
-        // 5. 語音與 AI (修復：只讀英文)
+        // 5. 語音與 AI
         // ==========================================
         function setVoice(gender) {
             currentVoice = gender;
             document.getElementById('voice-male').className = `voice-btn px-2 py-1 rounded transition ${gender === 'male' ? 'bg-teal-600 text-white shadow' : 'text-teal-400 hover:bg-teal-500/20'}`;
             document.getElementById('voice-female').className = `voice-btn px-2 py-1 rounded transition ${gender === 'female' ? 'bg-teal-600 text-white shadow' : 'text-slate-500 hover:bg-teal-500/20'}`;
-            
-            const name = gender === 'male' ? 'Teacher Spark' : 'Teacher Nova';
-            showToast(`${name} 準備就緒`);
-            const u = new SpeechSynthesisUtterance('');
-            window.speechSynthesis.speak(u);
+            showToast(`${gender === 'male' ? 'Teacher Spark' : 'Teacher Nova'} 已啟動`);
         }
 
         function toggleSpeech() {
@@ -564,44 +535,31 @@
                 btn.innerHTML = '<i class="fa-solid fa-play"></i>';
             } else {
                 let textToRead = "";
-                // ★ 關鍵修復：只讀取頁面上的 "en-text" 類別內容 (純英文)
+                // 優先朗讀英文 (如果顯示的話)
                 const enNodes = document.querySelectorAll('.en-text');
+                const isEnglishMode = enNodes.length > 0 && !enNodes[0].classList.contains('hidden');
                 
-                if (enNodes.length > 0) {
-                    // 只讀目前顯示出來的
-                    if(!enNodes[0].parentElement.classList.contains('hidden')) {
-                         enNodes.forEach(p => textToRead += p.innerText + " ");
-                    }
-                } 
-                
-                // 如果沒有英文(或被隱藏)，嘗試讀中文
-                if (!textToRead) {
-                     const zhNodes = document.querySelectorAll('.zh-text');
-                     if(zhNodes.length > 0 && !zhNodes[0].parentElement.classList.contains('hidden')) {
-                         zhNodes.forEach(p => textToRead += p.innerText + " ");
-                     }
-                }
+                document.querySelectorAll(isEnglishMode ? '.en-text' : '.zh-text').forEach(p => {
+                    textToRead += p.innerText + " ";
+                });
 
-                if(!textToRead) { showToast("沒有可朗讀的內容", "error"); return; }
+                if(!textToRead) { showToast("無內容可朗讀", "error"); return; }
 
                 const u = new SpeechSynthesisUtterance(textToRead);
                 const voices = window.speechSynthesis.getVoices();
                 
+                // 語音選擇邏輯 (自動對應語言)
                 let targetVoice = null;
-                // 優先選擇高品質英文語音
-                if (currentVoice === 'male') {
-                    targetVoice = voices.find(v => v.name.includes("Google US English")) || 
-                                  voices.find(v => v.name.includes("David")) || 
-                                  voices.find(v => v.lang === 'en-US');
-                    u.pitch = 0.95; u.rate = 0.9;
+                if (isEnglishMode) {
+                    if (currentVoice === 'male') targetVoice = voices.find(v => v.name.includes("Google US English")) || voices.find(v => v.lang === 'en-US');
+                    else targetVoice = voices.find(v => v.name.includes("Zira")) || voices.find(v => v.lang === 'en-US');
                 } else {
-                    targetVoice = voices.find(v => v.name.includes("Zira")) || 
-                                  voices.find(v => v.name.includes("Google UK English Female")) || 
-                                  voices.find(v => v.lang === 'en-US'); 
-                    u.pitch = 1.05; u.rate = 1.0;
+                    // 中文模式用中文語音
+                    targetVoice = voices.find(v => v.lang === 'zh-TW') || voices.find(v => v.lang.includes('zh'));
                 }
                 
                 if(targetVoice) u.voice = targetVoice;
+                u.rate = isEnglishMode ? 0.9 : 1.0; // 英文稍微慢一點
 
                 u.onend = () => { isSpeaking = false; btn.innerHTML = '<i class="fa-solid fa-play"></i>'; };
                 window.speechSynthesis.speak(u);
@@ -610,79 +568,62 @@
             }
         }
 
-        function showAIAnalysis(term, definition) {
-            const card = document.getElementById('ai-card-display');
-            const placeholder = document.getElementById('ai-card-placeholder');
-            placeholder.classList.add('hidden');
-            card.classList.remove('hidden', 'opacity-0');
-            document.getElementById('ai-term-title').innerText = term;
-            // 顯示中文詞彙和它的英文定義(如果S欄有的話)
-            document.getElementById('ai-term-desc').innerHTML = `<span class="text-teal-300">${definition}</span><br><br>Analyzing scientific context...`;
-        }
-
-        function speakTerm() {
-            // 朗讀卡片上的英文定義(如果有)，或中文詞彙
-            // 這裡改成朗讀 title (中文) 或是 desc (英文)
-            const title = document.getElementById('ai-term-title').innerText;
-            const desc = document.getElementById('ai-term-desc').innerText;
-            
-            // 嘗試讀英文定義
-            const text = /[a-zA-Z]/.test(desc) ? desc : title;
-            
-            const u = new SpeechSynthesisUtterance(text);
-            window.speechSynthesis.speak(u);
-        }
-
         function setMode(mode) {
-            const en = document.querySelectorAll('.en-text');
-            const zh = document.querySelectorAll('.zh-text');
-            
+            // 切換按鈕樣式
             ['en', 'dual', 'zh'].forEach(m => {
                 document.getElementById(`btn-${m}`).className = m === mode ? "mode-btn px-3 py-1 text-xs font-bold rounded bg-teal-600 text-white shadow" : "mode-btn px-3 py-1 text-xs font-bold rounded text-teal-500 hover:text-white transition";
             });
 
-            // 控制父層 content-block (因為結構是 div > p)
-            // 所以我們要隱藏的是 content-block (div)
+            // 觸發翻譯
+            if (mode === 'en' || mode === 'dual') {
+                translateVisibleBlocks();
+            }
+
+            const en = document.querySelectorAll('.en-text');
+            const zh = document.querySelectorAll('.zh-text');
+
             if(mode === 'en') {
-                en.forEach(e => e.parentElement.classList.remove('hidden'));
-                zh.forEach(z => z.parentElement.classList.add('hidden'));
+                en.forEach(e => e.classList.remove('hidden'));
+                zh.forEach(z => z.classList.add('hidden'));
             } else if (mode === 'zh') {
-                en.forEach(e => e.parentElement.classList.add('hidden'));
-                zh.forEach(z => z.parentElement.classList.remove('hidden'));
-            } else {
-                en.forEach(e => e.parentElement.classList.remove('hidden'));
-                zh.forEach(z => z.parentElement.classList.remove('hidden'));
+                en.forEach(e => e.classList.add('hidden'));
+                zh.forEach(z => z.classList.remove('hidden'));
+            } else { // dual
+                en.forEach(e => e.classList.remove('hidden'));
+                zh.forEach(z => z.classList.remove('hidden'));
             }
         }
 
+        // 其餘輔助函式 (字體、Toast、Canvas) 保持不變
         function adjustFontSize(delta) {
             const el = document.getElementById('article-content');
             const style = window.getComputedStyle(el).getPropertyValue('font-size');
             el.style.fontSize = (parseFloat(style) + delta) + 'px';
         }
-
         function showToast(msg, type="info") {
             const toast = document.getElementById('toast');
             document.getElementById('toast-msg').innerText = msg;
             toast.classList.remove('opacity-0', 'translate-y-10');
-            toast.querySelector('i').className = type === 'error' ? "fa-solid fa-circle-exclamation text-red-400" : "fa-solid fa-circle-check text-teal-400";
             setTimeout(() => toast.classList.add('opacity-0', 'translate-y-10'), 3000);
         }
-
+        function showAIAnalysis(term, def) {
+            document.getElementById('ai-card-placeholder').classList.add('hidden');
+            document.getElementById('ai-card-display').classList.remove('hidden', 'opacity-0');
+            document.getElementById('ai-term-title').innerText = term;
+            document.getElementById('ai-term-desc').innerText = def || "讀取中...";
+        }
+        function speakTerm() {
+            const term = document.getElementById('ai-term-title').innerText;
+            const u = new SpeechSynthesisUtterance(term); u.lang = 'en-US'; window.speechSynthesis.speak(u);
+        }
+        // Canvas Init
         function initCanvas() {
-            const canvas = document.getElementById('molecule-canvas');
-            const ctx = canvas.getContext('2d');
-            let particles = [];
-            function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+            const canvas = document.getElementById('molecule-canvas'); const ctx = canvas.getContext('2d');
+            let particles = []; function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
             window.addEventListener('resize', resize); resize();
-            class Atom {
-                constructor() { this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height; this.vx = (Math.random() - 0.5) * 0.2; this.vy = (Math.random() - 0.5) * 0.2; this.size = Math.random() * 2 + 1; this.color = `rgba(45, 212, 191, ${Math.random() * 0.3 + 0.1})`; }
-                update() { this.x += this.vx; this.y += this.vy; if (this.x < 0 || this.x > canvas.width) this.vx *= -1; if (this.y < 0 || this.y > canvas.height) this.vy *= -1; }
-                draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.fill(); }
-            }
-            for (let i = 0; i < 50; i++) particles.push(new Atom());
-            function animate() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animate); }
-            animate();
+            class Atom { constructor() { this.x = Math.random()*canvas.width; this.y = Math.random()*canvas.height; this.vx=(Math.random()-0.5)*0.2; this.vy=(Math.random()-0.5)*0.2; this.size=Math.random()*2+1; this.color=`rgba(45,212,191,${Math.random()*0.3+0.1})`; } update(){ this.x+=this.vx; this.y+=this.vy; if(this.x<0||this.x>canvas.width)this.vx*=-1; if(this.y<0||this.y>canvas.height)this.vy*=-1; } draw(){ ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2); ctx.fillStyle=this.color; ctx.fill(); } }
+            for(let i=0;i<50;i++) particles.push(new Atom());
+            function animate(){ ctx.clearRect(0,0,canvas.width,canvas.height); particles.forEach(p=>{p.update();p.draw();}); requestAnimationFrame(animate); } animate();
         }
     </script>
 </body>
