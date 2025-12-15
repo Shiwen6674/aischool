@@ -864,6 +864,7 @@ function stopSpeech() {
 /**
  * 智慧挑選最佳語音 (針對 Natural/Enhanced 優化)
  */
+// ✅ [針對 iOS 優化版] 強制優先抓取 Siri 和 Enhanced 高品質語音
 function pickBestVoice(isEng, gender) {
     if (!window.speechSynthesis) return null;
     const voices = window.speechSynthesis.getVoices();
@@ -883,34 +884,40 @@ function pickBestVoice(isEng, gender) {
             return -1;
         }
 
-        // 2. 性別過濾 (關鍵修改)
-        if (gender === 'male') {
-            if (name.includes('female') || name.includes('woman') || name.includes('girl')) score -= 5000; // 懲罰女聲
-            if (name.includes('male') || name.includes('man') || name.includes('boy')) score += 500;
-            // Microsoft Edge 特定男聲
-            if (name.includes('yunjhe') || name.includes('yunxi') || name.includes('guy') || name.includes('ryan')) score += 1000;
-        } else {
-            // female
-            if (name.includes('male') || name.includes('man') || name.includes('boy')) score -= 5000; // 懲罰男聲
-            if (name.includes('female') || name.includes('woman') || name.includes('girl')) score += 500;
-            // Microsoft Edge/Google 特定女聲
-            if (name.includes('hsiaochen') || name.includes('xiaoxiao') || name.includes('aria') || name.includes('jenny') || name.includes('google')) score += 1000;
-        }
+        // 2. iOS 專屬優化：Siri 語音是 iOS 上最自然的，優先權最高
+        // 注意：iOS 的 Siri 語音在 API 裡通常叫 "Siri" 或包含 "siri"
+        if (name.includes('siri')) score += 2000;
 
-        // 3. 品質加分
-        if (name.includes('natural')) score += 200;
-        if (name.includes('online')) score += 100;
-        if (name.includes('enhanced')) score += 100;
+        // 3. 品質加分：Apple 的 "Enhanced" (增強版) 或 "Premium"
+        if (name.includes('enhanced')) score += 1500;
+        if (name.includes('premium')) score += 1500;
+
+        // 4. 微軟/Google 雲端語音 (如果在 Edge/Android 上)
+        if (name.includes('natural')) score += 1500;
+        if (name.includes('online')) score += 1000;
+
+        // 5. 懲罰 "Compact" (精簡版/機器音)，這是 iOS 預設最爛的聲音
+        if (name.includes('compact')) score -= 5000;
+
+        // 6. 性別過濾
+        if (gender === 'male') {
+            if (name.includes('female') || name.includes('woman') || name.includes('girl') || name.includes('meijia') || name.includes('shanshan')) score -= 5000;
+            if (name.includes('male') || name.includes('man') || name.includes('boy')) score += 500;
+        } else {
+            if (name.includes('male') || name.includes('man') || name.includes('boy')) score -= 5000;
+            if (name.includes('female') || name.includes('woman') || name.includes('girl')) score += 500;
+        }
 
         return score;
     };
 
-    
-    // 排序並取出最高分
     const sorted = voices
         .map(v => ({ v, score: getScore(v) }))
         .filter(item => item.score > 0)
         .sort((a, b) => b.score - a.score);
+
+    // Debug 用：如果您想知道它到底選了誰，可以把下面這行註解打開，用電腦接手機看 console
+    // if(sorted.length > 0) console.log(`Selected Voice for ${isEng?'Eng':'Zh'}: ${sorted[0].v.name} (Score: ${sorted[0].score})`);
 
     return sorted.length > 0 ? sorted[0].v : null;
 }
@@ -1019,8 +1026,8 @@ function speakText(txt, onComplete) {
 
         // 設定語速與音調
         if (ios) {
-            u.pitch = 1.0;
-            u.rate = (uiRate === 1.0) ? 1.0 : Math.max(0.8, Math.min(1.2, uiRate));
+            u.pitch = 1.0; // iOS 建議固定 1.0，改了容易變機器音
+            u.rate = (uiRate === 1.0) ? 0.95 : uiRate; // 稍微慢一點點(0.95)通常比 1.0 聽起來更穩
         } else {
             u.rate = uiRate;
             u.pitch = (currentVoice === 'male') ? 1.0 : 1.05;
