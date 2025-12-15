@@ -460,7 +460,8 @@
         function rehighlightEnglishBlocks(){
           const ens = document.querySelectorAll('.en-text');
           ens.forEach(el => {
-            const src = (el.getAttribute('data-source')||"").replace(/　/g,'');
+            const src = decodeURIComponent(el.getAttribute('data-source') || "");
+
             const cached = translationCache[src];
             if(cached){
               el.innerHTML = makeClickable(highlightEnglishVocabInText(cached));
@@ -496,6 +497,8 @@
             }
 
             const unitCkipSet = unit.ckip ? getCkipTokenSet(unit.ckip) : null;
+const unitCkipTokens = unit.ckip ? getCkipTokenArray(unit.ckip) : [];
+const unitMergeSet = buildCkipMergeSet(unitCkipTokens, getMaxKeyLen(activeVocabMap));
 
             for(let i=0; i<lines.length; i++) {
                 let line = lines[i].trim();
@@ -511,12 +514,16 @@
 
                     contentDiv.innerHTML += `<h2 id="${anchorId}" class="section-header">${escapeHtml(line)}</h2>`;
                 } else {
-                    let processed = processXRayWithCKIP(line, activeVocabMap, unitCkipSet);
+                    let processed = processXRayWithCKIP(line, activeVocabMap, unitCkipSet, unitMergeSet);
+
 
                     contentDiv.innerHTML += `
                         <div class="content-block">
                             <p class="zh-text" onclick="speakText(this.innerText)">${processed}</p>
-                            <p class="en-text hidden text-teal-200/80 italic text-sm mt-2" onclick="speakText(this.innerText)" data-source="${escapeHtml(line)}"></p>
+                            <p class="en-text hidden text-teal-200/80 italic text-sm mt-2"
+   onclick="speakText(this.innerText)"
+   data-source="${encodeURIComponent(line)}"></p>
+
                         </div>`;
                 }
             }
@@ -535,23 +542,106 @@
                .filter(Boolean)
           );
         }
+function getCkipTokenArray(ckipText) {
+  const raw = (ckipText || "").toString().replace(/　/g, " ").trim();
+  if (!raw) return [];
+  return raw
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(tok => tok.replace(/[\(（].*$/, "")) // 去掉 (POS)
+    .filter(Boolean);
+}
 
-        function processXRayWithCKIP(text, map, ckipTokenSet) {
-            let clean = (text || "").toString().replace(/　/g,'');
-            const keys = Object.keys(map || {}).sort((a,b)=>b.length-a.length);
-            if(keys.length===0) return clean;
+function getMaxKeyLen(vocabMap) {
+  const keys = Object.keys(vocabMap || {});
+  if (!keys.length) return 1;
+  let m = 1;
+  for (const k of keys) m = Math.max(m, (k || "").length);
+  return m;
+}
 
-            const ptrn = new RegExp(`(${keys.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')})`,'g');
+// 建立「相鄰 token 串接」的候選集合（用於：水果 = 水+果 這種情況）
+function buildCkipMergeSet(tokens, maxLen) {
+  const set = new Set();
+  if (!tokens || !tokens.length) return set;
 
-            return clean.replace(ptrn, (m) => {
-                if(ckipTokenSet && ckipTokenSet.size > 0 && !ckipTokenSet.has(m)) {
-                    return m;
-                }
-                const speak = ((map[m]||m) + "").replace(/'/g,"\\'");
-                const title = ((map[m]||'') + "").replace(/"/g,'&quot;');
-                return `<span class="sci-term" onclick="event.stopPropagation(); speakText('${speak}')" title="${title}">${m}</span>`;
-            });
-        }
+  const L = Math.max(2, maxLen || 2);
+  for (let i = 0; i < tokens.length; i++) {
+    let acc = "";
+    for (let j = i; j < tokens.length; j++) {
+      acc += tokens[j];
+      if (acc.length > L) break;
+      if (acc.length >= 2) set.add(acc);
+    }
+  }
+  return set;
+}
+
+// 判斷「是否允許標註」：
+// - 單字詞（如 水）：必須是 CKIP token 才能標（避免把「水平」裡的水誤標）
+// - 多字詞（如 水果）：若是 token 或可由相鄰 token 串接得到，即可標
+function shouldMarkZhTerm(term, ckipTokenSet, ckipMergeSet) {
+  if (!term) return false;
+
+  // 沒有 CKIP 資訊就退化成：只靠 S 欄字典（仍可運作）
+  if (!ckipTokenSet || ckipTokenSet.size === 0) return true;
+
+  if (term.length === 1) return ckipTokenSet.has(term);
+
+  if (ckipTokenSet.has(term)) return true;
+  if (ckipMergeSet && ckipMergeSet.has(term)) return true;
+
+  return false;
+}
+
+function processXRayWithCKIP(text, map, ckipTokenSet, ckipMergeSet) {
+  const src = (text || "").toString().replace(/　/g, "");
+  const keys = Object.keys(map || {}).filter(Boolean).sort((a, b) => b.length - a.length);
+  if (!keys.length) return escapeHtml(src);
+
+  // 長詞優先：先建立「不重疊」的命中區間（span）
+  const spans = [];
+
+  const overlaps = (s, e) => spans.some(sp => !(e <= sp.start || s >= sp.end));
+
+  for (const term of keys) {
+    let from = 0;
+    while (true) {
+      const idx = src.indexOf(term, from);
+      if (idx === -1) break;
+
+      const start = idx, end = idx + term.length;
+      from = idx + term.length;
+
+      if (overlaps(start, end)) continue;
+      if (!shouldMarkZhTerm(term, ckipTokenSet, ckipMergeSet)) continue;
+
+      spans.push({ start, end, term });
+    }
+  }
+
+  if (!spans.length) return escapeHtml(src);
+  spans.sort((a, b) => a.start - b.start);
+
+  // 依 spans 回填 HTML
+  let html = "";
+  let last = 0;
+
+  for (const sp of spans) {
+    html += escapeHtml(src.slice(last, sp.start));
+
+    const zh = sp.term;
+    const en = ((map[zh] || zh) + "").toString();
+    const js = en.replace(/'/g, "\\'");
+    const title = escapeHtml(((map[zh] || "") + "").toString());
+
+    html += `<span class="sci-term" onclick="event.stopPropagation(); speakText('${js}')" title="${title}">${escapeHtml(zh)}</span>`;
+    last = sp.end;
+  }
+
+  html += escapeHtml(src.slice(last));
+  return html;
+}
 
         async function translateVocabItem(zh, el) {
           try {
@@ -578,7 +668,9 @@
             load.classList.remove('hidden');
             for(let el of ens) {
                 if(el.innerText) continue;
-                let src=(el.getAttribute('data-source')||"").replace(/　/g,'');
+                let src = decodeURIComponent(el.getAttribute('data-source') || "");
+src = src.replace(/　/g,'');
+
                 if(translationCache[src]) { el.innerHTML=makeClickable(highlightEnglishVocabInText(translationCache[src])); continue; }
                 try {
                     const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURIComponent(src)}`);
