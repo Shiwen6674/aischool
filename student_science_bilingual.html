@@ -871,14 +871,7 @@ function pickBestVoice(isEng, gender) {
         return score;
     };
 
-    const sorted = voices
-        .map(v => ({ v, score: getScore(v) }))
-        .filter(item => item.score > 0)
-        .sort((a, b) => b.score - a.score);
-
-    return sorted.length > 0 ? sorted[0].v : null;
-}
-
+    
     // 排序並取出最高分
     const sorted = voices
         .map(v => ({ v, score: getScore(v) }))
