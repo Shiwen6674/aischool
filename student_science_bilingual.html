@@ -935,8 +935,7 @@ if (preferred) voice = preferred;
         u.rate = uiRate;
         // 微軟 Natural 語音如果調 Pitch 有時會怪怪的，建議保持 1.0 或微調
         u.pitch = (currentVoice === 'male') ? 1.0 : 1.05; 
-    }
-    }
+        }
 
     u.onstart = () => {
       isSpeaking = true;
