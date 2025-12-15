@@ -24,25 +24,20 @@
                         sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
                     },
                     colors: {
-                        // Notion-like Dark Mode Palette
-                        bg: '#191919',           // 背景：深灰黑 (非純黑)
-                        card: '#202020',         // 卡片：稍淺的灰
-                        card_hover: '#2C2C2C',   // 卡片懸停
-                        border: '#333333',       // 邊框：低對比
+                        bg: '#121212',           // 極深灰背景
+                        card: '#1E1E1E',         // 卡片背景
+                        border: '#2D2D2D',       // 邊框
+                        primary: '#3B82F6',      // 主色 (藍)
+                        accent: '#8B5CF6',       // 強調 (紫)
                         text: {
-                            primary: '#E6E6E6',  // 主文字：灰白
-                            secondary: '#A0A0A0',// 次文字：中灰
-                            accent: '#3B82F6'    // 強調色：藍色
+                            main: '#E5E7EB',     // 主要文字
+                            mute: '#9CA3AF'      // 次要文字
                         }
-                    },
-                    boxShadow: {
-                        'soft': '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.1)',
                     }
                 }
             }
         }
         
-        // Mermaid 設定 (使用深色主題，但字體清晰)
         mermaid.initialize({ 
             startOnLoad: false, 
             theme: 'dark', 
@@ -53,135 +48,105 @@
     </script>
 
     <style>
-        /* === 閱讀體驗優化 === */
         body {
-            background-color: #191919;
-            color: #E6E6E6;
+            background-color: #121212;
+            color: #E5E7EB;
             font-family: 'Inter', 'Noto Sans TC', sans-serif;
             line-height: 1.6;
         }
 
-        /* 內容卡片：模仿 Notion 的乾淨風格 */
+        /* 卡片樣式：乾淨、無干擾 */
         .content-card {
-            background-color: #202020;
-            border: 1px solid #333333;
+            background-color: #1E1E1E;
+            border: 1px solid #2D2D2D;
             border-radius: 0.75rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
             transition: border-color 0.2s;
-            overflow: hidden;
         }
         .content-card:hover {
-            border-color: #4B4B4B;
+            border-color: #404040;
         }
 
-        /* 摘要排版優化 */
+        /* 摘要排版：高可讀性 */
         #summary-text h3 {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: #60A5FA; /* 亮藍色標題 */
-            margin-top: 1.5rem;
-            margin-bottom: 0.75rem;
-            padding-bottom: 0.25rem;
-            border-bottom: 1px solid #333;
+            font-size: 1.25rem; font-weight: 700; color: #60A5FA; 
+            margin-top: 1.5rem; margin-bottom: 0.75rem;
+            padding-bottom: 0.25rem; border-bottom: 1px solid #333;
         }
-        #summary-text ul {
-            list-style-type: disc;
-            padding-left: 1.5rem;
-            color: #D4D4D4;
-        }
-        #summary-text li {
-            margin-bottom: 0.5rem;
-        }
+        #summary-text ul { list-style-type: disc; padding-left: 1.5rem; color: #D1D5DB; }
+        #summary-text li { margin-bottom: 0.5rem; }
         #summary-text strong {
-            color: #F472B6; /* 亮粉紅強調重點 */
-            font-weight: 600;
+            color: #F472B6; font-weight: 600;
             background: rgba(244, 114, 182, 0.1);
-            padding: 0 4px;
-            border-radius: 4px;
+            padding: 0 4px; rounded: 4px;
         }
 
         /* 詞彙卡 */
         .vocab-item {
-            background: #262626;
-            border: 1px solid #333;
-            border-radius: 0.5rem;
-            padding: 1rem;
-            margin-bottom: 0.75rem;
+            background: #252525; border: 1px solid #333;
+            border-radius: 0.5rem; padding: 1rem; margin-bottom: 0.75rem;
             transition: transform 0.2s;
         }
-        .vocab-item:hover {
-            transform: translateX(4px);
-            border-color: #60A5FA;
-        }
+        .vocab-item:hover { transform: translateX(4px); border-color: #60A5FA; }
 
-        /* 下拉選單：簡潔實用 */
+        /* 下拉選單 */
         .select-clean {
-            background-color: #262626;
-            border: 1px solid #404040;
-            color: #E6E6E6;
-            border-radius: 0.5rem;
+            background-color: #252525; border: 1px solid #404040;
+            color: #E5E7EB; border-radius: 0.5rem;
             padding: 0.5rem 2rem 0.5rem 0.75rem;
             appearance: none;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23A0A0A0' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 0.5rem center;
-            background-repeat: no-repeat;
-            background-size: 1.2em 1.2em;
-            cursor: pointer;
-            transition: all 0.2s;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239CA3AF' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.2em 1.2em;
+            cursor: pointer; transition: all 0.2s;
         }
         .select-clean:hover:not(:disabled) { border-color: #60A5FA; }
         .select-clean:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* 按鈕：明確的操作感 */
+        /* 按鈕 */
         .btn-action {
-            background-color: #2563EB; /* Blue-600 */
-            color: white;
-            padding: 0.5rem 1.25rem;
-            border-radius: 0.5rem;
-            font-weight: 600;
-            transition: background-color 0.2s;
+            background-color: #2563EB; color: white;
+            padding: 0.6rem 1.5rem; border-radius: 0.5rem; font-weight: 600;
+            transition: background-color 0.2s; display: flex; items-center; gap: 0.5rem;
         }
-        .btn-action:hover:not(:disabled) { background-color: #1D4ED8; } /* Blue-700 */
-        .btn-action:disabled { background-color: #404040; color: #888; cursor: not-allowed; }
+        .btn-action:hover:not(:disabled) { background-color: #1D4ED8; }
+        .btn-action:disabled { background-color: #333; color: #666; cursor: not-allowed; }
 
-        /* 架構圖容器：白底確保可讀性 */
+        /* 架構圖容器 (白底以確保 Mermaid 可見) */
         .mindmap-container {
-            background-color: #FFFFFF;
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-            overflow: auto;
-            min-height: 300px;
+            background-color: #ffffff; border-radius: 0.5rem;
+            padding: 1.5rem; overflow: auto; min-height: 300px;
             display: flex; justify-content: center; align-items: center;
         }
 
         /* 卷軸 */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #191919; }
+        ::-webkit-scrollbar-track { background: #121212; }
         ::-webkit-scrollbar-thumb { background: #404040; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #505050; }
 
-        /* 列印 */
         .pdf-page-break { page-break-before: always; }
         @media print { .no-print { display: none; } body { background: white; color: black; } .content-card { border: 1px solid #ccc; box-shadow: none; background: white; color: black; } }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
 
-    <nav class="sticky top-0 z-50 bg-[#191919]/90 backdrop-blur border-b border-[#333] h-16">
+    <nav class="sticky top-0 z-50 bg-[#121212]/90 backdrop-blur border-b border-[#2D2D2D] h-16">
         <div class="max-w-7xl mx-auto px-4 h-full flex justify-between items-center">
             <div class="flex items-center gap-4">
-                <a href="student.html" class="flex items-center justify-center w-8 h-8 rounded hover:bg-[#333] text-gray-400 hover:text-white transition">
+                <a href="student.html" class="flex items-center justify-center w-8 h-8 rounded hover:bg-[#2D2D2D] text-gray-400 hover:text-white transition">
                     <i class="fa-solid fa-arrow-left"></i>
                 </a>
                 <div class="flex items-center gap-2">
-                    <span class="w-2 h-6 bg-blue-600 rounded-full"></span>
+                    <span class="w-1.5 h-6 bg-blue-500 rounded-full"></span>
                     <span class="font-bold text-lg text-white" data-i18n="page_title">單元重點精熟</span>
                 </div>
             </div>
             
             <div class="flex items-center gap-3">
                 <span id="user-info" class="text-xs text-gray-400 hidden sm:inline-block">訪客</span>
-                <select id="language-selector" onchange="changeLanguage()" class="bg-[#262626] border border-[#404040] text-gray-300 text-xs rounded px-2 py-1 outline-none">
+                <select id="language-selector" onchange="changeLanguage()" class="bg-[#252525] border border-[#404040] text-gray-300 text-xs rounded px-2 py-1 outline-none">
                     <option value="zh-TW">繁體中文</option>
                     <option value="en">English</option>
                     <option value="ja">日本語</option>
@@ -193,12 +158,12 @@
 
     <main class="flex-1 w-full max-w-7xl mx-auto px-4 py-8 pb-24">
         
-        <div id="selection-panel" class="content-card p-6 mb-8">
+        <div id="selection-panel" class="content-card">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <h2 class="text-xl font-bold text-white flex items-center gap-2" data-i18n="settings_title">
                     <i class="fa-solid fa-sliders text-blue-500"></i> 請挑選學習單元
                 </h2>
-                <div id="db-status" class="text-xs font-mono px-3 py-1 rounded bg-[#262626] text-gray-500 border border-[#333]">
+                <div id="db-status" class="text-xs font-mono px-3 py-1 rounded bg-[#252525] text-gray-500 border border-[#333]">
                     Connecting...
                 </div>
             </div>
@@ -227,29 +192,29 @@
             </div>
 
             <div class="mt-6 flex justify-end">
-                <button id="btn-generate" onclick="startGeneration()" disabled class="btn-action flex items-center gap-2">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="btn_generate">AI 分析並生成</span>
+                <button id="btn-generate" onclick="startGeneration()" disabled class="btn-action">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="btn_generate">AI 整理重點</span>
                 </button>
             </div>
         </div>
 
         <div id="loading-view" class="hidden flex-col items-center justify-center py-20">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mb-4"></div>
             <p class="text-blue-400 font-mono text-sm animate-pulse">AI PROCESSING...</p>
         </div>
 
         <div id="content-view" class="hidden space-y-6">
             
-            <div class="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-[#333] pb-4">
+            <div class="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-[#2D2D2D] pb-4">
                 <div>
                     <span id="result-tag" class="text-xs font-bold text-blue-400 bg-blue-400/10 px-2 py-1 rounded border border-blue-400/20">READY</span>
                     <h1 id="result-title" class="text-3xl font-bold text-white mt-2">單元名稱</h1>
                 </div>
                 <div class="flex gap-2 no-print">
-                    <button onclick="downloadTXT()" class="px-4 py-2 rounded bg-[#333] hover:bg-[#444] text-gray-300 text-sm font-medium transition border border-[#444]">
+                    <button onclick="downloadTXT()" class="px-4 py-2 rounded bg-[#2D2D2D] hover:bg-[#3D3D3D] text-gray-300 text-sm font-medium transition border border-[#3D3D3D]">
                         <i class="fa-regular fa-file-lines mr-1"></i> <span data-i18n="btn_txt">TXT</span>
                     </button>
-                    <button onclick="downloadPDF()" class="px-4 py-2 rounded bg-[#333] hover:bg-[#444] text-gray-300 text-sm font-medium transition border border-[#444]">
+                    <button onclick="downloadPDF()" class="px-4 py-2 rounded bg-[#2D2D2D] hover:bg-[#3D3D3D] text-gray-300 text-sm font-medium transition border border-[#3D3D3D]">
                         <i class="fa-regular fa-file-pdf mr-1"></i> <span data-i18n="btn_pdf">PDF</span>
                     </button>
                 </div>
@@ -257,30 +222,32 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 
-                <div class="lg:col-span-2 space-y-6">
-                    <section class="content-card p-6 md:p-8">
+                <div class="lg:col-span-2">
+                    <section class="content-card">
                         <div class="flex items-center gap-3 mb-6 border-b border-[#333] pb-4">
-                            <i class="fa-solid fa-star text-yellow-400 text-lg"></i>
+                            <i class="fa-solid fa-star text-yellow-500 text-lg"></i>
                             <h3 class="text-xl font-bold text-white" data-i18n="title_summary">核心概念摘要</h3>
                         </div>
                         <div id="summary-text" class="text-gray-300">
                             </div>
                     </section>
 
-                    <section class="content-card p-6 md:p-8">
+                    <section class="content-card">
                         <div class="flex justify-between items-center mb-4">
                             <div class="flex items-center gap-3">
-                                <i class="fa-solid fa-sitemap text-purple-400 text-lg"></i>
+                                <i class="fa-solid fa-sitemap text-purple-500 text-lg"></i>
                                 <h3 class="text-xl font-bold text-white" data-i18n="title_map">知識架構圖</h3>
                             </div>
                             <button onclick="openModal()" class="text-xs text-gray-400 hover:text-white transition bg-[#333] px-2 py-1 rounded"><i class="fa-solid fa-expand"></i> 放大</button>
                         </div>
                         <div class="mindmap-container cursor-zoom-in group" onclick="openModal()">
-                            <div id="mermaid-chart" class="w-full text-center text-gray-400">圖表生成中...</div>
+                            <div id="mermaid-chart" class="w-full text-center text-gray-500">
+                                <i class="fa-solid fa-circle-notch fa-spin"></i> 圖表生成中...
+                            </div>
                         </div>
                     </section>
 
-                    <section class="content-card p-6 md:p-8 border-l-4 border-l-emerald-600">
+                    <section class="content-card border-l-4 border-l-emerald-600">
                         <div class="flex justify-between items-center mb-6">
                             <h3 class="text-xl font-bold text-white flex items-center gap-2">
                                 <i class="fa-solid fa-clipboard-check text-emerald-500"></i> 單元小測驗
@@ -291,16 +258,16 @@
                         <div id="quiz-body">
                             <div id="quiz-question" class="text-lg font-bold text-white mb-6 leading-relaxed"></div>
                             <div id="quiz-options" class="space-y-3"></div>
-                            <div id="quiz-feedback" class="hidden mt-4 p-4 rounded-lg bg-[#262626] border border-[#444] text-sm"></div>
+                            <div id="quiz-feedback" class="hidden mt-4 p-4 rounded-lg bg-[#252525] border border-[#404040] text-sm"></div>
                             <div class="mt-6 flex justify-center">
-                                <button id="quiz-main-btn" onclick="handleQuizMainButton()" disabled class="btn-action px-8 py-2 rounded-full">下一題</button>
+                                <button id="quiz-main-btn" onclick="handleQuizMainButton()" disabled class="btn-action rounded-full">下一題</button>
                             </div>
                         </div>
 
                         <div id="quiz-result" class="hidden text-center py-8">
                             <div class="text-5xl font-black text-emerald-500 mb-2" id="quiz-score-number">0</div>
                             <div class="text-gray-400 text-sm mb-6">總分</div>
-                            <div class="bg-[#262626] rounded-xl p-4 border border-[#444] mb-4">
+                            <div class="bg-[#252525] rounded-xl p-4 border border-[#404040] mb-4">
                                 <canvas id="quiz-radar" class="max-h-64"></canvas>
                             </div>
                             <div id="quiz-result-detail" class="text-sm text-gray-300 text-left leading-relaxed"></div>
@@ -311,14 +278,14 @@
                 </div>
 
                 <div class="space-y-6 lg:sticky lg:top-24 h-fit">
-                    <div class="content-card p-5">
+                    <div class="content-card">
                         <h3 class="font-bold text-amber-500 mb-4 flex items-center gap-2" data-i18n="title_vocab">
                             <i class="fa-solid fa-font"></i> 科學詞彙
                         </h3>
-                        <div id="keywords-list" class="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar"></div>
+                        <div id="keywords-list" class="space-y-3 max-h-[500px] overflow-y-auto pr-2"></div>
                     </div>
 
-                    <div class="content-card p-5">
+                    <div class="content-card">
                         <h3 class="font-bold text-rose-500 mb-4 flex items-center gap-2" data-i18n="title_myth">
                             <i class="fa-regular fa-lightbulb"></i> 科學動動腦
                         </h3>
@@ -331,12 +298,12 @@
 
     <div id="floating-chat" class="fixed bottom-6 right-6 z-50 hidden no-print">
         <div id="xiaoke-window" class="chat-window closed bg-[#202020] border border-[#333] shadow-xl rounded-xl w-80 h-[450px] flex flex-col overflow-hidden mb-4 transition-all duration-300 origin-bottom-right transform scale-0 opacity-0">
-            <div class="bg-[#262626] p-3 border-b border-[#333] flex justify-between items-center">
+            <div class="bg-[#252525] p-3 border-b border-[#333] flex justify-between items-center">
                 <span class="font-bold text-blue-500 text-sm"><i class="fa-solid fa-robot mr-1"></i> 小科 AI</span>
                 <button onclick="toggleChat()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-times"></i></button>
             </div>
             <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 text-sm text-gray-300"></div>
-            <div class="p-3 border-t border-[#333] bg-[#262626]">
+            <div class="p-3 border-t border-[#333] bg-[#252525]">
                 <div class="flex gap-2">
                     <input type="text" id="chat-input" class="w-full bg-[#1a1a1a] border border-[#333] rounded px-3 py-1 text-sm text-white focus:border-blue-500 outline-none" placeholder="..." onkeypress="if(event.key==='Enter') sendChatMessage()">
                     <button onclick="sendChatMessage()" class="text-blue-500 hover:text-white"><i class="fa-solid fa-paper-plane"></i></button>
@@ -363,22 +330,21 @@
         let quizState = { questions: [], currentIndex: 0, hasAnswered: false, answers: [] };
         let quizRadarChart = null;
 
-        // 多語系字典 (完整版)
         const i18n = {
             "zh-TW": {
-                page_title: "單元重點精熟", settings_title: "請挑選學習單元", label_stage: "學習階段", label_publisher: "版本", label_grade: "年級", label_semester: "學期", label_unit: "單元名稱", btn_generate: "AI 分析並生成",
+                page_title: "單元重點精熟", settings_title: "請挑選學習單元", label_stage: "學習階段", label_publisher: "版本", label_grade: "年級", label_semester: "學期", label_unit: "單元名稱", btn_generate: "AI 整理重點",
                 btn_txt: "TXT", btn_pdf: "PDF", title_summary: "核心概念摘要", title_map: "知識架構圖", title_vocab: "科學詞彙", title_myth: "科學動動腦"
             },
             "en": {
-                page_title: "Unit Mastery", settings_title: "Select Unit", label_stage: "Level", label_publisher: "Publisher", label_grade: "Grade", label_semester: "Semester", label_unit: "Unit", btn_generate: "Generate",
+                page_title: "Unit Mastery", settings_title: "Select Unit", label_stage: "Level", label_publisher: "Publisher", label_grade: "Grade", label_semester: "Semester", label_unit: "Unit", btn_generate: "AI Summarize",
                 btn_txt: "TXT", btn_pdf: "PDF", title_summary: "Summary", title_map: "Mind Map", title_vocab: "Vocabulary", title_myth: "Thinking Check"
             },
             "ja": {
-                page_title: "単元マスター", settings_title: "学習単元を選択", label_stage: "段階", label_publisher: "出版社", label_grade: "学年", label_semester: "学期", label_unit: "単元", btn_generate: "生成する",
+                page_title: "単元マスター", settings_title: "学習単元を選択", label_stage: "段階", label_publisher: "出版社", label_grade: "学年", label_semester: "学期", label_unit: "単元", btn_generate: "AI 要点まとめ",
                 btn_txt: "TXT", btn_pdf: "PDF", title_summary: "要点まとめ", title_map: "知識マップ", title_vocab: "科学用語", title_myth: "考えてみよう"
             },
             "zh-CN": {
-                page_title: "单元重点精熟", settings_title: "请挑选学习单元", label_stage: "学习阶段", label_publisher: "版本", label_grade: "年级", label_semester: "学期", label_unit: "单元名称", btn_generate: "AI 分析并生成",
+                page_title: "单元重点精熟", settings_title: "请挑选学习单元", label_stage: "学习阶段", label_publisher: "版本", label_grade: "年级", label_semester: "学期", label_unit: "单元名称", btn_generate: "AI 整理重点",
                 btn_txt: "TXT", btn_pdf: "PDF", title_summary: "核心概念摘要", title_map: "知识架构图", title_vocab: "科学词汇", title_myth: "科学动动脑"
             }
         };
@@ -395,13 +361,13 @@
                 if(json.status === "success") {
                     allData = json.data;
                     document.getElementById("db-status").innerText = "Connected";
-                    document.getElementById("db-status").className = "text-xs font-mono px-3 py-1 rounded bg-[#262626] text-emerald-500 border border-emerald-900";
+                    document.getElementById("db-status").className = "text-xs font-mono px-3 py-1 rounded bg-[#252525] text-emerald-500 border border-emerald-900";
                     initSelectors();
                 } else { throw new Error(json.message); }
             } catch(e) {
                 console.error(e);
                 document.getElementById("db-status").innerText = "Connection Failed";
-                document.getElementById("db-status").className = "text-xs font-mono px-3 py-1 rounded bg-[#262626] text-red-500 border border-red-900";
+                document.getElementById("db-status").className = "text-xs font-mono px-3 py-1 rounded bg-[#252525] text-red-500 border border-red-900";
             }
         };
 
@@ -483,39 +449,33 @@
             el.disabled=false;
         }
 
-        // ========== 強化的 JSON 清洗邏輯 (關鍵修復) ==========
+        // ========== 核心修復：JSON 清洗與容錯 ==========
         function cleanAndParseJSON(text) {
-            // 1. 移除 Markdown 標記
-            let clean = text.replace(/```json/g, "").replace(/```/g, "").trim();
+            console.log("Raw Response Length:", text.length);
             
-            // 2. 嘗試基本解析
+            // 1. 移除 Markdown 標記 (支援大小寫)
+            let clean = text.replace(/```json/gi, "").replace(/```/g, "").trim();
+            
+            // 2. 嘗試修復常見錯誤
+            clean = clean.replace(/,\s*([\]}])/g, '$1'); // 移除陣列/物件尾部逗號
+            clean = clean.replace(/(?<!\\)\n/g, "\\n"); // 轉義換行符
+            clean = clean.replace(/[\u0000-\u0019]+/g,""); // 移除控制字符
+
             try {
                 return JSON.parse(clean);
             } catch (e) {
-                console.warn("第一次解析失敗，嘗試修復 JSON...", e);
-                
-                // 3. 修復常見錯誤：
-                // 移除陣列或物件最後多餘的逗號 (Ex: {"a":1,} -> {"a":1})
-                clean = clean.replace(/,\s*([\]}])/g, '$1');
-                // 處理未轉義的換行符
-                clean = clean.replace(/(?<!\\)\n/g, "\\n");
-
-                try {
-                    return JSON.parse(clean);
-                } catch (e2) {
-                    console.warn("第二次解析失敗，嘗試暴力提取...", e2);
-                    // 4. 暴力提取：只抓取最外層 {} 
-                    const firstOpen = clean.indexOf('{');
-                    const lastClose = clean.lastIndexOf('}');
-                    if (firstOpen !== -1 && lastClose !== -1) {
-                        try {
-                            return JSON.parse(clean.substring(firstOpen, lastClose + 1));
-                        } catch (e3) {
-                            return null; // 放棄
-                        }
+                console.warn("Parse Failed, attempting salvage...", e);
+                // 3. 暴力提取：只抓取最外層 {} 
+                const firstOpen = clean.indexOf('{');
+                const lastClose = clean.lastIndexOf('}');
+                if (firstOpen !== -1 && lastClose !== -1) {
+                    try {
+                        return JSON.parse(clean.substring(firstOpen, lastClose + 1));
+                    } catch (e2) {
+                        return null; // 放棄
                     }
-                    return null;
                 }
+                return null;
             }
         }
 
@@ -534,11 +494,12 @@
                 const text = await res.text();
                 const json = cleanAndParseJSON(text); // 使用強化解析
 
-                if(json && json.status === "success") { 
-                    currentResultData = json.data; 
-                    renderResult(json.data); 
+                if(json && (json.status === "success" || json.data)) { 
+                    // 有些 API 可能沒回傳 status 但有 data，這裡做個寬容判斷
+                    currentResultData = json.data || json; 
+                    renderResult(currentResultData); 
                 } else {
-                    console.error("原始回應:", text);
+                    console.error("Original Text:", text);
                     throw new Error("AI 資料格式錯誤，請重試 (Syntax Error)。");
                 }
             } catch(e) { 
@@ -552,9 +513,10 @@
         function renderResult(data) {
             const raw = data.raw_content || {};
             
-            document.getElementById('result-title').innerText = data.topic || raw.unitName || filters.unitName;
+            // 標題 (防呆)
+            document.getElementById('result-title').innerText = data.topic || raw.unitName || filters.unitName || "單元重點";
             
-            // 摘要 (防呆: 確保有預設值)
+            // 摘要 (多重來源檢查)
             const summaryBox = document.getElementById('summary-text');
             let summaryContent = "";
             if (data.summary) {
@@ -563,7 +525,9 @@
                 else if (data.summary.summary) summaryContent = data.summary.summary;
             }
             if (!summaryContent && raw.text_summary) summaryContent = raw.text_summary;
-            if (!summaryContent && raw.text) summaryContent = raw.text.substring(0, 300) + "..."; // 最低限度顯示原文
+            // 如果真的都沒有，嘗試用 raw.text 截斷
+            if (!summaryContent && raw.text) summaryContent = raw.text.substring(0, 300) + "..."; 
+            
             summaryBox.innerHTML = summaryContent || '<p class="text-gray-500">暫無摘要</p>';
 
             // 詞彙 (防呆)
@@ -584,18 +548,19 @@
                 });
             } else { keywordList.innerHTML = '<span class="text-gray-500 text-xs">無特定詞彙</span>'; }
 
-            // Mermaid (防呆)
+            // Mermaid (容錯渲染)
             const chartDiv = document.getElementById('mermaid-chart');
             let mapData = data.mindMap || (data.summary && data.summary.mindMap) || '';
-            if (mapData) mapData = mapData.replace(/```mermaid/g, '').replace(/```/g, '').trim();
+            // 清理 Mermaid 代碼
+            if (mapData) mapData = mapData.replace(/```mermaid/gi, '').replace(/```/g, '').trim();
 
-            if (mapData) {
+            if (mapData && mapData.length > 10) {
                 chartDiv.innerHTML = `<div class="mermaid">${mapData}</div>`;
                 try {
                     mermaid.init(undefined, document.querySelectorAll('.mermaid'));
                 } catch(e) {
                     console.error("Mermaid 繪製失敗", e);
-                    chartDiv.innerHTML = '<span class="text-red-400 text-xs">圖表繪製錯誤，請點擊放大查看原始碼</span>';
+                    chartDiv.innerHTML = '<span class="text-red-400 text-xs">圖表繪製錯誤 (Syntax Error)</span>';
                 }
             } else { 
                 chartDiv.innerHTML = '<span class="text-gray-400 text-xs">無架構圖數據</span>'; 
@@ -611,7 +576,7 @@
                 mythData.forEach((m, index) => {
                     const q = m.question || m.myth || '迷思問題';
                     const div = document.createElement('div');
-                    div.className = 'bg-[#262626] p-3 rounded-lg border border-[#333] mb-3';
+                    div.className = 'bg-[#252525] p-3 rounded-lg border border-[#333] mb-3';
                     div.innerHTML = `
                         <div class="text-sm font-bold text-gray-200 mb-2"><span class="text-rose-500 mr-2">Q${index+1}</span>${q}</div>
                         <div class="grid grid-cols-2 gap-2">
@@ -686,7 +651,7 @@
             
             q.options.forEach((opt, idx) => {
                 const btn = document.createElement("button");
-                btn.className = "quiz-btn w-full text-left p-3 rounded-lg border border-[#333] bg-[#262626] hover:bg-[#333] transition text-gray-300 text-sm";
+                btn.className = "quiz-btn w-full text-left p-3 rounded-lg border border-[#333] bg-[#252525] hover:bg-[#333] transition text-gray-300 text-sm";
                 btn.innerHTML = `<span class="text-blue-500 font-bold mr-2">${letters[idx]}</span>${opt}`;
                 btn.onclick = () => handleQuizAnswer(idx, btn);
                 optsContainer.appendChild(btn);
@@ -707,13 +672,13 @@
             allBtns.forEach(b => b.disabled = true);
 
             if(isCorrect) {
-                btnElement.classList.replace("bg-[#262626]", "bg-emerald-900/30");
+                btnElement.classList.replace("bg-[#252525]", "bg-emerald-900/30");
                 btnElement.classList.replace("border-[#333]", "border-emerald-600");
             } else {
-                btnElement.classList.replace("bg-[#262626]", "bg-red-900/30");
+                btnElement.classList.replace("bg-[#252525]", "bg-red-900/30");
                 btnElement.classList.replace("border-[#333]", "border-red-600");
                 if(q.correctIndex >= 0 && allBtns[q.correctIndex]) {
-                    allBtns[q.correctIndex].classList.replace("bg-[#262626]", "bg-emerald-900/30");
+                    allBtns[q.correctIndex].classList.replace("bg-[#252525]", "bg-emerald-900/30");
                     allBtns[q.correctIndex].classList.replace("border-[#333]", "border-emerald-600");
                 }
             }
