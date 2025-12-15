@@ -1,860 +1,1838 @@
 <!DOCTYPE html>
-<html lang="zh-TW" class="dark">
+<html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI School | 單元重點精熟</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>單元重點整理</title>
 
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
-                    },
-                    colors: {
-                        bg: '#121212',           // 主背景
-                        card: '#1E1E1E',         // 卡片背景
-                        border: '#2E2E2E',       // 邊框顏色
-                        primary: '#3B82F6',      // 主色調 (藍)
-                        accent: '#8B5CF6',       // 強調色 (紫)
-                        success: '#10B981',      // 成功 (綠)
-                        text: {
-                            main: '#E5E7EB',     // 主要文字
-                            sub: '#9CA3AF'       // 次要文字
-                        }
-                    }
-                }
+  <!-- Fonts (科技感 + 中日文字清晰) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            student: '#3b82f6',
+            neon: {
+              blue: '#60a5fa',
+              cyan: '#22d3ee',
+              purple: '#a78bfa',
+              green: '#34d399'
             }
+          },
+          animation: { "fade-in-up": "fadeInUp 0.5s ease-out forwards" },
+          keyframes: { fadeInUp: { "0%": { opacity: "0", transform: "translateY(20px)" }, "100%": { opacity: "1", transform: "translateY(0)" } } }
         }
-        
-        // Mermaid 設定 (保持預設主題以配合白底容器)
-        mermaid.initialize({ 
-            startOnLoad: false, 
-            theme: 'default', 
-            securityLevel: 'loose',
-            fontFamily: '"Noto Sans TC", sans-serif',
-            flowchart: { useMaxWidth: false, htmlLabels: true, curve: 'basis' } 
-        });
-    </script>
+      }
+    };
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'neutral',
+      securityLevel: 'loose',
+      flowchart: { useMaxWidth: false, htmlLabels: true }
+    });
+  </script>
 
-    <style>
-        body {
-            background-color: #121212;
-            color: #E5E7EB;
-            font-family: 'Inter', 'Noto Sans TC', sans-serif;
-            line-height: 1.6;
-        }
+  <style>
+    /* ===== 科技風背景（不影響任何功能，只改視覺） ===== */
+    body{
+      background:
+        radial-gradient(1200px 800px at 15% 15%, rgba(34,211,238,.22), transparent 55%),
+        radial-gradient(900px 700px at 85% 25%, rgba(167,139,250,.20), transparent 55%),
+        radial-gradient(900px 700px at 50% 95%, rgba(52,211,153,.14), transparent 55%),
+        linear-gradient(135deg, #050b1a 0%, #070f24 45%, #060b18 100%);
+      font-family: "Inter","Noto Sans TC","Microsoft JhengHei",sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      position: relative;
+      color: #e5e7eb;
+    }
+    body::before{
+      content:"";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 56px 56px;
+      opacity: .25;
+      mask-image: radial-gradient(circle at 50% 25%, rgba(0,0,0,1), rgba(0,0,0,.55) 55%, rgba(0,0,0,0) 85%);
+    }
+    body::after{
+      content:"";
+      position: fixed;
+      inset: -15%;
+      pointer-events: none;
+      z-index: 0;
+      background:
+        radial-gradient(circle at 18% 22%, rgba(96,165,250,.22), transparent 45%),
+        radial-gradient(circle at 86% 28%, rgba(167,139,250,.18), transparent 48%),
+        radial-gradient(circle at 55% 92%, rgba(34,211,238,.12), transparent 50%);
+      filter: blur(34px);
+      opacity: .9;
+    }
 
-        /* 內容卡片：乾淨俐落 */
-        .content-card {
-            background-color: #1E1E1E;
-            border: 1px solid #2E2E2E;
-            border-radius: 0.75rem;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-            transition: transform 0.2s, border-color 0.2s;
-        }
-        .content-card:hover {
-            border-color: #404040;
-            transform: translateY(-2px);
-        }
+    /* 主要容器浮起來（不動原結構） */
+    nav, main, #image-modal { position: relative; z-index: 1; }
 
-        /* 摘要排版優化 */
-        #summary-text h3 {
-            font-size: 1.25rem; font-weight: 700; color: #60A5FA; 
-            margin-top: 1.5rem; margin-bottom: 0.75rem;
-            padding-bottom: 0.25rem; border-bottom: 1px solid #333;
-        }
-        #summary-text ul { list-style-type: disc; padding-left: 1.5rem; color: #D1D5DB; }
-        #summary-text li { margin-bottom: 0.5rem; }
-        #summary-text strong {
-            color: #F472B6; font-weight: 600;
-            background: rgba(244, 114, 182, 0.1);
-            padding: 0 4px; rounded: 4px;
-        }
+    .glass-panel{
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.55);
+      box-shadow:
+        0 12px 28px rgba(0,0,0,0.22),
+        0 0 0 1px rgba(96,165,250,0.08) inset;
+    }
+    .glass-panel:hover{
+      box-shadow:
+        0 14px 34px rgba(0,0,0,0.26),
+        0 0 0 1px rgba(34,211,238,0.14) inset;
+    }
 
-        /* 詞彙卡 */
-        .vocab-item {
-            background: #262626; border: 1px solid #333;
-            border-radius: 0.5rem; padding: 1rem; margin-bottom: 0.75rem;
-            transition: all 0.2s;
-        }
-        .vocab-item:hover { border-color: #60A5FA; background: #2A2A2A; }
+    /* 讓主要按鈕更有科技感（不改 onclick 等功能） */
+    #btn-generate:not(:disabled){
+      background-image: linear-gradient(135deg, #2563eb 0%, #7c3aed 55%, #22d3ee 110%);
+      border: 1px solid rgba(255,255,255,0.20);
+      box-shadow: 0 10px 26px rgba(37,99,235,.28);
+    }
+    #btn-generate:not(:disabled):hover{
+      filter: brightness(1.06);
+      transform: translateY(-1px);
+    }
 
-        /* 下拉選單 */
-        .select-clean {
-            background-color: #262626; border: 1px solid #404040;
-            color: #E5E7EB; border-radius: 0.5rem;
-            padding: 0.5rem 2rem 0.5rem 0.75rem;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239CA3AF' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.2em 1.2em;
-            cursor: pointer; transition: all 0.2s; width: 100%;
-        }
-        .select-clean:hover:not(:disabled) { border-color: #60A5FA; }
-        .select-clean:disabled { opacity: 0.5; cursor: not-allowed; background-color: #1A1A1A; }
+    /* Loader */
+    .loader{
+      border: 4px solid rgba(255,255,255,0.25);
+      border-top: 4px solid #22d3ee;
+      border-right: 4px solid #60a5fa;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      animation: spin 1s linear infinite;
+      box-shadow: 0 10px 24px rgba(34,211,238,0.18);
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* 按鈕 */
-        .btn-action {
-            background-color: #2563EB; color: white;
-            padding: 0.6rem 1.5rem; border-radius: 0.5rem; font-weight: 600;
-            transition: background-color 0.2s; display: flex; items-center; gap: 0.5rem;
-            justify-content: center;
-        }
-        .btn-action:hover:not(:disabled) { background-color: #1D4ED8; }
-        .btn-action:disabled { background-color: #333; color: #666; cursor: not-allowed; }
+    /* Chat window */
+    .chat-window{ transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: bottom right; }
+    .chat-window.closed{ transform: scale(0); opacity: 0; pointer-events: none; height: 0 !important; padding: 0 !important; margin: 0 !important; border-width: 0 !important; }
 
-        /* 架構圖容器 (白底確保 Mermaid 可讀性) */
-        .mindmap-container {
-            background-color: #ffffff; border-radius: 0.5rem;
-            padding: 1.5rem; overflow: auto; min-height: 300px;
-            display: flex; justify-content: center; align-items: center;
-            border: 1px solid #ddd;
-        }
+    /* 摘要排版 */
+    #summary-text h3{
+      font-size: 1.3rem; font-weight: 900; color: #0b3b95;
+      margin-top: 1.5rem; margin-bottom: 0.75rem;
+      padding: 0.6rem 0.85rem; border-left: 5px solid #3b82f6;
+      background: linear-gradient(90deg, rgba(59,130,246,0.14) 0%, rgba(255,255,255,0) 100%);
+      border-radius: 0 10px 10px 0;
+    }
+    #summary-text ul{ list-style-type: none; padding-left: 0.5rem; }
+    #summary-text li{ position: relative; padding-left: 1.5rem; margin-bottom: 0.55rem; color: #374151; font-size: 1.05rem; }
+    #summary-text li::before{ content:"•"; color:#3b82f6; font-weight:900; font-size:1.2em; position:absolute; left:0.25rem; top:-2px; }
 
-        /* 卷軸美化 */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #121212; }
-        ::-webkit-scrollbar-thumb { background: #404040; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #505050; }
+    .vocab-item{ transition: transform 0.2s, box-shadow 0.2s; }
+    .vocab-item:hover{ transform: translateY(-2px); box-shadow: 0 16px 30px rgba(37,99,235,.12); }
 
-        .pdf-page-break { page-break-before: always; }
-        @media print { 
-            .no-print { display: none; } 
-            body { background: white; color: black; } 
-            .content-card { border: 1px solid #ccc; box-shadow: none; background: white; color: black; } 
-        }
-    </style>
+    /* Mermaid 圖表樣式：橫向捲動 + 文字不被壓縮 */
+    #mermaid-chart{
+      width: 100%;
+      display: block;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 10px 0;
+      pointer-events: auto;
+      scrollbar-width: thin;
+    }
+    #mermaid-chart .mermaid svg{
+      min-width: 980px;
+      height: auto !important;
+      font-family: "Inter","Noto Sans TC","Microsoft JhengHei", sans-serif !important;
+    }
+
+    /* Modal */
+    #image-modal{ z-index: 99999; overflow:auto; -webkit-overflow-scrolling:touch; }
+    #modal-content{
+      width: 95vw; height:auto; min-height: 50vh;
+      max-width:none !important; overflow:visible;
+      background:white; border-radius: 16px; padding: 16px;
+      display:flex; align-items:flex-start; justify-content:center;
+      box-shadow: 0 30px 70px rgba(0,0,0,0.55);
+    }
+
+    /* PDF */
+    .pdf-page-break{ page-break-before:always; break-before:page; }
+    .pdf-rotate-map{
+      transform: rotate(90deg); transform-origin: top left;
+      width: 130% !important; margin-left: 40px; margin-top: -40px;
+      overflow: visible !important;
+    }
+    .no-pdf{ display:none !important; }
+
+    .click-mask{
+      position:absolute;
+      inset:0;
+      z-index:50;
+      background-color:transparent;
+      cursor:pointer;
+      pointer-events:auto;
+    }
+
+    .myth-option-btn, .quiz-option-btn{ transition: all 0.18s ease; }
+
+    /* 小螢幕：避免 chart 點擊層影響拖曳（保留你原本設計） */
+    @media (max-width: 768px){
+      #chart-container .click-mask{ pointer-events:none; }
+    }
+
+    /* 小螢幕：浮動聊天位置 */
+    @media (max-width: 640px){
+      #floating-chat{ right:10px; bottom:10px; }
+      #floating-chat > button{ width:60px; height:60px; }
+    }
+
+    /* 讓選單 / 表單元件更像高級科技 UI */
+    select, input[type="text"]{
+      box-shadow: 0 6px 18px rgba(2,6,23,0.06);
+    }
+    select:focus, input[type="text"]:focus{
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(34,211,238,0.22), 0 10px 22px rgba(59,130,246,0.10);
+    }
+  </style>
 </head>
-<body class="flex flex-col min-h-screen">
 
-    <nav class="sticky top-0 z-50 bg-[#121212]/95 backdrop-blur border-b border-[#2D2D2D] h-16 transition-all duration-300">
-        <div class="max-w-7xl mx-auto px-4 h-full flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <a href="student.html" class="flex items-center justify-center w-9 h-9 rounded-full hover:bg-[#2D2D2D] text-gray-400 hover:text-white transition">
-                    <i class="fa-solid fa-arrow-left"></i>
-                </a>
-                <div class="flex items-center gap-3">
-                    <span class="w-1.5 h-6 bg-blue-600 rounded-full"></span>
-                    <span class="font-bold text-xl text-white tracking-wide" data-i18n="page_title">單元重點精熟</span>
-                </div>
-            </div>
-            
-            <div class="flex items-center gap-4">
-                <span id="user-info" class="text-xs font-mono text-gray-400 border border-[#333] px-3 py-1 rounded bg-[#1A1A1A] hidden sm:inline-block">User: Guest</span>
-                <div class="relative">
-                    <i class="fa-solid fa-globe absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                    <select id="language-selector" onchange="changeLanguage()" class="bg-[#262626] border border-[#404040] text-gray-300 text-xs rounded pl-8 pr-3 py-1.5 outline-none hover:border-gray-500 transition cursor-pointer appearance-none">
-                        <option value="zh-TW">繁體中文</option>
-                        <option value="en">English</option>
-                        <option value="ja">日本語</option>
-                        <option value="zh-CN">简体中文</option>
-                    </select>
-                </div>
-            </div>
+<body class="min-h-screen flex flex-col">
+  <!-- ===== Nav ===== -->
+  <nav class="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center no-print">
+    <div class="flex items-center gap-4">
+      <!-- ★ 修正：回到主頁固定走 /aischool/student.html，避免相對路徑在子資料夾失效 -->
+      <a href="/aischool/student.html" class="group flex items-center gap-2 text-slate-500 hover:text-blue-600 transition decoration-0">
+        <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow group-hover:shadow-md transition">
+          <i class="fa-solid fa-arrow-left"></i>
         </div>
-    </nav>
+        <span class="font-bold hidden md:block" data-i18n="back_home">返回學習中心</span>
+      </a>
 
-    <main class="flex-1 w-full max-w-7xl mx-auto px-4 py-8 pb-24">
-        
-        <div id="selection-panel" class="content-card">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-[#2D2D2D] pb-4">
-                <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-sliders text-blue-500"></i> <span data-i18n="settings_title">請挑選學習單元</span>
-                </h2>
-                <div id="db-status" class="text-xs font-mono px-3 py-1 rounded bg-[#252525] text-gray-500 border border-[#333] flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-gray-500"></span> Connecting...
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1.5 ml-1 font-bold" data-i18n="label_stage">學習階段</label>
-                    <select id="sel-stage" class="select-clean"><option disabled selected data-i18n="loading">載入中...</option></select>
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1.5 ml-1 font-bold" data-i18n="label_publisher">版本</label>
-                    <select id="sel-publisher" class="select-clean" disabled><option disabled selected>--</option></select>
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1.5 ml-1 font-bold" data-i18n="label_grade">年級</label>
-                    <select id="sel-grade" class="select-clean" disabled><option disabled selected>--</option></select>
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1.5 ml-1 font-bold" data-i18n="label_semester">學期</label>
-                    <select id="sel-semester" class="select-clean" disabled><option disabled selected>--</option></select>
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1.5 ml-1 font-bold" data-i18n="label_unit">單元名稱</label>
-                    <select id="sel-unit" class="select-clean" disabled><option disabled selected>--</option></select>
-                </div>
-            </div>
-
-            <div class="mt-8 flex justify-end">
-                <button id="btn-generate" onclick="startGeneration()" disabled class="btn-action shadow-lg shadow-blue-900/20">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="btn_generate">AI 整理重點</span>
-                </button>
-            </div>
+      <!-- ★ 修正：依你系統命名（科學雙語閱讀＝student_science_bilingual.html） -->
+      <a href="/aischool/student_science_bilingual.html" class="group flex items-center gap-2 text-slate-500 hover:text-purple-600 transition decoration-0">
+        <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow group-hover:shadow-md transition">
+          <i class="fa-solid fa-book-open-reader"></i>
         </div>
+        <span class="font-bold hidden md:block" data-i18n="btn_bilingual">科學雙語閱讀</span>
+      </a>
 
-        <div id="loading-view" class="hidden flex-col items-center justify-center py-24">
-            <div class="relative w-16 h-16 mb-4">
-                <div class="absolute inset-0 border-4 border-[#333] rounded-full"></div>
-                <div class="absolute inset-0 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-            <p class="text-blue-400 font-mono text-sm animate-pulse tracking-widest">AI PROCESSING...</p>
+      <div class="h-8 w-px bg-slate-300 mx-2 hidden sm:block"></div>
+      <div class="hidden sm:block">
+        <h1 class="font-black text-lg text-slate-900 tracking-tight" data-i18n="page_title">單元重點整理</h1>
+        <p class="text-xs text-slate-500" data-i18n="page_subtitle">AI 智能筆記生成</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <a href="/aischool/aievaluation.html" class="group flex items-center gap-2 text-slate-500 hover:text-green-600 transition decoration-0 mr-2">
+        <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow group-hover:shadow-md transition border border-slate-100">
+          <i class="fa-solid fa-clipboard-check"></i>
         </div>
+        <span class="font-bold hidden lg:block" data-i18n="btn_eval">AI 評分診斷</span>
+      </a>
 
-        <div id="content-view" class="hidden space-y-6">
-            
-            <div class="flex flex-col md:flex-row justify-between items-end gap-4 mb-2">
-                <div>
-                    <div class="flex items-center gap-2 mb-2">
-                        <span id="result-tag" class="text-[10px] font-bold text-blue-400 bg-blue-400/10 px-2 py-0.5 rounded border border-blue-400/20 tracking-wider">READY</span>
-                    </div>
-                    <h1 id="result-title" class="text-3xl md:text-4xl font-black text-white leading-tight">單元名稱</h1>
-                </div>
-                <div class="flex gap-3 no-print">
-                    <button onclick="downloadTXT()" class="px-4 py-2 rounded bg-[#262626] hover:bg-[#333] text-gray-300 text-sm font-medium transition border border-[#333] flex items-center gap-2">
-                        <i class="fa-regular fa-file-lines"></i> <span data-i18n="btn_txt">TXT</span>
-                    </button>
-                    <button onclick="downloadPDF()" class="px-4 py-2 rounded bg-[#262626] hover:bg-[#333] text-gray-300 text-sm font-medium transition border border-[#333] flex items-center gap-2">
-                        <i class="fa-regular fa-file-pdf"></i> <span data-i18n="btn_pdf">PDF</span>
-                    </button>
-                </div>
-            </div>
+      <select id="language-selector" onchange="changeLanguage()" class="bg-white/70 border text-xs rounded-lg p-1.5 cursor-pointer outline-none focus:ring-1 focus:ring-cyan-300">
+        <option value="zh-TW">繁體中文</option>
+        <option value="en">English</option>
+        <option value="ja">日本語</option>
+        <option value="zh-CN">简体中文</option>
+      </select>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                <div class="lg:col-span-2 space-y-6">
-                    <section class="content-card">
-                        <div class="flex items-center gap-3 mb-6 border-b border-[#333] pb-4">
-                            <div class="w-10 h-10 rounded bg-blue-500/10 flex items-center justify-center text-blue-500">
-                                <i class="fa-solid fa-list-ul"></i>
-                            </div>
-                            <h3 class="text-xl font-bold text-white" data-i18n="title_summary">核心概念摘要</h3>
-                        </div>
-                        <div id="summary-text" class="text-gray-300 leading-relaxed">
-                            </div>
-                    </section>
+      <div class="flex items-center gap-2 pl-2 border-l border-slate-300">
+        <div id="user-info" class="text-sm font-black text-blue-700">訪客</div>
+      </div>
+    </div>
+  </nav>
 
-                    <section class="content-card">
-                        <div class="flex justify-between items-center mb-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded bg-purple-500/10 flex items-center justify-center text-purple-500">
-                                    <i class="fa-solid fa-sitemap"></i>
-                                </div>
-                                <h3 class="text-xl font-bold text-white" data-i18n="title_map">知識架構圖</h3>
-                            </div>
-                            <button onclick="openModal()" class="text-xs text-gray-400 hover:text-white transition bg-[#333] px-3 py-1.5 rounded flex items-center gap-1">
-                                <i class="fa-solid fa-expand"></i> <span data-i18n="btn_expand">放大</span>
-                            </button>
-                        </div>
-                        <div class="mindmap-container cursor-zoom-in group border border-[#333]" onclick="openModal()">
-                            <div id="mermaid-chart" class="w-full text-center text-gray-500">
-                                <i class="fa-solid fa-circle-notch fa-spin"></i> Generating...
-                            </div>
-                        </div>
-                    </section>
+  <!-- ===== Main ===== -->
+  <main class="max-w-7xl mx-auto px-4 py-8 flex-1 w-full pb-24">
+    <div id="selection-panel" class="glass-panel rounded-2xl p-6 mb-8 no-print">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="font-black text-lg flex items-center gap-2 text-slate-900">
+          <i class="fa-solid fa-database text-slate-700"></i>
+          <span data-i18n="settings_title">請挑選你要的學習單元</span>
+        </h2>
+        <span id="db-status" class="text-xs font-bold text-orange-500" data-state="loading">
+          <i class="fa-solid fa-circle-notch fa-spin"></i> <span data-i18n="db_loading">Loading...</span>
+        </span>
+      </div>
 
-                    <section class="content-card border-l-4 border-l-emerald-600">
-                        <div class="flex justify-between items-center mb-6">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded bg-emerald-500/10 flex items-center justify-center text-emerald-500">
-                                    <i class="fa-solid fa-clipboard-check"></i>
-                                </div>
-                                <h3 class="text-xl font-bold text-white" data-i18n="title_quiz">單元小測驗</h3>
-                            </div>
-                            <span id="quiz-progress" class="text-xs font-mono text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded"></span>
-                        </div>
-                        
-                        <div id="quiz-body">
-                            <div id="quiz-question" class="text-lg font-bold text-white mb-6 leading-relaxed"></div>
-                            <div id="quiz-options" class="space-y-3"></div>
-                            <div id="quiz-feedback" class="hidden mt-4 p-4 rounded-lg bg-[#252525] border border-[#404040] text-sm"></div>
-                            <div class="mt-8 flex justify-center">
-                                <button id="quiz-main-btn" onclick="handleQuizMainButton()" disabled class="btn-action rounded-full px-8 shadow-lg">
-                                    <span data-i18n="btn_next_q">下一題</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div id="quiz-result" class="hidden text-center py-8">
-                            <div class="text-5xl font-black text-emerald-500 mb-2" id="quiz-score-number">0</div>
-                            <div class="text-gray-400 text-sm mb-6" data-i18n="label_total_score">總分</div>
-                            <div class="bg-[#262626] rounded-xl p-4 border border-[#404040] mb-4">
-                                <canvas id="quiz-radar" class="max-h-64"></canvas>
-                            </div>
-                            <div id="quiz-result-detail" class="text-sm text-gray-300 text-left leading-relaxed"></div>
-                        </div>
-
-                        <div id="quiz-empty" class="hidden text-center text-gray-500 py-10" data-i18n="msg_no_quiz">無測驗題目</div>
-                    </section>
-                </div>
-
-                <div class="space-y-6 lg:sticky lg:top-24 h-fit">
-                    <div class="content-card p-5">
-                        <h3 class="font-bold text-amber-500 mb-4 flex items-center gap-2" data-i18n="title_vocab">
-                            <i class="fa-solid fa-font"></i> 科學詞彙
-                        </h3>
-                        <div id="keywords-list" class="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar"></div>
-                    </div>
-
-                    <div class="content-card p-5">
-                        <h3 class="font-bold text-rose-500 mb-4 flex items-center gap-2" data-i18n="title_myth">
-                            <i class="fa-regular fa-lightbulb"></i> 科學動動腦
-                        </h3>
-                        <div id="myth-list" class="space-y-4 text-gray-400 text-sm"></div>
-                    </div>
-                </div>
-            </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        <div>
+          <label class="text-xs font-bold text-slate-500 ml-1" data-i18n="label_stage">學習階段</label>
+          <select id="sel-stage" class="w-full p-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:border-blue-500">
+            <option value="" disabled selected data-i18n="loading">載入中...</option>
+          </select>
         </div>
-    </main>
-
-    <div id="floating-chat" class="fixed bottom-6 right-6 z-50 hidden no-print">
-        <div id="xiaoke-window" class="chat-window closed bg-[#202020] border border-[#333] shadow-2xl rounded-xl w-80 h-[450px] flex flex-col overflow-hidden mb-4 transition-all duration-300 origin-bottom-right transform scale-0 opacity-0">
-            <div class="bg-[#262626] p-3 border-b border-[#333] flex justify-between items-center">
-                <span class="font-bold text-blue-500 text-sm flex items-center gap-2"><i class="fa-solid fa-robot"></i> <span data-i18n="ai_assistant">小科 AI</span></span>
-                <button onclick="toggleChat()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-times"></i></button>
-            </div>
-            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 text-sm text-gray-300"></div>
-            <div class="p-3 border-t border-[#333] bg-[#262626]">
-                <div class="flex gap-2">
-                    <input type="text" id="chat-input" class="w-full bg-[#1a1a1a] border border-[#333] rounded px-3 py-1 text-sm text-white focus:border-blue-500 outline-none" placeholder="..." onkeypress="if(event.key==='Enter') sendChatMessage()">
-                    <button onclick="sendChatMessage()" class="text-blue-500 hover:text-white"><i class="fa-solid fa-paper-plane"></i></button>
-                </div>
-            </div>
+        <div>
+          <label class="text-xs font-bold text-slate-500 ml-1" data-i18n="label_publisher">版本</label>
+          <select id="sel-publisher" disabled class="w-full p-2.5 rounded-xl border border-slate-200 text-sm outline-none disabled:bg-slate-50">
+            <option value="" disabled selected data-i18n="select">請選擇...</option>
+          </select>
         </div>
-        <button onclick="toggleChat()" class="w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-500 text-white shadow-lg flex items-center justify-center text-xl transition hover:scale-110">
-            <i class="fa-solid fa-comment-dots"></i>
+        <div>
+          <label class="text-xs font-bold text-slate-500 ml-1" data-i18n="label_grade">年級</label>
+          <select id="sel-grade" disabled class="w-full p-2.5 rounded-xl border border-slate-200 text-sm outline-none disabled:bg-slate-50">
+            <option value="" disabled selected data-i18n="select">請選擇...</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs font-bold text-slate-500 ml-1" data-i18n="label_semester">學期</label>
+          <select id="sel-semester" disabled class="w-full p-2.5 rounded-xl border border-slate-200 text-sm outline-none disabled:bg-slate-50">
+            <option value="" disabled selected data-i18n="select">請選擇...</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs font-bold text-slate-500 ml-1" data-i18n="label_unit">單元名稱</label>
+          <select id="sel-unit" disabled class="w-full p-2.5 rounded-xl border border-slate-200 text-sm outline-none disabled:bg-slate-50">
+            <option value="" disabled selected data-i18n="select">請選擇...</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end">
+        <button id="btn-generate" onclick="startGeneration()" disabled class="text-white px-8 py-2.5 rounded-xl font-black shadow-lg hover:opacity-95 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="btn_generate">AI 分析並生成</span>
         </button>
+      </div>
     </div>
 
-    <div id="image-modal" class="fixed inset-0 z-[100] bg-black/90 hidden items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal()">
-        <div id="modal-content" class="bg-white rounded-lg p-4 max-w-[90vw] max-h-[90vh] overflow-auto" onclick="event.stopPropagation()"></div>
-        <button class="absolute top-4 right-4 text-white text-3xl" onclick="closeModal()">&times;</button>
+    <div id="loading-view" class="hidden flex-col items-center justify-center py-20">
+      <div class="loader mb-4"></div>
+      <h3 class="text-xl font-black text-slate-100" data-i18n="ai_generating">AI 單元重點整理中...</h3>
+      <p class="text-sm text-slate-300 mt-2">Science Learning Hub • AI Notes</p>
     </div>
 
-    <script>
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxBWrZCp-xLckDGZnhe64K0IUa_8CJZRzqZbrgL8lQdNn3S1WgaEzbdOtpo4mGwN6_H/exec";
-        
-        let allData = [];
-        let filters = {};
-        let currentResultData = null;
-        let mythData = [];
-        let quizState = { questions: [], currentIndex: 0, hasAnswered: false, answers: [] };
-        let quizRadarChart = null;
+    <div id="content-view" class="hidden animate-fade-in-up">
+      <div class="mb-6 flex flex-col md:flex-row justify-between md:items-end gap-4 relative z-20">
+        <div>
+          <span id="result-tag" class="text-xs font-black bg-blue-100 text-blue-700 px-3 py-1 rounded-full">TAG</span>
+          <h1 id="result-title" class="text-3xl font-black text-white mt-2 drop-shadow-[0_8px_22px_rgba(0,0,0,.35)]">Title</h1>
+        </div>
 
-        // 四語系全頁連動字典
-        const i18n = {
-            "zh-TW": {
-                page_title: "單元重點精熟", settings_title: "請挑選學習單元", label_stage: "學習階段", label_publisher: "版本", label_grade: "年級", label_semester: "學期", label_unit: "單元名稱", btn_generate: "AI 整理重點",
-                btn_txt: "TXT", btn_pdf: "PDF", title_summary: "核心概念摘要", title_map: "知識架構圖", title_vocab: "科學詞彙", title_myth: "科學動動腦", title_quiz: "單元小測驗",
-                btn_expand: "放大", btn_next_q: "下一題", btn_see_result: "看結果", label_total_score: "總分", msg_no_quiz: "無測驗題目", ai_assistant: "小科 AI", loading: "載入中..."
-            },
-            "en": {
-                page_title: "Unit Mastery", settings_title: "Select Learning Unit", label_stage: "Level", label_publisher: "Publisher", label_grade: "Grade", label_semester: "Semester", label_unit: "Unit Name", btn_generate: "AI Summarize",
-                btn_txt: "TXT", btn_pdf: "PDF", title_summary: "Key Concepts", title_map: "Mind Map", title_vocab: "Vocabulary", title_myth: "Science Myths", title_quiz: "Unit Quiz",
-                btn_expand: "Expand", btn_next_q: "Next", btn_see_result: "Results", label_total_score: "Total Score", msg_no_quiz: "No Quiz Available", ai_assistant: "AI Tutor", loading: "Loading..."
-            },
-            "ja": {
-                page_title: "単元マスター", settings_title: "学習単元を選択", label_stage: "段階", label_publisher: "出版社", label_grade: "学年", label_semester: "学期", label_unit: "単元名", btn_generate: "AI 要点まとめ",
-                btn_txt: "TXT", btn_pdf: "PDF", title_summary: "核心概念", title_map: "知識マップ", title_vocab: "科学用語", title_myth: "科学の迷信", title_quiz: "単元クイズ",
-                btn_expand: "拡大", btn_next_q: "次へ", btn_see_result: "結果を見る", label_total_score: "総合得点", msg_no_quiz: "クイズなし", ai_assistant: "AI 助手", loading: "読み込み中..."
-            },
-            "zh-CN": {
-                page_title: "单元重点精熟", settings_title: "请挑选学习单元", label_stage: "学习阶段", label_publisher: "版本", label_grade: "年级", label_semester: "学期", label_unit: "单元名称", btn_generate: "AI 整理重点",
-                btn_txt: "TXT", btn_pdf: "PDF", title_summary: "核心概念摘要", title_map: "知识架构图", title_vocab: "科学词汇", title_myth: "科学动动脑", title_quiz: "单元小测验",
-                btn_expand: "放大", btn_next_q: "下一题", btn_see_result: "看结果", label_total_score: "总分", msg_no_quiz: "无测验题目", ai_assistant: "小科 AI", loading: "加载中..."
-            }
+        <div class="flex flex-wrap gap-2 no-print relative w-full md:w-auto justify-start md:justify-end" style="z-index: 500;">
+          <button onclick="downloadTXT()" class="bg-white/90 hover:bg-white text-slate-700 px-6 py-3 rounded-xl font-black text-sm transition cursor-pointer border border-white/60 shadow-sm flex items-center active:scale-95">
+            <i class="fa-solid fa-file-lines mr-2"></i>
+            <span data-i18n="btn_txt">下載 TXT</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+        <div id="summary-panel" class="md:col-span-2 glass-panel p-6 rounded-2xl bg-white border-l-4 border-blue-500 shadow-sm">
+          <h3 class="font-black text-blue-900 mb-4 text-xl">
+            <i class="fa-solid fa-star text-yellow-400"></i> <span data-i18n="title_summary">核心概念摘要</span>
+          </h3>
+          <div id="summary-text" class="prose max-w-none text-slate-700 leading-relaxed"></div>
+        </div>
+
+        <div id="vocab-panel" class="glass-panel p-6 rounded-2xl bg-gradient-to-br from-white to-blue-50 border-l-4 border-blue-500 h-full flex flex-col shadow-sm">
+          <h3 class="font-black text-slate-800 mb-4 text-xl"><span data-i18n="title_vocab">科學詞彙與定義</span></h3>
+          <div class="flex-1 overflow-y-auto custom-scrollbar min-h-0 pr-2">
+            <div id="keywords-list" class="space-y-3 pb-2"></div>
+          </div>
+        </div>
+
+        <div class="md:col-span-3 glass-panel p-6 rounded-2xl bg-white pdf-page-break shadow-sm">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-black text-purple-800 text-xl cursor-pointer hover:text-purple-900 transition w-fit select-none flex items-center gap-2"
+                onclick="openModal()" ontouchend="openModal()">
+              <i class="fa-solid fa-project-diagram"></i>
+              <span data-i18n="title_map">知識架構圖</span>
+              <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full ml-2" data-i18n="tap_to_zoom">點擊放大</span>
+            </h3>
+            <button onclick="openModal()" class="bg-blue-50 text-blue-700 px-3 py-1 rounded-lg text-sm font-black border border-blue-200 hover:bg-blue-100 transition no-pdf">
+              <i class="fa-solid fa-expand mr-1"></i> <span data-i18n="fullscreen">全螢幕</span>
+            </button>
+          </div>
+
+          <div class="bg-slate-50 rounded-xl p-4 md:p-6 border border-slate-100 overflow-hidden w-full relative h-auto" id="chart-container">
+            <div class="click-mask" onclick="openModal()"></div>
+            <div id="mermaid-chart" class="w-full"></div>
+          </div>
+        </div>
+
+        <div class="md:col-span-3 glass-panel p-6 rounded-2xl bg-red-50/50 border border-red-100 pdf-page-break shadow-sm">
+          <h3 class="font-black text-red-700 mb-4 text-xl">
+            <i class="fa-solid fa-lightbulb"></i>
+            <span data-i18n="title_myth">科學動動腦</span>
+          </h3>
+          <div id="myth-list" class="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch"></div>
+        </div>
+
+        <!-- 單元小測驗區塊 -->
+        <div id="quiz-panel" class="md:col-span-3 glass-panel p-6 rounded-2xl bg-white border border-emerald-100 shadow-sm">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-black text-emerald-800 text-xl flex items-center gap-2">
+              <i class="fa-solid fa-circle-question"></i>
+              <span id="quiz-title" data-i18n="quiz">單元小測驗</span>
+            </h3>
+            <div id="quiz-progress" class="text-xs font-black text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full">
+              第 0 題／共 0 題
+            </div>
+          </div>
+
+          <div id="quiz-body" class="space-y-3">
+            <div id="quiz-question" class="font-black text-slate-900 mb-2 leading-relaxed text-sm md:text-base"></div>
+            <div id="quiz-options" class="space-y-2"></div>
+            <div id="quiz-feedback" class="mt-4 text-sm rounded-xl px-3 py-2 hidden"></div>
+            <div class="mt-4 flex justify-center items-center relative z-[200]">
+              <button id="quiz-main-btn" type="button" onclick="handleQuizMainButton()"
+                class="text-xs px-4 py-2 rounded-full bg-emerald-600 text-white font-black shadow border border-emerald-700/60 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed">
+                下一題
+              </button>
+            </div>
+          </div>
+
+          <div id="quiz-empty" class="text-sm text-slate-500" data-i18n="quiz_not_ready">
+            本單元的小測驗尚未準備好，之後會由老師再補上喔。
+          </div>
+
+          <!-- 測驗結果區 -->
+          <div id="quiz-result" class="mt-6 hidden rounded-2xl border border-emerald-300 bg-white shadow-sm p-4">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+              <div>
+                <div class="text-xs font-black text-slate-500" data-i18n="quiz_score_title">你的測驗成績</div>
+                <div id="quiz-score-number" class="text-3xl font-black text-emerald-700">0 分</div>
+                <div id="quiz-score-label" class="text-xs font-black text-emerald-600 mt-1"></div>
+              </div>
+              <div id="quiz-result-text" class="text-sm text-slate-700 md:text-right"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+              <div class="w-full max-w-md h-56 mx-auto">
+                <canvas id="quiz-radar" class="w-full h-full"></canvas>
+              </div>
+              <div id="quiz-result-detail" class="text-sm text-slate-700 leading-relaxed whitespace-pre-line"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- ===== Floating Chat ===== -->
+  <div id="floating-chat" class="hidden fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-4 no-print">
+    <div id="xiaoke-window" class="chat-window closed w-80 md:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden h-[500px]">
+      <div class="bg-blue-600 p-4 text-white flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" alt="小科" class="w-8 h-8 rounded-full object-cover bg-white">
+          <span class="font-black">小科 AI</span>
+        </div>
+        <button onclick="toggleChat()" class="w-20 h-20 bg-transparent rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition overflow-hidden">
+          <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" alt="小科" class="w-full h-full object-cover rounded-full">
+        </button>
+      </div>
+      <div class="flex-1 p-4 bg-slate-50 overflow-y-auto text-sm space-y-3" id="chat-messages"></div>
+      <div class="p-3 bg-white border-t border-slate-100 flex gap-2">
+        <input type="text" id="chat-input" data-i18n-placeholder="chat_placeholder" placeholder="輸入問題後按 Enter…"
+          class="flex-1 bg-slate-100 border-none rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+          onkeypress="if(event.key==='Enter') sendChatMessage()">
+        <button onclick="sendChatMessage()" class="bg-blue-600 text-white w-10 h-10 rounded-full hover:bg-blue-700 transition flex items-center justify-center">
+          <i class="fa-solid fa-paper-plane text-xs"></i>
+        </button>
+      </div>
+    </div>
+
+    <button onclick="toggleChat()" class="w-16 h-16 bg-transparent rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition overflow-hidden">
+      <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" alt="小科" class="w-full h-full object-cover rounded-full">
+    </button>
+  </div>
+
+  <!-- ===== Image Modal ===== -->
+  <div id="image-modal" class="fixed inset-0 z-[200] bg-black/95 hidden flex-col items-center justify-center p-2 transition-opacity duration-300" onclick="closeModal()">
+    <button class="absolute top-4 right-4 text-white/90 hover:text-white text-5xl font-black p-2 z-[201]" onclick="closeModal()">&times;</button>
+    <div id="modal-content" class="bg-white rounded-lg shadow-2xl" onclick="event.stopPropagation()"></div>
+  </div>
+
+  <script>
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxBWrZCp-xLckDGZnhe64K0IUa_8CJZRzqZbrgL8lQdNn3S1WgaEzbdOtpo4mGwN6_H/exec";
+
+    let allData = [];
+    let filters = {};
+    let currentResultData = null;
+    let mythData = [];
+    let quizState = { questions: [], currentIndex: 0, hasAnswered: false, answers: [] };
+    let quizRadarChart = null;
+
+    const i18n = {
+      "zh-TW": {
+        back_home:"返回學習中心",
+        btn_bilingual:"科學雙語閱讀",
+        btn_eval:"AI 評分診斷",
+        page_title:"單元重點整理",
+        page_subtitle:"AI 智能筆記生成",
+        settings_title:"請挑選你要的學習單元",
+        label_stage:"學習階段",
+        label_publisher:"版本",
+        label_grade:"年級",
+        label_semester:"學期",
+        label_unit:"單元名稱",
+        btn_generate:"AI 分析並生成",
+        btn_txt:"下載 TXT",
+        btn_pdf:"下載 PDF",
+        title_summary:"核心概念摘要",
+        title_vocab:"科學詞彙與定義",
+        title_map:"知識架構圖",
+        title_myth:"科學動動腦",
+        loading:"載入中...",
+        select:"請選擇...",
+        db_loading:"Loading...",
+        db_success:"資料庫連線成功",
+        db_fail:"連線失敗",
+        db_fail_retry:"連線失敗，請重試...",
+        ai_generating:"AI 單元重點整理中...",
+        tap_to_zoom:"點擊放大",
+        fullscreen:"全螢幕",
+        myth_tip:"先想一想，再作答",
+        myth_true:"正確 O",
+        myth_false:"錯誤 X",
+        msg_correct:"恭喜答對了！你真棒！",
+        msg_wrong:"可惜答錯了，再試試！",
+        msg_seq:"請依照題號順序作答，先完成前一題喔！",
+        vocab_none:"無詞彙資料",
+        summary_fail:"生成摘要失敗...",
+        map_fail:"架構圖繪製失敗，請重試。",
+        map_none:"無架構圖數據",
+        myth_none:"本單元暫無「科學動動腦」小題。",
+        quiz:"單元小測驗",
+        quiz_prefix:"單元小測驗－{unit}",
+        quiz_not_ready:"本單元的小測驗尚未準備好，之後會由老師再補上喔。",
+        quiz_progress:"第 {n} 題／共 {total} 題",
+        quiz_q:"第 {n} 題",
+        quiz_next:"下一題",
+        quiz_result_btn:"看結果",
+        quiz_score_title:"你的測驗成績",
+        quiz_ai_analyzing:"AI 正在分析你的作答結果…",
+        quiz_ai_analyzing_short:"AI 分析中…",
+        quiz_result_text:"你答對 {correct} 題／共 {total} 題。",
+        quiz_axis_wrong:"答錯",
+        quiz_axis_right:"答對",
+        quiz_ai_fallback1:"從左側的長條圖可以看出各概念的答對率，分數較低的概念可以回到課本文字與重點整理區再加強。",
+        quiz_ai_fallback2:"AI 分析暫時無法提供，可以先參考圖表與逐題解析，自己歸納需要加強的地方。",
+        quiz_ai_unstable:"AI 解析目前連線不穩定，稍後可以再試一次。",
+        txt_need_generate:"請先生成內容後再下載！",
+        txt_download_fail:"TXT 下載失敗，請再試一次或換一個瀏覽器。",
+        ai_generate_fail:"AI 生成失敗！請檢查 API 或重試。\n錯誤訊息: {msg}",
+        api_format_error:"API 返回資料格式錯誤 (非完整 JSON)。",
+        chat_greet:"你好，我是小科，有關「{unit}」，你有什麼問題要問我呢？",
+        chat_placeholder:"輸入問題後按 Enter…"
+      },
+      "en": {
+        back_home:"Back Home",
+        btn_bilingual:"Bilingual Reading",
+        btn_eval:"AI Assessment",
+        page_title:"Unit Summary",
+        page_subtitle:"AI Notes Generator",
+        settings_title:"Select Learning Unit",
+        label_stage:"Level",
+        label_publisher:"Publisher",
+        label_grade:"Grade",
+        label_semester:"Semester",
+        label_unit:"Unit",
+        btn_generate:"Generate",
+        btn_txt:"Download TXT",
+        btn_pdf:"Download PDF",
+        title_summary:"Core Concepts",
+        title_vocab:"Vocabulary & Definitions",
+        title_map:"Knowledge Map",
+        title_myth:"Thinking Check",
+        loading:"Loading...",
+        select:"Select...",
+        db_loading:"Loading...",
+        db_success:"Database connected",
+        db_fail:"Connection failed",
+        db_fail_retry:"Connection failed. Please retry...",
+        ai_generating:"Generating AI notes...",
+        tap_to_zoom:"Tap to zoom",
+        fullscreen:"Fullscreen",
+        myth_tip:"Think first, then answer",
+        myth_true:"True O",
+        myth_false:"False X",
+        msg_correct:"Correct! Great job!",
+        msg_wrong:"Not quite—try again!",
+        msg_seq:"Please answer in order. Finish the previous question first.",
+        vocab_none:"No vocabulary data",
+        summary_fail:"Failed to generate summary...",
+        map_fail:"Failed to render the map. Please retry.",
+        map_none:"No map data",
+        myth_none:"No Thinking Check items for this unit.",
+        quiz:"Unit Quiz",
+        quiz_prefix:"Unit Quiz — {unit}",
+        quiz_not_ready:"This unit quiz is not ready yet. Your teacher will add it later.",
+        quiz_progress:"Q{n} / {total}",
+        quiz_q:"Question {n}",
+        quiz_next:"Next",
+        quiz_result_btn:"Results",
+        quiz_score_title:"Your Score",
+        quiz_ai_analyzing:"AI is analyzing your answers…",
+        quiz_ai_analyzing_short:"Analyzing…",
+        quiz_result_text:"You got {correct} / {total} correct.",
+        quiz_axis_wrong:"Wrong",
+        quiz_axis_right:"Right",
+        quiz_ai_fallback1:"Use the bar chart to see concept-level accuracy. Review the text and notes for lower-scoring concepts.",
+        quiz_ai_fallback2:"AI feedback is temporarily unavailable. You can still use the chart and per-question feedback to improve.",
+        quiz_ai_unstable:"AI connection is unstable. Please try again later.",
+        txt_need_generate:"Please generate content before downloading.",
+        txt_download_fail:"TXT download failed. Please retry or use another browser.",
+        ai_generate_fail:"Generation failed. Please check the API and retry.\nError: {msg}",
+        api_format_error:"API response format error (not valid JSON).",
+        chat_greet:"Hi, I'm Xiaoke. About “{unit}”, what would you like to ask?",
+        chat_placeholder:"Type your question and press Enter…"
+      },
+      "ja": {
+        back_home:"ホームに戻る",
+        btn_bilingual:"二言語読解",
+        btn_eval:"AI 診断・採点",
+        page_title:"単元のまとめ",
+        page_subtitle:"AIノート生成",
+        settings_title:"学習単元を選択",
+        label_stage:"段階",
+        label_publisher:"出版社",
+        label_grade:"学年",
+        label_semester:"学期",
+        label_unit:"単元",
+        btn_generate:"生成する",
+        btn_txt:"TXTを保存",
+        btn_pdf:"PDFを保存",
+        title_summary:"核心概念",
+        title_vocab:"科学用語",
+        title_map:"知識マップ",
+        title_myth:"考えてみよう",
+        loading:"読み込み中...",
+        select:"選択してください...",
+        db_loading:"Loading...",
+        db_success:"データベース接続成功",
+        db_fail:"接続失敗",
+        db_fail_retry:"接続失敗。再試行してください...",
+        ai_generating:"AIノート生成中...",
+        tap_to_zoom:"クリックで拡大",
+        fullscreen:"全画面",
+        myth_tip:"まず考えてから回答",
+        myth_true:"正しい O",
+        myth_false:"誤り X",
+        msg_correct:"正解！すごい！",
+        msg_wrong:"残念、もう一度！",
+        msg_seq:"順番に回答してください。前の問題を先に終えてください。",
+        vocab_none:"用語データなし",
+        summary_fail:"要約の生成に失敗...",
+        map_fail:"マップ描画に失敗。再試行してください。",
+        map_none:"マップデータなし",
+        myth_none:"この単元の「考えてみよう」は未設定です。",
+        quiz:"単元ミニテスト",
+        quiz_prefix:"単元ミニテスト－{unit}",
+        quiz_not_ready:"この単元のミニテストはまだ準備中です。先生が後で追加します。",
+        quiz_progress:"第 {n} 問／全 {total} 問",
+        quiz_q:"第 {n} 問",
+        quiz_next:"次へ",
+        quiz_result_btn:"結果",
+        quiz_score_title:"あなたの得点",
+        quiz_ai_analyzing:"AIが分析中…",
+        quiz_ai_analyzing_short:"分析中…",
+        quiz_result_text:"正解 {correct}／全 {total}",
+        quiz_axis_wrong:"不正解",
+        quiz_axis_right:"正解",
+        quiz_ai_fallback1:"棒グラフで概念別の正答率を確認できます。低い概念は本文とノートを復習してください。",
+        quiz_ai_fallback2:"AIのフィードバックは一時的に利用できません。図表と逐題フィードバックを参考にしてください。",
+        quiz_ai_unstable:"接続が不安定です。しばらくして再試行してください。",
+        txt_need_generate:"生成後にダウンロードしてください。",
+        txt_download_fail:"TXTの保存に失敗しました。再試行するか別ブラウザをお試しください。",
+        ai_generate_fail:"生成に失敗しました。APIを確認して再試行してください。\nエラー: {msg}",
+        api_format_error:"APIの形式エラー（JSONではありません）。",
+        chat_greet:"こんにちは、小科です。「{unit}」について何を聞きたいですか？",
+        chat_placeholder:"質問を入力してEnter…"
+      },
+      "zh-CN": {
+        back_home:"返回学习中心",
+        btn_bilingual:"科学双语阅读",
+        btn_eval:"AI 评分诊断",
+        page_title:"单元重点整理",
+        page_subtitle:"AI 智能笔记生成",
+        settings_title:"请选择你要的学习单元",
+        label_stage:"学习阶段",
+        label_publisher:"版本",
+        label_grade:"年级",
+        label_semester:"学期",
+        label_unit:"单元名称",
+        btn_generate:"AI 分析并生成",
+        btn_txt:"下载 TXT",
+        btn_pdf:"下载 PDF",
+        title_summary:"核心概念摘要",
+        title_vocab:"科学词汇与定义",
+        title_map:"知识架构图",
+        title_myth:"科学动动脑",
+        loading:"载入中...",
+        select:"请选择...",
+        db_loading:"Loading...",
+        db_success:"数据库连接成功",
+        db_fail:"连接失败",
+        db_fail_retry:"连接失败，请重试...",
+        ai_generating:"AI 单元重点整理中...",
+        tap_to_zoom:"点击放大",
+        fullscreen:"全屏",
+        myth_tip:"先想一想，再作答",
+        myth_true:"正确 O",
+        myth_false:"错误 X",
+        msg_correct:"恭喜答对了！你真棒！",
+        msg_wrong:"可惜答错了，再试试！",
+        msg_seq:"请按题号顺序作答，先完成前一题哦！",
+        vocab_none:"无词汇资料",
+        summary_fail:"生成摘要失败...",
+        map_fail:"架构图绘制失败，请重试。",
+        map_none:"无架构图数据",
+        myth_none:"本单元暂无「科学动动脑」小题。",
+        quiz:"单元小测验",
+        quiz_prefix:"单元小测验－{unit}",
+        quiz_not_ready:"本单元的小测验尚未准备好，之后会由老师再补上哦。",
+        quiz_progress:"第 {n} 题／共 {total} 题",
+        quiz_q:"第 {n} 题",
+        quiz_next:"下一题",
+        quiz_result_btn:"看结果",
+        quiz_score_title:"你的测验成绩",
+        quiz_ai_analyzing:"AI 正在分析你的作答结果…",
+        quiz_ai_analyzing_short:"AI 分析中…",
+        quiz_result_text:"你答对 {correct} 题／共 {total} 题。",
+        quiz_axis_wrong:"答错",
+        quiz_axis_right:"答对",
+        quiz_ai_fallback1:"从左侧条形图可看到各概念的答对率，较低的概念可回到课本文字与重点整理区再加强。",
+        quiz_ai_fallback2:"AI 分析暂时无法提供，可先参考图表与逐题回馈自行归纳。",
+        quiz_ai_unstable:"连接不稳定，请稍后再试。",
+        txt_need_generate:"请先生成内容后再下载！",
+        txt_download_fail:"TXT 下载失败，请再试一次或换一个浏览器。",
+        ai_generate_fail:"AI 生成失败！请检查 API 或重试。\n错误讯息: {msg}",
+        api_format_error:"API 返回资料格式错误（非完整 JSON）。",
+        chat_greet:"你好，我是小科，关于「{unit}」，你有什么问题要问我呢？",
+        chat_placeholder:"输入问题后按 Enter…"
+      }
+    };
+
+    let currentLang = localStorage.getItem("ui_lang") || "zh-TW";
+
+    function t(key){
+      const dict = i18n[currentLang] || i18n["zh-TW"];
+      return (dict && dict[key] != null) ? dict[key] : ((i18n["zh-TW"] && i18n["zh-TW"][key] != null) ? i18n["zh-TW"][key] : key);
+    }
+    function tf(key, vars={}){
+      let s = t(key);
+      Object.keys(vars).forEach(k => {
+        s = s.replace(new RegExp("\\{"+k+"\\}","g"), String(vars[k]));
+      });
+      return s;
+    }
+
+    function applyI18n(lang){
+      currentLang = lang || currentLang || "zh-TW";
+      localStorage.setItem("ui_lang", currentLang);
+      document.documentElement.lang = currentLang;
+
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (key && t(key)) el.innerText = t(key);
+      });
+      document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+        const key = el.getAttribute("data-i18n-placeholder");
+        if (key && t(key)) el.setAttribute("placeholder", t(key));
+      });
+
+      // DB status (保留 icon，但文字跟著語言切換)
+      const db = document.getElementById("db-status");
+      if (db){
+        const state = db.dataset.state || "loading";
+        if (state === "success"){
+          db.innerHTML = `<i class="fa-solid fa-check"></i> ${t("db_success")}`;
+        }else if (state === "fail"){
+          db.innerHTML = `${t("db_fail")}`;
+        }else{
+          db.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> ${t("db_loading")}`;
+        }
+      }
+
+      refreshQuizUIText();
+      refreshMythUIText();
+      if (quizRadarChart) {
+        try { quizRadarChart.update(); } catch(e){}
+      }
+    }
+
+    function refreshMythUIText(){
+      // 更新迷思題卡片上的固定字（不重建卡片，不影響作答狀態）
+      document.querySelectorAll("[data-i18n='myth_tip']").forEach(el => el.innerText = t("myth_tip"));
+      document.querySelectorAll("[data-i18n='myth_true']").forEach(el => el.innerText = t("myth_true"));
+      document.querySelectorAll("[data-i18n='myth_false']").forEach(el => el.innerText = t("myth_false"));
+    }
+
+    function refreshQuizUIText(){
+      // Quiz 標題
+      const quizTitleEl = document.getElementById("quiz-title");
+      if (quizTitleEl){
+        const unitName =
+          (filters && filters.unitName) ||
+          (currentResultData && (currentResultData.unitName || (currentResultData.raw_content && currentResultData.raw_content.unitName))) ||
+          "";
+        quizTitleEl.innerText = unitName ? tf("quiz_prefix",{unit:unitName}) : t("quiz");
+      }
+
+      // Progress
+      const progress = document.getElementById("quiz-progress");
+      if (progress){
+        const total = (quizState.questions && quizState.questions.length) ? quizState.questions.length : 0;
+        const n = (total > 0) ? (quizState.currentIndex + 1) : 0;
+        progress.innerText = tf("quiz_progress",{n, total});
+      }
+
+      // Main button text（不改流程，只改顯示字）
+      const btnMain = document.getElementById("quiz-main-btn");
+      if (btnMain && !btnMain.classList.contains("hidden")){
+        const total = (quizState.questions && quizState.questions.length) ? quizState.questions.length : 0;
+        const isLast = (total > 0 && quizState.currentIndex === total - 1);
+        btnMain.innerText = isLast ? t("quiz_result_btn") : t("quiz_next");
+      }
+
+      // Empty
+      const empty = document.getElementById("quiz-empty");
+      if (empty) empty.innerText = t("quiz_not_ready");
+    }
+
+    function changeLanguage(){
+      const langSel = document.getElementById("language-selector");
+      if (!langSel) return;
+      applyI18n(langSel.value);
+    }
+
+    window.onload = async () => {
+      // 套用語言（四語全頁連動 + 記憶）
+      const langSel = document.getElementById("language-selector");
+      if (langSel) langSel.value = currentLang;
+      applyI18n(currentLang);
+
+      // ★ 使用者名稱（保留你原本的 session/local 邏輯）
+      const user = JSON.parse(sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || '{"name":"訪客"}');
+      const userInfo = document.getElementById("user-info");
+      if (userInfo) userInfo.innerText = user.name;
+
+      const selStage = document.getElementById("sel-stage");
+
+      try {
+        const res = await fetch(GAS_API_URL + "?action=get_metadata");
+        if (!res.ok) throw new Error(`伺服器 HTTP 錯誤: ${res.status}`);
+
+        const text = await res.text();
+        let json;
+        try { json = JSON.parse(text); }
+        catch (parseError) {
+          console.error("JSON 解析失敗的原始文本:", text);
+          throw new Error(`API 回應格式錯誤，原始內容開頭: ${text.substring(0, 50)}...`);
+        }
+
+        if(json.status === "success") {
+          allData = json.data;
+          const dbStatus = document.getElementById("db-status");
+          if (dbStatus) {
+            dbStatus.dataset.state = "success";
+            dbStatus.innerHTML = `<i class="fa-solid fa-check"></i> ${t("db_success")}`;
+            dbStatus.className = "text-xs font-bold text-green-600";
+          }
+          initSelectors();
+        } else {
+          throw new Error(json.message || "API 回應狀態非成功");
+        }
+      } catch(e) {
+        console.error("載入元數據失敗:", e);
+        const dbStatus = document.getElementById("db-status");
+        if (dbStatus) {
+          dbStatus.dataset.state = "fail";
+          dbStatus.innerText = t("db_fail");
+          dbStatus.className = "text-xs font-bold text-red-500";
+        }
+        const selStageAgain = document.getElementById("sel-stage");
+        if (selStageAgain) {
+          selStageAgain.innerHTML = `<option value="" disabled selected>${t("db_fail_retry")}</option>`;
+          selStageAgain.disabled = true;
+        }
+        alert(`無法載入資料庫！\n錯誤類型: ${e.message}`);
+      }
+    };
+
+    function initSelectors() {
+      const stages = [...new Set(allData.map(d => d.stage))];
+      populate("sel-stage", stages);
+
+      const selStage = document.getElementById("sel-stage");
+      const selPublisher = document.getElementById("sel-publisher");
+      const selGrade = document.getElementById("sel-grade");
+      const selSemester = document.getElementById("sel-semester");
+      const selUnit = document.getElementById("sel-unit");
+
+      if (selStage) selStage.onchange = (e) => updateLevel(1, e.target.value);
+      if (selPublisher) selPublisher.onchange = (e) => updateLevel(2, e.target.value);
+      if (selGrade) selGrade.onchange = (e) => updateLevel(3, e.target.value);
+      if (selSemester) selSemester.onchange = (e) => updateLevel(4, e.target.value);
+      if (selUnit) selUnit.onchange = (e) => {
+        filters.unitName = e.target.value;
+        const btn = document.getElementById("btn-generate");
+        if (btn) btn.disabled = false;
+      };
+    }
+
+    function updateLevel(level, value) {
+      if(level===1) filters={stage:value};
+      if(level===2){filters.publisher=value; delete filters.grade; delete filters.semester; delete filters.unitName;}
+      if(level===3){filters.grade=value; delete filters.semester; delete filters.unitName;}
+      if(level===4){filters.semester=value; delete filters.unitName;}
+
+      const ids=["sel-publisher","sel-grade","sel-semester","sel-unit"];
+      for(let i=level;i<4;i++){
+        const el = document.getElementById(ids[i]);
+        if (el) {
+          el.innerHTML = `<option disabled selected data-i18n="select">${t("select")}</option>`;
+          el.disabled = true;
+        }
+      }
+      const btn = document.getElementById("btn-generate");
+      if (btn) btn.disabled=true;
+
+      const relevantData = allData.filter(d => {
+        const safeMatch = (dVal, fVal) => !fVal || String(dVal).trim() == String(fVal).trim();
+        return safeMatch(d.stage, filters.stage) &&
+               safeMatch(d.publisher, filters.publisher) &&
+               safeMatch(d.grade, filters.grade) &&
+               safeMatch(d.semester, filters.semester);
+      });
+
+      if(level===1) populate("sel-publisher", [...new Set(relevantData.map(d=>d.publisher))]);
+      if(level===2) populate("sel-grade", [...new Set(relevantData.map(d=>d.grade))].sort((a,b)=>a-b), "grade");
+      if(level===3) populate("sel-semester", [...new Set(relevantData.map(d=>d.semester))], "semester");
+      if(level===4) {
+        const unitSelect = document.getElementById("sel-unit");
+        if (!unitSelect) return;
+        unitSelect.innerHTML = `<option disabled selected data-i18n="select">${t("select")}</option>`;
+        if(relevantData.length>0) {
+          relevantData.forEach(d => {
+            const opt = document.createElement("option");
+            opt.value = d.unitName;
+            opt.text = (d.unitType && !isNaN(d.unitType)) ? `第${d.unitType}課 ${d.unitName}` : d.unitName;
+            unitSelect.add(opt);
+          });
+          unitSelect.disabled=false;
+        }
+      }
+    }
+
+    function populate(id, list, type) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.innerHTML = `<option disabled selected data-i18n="select">${t("select")}</option>`;
+      list.forEach(o => {
+        const opt = document.createElement("option");
+        opt.value = o;
+        if(type==="grade") opt.text = o + "年級";
+        else if(type==="semester") opt.text = (o==="上" ? "上學期" : (o==="下" ? "下學期" : o));
+        else opt.text = o;
+        el.add(opt);
+      });
+      el.disabled=false;
+    }
+
+    async function startGeneration() {
+      const selPanel = document.getElementById("selection-panel");
+      const loading = document.getElementById("loading-view");
+      if (selPanel) selPanel.classList.add("hidden");
+      if (loading) { loading.classList.remove("hidden"); loading.classList.add("flex"); }
+
+      try {
+        const res = await fetch(GAS_API_URL, {
+          method: "POST",
+          body: JSON.stringify({ action: "get_content_and_generate", filters: filters })
+        });
+
+        if (!res.ok) throw new Error(`HTTP 錯誤! 狀態碼: ${res.status}`);
+
+        const text = await res.text();
+        let json;
+        try { json = JSON.parse(text); }
+        catch(parseError) {
+          console.error("JSON 解析失敗的原始文本:", text);
+          throw new Error(t("api_format_error"));
+        }
+
+        if(json.status === "success") {
+          currentResultData = json.data;
+          renderResult(json.data);
+        } else {
+          throw new Error(json.message || "API 返回狀態為失敗");
+        }
+      } catch(e) {
+        alert(tf("ai_generate_fail",{msg:e.message}));
+
+        const selPanelAgain = document.getElementById("selection-panel");
+        if (selPanelAgain) selPanelAgain.classList.remove("hidden");
+        const loadingAgain = document.getElementById("loading-view");
+        if (loadingAgain) { loadingAgain.classList.add("hidden"); loadingAgain.classList.remove("flex"); }
+
+        const btn = document.getElementById("btn-generate");
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    function renderResult(data) {
+      console.log("渲染數據:", data);
+
+      const raw = data.raw_content || {};
+
+      const resultTitle = document.getElementById('result-title');
+      if (resultTitle) {
+        resultTitle.innerText =
+          data.topic ||
+          data.unitName ||
+          raw.unitName ||
+          filters.unitName ||
+          '無標題';
+      }
+
+      const resultTag = document.getElementById('result-tag');
+      if (resultTag) {
+        const p = data.publisher || filters.publisher || '';
+        const g = data.grade || filters.grade || '';
+        const rawS = data.semester || filters.semester || '';
+
+        let s = rawS;
+        if (rawS === '上') s = '上學期';
+        else if (rawS === '下') s = '下學期';
+
+        resultTag.innerText = `${p} ${g}年級 ${s}`;
+      }
+
+      const summaryBox = document.getElementById('summary-text');
+      if (summaryBox) {
+        let summaryContent = data.summary;
+
+        if (summaryContent && typeof summaryContent === 'object') {
+          summaryContent =
+            summaryContent.summary_html ||
+            summaryContent.html ||
+            summaryContent.content ||
+            summaryContent.text ||
+            summaryContent.summary ||
+            '';
+        }
+
+        if (!summaryContent && raw.text_summary) summaryContent = raw.text_summary;
+        summaryBox.innerHTML = summaryContent || t("summary_fail");
+      }
+
+      const keywordList = document.getElementById('keywords-list');
+      if (keywordList) {
+        keywordList.innerHTML = '';
+
+        let kList =
+          data.keywords ||
+          (data.summary && (data.summary.keywords || data.summary.vocab_list)) ||
+          raw.vocab_list ||
+          [];
+
+        if (Array.isArray(kList) && kList.length > 0) {
+          kList.forEach(k => {
+            const term = typeof k === 'object' ? (k.term || k.word || '') : k;
+            const def  = typeof k === 'object' ? (k.def || k.definition || '') : '';
+            if (!term) return;
+
+            const div = document.createElement('div');
+            div.className = 'vocab-item bg-white p-3 rounded-xl border border-blue-100 hover:border-blue-300 transition shadow-sm mb-2';
+            div.innerHTML =
+              `<span class="font-black text-blue-700 text-lg block mb-1">${term}</span>` +
+              `<span class="text-sm text-slate-600 leading-relaxed block">${def}</span>`;
+            keywordList.appendChild(div);
+          });
+        } else {
+          keywordList.innerHTML = `<div class="text-slate-400 p-2">${t("vocab_none")}</div>`;
+          mythData = [];
+        }
+      }
+
+      // Mermaid 架構圖
+      const chartDiv = document.getElementById('mermaid-chart');
+      if (chartDiv) {
+        let mapData =
+          data.mindMap ||
+          (data.summary && (data.summary.mindMap || data.summary.mermaid)) ||
+          '';
+
+        if (mapData && typeof mapData === 'string') {
+          mapData = mapData
+            .replace(/```mermaid/i, '')
+            .replace(/```/g, '')
+            .trim();
+        }
+
+        if (mapData) {
+          chartDiv.innerHTML = `<div class="mermaid">${mapData}</div>`;
+
+          try {
+            mermaid.init(undefined, document.querySelectorAll('.mermaid')).then(() => {
+              const svg = chartDiv.querySelector('svg');
+              if (svg) {
+                svg.removeAttribute('style');
+                svg.removeAttribute('width');
+                svg.removeAttribute('height');
+                svg.style.height = "auto";
+                svg.style.display = "block";
+                svg.style.margin = "0 auto";
+                svg.style.fontFamily = '"Inter","Noto Sans TC","Microsoft JhengHei", sans-serif';
+              }
+            });
+          } catch (e) {
+            console.error('Mermaid 繪圖失敗', e);
+            chartDiv.innerText = t("map_fail");
+          }
+        } else {
+          chartDiv.innerText = t("map_none");
+        }
+      }
+
+      // 科學動動腦：互動版迷思題
+      const mythListEl = document.getElementById('myth-list');
+      if (mythListEl) {
+        mythListEl.innerHTML = '';
+
+        let mList = data.myths || (data.summary && data.summary.myths) || [];
+        if (Array.isArray(mList) && mList.length > 0) {
+          const limitedMyths = mList.slice(0, 10);
+          mythData = limitedMyths;
+
+          limitedMyths.forEach((m, index) => {
+            const rawMyth    = m.myth || m.misconception || '';
+            const correctExp = m.correct || m.explanation || '';
+            if (!rawMyth && !correctExp) return;
+
+            let statement = m.question || rawMyth || '';
+            statement = statement
+              .replace(/^迷思[:：]\s*/,'')
+              .replace(/^常見想法[:：]\s*/,'')
+              .trim();
+
+            const cardId = `myth-${index}`;
+            const div = document.createElement('div');
+            div.className = 'bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3';
+
+            div.innerHTML = `
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-50 text-blue-700 text-xs font-black">Q${index + 1}</span>
+                  <span class="text-xs font-black text-slate-500">${t("title_myth")}</span>
+                </div>
+                <span class="text-[11px] text-slate-400" data-i18n="myth_tip">${t("myth_tip")}</span>
+              </div>
+              <div class="text-sm md:text-base text-slate-800 leading-relaxed"><b>${statement}</b></div>
+              <div class="flex flex-col sm:flex-row gap-2">
+                <button id="${cardId}-btn-true" onclick="answerMyth(${index}, true)" class="myth-option-btn flex-1 px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-blue-300 text-slate-700 text-center">
+                  <span class="block font-black" data-i18n="myth_true">${t("myth_true")}</span>
+                </button>
+                <button id="${cardId}-btn-false" onclick="answerMyth(${index}, false)" class="myth-option-btn flex-1 px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-emerald-300 text-slate-700 text-center">
+                  <span class="block font-black" data-i18n="myth_false">${t("myth_false")}</span>
+                </button>
+              </div>
+              <div id="${cardId}-feedback" class="mt-3 hidden text-sm leading-relaxed rounded-xl border border-slate-100 bg-slate-50 px-3 py-2"></div>
+            `;
+            mythListEl.appendChild(div);
+          });
+        } else {
+          mythListEl.innerHTML = `<div class="text-slate-400 p-2">${t("myth_none")}</div>`;
+          mythData = [];
+        }
+      }
+
+      // 單元小測驗初始化
+      const quizRaw = data.quiz || (data.summary && data.summary.quiz) || [];
+      initQuiz(quizRaw);
+
+      const loadingView = document.getElementById('loading-view');
+      const contentView = document.getElementById('content-view');
+      if (loadingView) { loadingView.classList.add('hidden'); loadingView.classList.remove('flex'); }
+      if (contentView) { contentView.classList.remove('hidden'); }
+
+      const btn = document.getElementById('btn-generate');
+      if (btn) btn.disabled = false;
+
+      const chatBtn = document.getElementById('floating-chat');
+      if (chatBtn) chatBtn.classList.remove('hidden');
+
+      setTimeout(syncVocabHeight, 100);
+
+      // 生成後，保持語言全頁一致（不改任何功能，只更新 UI 字）
+      applyI18n(currentLang);
+    }
+
+    function downloadTXT() {
+      if (!currentResultData) {
+        alert(t("txt_need_generate"));
+        return;
+      }
+
+      const stage    = filters.stage || (currentResultData && currentResultData.stage) || "";
+      const publisher= filters.publisher || (currentResultData && currentResultData.publisher) || "";
+      const grade    = filters.grade || (currentResultData && currentResultData.grade) || "";
+      const semRaw   = filters.semester || (currentResultData && currentResultData.semester) || "";
+      const unitName = (currentResultData.raw_content ? currentResultData.raw_content.unitName : filters.unitName) || "";
+
+      let semesterLabel = semRaw;
+      if (semRaw === "上") semesterLabel = "上學期";
+      else if (semRaw === "下") semesterLabel = "下學期";
+
+      let content = "";
+      content += "【單元來源資訊】\n";
+      content += "----------------------------------------\n";
+      content += `學習階段：${stage || "-"}\n`;
+      content += `版本：${publisher || "-"}\n`;
+      content += `年級：${grade ? grade + "年級" : "-"}\n`;
+      content += `學期：${semesterLabel || "-"}\n`;
+      content += `單元名稱：${unitName || "-"}\n\n`;
+
+      content += "========================================\n";
+      content += "  單元重點整理\n";
+      content += "========================================\n\n";
+
+      const summaryEl = document.getElementById("summary-text");
+      let summary = summaryEl ? summaryEl.innerText.replace(/\n\s*\n/g, "\n\n").trim() : "";
+
+      content += "【一、核心概念摘要】\n";
+      content += "----------------------------------------\n";
+      content += (summary || "本單元的核心概念摘要尚未提供。") + "\n\n\n";
+
+      content += "【二、科學詞彙與定義】\n";
+      content += "----------------------------------------\n";
+
+      let vList = currentResultData.keywords
+        || (currentResultData.summary ? (currentResultData.summary.keywords || currentResultData.summary.vocab_list) : [])
+        || [];
+
+      if (Array.isArray(vList) && vList.length > 0) {
+        vList.forEach((v, i) => {
+          const term = v.term || v;
+          const def  = v.def || "";
+          content += `${i + 1}. ${term}\n`;
+          content += `   說明：${def || "（尚未提供解釋）"}\n\n`;
+        });
+      } else {
+        content += "目前尚未整理出本單元的科學詞彙與定義。\n\n";
+      }
+
+      content += "\n【三、科學動動腦】\n";
+      content += "----------------------------------------\n";
+
+      let mList = currentResultData.myths
+        || (currentResultData.summary ? currentResultData.summary.myths : [])
+        || [];
+
+      if (Array.isArray(mList) && mList.length > 0) {
+        mList.forEach((m, i) => {
+          const stem = (m.question || m.myth || "")
+            .replace(/^迷思[:：]\s*/, "")
+            .replace(/^常見想法[:：]\s*/, "");
+          const ans  = m.correct || m.explanation || "";
+          content += `● 題目 ${i + 1}：${stem}\n`;
+          content += `   正確觀念：${ans || "（尚未提供說明）"}\n\n`;
+        });
+      } else {
+        content += "本單元目前尚未設定「科學動動腦」題目。\n";
+      }
+
+      try {
+        const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+        const url  = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${unitName || filters.unitName || "unit"}_重點整理.txt`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        console.error(e);
+        alert(t("txt_download_fail"));
+      }
+    }
+
+    // 取代原本的 toggleChat()
+    function toggleChat() {
+      const win = document.getElementById("xiaoke-window");
+      if (!win) return;
+
+      const wasClosed = win.classList.contains("closed");
+      win.classList.toggle("closed");
+
+      if (wasClosed) {
+        const chatBody = document.getElementById("chat-messages");
+        if (chatBody && !chatBody.innerHTML.trim()) {
+          const unitName =
+            (filters && filters.unitName) ||
+            (currentResultData && (currentResultData.unitName || (currentResultData.raw_content && currentResultData.raw_content.unitName))) ||
+            "這個單元";
+
+          const greet = tf("chat_greet",{unit:unitName});
+          chatBody.innerHTML = `
+            <div class="self-start bg-white border border-slate-100 p-3 rounded-lg rounded-tr-none shadow-sm max-w-[85%] text-sm">
+              <span class="font-black text-blue-700 block mb-1 text-xs">小科 AI</span>${greet}
+            </div>`;
+        }
+      }
+    }
+
+    async function sendChatMessage() {
+      const input = document.getElementById("chat-input");
+      if (!input) return;
+      const msg = input.value.trim();
+      if(!msg) return;
+
+      const chatBody = document.getElementById("chat-messages");
+      if (chatBody) {
+        chatBody.innerHTML += `<div class="self-end bg-blue-600 text-white p-3 rounded-lg rounded-tr-none shadow-sm max-w-[85%] ml-auto text-sm">${msg}</div>`;
+        chatBody.scrollTop = chatBody.scrollHeight;
+      }
+      input.value = "";
+
+      try {
+        const currentUser = JSON.parse(sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || '{"name":"訪客"}');
+        const contextText = currentResultData ? (currentResultData.raw_content ? currentResultData.raw_content.text : "") : "";
+        const contextVocab = currentResultData ? (currentResultData.raw_content ? currentResultData.raw_content.vocab_str : "") : "";
+        const res = await fetch(GAS_API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'chat_with_ai',
+            message: msg,
+            currentUnit: filters.unitName || "",
+            contextText: contextText,
+            contextVocab: contextVocab,
+            userName: currentUser.name,
+            stage: filters.stage,
+            publisher: filters.publisher,
+            grade: filters.grade,
+            semester: filters.semester
+          })
+        });
+        const json = await res.json();
+        const cleanReply = (json.data || "").replace(/\*\*/g, "");
+        if (chatBody) {
+          chatBody.innerHTML += `<div class="self-start bg-white border border-slate-100 p-3 rounded-lg rounded-tr-none shadow-sm max-w-[85%] text-sm"><span class="font-black text-blue-700 block mb-1 text-xs">小科 AI</span>${cleanReply}</div>`;
+          chatBody.scrollTop = chatBody.scrollHeight;
+        }
+      } catch(e) {
+        console.error(e);
+      }
+    }
+
+    function openModal() {
+      const chartDiv = document.getElementById("mermaid-chart");
+      if (!chartDiv || !chartDiv.innerHTML.trim() || chartDiv.innerText.includes("錯誤")) return;
+
+      const modal = document.getElementById("image-modal");
+      const content = document.getElementById("modal-content");
+      if (!modal || !content) return;
+
+      content.innerHTML = chartDiv.innerHTML;
+
+      const wrapper = content.querySelector(".mermaid");
+      if (wrapper) { wrapper.style.width = "100%"; wrapper.style.overflow = "auto"; }
+
+      const svg = content.querySelector("svg");
+      if (svg) {
+        svg.removeAttribute("style");
+        svg.removeAttribute("width");
+        svg.removeAttribute("height");
+        svg.style.display = "block";
+        svg.style.margin  = "0 auto";
+        svg.style.width   = "1600px";
+        svg.style.height  = "auto";
+      }
+
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    }
+
+    function closeModal() {
+      const modal = document.getElementById("image-modal");
+      if (!modal) return;
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+
+    function syncVocabHeight() {
+      const summaryPanel = document.getElementById("summary-panel");
+      const vocabPanel   = document.getElementById("vocab-panel");
+      if (!summaryPanel || !vocabPanel) return;
+      if (window.innerWidth < 768) { vocabPanel.style.height = "auto"; return; }
+      vocabPanel.style.height = "auto";
+      const targetHeight = summaryPanel.offsetHeight;
+      vocabPanel.style.height = targetHeight + "px";
+    }
+
+    // 科學動動腦：作答互動
+    function answerMyth(index, chooseTrue) {
+      if (!Array.isArray(mythData) || !mythData[index]) return;
+
+      // 依序作答
+      try {
+        let firstUnanswered = -1;
+        for (let i = 0; i < mythData.length; i++) {
+          const fb = document.getElementById(`myth-${i}-feedback`);
+          if (fb && fb.dataset.answered !== "1") { firstUnanswered = i; break; }
+        }
+        if (firstUnanswered !== -1 && index !== firstUnanswered) {
+          alert(t("msg_seq"));
+          return;
+        }
+      } catch (e) {
+        console.log("myth sequential guard error:", e);
+      }
+
+      const cardId = `myth-${index}`;
+      const btnTrue  = document.getElementById(`${cardId}-btn-true`);
+      const btnFalse = document.getElementById(`${cardId}-btn-false`);
+      const feedback = document.getElementById(`${cardId}-feedback`);
+      if (!btnTrue || !btnFalse || !feedback) return;
+
+      if (feedback.dataset.answered === "1") return;
+      feedback.dataset.answered = "1";
+
+      const correct = mythData[index].correct || mythData[index].explanation || '';
+
+      const isTrueFlag = (typeof mythData[index].isTrue === "boolean") ? mythData[index].isTrue : null;
+      let isCorrectChoice;
+      if (isTrueFlag === null) isCorrectChoice = !chooseTrue;
+      else isCorrectChoice = (chooseTrue === isTrueFlag);
+
+      [btnTrue, btnFalse].forEach(btn => {
+        btn.classList.remove(
+          "border-green-500","bg-green-50","text-green-700",
+          "border-red-500","bg-red-50","text-red-700",
+          "opacity-70"
+        );
+      });
+
+      let html = "";
+
+      if (isCorrectChoice) {
+        if (chooseTrue) { btnTrue.classList.add("border-green-500","bg-green-50","text-green-700"); btnFalse.classList.add("opacity-70"); }
+        else { btnFalse.classList.add("border-green-500","bg-green-50","text-green-700"); btnTrue.classList.add("opacity-70"); }
+        html = `
+          <div class="font-black text-emerald-700 mb-1">${t("msg_correct")}</div>
+          <div class="text-slate-700 text-sm mb-1">${correct}</div>
+        `;
+      } else {
+        if (chooseTrue) { btnTrue.classList.add("border-red-500","bg-red-50","text-red-700"); btnFalse.classList.add("border-green-500","bg-green-50","text-green-700"); }
+        else { btnFalse.classList.add("border-red-500","bg-red-50","text-red-700"); btnTrue.classList.add("border-green-500","bg-green-50","text-green-700"); }
+        html = `
+          <div class="font-black text-orange-600 mb-1">${t("msg_wrong")}</div>
+          <div class="text-slate-700 text-sm mb-1">${correct}</div>
+        `;
+      }
+
+      feedback.innerHTML = html;
+      feedback.classList.remove("hidden");
+    }
+
+    // 單元小測驗：初始化與呈現
+    function initQuiz(quizRaw) {
+      const quizPanel   = document.getElementById("quiz-panel");
+      const quizBody    = document.getElementById("quiz-body");
+      const quizEmpty   = document.getElementById("quiz-empty");
+      const quizTitleEl = document.getElementById("quiz-title");
+
+      if (!quizPanel || !quizBody || !quizEmpty || !quizTitleEl) return;
+
+      const unitName =
+        (filters && filters.unitName) ||
+        (currentResultData && (currentResultData.unitName || (currentResultData.raw_content && currentResultData.raw_content.unitName))) ||
+        "";
+
+      quizTitleEl.innerText = unitName ? tf("quiz_prefix",{unit:unitName}) : t("quiz");
+
+      const sourceArray = Array.isArray(quizRaw) ? quizRaw.slice(0, 10) : [];
+      if (!Array.isArray(sourceArray) || sourceArray.length === 0) {
+        quizState.questions = [];
+        quizState.currentIndex = 0;
+        quizState.hasAnswered = false;
+        quizState.answers = [];
+
+        quizBody.classList.add("hidden");
+        quizEmpty.classList.remove("hidden");
+
+        const progress = document.getElementById("quiz-progress");
+        if (progress) progress.innerText = tf("quiz_progress",{n:0,total:0});
+        return;
+      }
+
+      quizState.questions = sourceArray.map((q, idx) => {
+        const stem = q.stem || q.question || q.text || `第 ${idx + 1} 題`;
+        let options = q.options || q.choices || q.choice || [];
+        if (!Array.isArray(options)) options = [];
+        let correctIndex = -1;
+
+        if (typeof q.correctIndex === "number") correctIndex = q.correctIndex;
+        else if (typeof q.answerIndex === "number") correctIndex = q.answerIndex;
+        else if (typeof q.correct === "number") correctIndex = q.correct;
+        else if (typeof q.ans === "number") correctIndex = q.ans;
+        else if (typeof q.answer === "string") {
+          const map = { "A": 0, "B": 1, "C": 2, "D": 3 };
+          const key = q.answer.trim().toUpperCase()[0];
+          if (map[key] !== undefined) correctIndex = map[key];
+        }
+
+        const explanation = q.explanation || q.explain || q.detail || q.reason || "";
+        const id = q.id || `Q${idx + 1}`;
+        const concept = q.concept || q.conceptName || q.topic || `第 ${idx + 1} 題`;
+
+        return { id, stem, options, correctIndex, explanation, concept };
+      });
+
+      quizState.currentIndex = 0;
+      quizState.hasAnswered = false;
+      quizState.answers = [];
+
+      quizEmpty.classList.add("hidden");
+      quizBody.classList.remove("hidden");
+
+      renderQuizQuestion();
+    }
+
+    function renderQuizQuestion() {
+      const q = quizState.questions[quizState.currentIndex];
+      const quizQuestionEl = document.getElementById("quiz-question");
+      const quizOptionsEl  = document.getElementById("quiz-options");
+      const quizFeedbackEl = document.getElementById("quiz-feedback");
+      const quizProgressEl = document.getElementById("quiz-progress");
+      const btnMain        = document.getElementById("quiz-main-btn");
+
+      if (!q || !quizQuestionEl || !quizOptionsEl || !quizFeedbackEl || !quizProgressEl || !btnMain) return;
+
+      const total = quizState.questions.length;
+      const index = quizState.currentIndex;
+
+      quizQuestionEl.innerHTML = `<span class="inline-block text-xs font-black text-slate-500 mb-1">${tf("quiz_q",{n:index+1})}</span><br>${q.stem}`;
+      quizOptionsEl.innerHTML  = "";
+      quizFeedbackEl.classList.add("hidden");
+      quizFeedbackEl.innerHTML = "";
+      quizState.hasAnswered    = false;
+
+      const letters = ["A","B","C","D","E","F"];
+      q.options.forEach((opt, optIndex) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "quiz-option-btn w-full text-left px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-white hover:bg-emerald-50 hover:border-emerald-300 text-slate-800";
+        btn.setAttribute("data-opt-index", optIndex);
+        btn.onclick = () => handleQuizAnswer(optIndex);
+        btn.innerHTML = `<span class="inline-flex items-center justify-center w-6 h-6 mr-2 rounded-full bg-emerald-50 text-emerald-800 text-xs font-black">${letters[optIndex] || ""}</span>${opt}`;
+        quizOptionsEl.appendChild(btn);
+      });
+
+      quizProgressEl.innerText = tf("quiz_progress",{n:index+1,total});
+      btnMain.disabled = true;
+      btnMain.classList.add("opacity-40","cursor-not-allowed");
+      btnMain.innerText = (index === total - 1) ? t("quiz_result_btn") : t("quiz_next");
+    }
+
+    function handleQuizAnswer(selectedIndex) {
+      if (quizState.hasAnswered) return;
+      const q = quizState.questions[quizState.currentIndex];
+      if (!q) return;
+
+      const quizOptionsEl  = document.getElementById("quiz-options");
+      const quizFeedbackEl = document.getElementById("quiz-feedback");
+      if (!quizOptionsEl || !quizFeedbackEl) return;
+
+      const buttons = Array.from(quizOptionsEl.querySelectorAll("button.quiz-option-btn"));
+      const correctIndex = typeof q.correctIndex === "number" ? q.correctIndex : -1;
+
+      buttons.forEach((btn) => {
+        btn.disabled = true;
+        btn.classList.remove(
+          "border-green-500","bg-green-50","text-green-700",
+          "border-red-500","bg-red-50","text-red-700"
+        );
+      });
+
+      let isCorrect = (selectedIndex === correctIndex && correctIndex >= 0);
+
+      quizState.answers[quizState.currentIndex] = {
+        correct: isCorrect,
+        concept: q.concept
+      };
+
+      if (isCorrect) {
+        const btn = buttons[selectedIndex];
+        if (btn) btn.classList.add("border-green-500","bg-green-50","text-green-700");
+        quizFeedbackEl.className = "mt-4 text-sm rounded-xl px-3 py-2 bg-emerald-50 border border-emerald-200 text-emerald-800";
+        quizFeedbackEl.innerHTML = `
+          <div class="font-black text-emerald-700 mb-1">${t("msg_correct")}</div>
+          <div class="text-slate-700 text-sm mb-1">${q.explanation || ""}</div>
+        `;
+      } else {
+        const chosenBtn = buttons[selectedIndex];
+        if (chosenBtn) chosenBtn.classList.add("border-red-500","bg-red-50","text-red-700");
+        if (correctIndex >= 0 && buttons[correctIndex]) buttons[correctIndex].classList.add("border-green-500","bg-green-50","text-green-700");
+        quizFeedbackEl.className = "mt-4 text-sm rounded-xl px-3 py-2 bg-orange-50 border border-orange-200 text-orange-800";
+        quizFeedbackEl.innerHTML = `
+          <div class="font-black text-orange-600 mb-1">${t("msg_wrong")}</div>
+          <div class="text-slate-700 text-sm mb-1">${q.explanation || ""}</div>
+        `;
+      }
+
+      quizFeedbackEl.classList.remove("hidden");
+      quizState.hasAnswered = true;
+
+      const btnMain = document.getElementById("quiz-main-btn");
+      if (btnMain) {
+        const isLast = (quizState.currentIndex === quizState.questions.length - 1);
+        btnMain.disabled = false;
+        btnMain.classList.remove("opacity-40","cursor-not-allowed");
+        btnMain.innerText = isLast ? t("quiz_result_btn") : t("quiz_next");
+      }
+
+      try { submitQuizLog(q, selectedIndex, correctIndex, isCorrect); } catch (e) { console.log("submitQuizLog 略過或失敗：", e); }
+    }
+
+    function requestQuizAISummary(score, concepts, conceptScores, correctCount, totalQ) {
+      const detailEl     = document.getElementById("quiz-result-detail");
+      const scoreLabelEl = document.getElementById("quiz-score-label");
+      if (!detailEl || !scoreLabelEl) return;
+
+      const currentUser = JSON.parse(
+        sessionStorage.getItem("currentUser") ||
+        localStorage.getItem("currentUser") ||
+        '{"name":"訪客"}'
+      );
+
+      const raw = currentResultData && currentResultData.raw_content ? currentResultData.raw_content : {};
+      const contextText  = raw.text || raw.text_summary || raw.text_full || "";
+      const contextVocab = raw.vocab_str || "";
+
+      const unitName =
+        (filters && filters.unitName) ||
+        (currentResultData && (currentResultData.unitName || (currentResultData.raw_content && currentResultData.raw_content.unitName))) || "";
+
+      const answerRecords = quizState.questions.map((q, idx) => {
+        const ans = quizState.answers[idx];
+        return {
+          index: idx + 1,
+          concept: q.concept || q.conceptName || q.topic || `第 ${idx + 1} 題`,
+          correct: !!(ans && ans.correct)
         };
+      });
 
-        window.onload = async () => {
-            const user = JSON.parse(sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || '{"name":"訪客"}');
-            document.getElementById("user-info").innerText = user.name;
+      const payload = {
+        action: "quiz_ai_summary",
+        userName: currentUser.name,
+        stage: filters.stage || "",
+        publisher: filters.publisher || "",
+        grade: filters.grade || "",
+        semester: filters.semester || "",
+        unitName: unitName,
+        score: score,
+        totalQuestions: totalQ,
+        totalCorrect: correctCount,
+        concepts: concepts,
+        conceptScores: conceptScores,
+        answers: answerRecords,
+        contextText: contextText,
+        contextVocab: contextVocab
+      };
 
-            try {
-                const res = await fetch(GAS_API_URL + "?action=get_metadata");
-                if (!res.ok) throw new Error("API Error");
-                const json = await res.json();
-                
-                if(json.status === "success") {
-                    allData = json.data;
-                    document.getElementById("db-status").innerHTML = '<span class="w-2 h-2 rounded-full bg-green-500 inline-block mr-1"></span> Connected';
-                    document.getElementById("db-status").className = "text-xs font-mono px-3 py-1 rounded bg-[#252525] text-green-500 border border-green-900 flex items-center";
-                    initSelectors();
-                } else { throw new Error(json.message); }
-            } catch(e) {
-                console.error(e);
-                document.getElementById("db-status").innerText = "Connection Failed";
-                document.getElementById("db-status").className = "text-xs font-mono px-3 py-1 rounded bg-[#252525] text-red-500 border border-red-900";
-            }
-        };
+      detailEl.innerText = t("quiz_ai_analyzing_short");
+      scoreLabelEl.innerText = "";
 
-        function changeLanguage() {
-            const lang = document.getElementById("language-selector").value;
-            const t = i18n[lang] || i18n["en"];
-            
-            // 更新所有 data-i18n 元素
-            document.querySelectorAll("[data-i18n]").forEach(el => {
-                const key = el.getAttribute("data-i18n");
-                if (t[key]) {
-                    // 如果是 input 的 placeholder
-                    if (el.tagName === 'INPUT' && el.hasAttribute('placeholder')) {
-                        // 這裡可以處理 placeholder，目前範例中沒用到多語系 placeholder
-                    } else {
-                        el.innerText = t[key];
-                    }
+      fetch(GAS_API_URL, { method: "POST", body: JSON.stringify(payload) })
+      .then(res => res.text())
+      .then(text => {
+        if (!text) {
+          detailEl.innerText = t("quiz_ai_fallback1");
+          scoreLabelEl.innerText = "";
+          return;
+        }
+
+        let json = null;
+        try { json = JSON.parse(text); }
+        catch (e) {
+          detailEl.innerHTML = text;
+          scoreLabelEl.innerText = "";
+          return;
+        }
+
+        if (!json) {
+          detailEl.innerText = t("quiz_ai_fallback1");
+          scoreLabelEl.innerText = "";
+          return;
+        }
+
+        let d = null;
+        if (typeof json.data !== "undefined") d = json.data;
+        else if (json.summary || json.detail || json.text) d = json;
+        else if (typeof json === "string") d = json;
+
+        if (!d) {
+          detailEl.innerText = t("quiz_ai_fallback1");
+          scoreLabelEl.innerText = "";
+          return;
+        }
+
+        let summaryText = "";
+        let detailText  = "";
+
+        if (typeof d === "string") summaryText = d;
+        else if (d && typeof d === "object") {
+          summaryText = d.summary || d.summary_html || d.text || d.explanation || "";
+          detailText  = d.detail  || d.detail_html  || "";
+        }
+
+        let combined = "";
+        if (summaryText) combined = summaryText;
+        if (detailText) combined = combined ? (combined + "<br><br>" + detailText) : detailText;
+
+        if (combined) detailEl.innerHTML = combined;
+        else detailEl.innerText = t("quiz_ai_fallback1");
+
+        scoreLabelEl.innerText = "";
+      })
+      .catch(err => {
+        console.log("quiz_ai_summary 呼叫失敗：", err);
+        scoreLabelEl.innerText = "";
+        detailEl.innerText = t("quiz_ai_fallback2");
+      });
+    }
+
+    function handleQuizMainButton() {
+      if (!quizState.questions.length) return;
+      if (!quizState.hasAnswered) return;
+
+      const isLast = (quizState.currentIndex === quizState.questions.length - 1);
+      if (isLast) renderQuizResult();
+      else { quizState.currentIndex += 1; renderQuizQuestion(); }
+    }
+
+    function renderQuizResult() {
+      const totalQ = quizState.questions.length;
+      if (!totalQ) return;
+
+      const resultBox      = document.getElementById("quiz-result");
+      const scoreNumberEl  = document.getElementById("quiz-score-number");
+      const scoreLabelEl   = document.getElementById("quiz-score-label");
+      const resultTextEl   = document.getElementById("quiz-result-text");
+      const detailEl       = document.getElementById("quiz-result-detail");
+      const canvas         = document.getElementById("quiz-radar");
+      const quizBody       = document.getElementById("quiz-body");
+      const quizProgress   = document.getElementById("quiz-progress");
+      const btnMain        = document.getElementById("quiz-main-btn");
+
+      if (!resultBox || !scoreNumberEl || !scoreLabelEl || !resultTextEl || !detailEl || !canvas) return;
+
+      if (quizBody) quizBody.classList.add("hidden");
+      if (quizProgress) quizProgress.classList.add("hidden");
+      if (btnMain) btnMain.classList.add("hidden");
+
+      const answered = quizState.answers.filter(a => a);
+      const correctCount = answered.filter(a => a.correct).length;
+      const score = Math.round((correctCount / totalQ) * 100);
+
+      resultBox.classList.remove("hidden");
+
+      scoreNumberEl.innerText = `${score} 分`;
+      scoreLabelEl.innerText = t("quiz_ai_analyzing");
+      resultTextEl.innerText = tf("quiz_result_text",{correct:correctCount,total:totalQ});
+
+      const conceptStats = {};
+      quizState.questions.forEach((q, idx) => {
+        const concept = q.concept || q.conceptName || q.topic || `第 ${idx + 1} 題`;
+        if (!conceptStats[concept]) conceptStats[concept] = { total: 0, correct: 0 };
+        conceptStats[concept].total += 1;
+        const ans = quizState.answers[idx];
+        if (ans && ans.correct) conceptStats[concept].correct += 1;
+      });
+
+      const concepts = Object.keys(conceptStats);
+      const conceptScores = concepts.map(c => {
+        const s = conceptStats[c];
+        return Math.round((s.correct / s.total) * 100);
+      });
+
+      detailEl.innerText = t("quiz_ai_analyzing_short");
+
+      const ctx = canvas.getContext("2d");
+      if (quizRadarChart) quizRadarChart.destroy();
+
+      quizRadarChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: concepts,
+          datasets: [{ label: "Accuracy (%)", data: conceptScores }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: "y",
+          scales: {
+            x: {
+              min: 0,
+              max: 100,
+              ticks: {
+                stepSize: 100,
+                callback: (value) => {
+                  const v = Number(value);
+                  if (v === 0) return t("quiz_axis_wrong");
+                  if (v === 100) return t("quiz_axis_right");
+                  return "";
                 }
-            });
-
-            // 更新動態生成的按鈕文字 (如測驗按鈕)
-            const quizBtn = document.getElementById("quiz-main-btn");
-            if (quizBtn && !quizBtn.disabled) {
-                const isLast = (quizState.currentIndex === quizState.questions.length - 1);
-                quizBtn.innerText = isLast ? t.btn_see_result : t.btn_next_q;
-            }
+              }
+            },
+            y: { ticks: { autoSkip: false } }
+          }
         }
+      });
 
-        function initSelectors() {
-            const stages = [...new Set(allData.map(d => d.stage))];
-            populate("sel-stage", stages);
-            document.getElementById("sel-stage").onchange = (e) => updateLevel(1, e.target.value);
-            document.getElementById("sel-publisher").onchange = (e) => updateLevel(2, e.target.value);
-            document.getElementById("sel-grade").onchange = (e) => updateLevel(3, e.target.value);
-            document.getElementById("sel-semester").onchange = (e) => updateLevel(4, e.target.value);
-            document.getElementById("sel-unit").onchange = (e) => { 
-                filters.unitName = e.target.value; 
-                document.getElementById("btn-generate").disabled = false; 
-            };
-        }
+      try { requestQuizAISummary(score, concepts, conceptScores, correctCount, totalQ); } catch (e) { console.log("requestQuizAISummary 失敗：", e); }
+    }
 
-        function updateLevel(level, value) {
-            if(level===1) filters={stage:value};
-            if(level===2){filters.publisher=value; delete filters.grade; delete filters.semester; delete filters.unitName;}
-            if(level===3){filters.grade=value; delete filters.semester; delete filters.unitName;}
-            if(level===4){filters.semester=value; delete filters.unitName;}
+    // 前端 log_quiz_answer（不改你的後端假設）
+    function submitQuizLog(question, selectedIndex, correctIndex, isCorrect) {
+      if (!question) return;
+      const currentUser = JSON.parse(sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || '{"name":"訪客"}');
 
-            const ids=["sel-publisher","sel-grade","sel-semester","sel-unit"];
-            // 這些預設文字會被多語系覆蓋，但保留作為 fallback
-            const labels=["版本","年級","學期","單元"];
-            for(let i=level;i<4;i++){
-                const el = document.getElementById(ids[i]);
-                el.innerHTML=`<option disabled selected>--</option>`;
-                el.disabled=true;
-            }
-            document.getElementById("btn-generate").disabled=true;
+      const payload = {
+        action: "log_quiz_answer",
+        userName: currentUser.name,
+        stage: filters.stage || "",
+        publisher: filters.publisher || "",
+        grade: filters.grade || "",
+        semester: filters.semester || "",
+        unitName:
+          (filters && filters.unitName) ||
+          (currentResultData && (currentResultData.unitName || (currentResultData.raw_content && currentResultData.raw_content.unitName))) || "",
+        questionId: question.id || `Q${quizState.currentIndex + 1}`,
+        questionIndex: quizState.currentIndex + 1,
+        questionText: question.stem || "",
+        studentAnswer: typeof selectedIndex === "number" ? selectedIndex.toString() : "",
+        correctAnswer: typeof correctIndex === "number" ? correctIndex.toString() : "",
+        isCorrect: isCorrect ? "1" : "0"
+      };
 
-            const relevantData = allData.filter(d => {
-                const safeMatch = (dVal, fVal) => !fVal || String(dVal).trim() == String(fVal).trim();
-                return safeMatch(d.stage, filters.stage) &&
-                       safeMatch(d.publisher, filters.publisher) &&
-                       safeMatch(d.grade, filters.grade) &&
-                       safeMatch(d.semester, filters.semester);
-            });
+      const params = new URLSearchParams(payload);
+      fetch(`${GAS_API_URL}?${params.toString()}`).catch(err => {
+        console.log("log_quiz_answer 呼叫失敗（可忽略於前端）:", err);
+      });
+    }
 
-            if(level===1) populate("sel-publisher", [...new Set(relevantData.map(d=>d.publisher))]);
-            if(level===2) populate("sel-grade", [...new Set(relevantData.map(d=>d.grade))].sort((a,b)=>a-b), "grade");
-            if(level===3) populate("sel-semester", [...new Set(relevantData.map(d=>d.semester))], "semester");
-            if(level===4) {
-                const unitSelect = document.getElementById("sel-unit");
-                unitSelect.innerHTML='<option disabled selected>--</option>';
-                if(relevantData.length>0) {
-                    relevantData.forEach(d => {
-                        const opt = document.createElement("option");
-                        opt.value = d.unitName;
-                        opt.text = (d.unitType && !isNaN(d.unitType)) ? `第${d.unitType}課 ${d.unitName}` : d.unitName;
-                        unitSelect.add(opt);
-                    });
-                    unitSelect.disabled=false;
-                }
-            }
-        }
-
-        function populate(id, list, type) {
-            const el = document.getElementById(id);
-            el.innerHTML=`<option disabled selected>--</option>`;
-            list.forEach(o => {
-                const opt = document.createElement("option");
-                opt.value = o;
-                if(type==="grade") opt.text=o+"年級";
-                else if(type==="semester") opt.text=(o==="上"?"上學期":(o==="下"?"下學期":o));
-                else opt.text=o;
-                el.add(opt);
-            });
-            el.disabled=false;
-        }
-
-        // ========== 核心修復：JSON 清洗與容錯 ==========
-        function cleanAndParseJSON(text) {
-            console.log("Raw Response Length:", text.length);
-            
-            // 1. 移除 Markdown 標記 (支援大小寫)
-            let clean = text.replace(/```json/gi, "").replace(/```/g, "").trim();
-            
-            // 2. 嘗試修復常見錯誤
-            clean = clean.replace(/,\s*([\]}])/g, '$1'); // 移除陣列/物件尾部逗號
-            clean = clean.replace(/(?<!\\)\n/g, "\\n"); // 轉義換行符
-            clean = clean.replace(/[\u0000-\u0019]+/g,""); // 移除控制字符
-
-            // 3. 嘗試解析
-            try {
-                return JSON.parse(clean);
-            } catch (e) {
-                console.warn("第一次解析失敗，嘗試修復 JSON...", e);
-                // 4. 暴力提取：只抓取最外層 {} 
-                const firstOpen = clean.indexOf('{');
-                const lastClose = clean.lastIndexOf('}');
-                if (firstOpen !== -1 && lastClose !== -1) {
-                    try {
-                        return JSON.parse(clean.substring(firstOpen, lastClose + 1));
-                    } catch (e2) {
-                        return null; // 放棄
-                    }
-                }
-                return null;
-            }
-        }
-
-        async function startGeneration() {
-            document.getElementById("selection-panel").classList.add("hidden");
-            const loading = document.getElementById("loading-view");
-            loading.classList.remove("hidden");
-            loading.classList.add("flex");
-
-            try {
-                const res = await fetch(GAS_API_URL, { 
-                    method: "POST", 
-                    body: JSON.stringify({ action: "get_content_and_generate", filters: filters }) 
-                });
-                
-                const text = await res.text();
-                const json = cleanAndParseJSON(text); // 使用強化解析
-
-                if(json && (json.status === "success" || json.data)) { 
-                    currentResultData = json.data || json; 
-                    renderResult(currentResultData); 
-                } else {
-                    console.error("原始回應:", text);
-                    throw new Error("AI 資料格式錯誤 (Syntax Error)。");
-                }
-            } catch(e) { 
-                alert("生成失敗: " + e.message); 
-                document.getElementById("selection-panel").classList.remove("hidden");
-                loading.classList.add("hidden");
-                loading.classList.remove("flex");
-            }
-        }
-
-        function renderResult(data) {
-            const raw = data.raw_content || {};
-            
-            document.getElementById('result-title').innerText = data.topic || raw.unitName || filters.unitName || "單元重點";
-            
-            // 摘要 (多重來源檢查)
-            const summaryBox = document.getElementById('summary-text');
-            let summaryContent = "";
-            if (data.summary) {
-                if (typeof data.summary === 'string') summaryContent = data.summary;
-                else if (data.summary.content) summaryContent = data.summary.content;
-                else if (data.summary.summary) summaryContent = data.summary.summary;
-            }
-            if (!summaryContent && raw.text_summary) summaryContent = raw.text_summary;
-            if (!summaryContent && raw.text) summaryContent = raw.text.substring(0, 300) + "..."; 
-            
-            summaryBox.innerHTML = summaryContent || '<p class="text-gray-500">暫無摘要</p>';
-
-            // 詞彙
-            const keywordList = document.getElementById('keywords-list');
-            keywordList.innerHTML = '';
-            let kList = data.keywords || [];
-            if (kList.length === 0 && raw.vocab_list) kList = raw.vocab_list;
-            
-            if (Array.isArray(kList) && kList.length > 0) {
-                kList.forEach(k => {
-                    const term = typeof k === 'object' ? (k.term || k.word) : k;
-                    const def = typeof k === 'object' ? (k.def || k.definition) : '';
-                    if (!term) return;
-                    const div = document.createElement('div');
-                    div.className = 'vocab-item';
-                    div.innerHTML = `<div class="font-bold text-amber-500 mb-1">${term}</div><div class="text-xs text-gray-400">${def}</div>`;
-                    keywordList.appendChild(div);
-                });
-            } else { keywordList.innerHTML = '<span class="text-gray-500 text-xs">無特定詞彙</span>'; }
-
-            // Mermaid (容錯渲染)
-            const chartDiv = document.getElementById('mermaid-chart');
-            let mapData = data.mindMap || (data.summary && data.summary.mindMap) || '';
-            if (mapData) mapData = mapData.replace(/```mermaid/gi, '').replace(/```/g, '').trim();
-
-            if (mapData && mapData.length > 10) {
-                chartDiv.innerHTML = `<div class="mermaid">${mapData}</div>`;
-                try {
-                    mermaid.init(undefined, document.querySelectorAll('.mermaid'));
-                } catch(e) {
-                    console.error("Mermaid 繪製失敗", e);
-                    chartDiv.innerHTML = '<span class="text-red-400 text-xs">圖表繪製錯誤</span>';
-                }
-            } else { 
-                chartDiv.innerHTML = '<span class="text-gray-400 text-xs">無架構圖數據</span>'; 
-            }
-
-            // 迷思
-            const mythListEl = document.getElementById('myth-list');
-            mythListEl.innerHTML = '';
-            let mList = data.myths || (data.summary && data.summary.myths) || [];
-            mythData = mList.slice(0, 10);
-            
-            if (mythData.length > 0) {
-                mythData.forEach((m, index) => {
-                    const q = m.question || m.myth || '迷思問題';
-                    const div = document.createElement('div');
-                    div.className = 'bg-[#252525] p-3 rounded-lg border border-[#333] mb-3';
-                    div.innerHTML = `
-                        <div class="text-sm font-bold text-gray-200 mb-2"><span class="text-rose-500 mr-2">Q${index+1}</span>${q}</div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button onclick="answerMyth(${index}, true)" class="py-1.5 bg-[#333] hover:bg-[#444] rounded text-xs text-gray-300 transition">正確</button>
-                            <button onclick="answerMyth(${index}, false)" class="py-1.5 bg-[#333] hover:bg-[#444] rounded text-xs text-gray-300 transition">錯誤</button>
-                        </div>
-                        <div id="myth-${index}-feedback" class="mt-2 hidden text-xs p-2 rounded bg-[#1a1a1a] text-gray-300 border border-[#333]"></div>
-                    `;
-                    mythListEl.appendChild(div);
-                });
-            } else { mythListEl.innerHTML = '<span class="text-gray-500 text-xs text-center">無迷思題目</span>'; }
-
-            // 測驗
-            const quizRaw = data.quiz || (data.summary && data.summary.quiz) || [];
-            initQuiz(quizRaw);
-
-            document.getElementById('loading-view').classList.add('hidden');
-            document.getElementById('loading-view').classList.remove('flex');
-            document.getElementById('content-view').classList.remove('hidden');
-            document.getElementById('floating-chat').classList.remove('hidden');
-            document.getElementById('btn-generate').disabled = false;
-        }
-
-        // Quiz Logic
-        function initQuiz(quizRaw) {
-            const quizBody = document.getElementById("quiz-body");
-            const quizEmpty = document.getElementById("quiz-empty");
-            const sourceArray = Array.isArray(quizRaw) ? quizRaw.slice(0, 10) : [];
-            
-            if (sourceArray.length === 0) {
-                quizBody.classList.add("hidden");
-                quizEmpty.classList.remove("hidden");
-                return;
-            }
-            
-            quizEmpty.classList.add("hidden");
-            quizBody.classList.remove("hidden");
-
-            quizState.questions = sourceArray.map((q, idx) => {
-                let correctIndex = -1;
-                if (typeof q.correctIndex === "number") correctIndex = q.correctIndex;
-                else if (typeof q.ans === "number") correctIndex = q.ans;
-                else if (typeof q.answer === "string") {
-                    const map = { "A": 0, "B": 1, "C": 2, "D": 3 };
-                    correctIndex = map[q.answer.trim().toUpperCase()[0]] || 0;
-                }
-                return {
-                    stem: q.stem || q.question || `題目 ${idx+1}`,
-                    options: q.options || q.choices || ["A", "B", "C", "D"],
-                    correctIndex: correctIndex,
-                    explanation: q.explanation || "",
-                    concept: q.concept || `概念 ${idx+1}`
-                };
-            });
-
-            quizState.currentIndex = 0;
-            quizState.hasAnswered = false;
-            quizState.answers = [];
-            renderQuizQuestion();
-        }
-
-        function renderQuizQuestion() {
-            if (quizState.questions.length === 0) return;
-            
-            const q = quizState.questions[quizState.currentIndex];
-            const total = quizState.questions.length;
-            document.getElementById("quiz-question").innerText = `${quizState.currentIndex + 1}. ${q.stem}`;
-            document.getElementById("quiz-progress").innerText = `${quizState.currentIndex + 1}/${total}`;
-            const optsContainer = document.getElementById("quiz-options");
-            optsContainer.innerHTML = "";
-            const letters = ["A", "B", "C", "D"];
-            
-            q.options.forEach((opt, idx) => {
-                const btn = document.createElement("button");
-                btn.className = "quiz-btn w-full text-left p-3 rounded-lg border border-[#333] bg-[#252525] hover:bg-[#333] transition text-gray-300 text-sm";
-                btn.innerHTML = `<span class="text-blue-500 font-bold mr-2">${letters[idx]}</span>${opt}`;
-                btn.onclick = () => handleQuizAnswer(idx, btn);
-                optsContainer.appendChild(btn);
-            });
-
-            document.getElementById("quiz-feedback").classList.add("hidden");
-            
-            // 更新按鈕文字 (多語系)
-            updateQuizButton();
-        }
-
-        function updateQuizButton() {
-            const btn = document.getElementById("quiz-main-btn");
-            const lang = document.getElementById("language-selector").value;
-            const t = i18n[lang] || i18n["en"];
-            const isLast = (quizState.currentIndex === quizState.questions.length - 1);
-            
-            btn.disabled = true;
-            btn.innerText = isLast ? t.btn_see_result : t.btn_next_q;
-        }
-
-        function handleQuizAnswer(idx, btnElement) {
-            if (quizState.hasAnswered) return;
-            const q = quizState.questions[quizState.currentIndex];
-            const isCorrect = (idx === q.correctIndex);
-            
-            const allBtns = document.querySelectorAll("#quiz-options button");
-            allBtns.forEach(b => b.disabled = true);
-
-            if(isCorrect) {
-                btnElement.classList.replace("bg-[#252525]", "bg-emerald-900/30");
-                btnElement.classList.replace("border-[#333]", "border-emerald-600");
-            } else {
-                btnElement.classList.replace("bg-[#252525]", "bg-red-900/30");
-                btnElement.classList.replace("border-[#333]", "border-red-600");
-                if(q.correctIndex >= 0 && allBtns[q.correctIndex]) {
-                    allBtns[q.correctIndex].classList.replace("bg-[#252525]", "bg-emerald-900/30");
-                    allBtns[q.correctIndex].classList.replace("border-[#333]", "border-emerald-600");
-                }
-            }
-
-            const fb = document.getElementById("quiz-feedback");
-            fb.innerHTML = isCorrect 
-                ? `<div class="text-emerald-500 font-bold mb-1"><i class="fa-solid fa-check"></i> 正確</div>${q.explanation}`
-                : `<div class="text-red-500 font-bold mb-1"><i class="fa-solid fa-xmark"></i> 錯誤</div>${q.explanation}`;
-            fb.classList.remove("hidden");
-            
-            quizState.answers[quizState.currentIndex] = { correct: isCorrect, concept: q.concept };
-            quizState.hasAnswered = true;
-            document.getElementById("quiz-main-btn").disabled = false;
-        }
-
-        function handleQuizMainButton() {
-            if (quizState.currentIndex < quizState.questions.length - 1) {
-                quizState.currentIndex++;
-                quizState.hasAnswered = false;
-                renderQuizQuestion();
-            } else {
-                renderQuizResult();
-            }
-        }
-
-        function renderQuizResult() {
-            document.getElementById("quiz-body").classList.add("hidden");
-            document.getElementById("quiz-result").classList.remove("hidden");
-            document.getElementById("quiz-progress").classList.add("hidden");
-
-            const total = quizState.questions.length;
-            const correct = quizState.answers.filter(a => a && a.correct).length;
-            const score = Math.round((correct / total) * 100);
-            document.getElementById("quiz-score-number").innerText = score;
-
-            const ctx = document.getElementById("quiz-radar");
-            const concepts = [...new Set(quizState.answers.map(a => a.concept))];
-            const dataScores = concepts.map(c => {
-                const related = quizState.answers.filter(a => a.concept === c);
-                const ok = related.filter(a => a.correct).length;
-                return (ok / related.length) * 100;
-            });
-
-            if(quizRadarChart) quizRadarChart.destroy();
-            quizRadarChart = new Chart(ctx, {
-                type: 'radar',
-                data: {
-                    labels: concepts,
-                    datasets: [{
-                        label: '掌握度',
-                        data: dataScores,
-                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                        borderColor: '#3B82F6',
-                        pointBackgroundColor: '#3B82F6'
-                    }]
-                },
-                options: {
-                    scales: { r: { min: 0, max: 100, ticks: { display: false }, grid: { color: '#404040' } } },
-                    plugins: { legend: { display: false } }
-                }
-            });
-            
-            document.getElementById("quiz-result-detail").innerText = `作答完成！共 ${total} 題，答對 ${correct} 題。`;
-        }
-
-        function answerMyth(index, choice) {
-            const m = mythData[index];
-            const isTrue = (typeof m.isTrue === "boolean") ? m.isTrue : false;
-            const isCorrect = (choice === isTrue);
-            
-            const fb = document.getElementById(`myth-${index}-feedback`);
-            fb.classList.remove("hidden");
-            if(isCorrect) {
-                fb.innerHTML = `<span class="text-emerald-500 font-bold">正確！</span> ${m.correct || m.explanation}`;
-            } else {
-                fb.innerHTML = `<span class="text-amber-500 font-bold">可惜...</span> ${m.correct || m.explanation}`;
-            }
-        }
-
-        // Chat & Modal
-        function toggleChat() {
-            const w = document.getElementById("xiaoke-window");
-            w.classList.toggle("closed");
-            if(w.classList.contains("closed")) {
-                w.classList.remove("scale-100", "opacity-100");
-                w.classList.add("scale-0", "opacity-0");
-            } else {
-                w.classList.remove("scale-0", "opacity-0");
-                w.classList.add("scale-100", "opacity-100");
-            }
-        }
-        async function sendChatMessage() {
-            const input = document.getElementById("chat-input");
-            const msg = input.value.trim();
-            if(!msg) return;
-            const body = document.getElementById("chat-messages");
-            body.innerHTML += `<div class="text-right mb-2"><span class="bg-blue-600 text-white py-1 px-3 rounded-lg inline-block text-xs">${msg}</span></div>`;
-            input.value = "";
-            body.scrollTop = body.scrollHeight;
-            setTimeout(() => {
-                body.innerHTML += `<div class="text-left mb-2"><span class="bg-[#262626] text-gray-300 py-1 px-3 rounded-lg inline-block border border-[#333] text-xs">小科正在思考...</span></div>`;
-                body.scrollTop = body.scrollHeight;
-            }, 800);
-        }
-        function openModal() {
-            const chart = document.getElementById("mermaid-chart").innerHTML;
-            if(!chart || chart.includes("無法")) return;
-            document.getElementById("modal-content").innerHTML = chart;
-            const svg = document.querySelector("#modal-content svg");
-            if(svg) { svg.style.width="100%"; svg.style.height="auto"; }
-            document.getElementById("image-modal").classList.remove("hidden");
-            document.getElementById("image-modal").classList.add("flex");
-        }
-        function closeModal() {
-            document.getElementById("image-modal").classList.add("hidden");
-            document.getElementById("image-modal").classList.remove("flex");
-        }
-        function downloadTXT() { alert("TXT 下載功能 (待實作)"); }
-        function downloadPDF() { alert("PDF 下載功能 (待實作)"); }
-
-    </script>
+    window.addEventListener('resize', syncVocabHeight);
+  </script>
 </body>
 </html>
