@@ -769,22 +769,37 @@ let currentBlockIndex = 0; // 記錄唸到第幾句
 // ✅ [修改] 切換播放/暫停邏輯
 // ✅ [修正版] 播放/暫停鍵：處理暫停邏輯，並不清除高亮
 // ✅ [修正版] 播放鍵邏輯：配合 speakText 的強制啟動
+// ✅ [修正版] 播放/暫停：加入 iOS 強制喚醒 (resume) 機制
 function toggleSpeech() {
     const btn = document.getElementById('btn-play');
 
     if (isSpeaking) {
-        // 暫停
+        // === 按下暫停 ===
         isSpeaking = false;
-        if (synth) synth.cancel();
-        btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
+        if (synth) {
+            synth.cancel(); // 停止發音
+        }
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
     } else {
-        // 播放
-        // 注意：這裡不需要設 isSpeaking = true，因為 playSequence -> speakText 會自動設
+        // === 按下播放 ===
+        isSpeaking = true;
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
+
+        // 1. [關鍵] 強制喚醒：iOS有時會卡在暫停狀態，必須踢它一下
+        if (synth && synth.paused) {
+            synth.resume();
+        }
+
+        // 2. 檢查是否需要重頭開始
         const blocks = document.querySelectorAll('.content-block');
         if (currentBlockIndex >= blocks.length) {
             currentBlockIndex = 0;
         }
-        playSequence();
+
+        // 3. 用一點點延遲啟動，避免跟上面的 cancel/resume 打架
+        setTimeout(() => {
+            if (isSpeaking) playSequence();
+        }, 10);
     }
 }
 
@@ -1005,39 +1020,54 @@ function splitTextForSpeak(text, isEng){
 // ✅ [修改] 增加 onComplete 參數，讓它知道唸完後要幹嘛
 // ✅ [修正版] 發音核心：增加嚴格的狀態檢查
 // ✅ [終極修正版] 發音核心：點擊強制播放 + iOS 參數鎖定
+// ✅ [修正版] 發音核心：防止空白文字卡死 + 點擊自動喚醒
 function speakText(txt, onComplete) {
     if (!synth) return;
-    
-    // 1. 點擊發音時，視為「開始播放」，強制打開開關 (解決點擊無聲問題)
-    isSpeaking = true;
-    document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
 
-    // 停止當前發音
+    // 1. 強制喚醒與更新狀態
+    isSpeaking = true;
+    if (synth.paused) synth.resume(); // 確保沒被暫停
+    
+    const btn = document.getElementById('btn-play');
+    if (btn) btn.innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
+
+    // 2. 停止前一段
     synth.cancel();
 
+    // 3. 處理文字
     const cleanTxt = (txt || "").toString().replace(/<[^>]*>/g, "").replace(/\u00A0/g, " ").trim();
     
-    // 如果沒字，直接結束
+    // [防呆] 如果沒字，不要立刻回調 (會造成無窮迴圈)，休息 10ms 再跳下一句
     if (!cleanTxt) {
-        if (onComplete) onComplete();
+        if (onComplete) {
+            setTimeout(() => { if (isSpeaking) onComplete(); }, 10);
+        } else {
+            // 單點模式但沒字 -> 復原按鈕
+            isSpeaking = false;
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
+        }
         return;
     }
 
     const ios = isIOSDevice();
     const isEng = isMostlyEnglish(cleanTxt);
     const lang = isEng ? "en-US" : "zh-TW";
-
-    // iOS 長句切割邏輯
     const chunks = (ios && cleanTxt.length > (isEng ? 220 : 140)) ? splitTextForSpeak(cleanTxt, isEng) : [cleanTxt];
     const uiRate = parseFloat(document.getElementById('play-rate')?.value || "1.0");
     let idx = 0;
 
     const speakNext = () => {
-        // 🛑 安全檢查：如果中途被按了暫停/停止 (isSpeaking 變 false)，就中止
         if (!isSpeaking) return;
 
         if (idx >= chunks.length) {
-            if (onComplete) onComplete();
+            // 全部唸完
+            if (onComplete) {
+                onComplete(); // 播放模式：接下一句
+            } else {
+                // 單點模式：結束並復原按鈕
+                isSpeaking = false;
+                if (btn) btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
+            }
             return;
         }
 
@@ -1045,21 +1075,17 @@ function speakText(txt, onComplete) {
         const u = new SpeechSynthesisUtterance(part);
         u.lang = lang;
 
-        // 設定聲音
+        // 挑選聲音
         let voice = null;
         if (!ios) {
             voice = pickBestVoice(isEng, currentVoice);
         } else {
-             // iOS 語音選擇邏輯 (在 pickBestVoice 內部處理)
              voice = pickBestVoice(isEng, currentVoice);
         }
         if (voice) u.voice = voice;
 
-        // ✅ [關鍵修正] iOS 參數鎖定
+        // iOS 參數鎖定
         if (ios) {
-            // iOS 的增強版語音 (Meijia Enhanced) 對參數極度敏感
-            // 只要 rate != 1 或 pitch != 1，它常常會直接「靜音」或變回「機器音」
-            // 所以在 iOS 上，我們必須犧牲語速調整功能，換取音質
             u.pitch = 1.0;
             u.rate = 1.0; 
         } else {
@@ -1067,15 +1093,8 @@ function speakText(txt, onComplete) {
             u.pitch = (currentVoice === 'male') ? 1.0 : 1.05;
         }
 
-        u.onstart = () => {
-            if (!isSpeaking) { synth.cancel(); return; }
-        };
-
         u.onend = speakNext;
-        
-        u.onerror = () => {
-            if (isSpeaking) speakNext();
-        };
+        u.onerror = () => { if (isSpeaking) speakNext(); };
 
         synth.speak(u);
     };
