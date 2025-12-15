@@ -29,17 +29,13 @@
                             highlight: '#f472b6',/* 亮桃紅 */
                             term: '#fbbf24'      /* 金黃色 */
                         }
-                    },
-                    boxShadow: {
-                        'neon': '0 0 15px rgba(74, 222, 128, 0.3)',
-                        'glow': '0 0 20px rgba(244, 114, 182, 0.2)',
                     }
                 }
             }
         }
     </script>
     <style>
-        /* 1. 基礎設定：學生友善的深色模式 */
+        /* 1. 基礎設定 */
         body { 
             background-color: #0B1121; 
             color: #f1f5f9; 
@@ -48,7 +44,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 柔和的極光背景 (不搶眼) */
+        /* 柔和的極光背景 */
         body::before {
             content: '';
             position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
@@ -56,14 +52,14 @@
             z-index: -2; pointer-events: none;
         }
 
-        /* 2. 圓潤的玻璃卡片 (Student Card Style) */
+        /* 2. 圓潤的玻璃卡片 */
         .glass-panel { 
             background: rgba(30, 41, 59, 0.7); 
             backdrop-filter: blur(16px); 
             -webkit-backdrop-filter: blur(16px); 
             border: 1px solid rgba(255, 255, 255, 0.08); 
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); 
-            border-radius: 1.5rem; /* 更圓的角 */
+            border-radius: 1.5rem; 
         }
 
         /* 捲軸美化 */
@@ -72,7 +68,7 @@
         .scroll-area::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 99px; }
         .scroll-area::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
 
-        /* 3. 導航選單：像遊戲選單一樣好按 */
+        /* 3. 導航選單 (側邊欄) */
         .nav-item { 
             transition: all 0.2s ease; 
             cursor: pointer; 
@@ -93,10 +89,10 @@
             background: linear-gradient(90deg, rgba(74, 222, 128, 0.15), transparent); 
             color: #4ade80; 
             font-weight: 700; 
-            box-shadow: inset 3px 0 0 #4ade80; /* 內發光指示條 */
+            box-shadow: inset 3px 0 0 #4ade80; 
         }
 
-        /* 4. 科學詞彙 (像寶石一樣) */
+        /* 4. 科學詞彙 */
         .sci-term { 
             color: #fbbf24; 
             font-weight: 700; 
@@ -114,7 +110,7 @@
             display: inline-block;
         }
 
-        /* 5. 閱讀區塊：卡片式閱讀 */
+        /* 5. 閱讀區塊 */
         .content-block { 
             margin-bottom: 2.5rem; 
             padding: 1.5rem; 
@@ -124,21 +120,14 @@
             transition: all 0.3s ease; 
         }
         
-        /* 🎯 [核心] 正在朗讀的高亮 (學生最在意的) */
+        /* 🎯 正在朗讀的高亮 (桃紅系) */
         .reading-active {
-            /* 柔和的粉色光暈背景 */
             background: linear-gradient(90deg, rgba(244, 114, 182, 0.08) 0%, rgba(244, 114, 182, 0.15) 50%, rgba(244, 114, 182, 0.08) 100%) !important;
-            
-            /* 左側明顯的桃紅指示條 */
             border-left: 6px solid #f472b6 !important; 
             border-radius: 0.5rem 1.5rem 1.5rem 0.5rem;
-            
-            /* 讓區塊微微浮起 */
             transform: scale(1.01);
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
         }
-        
-        /* 朗讀時文字變色 */
         .reading-active .zh-text,
         .reading-active .en-text,
         .reading-active .sci-term {
@@ -147,13 +136,13 @@
             border-bottom-color: transparent;
         }
 
-        /* 6. 字體排版 (大一點，好讀) */
+        /* 6. 字體排版 */
         .en-text { 
-            font-size: 1.25rem; /* 加大 */
+            font-size: 1.25rem; 
             color: #4ade80; 
             line-height: 1.6; 
             margin-bottom: 0.8rem; 
-            font-weight: 600; /* 加粗 */
+            font-weight: 600; 
             font-family: 'Inter', sans-serif; 
             cursor: pointer; 
             transition: color 0.3s;
@@ -189,7 +178,7 @@
             box-shadow: 0 0 10px #4ade80;
         }
 
-        /* === 學生友善下拉選單 (膠囊按鈕) === */
+        /* === 學生友善下拉選單 (修正寬度版) === */
         .student-select-wrapper {
             position: relative; display: flex; align-items: center;
             background-color: rgba(255, 255, 255, 0.08);
@@ -197,8 +186,9 @@
             border-radius: 99px; /* 膠囊形狀 */
             padding: 0 16px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            min-width: 100px;
             cursor: pointer;
+            /* 關鍵修正：不設固定寬度，設最小寬度，讓內容撐開 */
+            min-width: max-content; 
         }
         .student-select-wrapper:hover {
             background-color: rgba(255, 255, 255, 0.15);
@@ -216,7 +206,7 @@
         }
         .student-select option { background-color: #1E293B; color: #fff; padding: 10px; }
 
-        /* 底部播放器 (像音樂播放器) */
+        /* 底部播放器 */
         .player-dock {
             background: rgba(15, 23, 42, 0.9);
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
@@ -229,12 +219,9 @@
         #reading-container { padding-bottom: 160px !important; }
         #control-dock { padding-bottom: env(safe-area-inset-bottom, 20px); bottom: max(1.5rem, env(safe-area-inset-bottom)); }
 
-        /* 側邊欄詞彙卡 */
         .vocab-item { 
             background: rgba(255, 255, 255, 0.03); 
-            border-radius: 12px;
-            margin-bottom: 8px;
-            padding: 12px 16px; 
+            border-radius: 12px; margin-bottom: 8px; padding: 12px 16px; 
             display: flex; justify-content: space-between; align-items: center; 
             transition: all 0.2s; border: 1px solid transparent;
         }
@@ -269,31 +256,31 @@
         </div>
 
         <div class="flex-grow flex flex-wrap gap-2 justify-end pointer-events-auto">
-            <div class="student-select-wrapper">
+            <div class="student-select-wrapper w-36">
                 <i class="fa-solid fa-layer-group student-select-icon"></i>
                 <select id="sel-stage" class="student-select" onchange="filterUnits('stage')">
                     <option value="" disabled selected data-i18n="stage">階段</option>
                 </select>
             </div>
-            <div class="student-select-wrapper w-24">
+            <div class="student-select-wrapper w-32">
                 <i class="fa-solid fa-graduation-cap student-select-icon"></i>
                 <select id="sel-grade" class="student-select" onchange="filterUnits('grade')" disabled>
                     <option value="" disabled selected data-i18n="grade">年級</option>
                 </select>
             </div>
-            <div class="student-select-wrapper w-28">
+            <div class="student-select-wrapper w-36">
                 <i class="fa-solid fa-book-open student-select-icon"></i>
                 <select id="sel-version" class="student-select" onchange="filterUnits('version')" disabled>
                     <option value="" disabled selected data-i18n="version">版本</option>
                 </select>
             </div>
-            <div class="student-select-wrapper w-24">
+            <div class="student-select-wrapper w-32">
                 <i class="fa-regular fa-calendar-days student-select-icon"></i>
                 <select id="sel-semester" class="student-select" onchange="filterUnits('semester')" disabled>
                     <option value="" disabled selected data-i18n="semester">學期</option>
                 </select>
             </div>
-            <div class="student-select-wrapper flex-grow md:flex-grow-0 md:w-64">
+            <div class="student-select-wrapper flex-grow md:flex-grow-0 md:w-auto min-w-[200px]">
                 <i class="fa-solid fa-list-ul student-select-icon"></i>
                 <select id="sel-unit" class="student-select" onchange="loadSelectedUnit()" disabled>
                     <option value="" disabled selected data-i18n="unit">選擇學習單元</option>
@@ -407,7 +394,6 @@
         let currentUnitTitleZh = "";
         let currentUnitTitleEn = "";
 
-        // UI 文字 (內建繁中)
         const i18n = {
             'zh-TW': { return: '返回', page_title: 'AI School', nav: '目錄', vocab_title: '科學詞彙庫', select_hint: '👈 請先選擇單元', vocab_empty: '詞彙將顯示於此', stage: '階段', grade: '年級', version: '版本', semester: '學期', unit: '選擇單元' }
         };
@@ -415,9 +401,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             fetchData();
             if(synth) synth.onvoiceschanged = () => synth.getVoices();
-            setVoice('female'); // 預設女聲
+            setVoice('female'); 
 
-            // iOS 喚醒
             document.addEventListener('touchstart', () => {
                 try{ if(!synth)return; synth.cancel(); const u=new SpeechSynthesisUtterance(" "); u.volume=0; synth.speak(u); }catch(e){}
             }, { once: true, passive: true });
@@ -428,7 +413,7 @@
         function fetchData() {
             Papa.parse(TARGET_URL, {
                 download: true, header: false,
-                skipEmptyLines: true, // ✅ 防止空行卡死
+                skipEmptyLines: true, // 防止空行
                 complete: res => { processData(res.data); document.getElementById('loader-overlay').style.display='none'; showToast("準備完成，開始探索吧！"); },
                 error: () => document.getElementById('loader-overlay').innerHTML='<div class="text-red-500">連線錯誤，請重整</div>'
             });
@@ -469,7 +454,7 @@
                     unitName = norm(row[COL_UNIT_NAME]);
                 let title = (unitNum + (unitName ? " " + unitName : "")).trim() || `Unit ${i+1}`;
                 return { id: i, stage: norm(row[COL_STAGE]), version: norm(row[COL_VERSION]), grade: norm(row[COL_GRADE]), semester: norm(row[COL_SEMESTER]), title, content, ckip, vocab: (row[COL_VOCAB]||"").toString() };
-            }).filter(u => u.title); // ✅ 只要有標題就顯示
+            }).filter(u => u.title);
             initFilters();
         }
 
@@ -967,7 +952,7 @@
             if(m !== 'zh') ensureTitleTranslated();
         }
 
-        function changeLanguage() { return; } // 已整合至按鈕
+        function changeLanguage() { return; } 
 
         function showToast(m) { const T=document.getElementById('toast'); document.getElementById('toast-msg').innerText=m; T.classList.remove('opacity-0','-translate-y-10'); setTimeout(()=>T.classList.add('opacity-0','-translate-y-10'),2500); }
     </script>
