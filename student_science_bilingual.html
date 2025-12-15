@@ -66,6 +66,13 @@
         #canvas-container { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
         .loader { border: 2px solid rgba(45, 212, 191, 0.1); border-top: 2px solid #2dd4bf; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    /* 正在朗讀的高亮樣式 */
+        .reading-active {
+            background-color: rgba(45, 212, 191, 0.15) !important; /* 淺綠色背景 */
+            border-left: 4px solid #facc15 !important; /* 左側黃色亮條 */
+            box-shadow: 0 0 15px rgba(45, 212, 191, 0.1);
+            transition: all 0.3s ease;
+        }
     </style>
 </head>
 <body class="h-screen flex flex-col font-sans selection:bg-teal-500/30 selection:text-white">
@@ -152,8 +159,12 @@
                     <div class="h-4 w-px bg-teal-500/30"></div>
 
                     <div class="flex items-center gap-1">
-                        <button onclick="setVoice('male')" id="btn-male" class="text-teal-400 p-1 hover:text-white" title="男聲"><i class="fa-solid fa-user-tie"></i></button>
-                        <button onclick="setVoice('female')" id="btn-female" class="text-slate-500 p-1 hover:text-white" title="女聲"><i class="fa-solid fa-user-graduate"></i></button>
+                        <button onclick="setVoice('male')" id="btn-male" class="text-teal-400 p-1 hover:text-white" title="男聲">
+                            <i class="fa-solid fa-person text-lg"></i>
+                        </button>
+                        <button onclick="setVoice('female')" id="btn-female" class="text-slate-500 p-1 hover:text-white" title="女聲">
+                            <i class="fa-solid fa-person-dress text-lg"></i>
+                        </button>
                     </div>
 
                     <div class="h-4 w-px bg-teal-500/30"></div>
@@ -528,12 +539,12 @@ const unitMergeSet = buildCkipMergeSet(unitCkipTokens, getMaxKeyLen(activeVocabM
                     navItem.onclick=()=>{ document.getElementById(anchorId).scrollIntoView({behavior:'smooth',block:'center'}); };
                     document.getElementById('unit-list').appendChild(navItem);
 
-                    // ✅ 新的寫法：包含中文與英文結構，讓系統自動翻譯
+                    // ✅ [修改] 標題樣式修復：中文加大變白 (text-2xl text-white)，英文保持原樣
                     contentDiv.innerHTML += `
                         <h2 id="${anchorId}" class="section-header items-start">
-                            <div class="flex flex-col">
-                                <span class="zh-text cursor-pointer" onclick="speakText(this.innerText)">${escapeHtml(line)}</span>
-                                <span class="en-text hidden text-lg text-teal-200/80 italic mt-1 font-medium cursor-pointer" 
+                            <div class="flex flex-col w-full">
+                                <span class="zh-text text-xl md:text-2xl font-black text-white cursor-pointer hover:text-teal-300 transition" onclick="speakText(this.innerText)">${escapeHtml(line)}</span>
+                                <span class="en-text hidden text-base md:text-lg text-teal-200/80 italic mt-1 font-medium cursor-pointer hover:text-white transition" 
                                       data-source="${encodeURIComponent(line)}"
                                       onclick="speakText(this.innerText)"></span>
                             </div>
@@ -714,18 +725,74 @@ src = src.replace(/　/g,'');
           return `<span class="cursor-pointer hover:text-teal-300 transition">${html}</span>`;
         }
 
-        function toggleSpeech() {
-            const btn=document.getElementById('btn-play');
-            if(synth.speaking && !synth.paused) { synth.pause(); btn.innerHTML='<i class="fa-solid fa-play text-xs"></i>'; isSpeaking=false; }
-            else if(synth.paused) { synth.resume(); btn.innerHTML='<i class="fa-solid fa-pause text-xs"></i>'; isSpeaking=true; }
-            else {
-                let txt="";
-                const en=document.querySelectorAll('.en-text'), isEn=en.length>0&&!en[0].classList.contains('hidden');
-                document.querySelectorAll(isEn?'.en-text':'.zh-text').forEach(p=>txt+=p.innerText+" ");
-                if(!txt) return;
-                speakText(txt);
-            }
-        }
+let currentBlockIndex = 0; // 記錄唸到第幾句
+
+// ✅ [修改] 切換播放/暫停邏輯
+function toggleSpeech() {
+    const btn = document.getElementById('btn-play');
+    
+    if (synth.speaking && !synth.paused) {
+        // 暫停/停止
+        synth.cancel();
+        isSpeaking = false;
+        btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
+        clearHighlights(); // 清除高亮
+    } else {
+        // 開始播放：從第一句開始 (或者從上次暫停的地方，這裡設定為從頭開始比較單純)
+        currentBlockIndex = 0;
+        playSequence();
+    }
+}
+
+// ✅ [新增] 逐句播放核心函式
+function playSequence() {
+    const blocks = document.querySelectorAll('.content-block');
+    if (currentBlockIndex >= blocks.length) {
+        stopSpeech(); // 全部唸完
+        return;
+    }
+
+    // 1. 清除舊高亮
+    clearHighlights();
+
+    // 2. 取得當前區塊
+    const block = blocks[currentBlockIndex];
+    
+    // 3. 高亮並滾動
+    block.classList.add('reading-active');
+    block.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // 4. 決定要唸什麼 (優先唸英文)
+    const enEl = block.querySelector('.en-text');
+    const zhEl = block.querySelector('.zh-text');
+    
+    // 邏輯：如果有顯示英文，就唸英文；否則唸中文
+    let textToRead = "";
+    if (enEl && !enEl.classList.contains('hidden') && enEl.innerText) {
+        textToRead = enEl.innerText;
+    } else if (zhEl) {
+        textToRead = zhEl.innerText;
+    }
+
+    // 5. 開始唸，唸完後 index+1 並呼叫自己 (遞迴)
+    if (textToRead) {
+        speakText(textToRead, () => {
+            currentBlockIndex++;
+            playSequence(); // 唸下一句
+        });
+    } else {
+        // 如果這區塊沒文字，直接跳下一個
+        currentBlockIndex++;
+        playSequence();
+    }
+}
+
+// ✅ [新增] 清除所有高亮
+function clearHighlights() {
+    document.querySelectorAll('.reading-active').forEach(el => {
+        el.classList.remove('reading-active');
+    });
+}
 
         function escapeHtml(s){
           return (s||"").toString()
@@ -764,61 +831,53 @@ src = src.replace(/　/g,'');
  * 智慧挑選最佳語音 (針對 Natural/Enhanced 優化)
  */
 function pickBestVoice(isEng, gender) {
-    // 確保 synth 已經載入
     if (!window.speechSynthesis) return null;
     const voices = window.speechSynthesis.getVoices();
     if (voices.length === 0) return null;
 
-    // 定義搜尋關鍵字
     const targetLang = isEng ? ['en-us', 'en-gb', 'en'] : ['zh-tw', 'zh-hk', 'zh'];
-    
-    // 計分系統
+
     const getScore = (voice) => {
         let score = 0;
         const name = voice.name.toLowerCase();
         const lang = voice.lang.toLowerCase();
-        const localService = voice.localService; // true=本機, false=雲端(通常音質較好)
 
-        // 1. 語言匹配度 (權重最高)
+        // 1. 語言絕對優先
         if (targetLang.some(t => lang === t || lang.replace('_', '-').startsWith(t))) {
             score += 1000;
         } else {
-            return -1; // 語言不通直接淘汰
+            return -1;
         }
 
-        // 2. 優先選擇 "Natural" (微軟 Edge 雲端語音，目前最強)
-        if (name.includes('natural')) score += 500;
-        if (name.includes('online')) score += 200; // 微軟/Google 線上語音
-
-        // 3. Apple 系統的 "Enhanced" (高品質) 或 "Siri"
-        if (name.includes('enhanced') || name.includes('premium')) score += 300;
-        if (name.includes('siri')) score += 250;
-
-        // 4. Google 語音通常比一般本機語音好
-        if (name.includes('google')) score += 150;
-
-        // 5. 降低 "Compact" (壓縮版) 的分數
-        if (name.includes('compact')) score -= 100;
-
-        // 6. 性別判定 (透過常見英文名或關鍵字猜測)
-        // 注意：Web Speech API 標準中沒有性別欄位，只能靠名字猜
+        // 2. 性別過濾 (關鍵修改)
         if (gender === 'male') {
-            if (name.includes('male') || name.includes('guy') || name.includes('yunxi') || name.includes('yunjhe') || name.includes('daniel')) score += 50;
+            if (name.includes('female') || name.includes('woman') || name.includes('girl')) score -= 5000; // 懲罰女聲
+            if (name.includes('male') || name.includes('man') || name.includes('boy')) score += 500;
+            // Microsoft Edge 特定男聲
+            if (name.includes('yunjhe') || name.includes('yunxi') || name.includes('guy') || name.includes('ryan')) score += 1000;
         } else {
-            // Female
-            if (name.includes('female') || name.includes('aria') || name.includes('jenny') || name.includes('hsiaochen') || name.includes('meijia') || name.includes('samantha')) score += 50;
+            // female
+            if (name.includes('male') || name.includes('man') || name.includes('boy')) score -= 5000; // 懲罰男聲
+            if (name.includes('female') || name.includes('woman') || name.includes('girl')) score += 500;
+            // Microsoft Edge/Google 特定女聲
+            if (name.includes('hsiaochen') || name.includes('xiaoxiao') || name.includes('aria') || name.includes('jenny') || name.includes('google')) score += 1000;
         }
 
-        // 7. 特殊指定：微軟 Edge 的最強中文是 HsiaoChen (女) 和 YunJhe (男)
-        if (!isEng && name.includes('hsiaochen')) score += 300; 
-        if (!isEng && name.includes('yunjhe')) score += 300;
-        
-        // 特殊指定：微軟 Edge 的最強英文是 Aria (女) 和 Guy (男)
-        if (isEng && name.includes('aria')) score += 300;
-        if (isEng && name.includes('guy')) score += 300;
+        // 3. 品質加分
+        if (name.includes('natural')) score += 200;
+        if (name.includes('online')) score += 100;
+        if (name.includes('enhanced')) score += 100;
 
         return score;
     };
+
+    const sorted = voices
+        .map(v => ({ v, score: getScore(v) }))
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score);
+
+    return sorted.length > 0 ? sorted[0].v : null;
+}
 
     // 排序並取出最高分
     const sorted = voices
@@ -879,92 +938,70 @@ function splitTextForSpeak(text, isEng){
   return out;
 }
 
+// ✅ [修改] 增加 onComplete 參數，讓它知道唸完後要幹嘛
+function speakText(txt, onComplete) {
+    if(!synth) return;
+    synth.cancel();
 
-        function speakText(txt) {
-  if(!synth) return;
-
-  // 先停止上一段
-  synth.cancel();
-
-  const cleanTxt = (txt || "")
-    .toString()
-    .replace(/<[^>]*>/g, "")
-    .replace(/\u00A0/g, " ")
-    .trim();
-
-  if (!cleanTxt) return;
-
-  const ios = isIOSDevice();
-  const isEng = isMostlyEnglish(cleanTxt);
-  const lang = isEng ? "en-US" : "zh-TW";
-
-  // iOS 長文本容易「怪聲/中斷」→ 切短再播
-  const chunks = (ios && cleanTxt.length > (isEng ? 220 : 140))
-    ? splitTextForSpeak(cleanTxt, isEng)
-    : [cleanTxt];
-
-  const uiRate = parseFloat(document.getElementById('play-rate')?.value || "1.0");
-
-  let idx = 0;
-
-  const speakNext = () => {
-    if (idx >= chunks.length) {
-      isSpeaking = false;
-      document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
-      return;
+    const cleanTxt = (txt || "").toString().replace(/<[^>]*>/g, "").replace(/\u00A0/g, " ").trim();
+    if (!cleanTxt) {
+        if(onComplete) onComplete(); // 沒字就直接結束
+        return;
     }
 
-    const part = chunks[idx++];
-    const u = new SpeechSynthesisUtterance(part);
-    u.lang = lang;
+    const ios = isIOSDevice();
+    // 如果使用者想聽英文 (通常播放模式下優先讀英文)，這裡可以根據內容判斷
+    const isEng = isMostlyEnglish(cleanTxt);
+    const lang = isEng ? "en-US" : "zh-TW";
 
-    // 取 voice：非 iOS 用你原本的 pickBestVoice；iOS 優先使用「系統預設」避免怪聲
-    let voice = null;
+    const chunks = (ios && cleanTxt.length > (isEng ? 220 : 140)) ? splitTextForSpeak(cleanTxt, isEng) : [cleanTxt];
+    const uiRate = parseFloat(document.getElementById('play-rate')?.value || "1.0");
+    let idx = 0;
 
-    if (!ios) {
-      voice = pickBestVoice(isEng, currentVoice);
-    } else {
-      // iOS: 只有在找得到同語系 voice 才指定，否則讓系統自己選
-      const voices = synth.getVoices ? synth.getVoices() : [];
-      const wantPrefix = isEng ? "en" : "zh";
-      const cand = voices.filter(v => (v.lang || "").toLowerCase().startsWith(wantPrefix));
-const preferred = cand.find(v => v.default) || cand[0];
-if (preferred) voice = preferred;
-    }
-
-    if (voice) u.voice = voice;
-
-    // iOS 對 pitch 很敏感，建議固定 1.0；rate 也要夾住範圍
-    if (ios) {
-        // iOS Safari 只要 pitch 不為 1 或 rate 偏離太多，常會變成機器音
-        u.pitch = 1.0; 
-        // iOS 語速限制嚴格一點
-        u.rate = (uiRate === 1.0) ? 1.0 : Math.max(0.8, Math.min(1.2, uiRate));
-    } else {
-        // 電腦端 (Edge/Chrome) 可以自由一點
-        u.rate = uiRate;
-        // 微軟 Natural 語音如果調 Pitch 有時會怪怪的，建議保持 1.0 或微調
-        u.pitch = (currentVoice === 'male') ? 1.0 : 1.05; 
+    const speakNext = () => {
+        if (idx >= chunks.length) {
+            isSpeaking = false;
+            document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
+            if (onComplete) onComplete(); // ✅ 唸完所有片段後，執行回調
+            return;
         }
 
-    u.onstart = () => {
-      isSpeaking = true;
-      document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
+        const part = chunks[idx++];
+        const u = new SpeechSynthesisUtterance(part);
+        u.lang = lang;
+
+        // ✅ 修正 Voice 選擇邏輯：確保傳入正確的 currentVoice
+        let voice = null;
+        if (!ios) {
+            voice = pickBestVoice(isEng, currentVoice); // 使用全域變數 currentVoice
+        } else {
+            // iOS 邏輯保持不變...
+             const voices = synth.getVoices ? synth.getVoices() : [];
+             const wantPrefix = isEng ? "en" : "zh";
+             const cand = voices.filter(v => (v.lang || "").toLowerCase().startsWith(wantPrefix));
+             const preferred = cand.find(v => v.default) || cand[0];
+             if (preferred) voice = preferred;
+        }
+        if (voice) u.voice = voice;
+
+        if (ios) {
+            u.pitch = 1.0;
+            u.rate = (uiRate === 1.0) ? 1.0 : Math.max(0.8, Math.min(1.2, uiRate));
+        } else {
+            u.rate = uiRate;
+            u.pitch = (currentVoice === 'male') ? 1.0 : 1.05;
+        }
+
+        u.onstart = () => {
+            isSpeaking = true;
+            document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
+        };
+        u.onend = speakNext;
+        u.onerror = speakNext;
+        synth.speak(u);
     };
 
-    u.onend = () => {
-      speakNext();
-    };
-
-    u.onerror = () => {
-      // 出錯就跳下一段，避免卡死
-      speakNext();
-    };
-
-    synth.speak(u);
-  };
-
-  speakNext();
+    speakNext();
 }
 
 
