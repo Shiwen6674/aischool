@@ -5,12 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AI School | 單元重點精熟</title>
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -22,35 +18,35 @@
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
+                        heading: ['Outfit', 'Noto Sans TC', 'sans-serif'],
+                        tech: ['Orbitron', 'sans-serif'],
                     },
                     colors: {
-                        bg: '#030712',       /* 極黑 */
-                        surface: '#0f172a',  /* 卡片底 */
-                        surface2: '#1e293b', /* 卡片懸停 */
-                        primary: '#2dd4bf',  /* 青色主調 (Teal-400) */
-                        accent: '#818cf8',   /* 靛青強調 (Indigo-400) */
-                        highlight: '#f472b6' /* 亮粉紅 (Pink-400) */
-                    },
-                    boxShadow: {
-                        'neon': '0 0 10px rgba(45, 212, 191, 0.2), 0 0 20px rgba(45, 212, 191, 0.1)',
-                        'glow': '0 0 15px rgba(129, 140, 248, 0.3)',
+                        bg: '#030712',       
+                        surface: '#0f172a',  
+                        primary: '#2dd4bf',  
+                        accent: '#818cf8',   
+                        highlight: '#f472b6' 
                     },
                     animation: {
                         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                         'grid-flow': 'gridFlow 20s linear infinite',
+                        'fade-in-up': 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
                     },
                     keyframes: {
                         gridFlow: {
                             '0%': { transform: 'translateY(0)' },
                             '100%': { transform: 'translateY(40px)' }
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
                         }
                     }
                 }
             }
         }
         
-        // Mermaid 設定 (改為預設主題，因為我們將使用白底容器)
         mermaid.initialize({ 
             startOnLoad: false, 
             theme: 'default', 
@@ -71,6 +67,7 @@
                 radial-gradient(circle at 85% 30%, rgba(129, 140, 248, 0.08), transparent 25%);
             min-height: 100vh;
             overflow-x: hidden;
+            position: relative;
         }
 
         /* 科技網格背景 */
@@ -82,7 +79,7 @@
             mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
         }
 
-        /* === 頂級 UI 元件 === */
+        /* === UI 元件 === */
         /* 1. 導航欄 */
         .nav-glass {
             background: rgba(3, 7, 18, 0.8);
@@ -90,9 +87,9 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        /* 2. Bento Grid 卡片 (關鍵：不透明度提高，邊框清晰) */
+        /* 2. Bento Grid 卡片 */
         .bento-card {
-            background-color: #0f172a; /* Slate-900 */
+            background-color: #0f172a; 
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 1rem;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
@@ -101,11 +98,10 @@
             overflow: hidden;
         }
         .bento-card:hover {
-            border-color: rgba(45, 212, 191, 0.4); /* Teal Hover */
+            border-color: rgba(45, 212, 191, 0.4); 
             box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
             transform: translateY(-2px);
         }
-        /* 裝飾性頂部線條 */
         .bento-card::before {
             content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
             background: linear-gradient(90deg, transparent, rgba(45, 212, 191, 0.5), transparent);
@@ -120,10 +116,19 @@
             color: #fff;
             border-radius: 0.75rem;
             transition: all 0.2s;
+            appearance: none; /* 移除預設箭頭 */
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.2em 1.2em;
+            padding-right: 2.5rem;
         }
         .input-glass:disabled { opacity: 0.5; cursor: not-allowed; }
         .input-glass:not(:disabled):hover { border-color: #2dd4bf; background: #263344; }
         .input-glass:focus { border-color: #2dd4bf; outline: none; box-shadow: 0 0 0 2px rgba(45, 212, 191, 0.2); }
+        
+        /* 修正下拉選單選項背景色 */
+        .input-glass option { background-color: #0f172a; color: #fff; padding: 10px; }
 
         /* 4. 按鈕特效 */
         .btn-primary {
@@ -141,7 +146,6 @@
         .btn-primary:disabled { background: #334155; border-color: transparent; color: #94a3b8; box-shadow: none; }
 
         /* === 內容排版優化 === */
-        /* 摘要文字 */
         #summary-text h3 {
             font-size: 1.25rem; font-weight: 700; color: #2dd4bf; margin: 1.5rem 0 0.75rem;
             display: flex; align-items: center; gap: 0.5rem;
@@ -150,12 +154,12 @@
         #summary-text li { margin-bottom: 0.5rem; line-height: 1.8; color: #cbd5e1; }
         #summary-text strong { color: #f472b6; font-weight: 700; background: rgba(244, 114, 182, 0.1); padding: 0 2px; rounded: 2px; }
 
-        /* 架構圖容器 (白底，確保可見性) */
+        /* 架構圖容器 */
         .mindmap-container {
-            background-color: #ffffff; /* 強制白底 */
-            border-radius: 0.75rem;
+            background-color: #ffffff; 
+            border-radius: 0.75rem; 
             padding: 1.5rem;
-            overflow: auto; /* 允許捲動 */
+            overflow: auto; 
             min-height: 300px;
             display: flex; justify-content: center; align-items: center;
         }
@@ -192,8 +196,8 @@
             </div>
             
             <div class="flex items-center gap-4">
-                <span id="user-info" class="text-xs font-mono text-slate-400 bg-slate-900 px-3 py-1 rounded border border-slate-800">User: Guest</span>
-                <select id="language-selector" onchange="changeLanguage()" class="bg-slate-900 border border-slate-700 text-xs rounded px-2 py-1 outline-none">
+                <span id="user-info" class="text-xs font-mono text-slate-400 bg-slate-900 px-3 py-1 rounded border border-slate-800 hidden sm:inline-block">User: Guest</span>
+                <select id="language-selector" onchange="changeLanguage()" class="bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded px-2 py-1 outline-none">
                     <option value="zh-TW">繁體中文</option>
                     <option value="en">English</option>
                 </select>
@@ -282,7 +286,8 @@
                             <h3 class="text-xl font-bold text-white">重點摘要</h3>
                         </div>
                         <div id="summary-text" class="prose prose-invert max-w-none text-slate-300">
-                            </div>
+                            <p class="text-slate-500 italic">正在載入摘要...</p>
+                        </div>
                     </div>
 
                     <div class="bento-card p-6 md:p-8">
@@ -296,7 +301,7 @@
                             <button onclick="openModal()" class="text-xs text-slate-400 hover:text-white transition"><i class="fa-solid fa-expand"></i> 放大</button>
                         </div>
                         <div class="mindmap-container cursor-zoom-in group" onclick="openModal()">
-                            <div id="mermaid-chart" class="w-full"></div>
+                            <div id="mermaid-chart" class="w-full flex justify-center text-slate-400">圖表生成中...</div>
                         </div>
                     </div>
 
@@ -305,7 +310,7 @@
                             <h3 class="text-xl font-bold text-white flex items-center gap-2">
                                 <i class="fa-solid fa-clipboard-check text-emerald-400"></i> 單元小測驗
                             </h3>
-                            <span id="quiz-progress" class="text-xs font-mono text-emerald-400">Question 1/10</span>
+                            <span id="quiz-progress" class="text-xs font-mono text-emerald-400"></span>
                         </div>
                         
                         <div id="quiz-body">
@@ -335,14 +340,18 @@
                         <h3 class="font-bold text-amber-400 mb-4 flex items-center gap-2">
                             <i class="fa-solid fa-font"></i> 關鍵詞彙
                         </h3>
-                        <div id="keywords-list" class="space-y-3 max-h-[500px] overflow-y-auto pr-2"></div>
+                        <div id="keywords-list" class="space-y-3 max-h-[500px] overflow-y-auto pr-2 text-slate-400 italic text-sm">
+                            載入中...
+                        </div>
                     </div>
 
                     <div class="bento-card p-5">
                         <h3 class="font-bold text-rose-400 mb-4 flex items-center gap-2">
                             <i class="fa-regular fa-lightbulb"></i> 科學迷思
                         </h3>
-                        <div id="myth-list" class="space-y-4"></div>
+                        <div id="myth-list" class="space-y-4 text-slate-400 italic text-sm">
+                            載入中...
+                        </div>
                     </div>
                 </div>
             </div>
@@ -383,13 +392,11 @@
         let quizState = { questions: [], currentIndex: 0, hasAnswered: false, answers: [] };
         let quizRadarChart = null;
 
-        const i18n = {
-            "zh-TW": { label_stage: "學習階段", label_publisher: "版本", label_grade: "年級", label_semester: "學期", label_unit: "單元名稱" }
-        };
+        const i18n = { "zh-TW": { label_stage: "學習階段", label_publisher: "版本", label_grade: "年級", label_semester: "學期", label_unit: "單元名稱" } };
 
         window.onload = async () => {
             const user = JSON.parse(sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || '{"name":"訪客"}');
-            document.getElementById("user-info").innerText = user.name;
+            document.getElementById("user-info").innerText = `User: ${user.name}`;
 
             try {
                 const res = await fetch(GAS_API_URL + "?action=get_metadata");
@@ -431,7 +438,6 @@
 
             const ids=["sel-publisher","sel-grade","sel-semester","sel-unit"];
             const labels=["版本","年級","學期","單元"];
-            
             for(let i=level;i<4;i++){
                 const el = document.getElementById(ids[i]);
                 el.innerHTML=`<option disabled selected>${labels[i]}</option>`;
@@ -480,6 +486,47 @@
             el.disabled=false;
         }
 
+        // ========== 核心修復：JSON 清洗與容錯 ==========
+        function cleanAndParseJSON(text) {
+            console.log("原始回傳字串長度:", text.length);
+            // 1. 移除 markdown 代碼塊標記
+            let clean = text.replace(/```json/g, "").replace(/```/g, "").trim();
+            
+            // 2. 嘗試直接解析
+            try {
+                return JSON.parse(clean);
+            } catch (e) {
+                console.warn("第一次解析失敗:", e);
+                
+                // 3. 嘗試修復常見錯誤
+                // 移除結尾多餘逗號
+                clean = clean.replace(/,\s*([\]}])/g, '$1');
+                
+                // 嘗試處理未轉義的換行符 (這在 AI 生成長文本時很常見)
+                clean = clean.replace(/(?<!\\)\n/g, "\\n");
+
+                try {
+                    return JSON.parse(clean);
+                } catch (e2) {
+                    console.warn("第二次解析失敗，嘗試提取部分 JSON...", e2);
+                    
+                    // 4. 進階救援：嘗試只提取最外層的大括號內容
+                    const firstOpen = clean.indexOf('{');
+                    const lastClose = clean.lastIndexOf('}');
+                    if (firstOpen !== -1 && lastClose !== -1) {
+                        const sub = clean.substring(firstOpen, lastClose + 1);
+                        try {
+                            return JSON.parse(sub);
+                        } catch (e3) {
+                            console.error("無法救援 JSON");
+                            return null;
+                        }
+                    }
+                    return null;
+                }
+            }
+        }
+
         async function startGeneration() {
             document.getElementById("selection-panel").classList.add("hidden");
             const loading = document.getElementById("loading-view");
@@ -491,78 +538,112 @@
                     method: "POST", 
                     body: JSON.stringify({ action: "get_content_and_generate", filters: filters }) 
                 });
-                const json = await res.json();
+                
+                const text = await res.text();
+                // ✅ 使用容錯解析
+                const json = cleanAndParseJSON(text);
 
-                if(json.status === "success") { 
+                if(json && json.status === "success") { 
                     currentResultData = json.data; 
                     renderResult(json.data); 
+                } else if (json) {
+                    throw new Error(json.message || "未知錯誤");
                 } else {
-                    throw new Error(json.message);
+                    throw new Error("資料格式嚴重錯誤，無法解析。請重試。");
                 }
             } catch(e) { 
                 alert("生成失敗: " + e.message); 
                 document.getElementById("selection-panel").classList.remove("hidden");
                 loading.classList.add("hidden");
+                loading.classList.remove("flex");
             }
         }
 
         function renderResult(data) {
             const raw = data.raw_content || {};
             
+            // 標題
             document.getElementById('result-title').innerText = data.topic || raw.unitName || filters.unitName;
             
             // 摘要
             const summaryBox = document.getElementById('summary-text');
-            let summaryContent = data.summary;
-            if (typeof summaryContent === 'object') summaryContent = summaryContent.content || summaryContent.summary || '';
+            let summaryContent = "";
+            if (data.summary) {
+                if (typeof data.summary === 'string') summaryContent = data.summary;
+                else if (data.summary.content) summaryContent = data.summary.content;
+                else if (data.summary.summary) summaryContent = data.summary.summary;
+            }
             if (!summaryContent && raw.text_summary) summaryContent = raw.text_summary;
+            
+            // 如果還是沒有摘要，嘗試從 raw.text 擷取
+            if (!summaryContent && raw.text) {
+                summaryContent = raw.text.substring(0, 300) + "...";
+            }
+            
             summaryBox.innerHTML = summaryContent || '<p class="text-slate-500">暫無摘要</p>';
 
             // 詞彙
             const keywordList = document.getElementById('keywords-list');
             keywordList.innerHTML = '';
-            let kList = data.keywords || raw.vocab_list || [];
+            let kList = data.keywords || [];
+            // 兼容舊格式
+            if (kList.length === 0 && raw.vocab_list) kList = raw.vocab_list;
+            
             if (Array.isArray(kList) && kList.length > 0) {
                 kList.forEach(k => {
                     const term = typeof k === 'object' ? (k.term || k.word) : k;
                     const def = typeof k === 'object' ? (k.def || k.definition) : '';
+                    if (!term) return;
                     const div = document.createElement('div');
-                    div.className = 'bg-slate-800/50 p-3 rounded-lg border border-slate-700';
+                    div.className = 'vocab-card';
                     div.innerHTML = `<div class="font-bold text-amber-400 mb-1">${term}</div><div class="text-xs text-slate-400">${def}</div>`;
                     keywordList.appendChild(div);
                 });
-            } else { keywordList.innerHTML = '<span class="text-slate-500 text-xs">無詞彙</span>'; }
+            } else { keywordList.innerHTML = '<span class="text-slate-500 text-xs">無特定詞彙</span>'; }
 
-            // Mermaid (白底)
+            // Mermaid
             const chartDiv = document.getElementById('mermaid-chart');
             let mapData = data.mindMap || (data.summary && data.summary.mindMap) || '';
+            
+            // 清理 Mermaid 代碼
             if (mapData) {
-                mapData = mapData.replace(/```mermaid/i, '').replace(/```/g, '').trim();
+                mapData = mapData.replace(/```mermaid/g, '').replace(/```/g, '').trim();
+            }
+
+            if (mapData) {
                 chartDiv.innerHTML = `<div class="mermaid">${mapData}</div>`;
-                mermaid.init(undefined, document.querySelectorAll('.mermaid'));
-            } else { chartDiv.innerHTML = '<span class="text-slate-400">無法繪製</span>'; }
+                try {
+                    mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+                } catch(e) {
+                    console.error("Mermaid 繪製失敗", e);
+                    chartDiv.innerHTML = '<span class="text-red-400 text-xs">圖表繪製錯誤</span>';
+                }
+            } else { 
+                chartDiv.innerHTML = '<span class="text-slate-400 text-xs">無架構圖數據</span>'; 
+            }
 
             // 迷思
             const mythListEl = document.getElementById('myth-list');
             mythListEl.innerHTML = '';
             let mList = data.myths || (data.summary && data.summary.myths) || [];
             mythData = mList.slice(0, 10);
+            
             if (mythData.length > 0) {
                 mythData.forEach((m, index) => {
-                    const q = m.question || m.myth || '';
+                    const q = m.question || m.myth || '迷思問題';
                     const div = document.createElement('div');
-                    div.className = 'bg-slate-800/50 p-3 rounded-lg border border-slate-700';
+                    div.className = 'bg-slate-800/50 p-4 rounded-xl border border-white/5 mb-3';
                     div.innerHTML = `
                         <div class="text-sm font-bold text-slate-200 mb-2"><span class="text-rose-400 mr-2">Q${index+1}</span>${q}</div>
-                        <div class="flex gap-2">
-                            <button onclick="answerMyth(${index}, true)" class="flex-1 py-1.5 bg-slate-700 hover:bg-slate-600 rounded text-xs text-slate-300">正確</button>
-                            <button onclick="answerMyth(${index}, false)" class="flex-1 py-1.5 bg-slate-700 hover:bg-slate-600 rounded text-xs text-slate-300">錯誤</button>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="answerMyth(${index}, true)" class="py-1.5 bg-slate-700 hover:bg-slate-600 rounded text-xs text-slate-300 transition">正確</button>
+                            <button onclick="answerMyth(${index}, false)" class="py-1.5 bg-slate-700 hover:bg-slate-600 rounded text-xs text-slate-300 transition">錯誤</button>
                         </div>
                         <div id="myth-${index}-feedback" class="mt-2 hidden text-xs p-2 rounded bg-slate-900 text-slate-300"></div>
                     `;
                     mythListEl.appendChild(div);
                 });
-            } else { mythListEl.innerHTML = '<span class="text-slate-500 text-xs">無題目</span>'; }
+            } else { mythListEl.innerHTML = '<span class="text-slate-500 text-xs text-center">無迷思題目</span>'; }
 
             // 測驗
             const quizRaw = data.quiz || (data.summary && data.summary.quiz) || [];
@@ -586,6 +667,9 @@
                 quizEmpty.classList.remove("hidden");
                 return;
             }
+            
+            quizEmpty.classList.add("hidden");
+            quizBody.classList.remove("hidden");
 
             quizState.questions = sourceArray.map((q, idx) => {
                 let correctIndex = -1;
@@ -597,7 +681,7 @@
                 }
                 return {
                     stem: q.stem || q.question || `題目 ${idx+1}`,
-                    options: q.options || q.choices || [],
+                    options: q.options || q.choices || ["A", "B", "C", "D"],
                     correctIndex: correctIndex,
                     explanation: q.explanation || "",
                     concept: q.concept || `概念 ${idx+1}`
@@ -607,12 +691,12 @@
             quizState.currentIndex = 0;
             quizState.hasAnswered = false;
             quizState.answers = [];
-            quizEmpty.classList.add("hidden");
-            quizBody.classList.remove("hidden");
             renderQuizQuestion();
         }
 
         function renderQuizQuestion() {
+            if (quizState.questions.length === 0) return;
+            
             const q = quizState.questions[quizState.currentIndex];
             const total = quizState.questions.length;
             document.getElementById("quiz-question").innerText = `${quizState.currentIndex + 1}. ${q.stem}`;
@@ -649,8 +733,7 @@
             } else {
                 btnElement.classList.replace("bg-slate-800/50", "bg-red-900/30");
                 btnElement.classList.replace("border-slate-700", "border-red-500");
-                // Highlight correct
-                if(q.correctIndex >= 0) {
+                if(q.correctIndex >= 0 && allBtns[q.correctIndex]) {
                     allBtns[q.correctIndex].classList.replace("bg-slate-800/50", "bg-emerald-900/30");
                     allBtns[q.correctIndex].classList.replace("border-slate-700", "border-emerald-500");
                 }
@@ -687,7 +770,6 @@
             const score = Math.round((correct / total) * 100);
             document.getElementById("quiz-score-number").innerText = score;
 
-            // Radar Chart
             const ctx = document.getElementById("quiz-radar");
             const concepts = [...new Set(quizState.answers.map(a => a.concept))];
             const dataScores = concepts.map(c => {
@@ -732,7 +814,6 @@
             }
         }
 
-        // Chat & Modal
         function toggleChat() {
             const w = document.getElementById("xiaoke-window");
             w.classList.toggle("closed");
@@ -744,22 +825,24 @@
                 w.classList.add("scale-100", "opacity-100");
             }
         }
+
         async function sendChatMessage() {
             const input = document.getElementById("chat-input");
             const msg = input.value.trim();
             if(!msg) return;
             const body = document.getElementById("chat-messages");
-            body.innerHTML += `<div class="text-right mb-2"><span class="bg-indigo-600 text-white py-1 px-3 rounded-lg inline-block">${msg}</span></div>`;
+            body.innerHTML += `<div class="text-right mb-2"><span class="bg-indigo-600 text-white py-1 px-3 rounded-lg inline-block text-xs">${msg}</span></div>`;
             input.value = "";
             body.scrollTop = body.scrollHeight;
             setTimeout(() => {
-                body.innerHTML += `<div class="text-left mb-2"><span class="bg-slate-800 text-slate-300 py-1 px-3 rounded-lg inline-block border border-slate-700">小科正在思考... (未串接API)</span></div>`;
+                body.innerHTML += `<div class="text-left mb-2"><span class="bg-slate-800 text-slate-300 py-1 px-3 rounded-lg inline-block border border-slate-700 text-xs">小科正在思考...</span></div>`;
                 body.scrollTop = body.scrollHeight;
             }, 800);
         }
+
         function openModal() {
             const chart = document.getElementById("mermaid-chart").innerHTML;
-            if(!chart) return;
+            if(!chart || chart.includes("無法")) return;
             document.getElementById("modal-content").innerHTML = chart;
             const svg = document.querySelector("#modal-content svg");
             if(svg) { svg.style.width="100%"; svg.style.height="auto"; }
@@ -773,7 +856,6 @@
         function downloadTXT() { alert("TXT 下載功能 (待實作)"); }
         function downloadPDF() { alert("PDF 下載功能 (待實作)"); }
         function changeLanguage() { }
-
     </script>
 </body>
 </html>
