@@ -51,10 +51,31 @@
         .custom-select { background-color: rgba(15, 23, 42, 0.8); border: 1px solid rgba(45, 212, 191, 0.3); color: #ccfbf1; appearance: none; padding-right: 1.5rem; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%232dd4bf' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.3rem center; background-repeat: no-repeat; background-size: 1.2em 1.2em; }
 
         .content-block { margin-bottom: 1rem; padding: 1rem; border-radius: 0.75rem; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.2s ease; }
-        .en-text { font-size: 1.1rem; color: #e2e8f0; line-height: 1.6; margin-bottom: 0.5rem; font-weight: 500; font-family: 'Inter', sans-serif; cursor: pointer; transition: color 0.2s; }
-        .en-text:hover { color: #2dd4bf; }
-        .zh-text { font-size: 1rem; color: #94a3b8; line-height: 1.6; padding-left: 8px; border-left: 3px solid rgba(45, 212, 191, 0.3); cursor: pointer; }
-        .zh-text:hover { color: #cbd5e1; }
+        /* ... 其他樣式 ... */
+
+        .en-text { 
+            font-size: 1.1rem; 
+            color: #2dd4bf; /* ✅ 改成亮綠色 (Teal-400) */
+            line-height: 1.6; 
+            margin-bottom: 0.5rem; 
+            font-weight: 500; 
+            font-family: 'Inter', sans-serif; 
+            cursor: pointer; 
+            transition: color 0.2s; 
+        }
+        .en-text:hover { color: #fff; } /* 滑鼠移過去變白色，比較明顯 */
+
+        .zh-text { 
+            font-size: 1rem; 
+            color: #ffffff; /* ✅ 改成純白色 */
+            line-height: 1.6; 
+            padding-left: 8px; 
+            border-left: 3px solid rgba(45, 212, 191, 0.3); 
+            cursor: pointer; 
+        }
+        .zh-text:hover { color: #2dd4bf; } /* 滑鼠移過去變亮綠色 */
+
+        /* ... 其他樣式 ... */
 
         .section-header { font-size: 1.4rem; font-weight: 800; color: #fff; margin-top: 2rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(45, 212, 191, 0.3); display: flex; align-items: center; gap: 0.5rem; }
         .section-header::before { content: ''; display: block; width: 5px; height: 24px; background: #2dd4bf; border-radius: 2px; }
@@ -496,13 +517,13 @@
           });
         }
 
-        async function renderArticle(unit) {
+async function renderArticle(unit) {
             currentUnitTitleZh = unit.title;
             currentUnitTitleEn = "";
 
             document.getElementById('article-title').innerHTML = `
               <div id="title-zh">${escapeHtml(currentUnitTitleZh)}</div>
-              <div id="title-en" class="text-base md:text-lg font-semibold text-teal-200/80 italic mt-2">Translating...</div>
+              <div id="title-en" class="text-base md:text-lg font-semibold text-teal-400 italic mt-2">Translating...</div>
             `;
 
             document.getElementById('status-bar').innerText = unit.title;
@@ -524,8 +545,8 @@
             }
 
             const unitCkipSet = unit.ckip ? getCkipTokenSet(unit.ckip) : null;
-const unitCkipTokens = unit.ckip ? getCkipTokenArray(unit.ckip) : [];
-const unitMergeSet = buildCkipMergeSet(unitCkipTokens, getMaxKeyLen(activeVocabMap));
+            const unitCkipTokens = unit.ckip ? getCkipTokenArray(unit.ckip) : [];
+            const unitMergeSet = buildCkipMergeSet(unitCkipTokens, getMaxKeyLen(activeVocabMap));
 
             for(let i=0; i<lines.length; i++) {
                 let line = lines[i].trim();
@@ -539,28 +560,26 @@ const unitMergeSet = buildCkipMergeSet(unitCkipTokens, getMaxKeyLen(activeVocabM
                     navItem.onclick=()=>{ document.getElementById(anchorId).scrollIntoView({behavior:'smooth',block:'center'}); };
                     document.getElementById('unit-list').appendChild(navItem);
 
-                    // ✅ [修改] 標題樣式修復：中文加大變白 (text-2xl text-white)，英文保持原樣
+                    // ✅ [修改] 標題區：中文維持白字，英文改成亮綠色 (text-teal-400)
                     contentDiv.innerHTML += `
                         <h2 id="${anchorId}" class="section-header items-start">
                             <div class="flex flex-col w-full">
                                 <span class="zh-text text-xl md:text-2xl font-black text-white cursor-pointer hover:text-teal-300 transition" onclick="speakText(this.innerText)">${escapeHtml(line)}</span>
-                                <span class="en-text hidden text-base md:text-lg text-teal-200/80 italic mt-1 font-medium cursor-pointer hover:text-white transition" 
+                                <span class="en-text hidden text-base md:text-lg text-teal-400 italic mt-1 font-medium cursor-pointer hover:text-white transition" 
                                       data-source="${encodeURIComponent(line)}"
                                       onclick="speakText(this.innerText)"></span>
                             </div>
                         </h2>`;
                 } else {
-                    // ... (內文處理的部分不用動)
                     let processed = processXRayWithCKIP(line, activeVocabMap, unitCkipSet, unitMergeSet);
 
-
+                    // ✅ [修改] 內文區：英文改成亮綠色 (text-teal-400)
                     contentDiv.innerHTML += `
                         <div class="content-block">
                             <p class="zh-text" onclick="speakText(this.innerText)">${processed}</p>
-                            <p class="en-text hidden text-teal-200/80 italic text-sm mt-2"
-   onclick="speakText(this.innerText)"
-   data-source="${encodeURIComponent(line)}"></p>
-
+                            <p class="en-text hidden text-teal-400 italic text-sm mt-2"
+                               onclick="speakText(this.innerText)"
+                               data-source="${encodeURIComponent(line)}"></p>
                         </div>`;
                 }
             }
