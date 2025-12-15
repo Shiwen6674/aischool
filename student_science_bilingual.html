@@ -915,6 +915,7 @@ function stopSpeech() {
  */
 // ✅ [針對 iOS 優化版] 強制優先抓取 Siri 和 Enhanced 高品質語音
 // ✅ [終極修正版] 語音選擇：優先保證音質，其次才是性別
+// ✅ [Siri 優先版] 瘋狂尋找 Siri 聲音，找不到才用美佳
 function pickBestVoice(isEng, gender) {
     if (!window.speechSynthesis) return null;
     const voices = window.speechSynthesis.getVoices();
@@ -925,6 +926,7 @@ function pickBestVoice(isEng, gender) {
     const getScore = (voice) => {
         let score = 0;
         const name = voice.name.toLowerCase();
+        const uri = (voice.voiceURI || "").toLowerCase(); // 檢查內部識別碼
         const lang = voice.lang.toLowerCase();
 
         // 1. 語言絕對優先
@@ -934,24 +936,28 @@ function pickBestVoice(isEng, gender) {
             return -1;
         }
 
-        // 2. 音質優先 (iOS Siri / Enhanced / Premium)
-        if (name.includes('siri')) score += 5000;      // Siri 最優先
-        if (name.includes('enhanced')) score += 4000;  // 增強版次之
-        if (name.includes('premium')) score += 4000;
-        if (name.includes('natural')) score += 3000;   // Edge Natural
+        // 2. 尋找 Siri (分數給超高)
+        // 檢查名字或 URI 是否包含 "siri"
+        if (name.includes('siri') || uri.includes('siri')) {
+            score += 20000; 
+        }
 
-        // 3. 懲罰機器音 (Compact)
-        // 這是關鍵：如果只有機器男聲，我們寧可不要選它，讓分數變很低
-        if (name.includes('compact')) score -= 10000; 
+        // 3. 尋找增強版 (Enhanced/Premium)
+        if (name.includes('enhanced') || uri.includes('enhanced')) score += 5000;
+        if (name.includes('premium') || uri.includes('premium')) score += 5000;
 
-        // 4. 性別偏好 (權重降低，避免為了選性別而選到機器音)
-        // 只有在非機器音的情況下，性別才重要
-        if (!name.includes('compact')) {
+        // 4. 懲罰機器音 (Compact)
+        if (name.includes('compact') || uri.includes('compact')) score -= 10000;
+
+        // 5. 性別判定 (只有在非 Siri 的情況下稍微考慮性別)
+        // 因為如果能抓到 Siri，不管男女都比美佳好，所以 Siri 狀態下忽略性別
+        if (!name.includes('siri')) {
             if (gender === 'male') {
-                if (name.includes('male') || name.includes('man') || name.includes('boy')) score += 500;
-                // 注意：我們不再重罰女聲，因為 iOS 可能只有高品質女聲
+                if (name.includes('male') || name.includes('man')) score += 500;
+                // 如果是美佳(女)，扣一點分，但不要扣太多以免變成機器音
+                if (name.includes('female') || name.includes('woman') || name.includes('meijia')) score -= 100;
             } else {
-                if (name.includes('female') || name.includes('woman') || name.includes('girl')) score += 500;
+                if (name.includes('female') || name.includes('woman')) score += 500;
             }
         }
 
@@ -960,13 +966,12 @@ function pickBestVoice(isEng, gender) {
 
     const sorted = voices
         .map(v => ({ v, score: getScore(v) }))
-        .filter(item => item.score > -5000) // 過濾掉極低分的選項
+        .filter(item => item.score > -5000)
         .sort((a, b) => b.score - a.score);
 
-    // 如果找不到任何聲音，回傳第一個；否則回傳最高分
+    // 如果找不到，回傳第一個；否則回傳最高分
     return sorted.length > 0 ? sorted[0].v : voices[0];
 }
-
 /* ===================== [ADD HERE] 貼在這裡：兩個新函式 ===================== */
 function isIOSDevice(){
   return /iPad|iPhone|iPod/.test(navigator.userAgent)
