@@ -728,45 +728,59 @@ src = src.replace(/　/g,'');
 let currentBlockIndex = 0; // 記錄唸到第幾句
 
 // ✅ [修改] 切換播放/暫停邏輯
+// ✅ [修正版] 播放/暫停鍵：處理暫停邏輯，並不清除高亮
 function toggleSpeech() {
     const btn = document.getElementById('btn-play');
-    
-    if (synth.speaking && !synth.paused) {
-        // 暫停/停止
-        synth.cancel();
-        isSpeaking = false;
+
+    if (isSpeaking) {
+        // === 按下暫停 ===
+        isSpeaking = false; // 1. 關掉開關
+        if (synth) synth.cancel(); // 2. 停止發音
         btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
-        clearHighlights(); // 清除高亮
+        // 注意：這裡「不」歸零 index，也「不」清除高亮，這樣下次才能接關
     } else {
-        // 開始播放：從第一句開始 (或者從上次暫停的地方，這裡設定為從頭開始比較單純)
-        currentBlockIndex = 0;
+        // === 按下播放 ===
+        isSpeaking = true; // 1. 打開開關
+        btn.innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
+
+        // 2. 如果之前已經全部唸完，才需要歸零重來
+        const blocks = document.querySelectorAll('.content-block');
+        if (currentBlockIndex >= blocks.length) {
+            currentBlockIndex = 0;
+        }
+
+        // 3. 開始播放序列
         playSequence();
     }
 }
 
 // ✅ [新增] 逐句播放核心函式
+// ✅ [修正版] 播放序列：唸每一句前都檢查有沒有被按暫停
 function playSequence() {
+    // 🛑 安全檢查 1：如果現在狀態是「不說話」(被按暫停/停止了)，直接結束
+    if (!isSpeaking) return;
+
     const blocks = document.querySelectorAll('.content-block');
     if (currentBlockIndex >= blocks.length) {
-        stopSpeech(); // 全部唸完
+        // 全部唸完，歸零並停止
+        stopSpeech();
         return;
     }
 
     // 1. 清除舊高亮
     clearHighlights();
 
-    // 2. 取得當前區塊
+    // 2. 取得當前區塊並高亮
     const block = blocks[currentBlockIndex];
-    
-    // 3. 高亮並滾動
-    block.classList.add('reading-active');
-    block.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (block) {
+        block.classList.add('reading-active');
+        block.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 
-    // 4. 決定要唸什麼 (優先唸英文)
+    // 3. 決定要唸什麼
     const enEl = block.querySelector('.en-text');
     const zhEl = block.querySelector('.zh-text');
     
-    // 邏輯：如果有顯示英文，就唸英文；否則唸中文
     let textToRead = "";
     if (enEl && !enEl.classList.contains('hidden') && enEl.innerText) {
         textToRead = enEl.innerText;
@@ -774,14 +788,17 @@ function playSequence() {
         textToRead = zhEl.innerText;
     }
 
-    // 5. 開始唸，唸完後 index+1 並呼叫自己 (遞迴)
+    // 4. 開始唸
     if (textToRead) {
         speakText(textToRead, () => {
+            // 🛑 安全檢查 2：唸完這句要接下一句時，再檢查一次有沒有被按暫停
+            if (!isSpeaking) return; 
+
             currentBlockIndex++;
-            playSequence(); // 唸下一句
+            playSequence(); // 沒被暫停才繼續唸下一句
         });
     } else {
-        // 如果這區塊沒文字，直接跳下一個
+        // 沒文字，直接跳下一句
         currentBlockIndex++;
         playSequence();
     }
@@ -824,7 +841,24 @@ function clearHighlights() {
           return safe;
         }
 
-        function stopSpeech() { synth.cancel(); isSpeaking=false; document.getElementById('btn-play').innerHTML='<i class="fa-solid fa-play text-xs"></i>'; }
+        // ✅ [修正版] 停止鍵：先關閉開關，再停止語音，並歸零進度
+function stopSpeech() {
+    // 1. 先關掉開關 (最重要！告訴後面的程式現在是停止狀態)
+    isSpeaking = false;
+
+    // 2. 強制停止發音
+    if (synth) synth.cancel();
+
+    // 3. 進度歸零
+    currentBlockIndex = 0;
+
+    // 4. 清除畫面上所有高亮
+    clearHighlights();
+
+    // 5. 按鈕變回播放圖示
+    const btn = document.getElementById('btn-play');
+    if (btn) btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
+}
 
 
 /**
@@ -932,30 +966,37 @@ function splitTextForSpeak(text, isEng){
 }
 
 // ✅ [修改] 增加 onComplete 參數，讓它知道唸完後要幹嘛
+// ✅ [修正版] 發音核心：增加嚴格的狀態檢查
 function speakText(txt, onComplete) {
-    if(!synth) return;
+    if (!synth) return;
+    
+    // 先停止當前發音
     synth.cancel();
 
     const cleanTxt = (txt || "").toString().replace(/<[^>]*>/g, "").replace(/\u00A0/g, " ").trim();
+    
+    // 如果沒字，且現在是播放狀態，才呼叫完成
     if (!cleanTxt) {
-        if(onComplete) onComplete(); // 沒字就直接結束
+        if (onComplete && isSpeaking) onComplete();
         return;
     }
 
     const ios = isIOSDevice();
-    // 如果使用者想聽英文 (通常播放模式下優先讀英文)，這裡可以根據內容判斷
     const isEng = isMostlyEnglish(cleanTxt);
     const lang = isEng ? "en-US" : "zh-TW";
 
+    // iOS 長句切割邏輯
     const chunks = (ios && cleanTxt.length > (isEng ? 220 : 140)) ? splitTextForSpeak(cleanTxt, isEng) : [cleanTxt];
     const uiRate = parseFloat(document.getElementById('play-rate')?.value || "1.0");
     let idx = 0;
 
     const speakNext = () => {
+        // 🛑 關鍵修正：如果全域開關已經關閉 (按了暫停或停止)，直接中止，絕對不要呼叫 onComplete
+        if (!isSpeaking) return;
+
         if (idx >= chunks.length) {
-            isSpeaking = false;
-            document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
-            if (onComplete) onComplete(); // ✅ 唸完所有片段後，執行回調
+            // 全部片段唸完，執行回調 (去下一句)
+            if (onComplete) onComplete();
             return;
         }
 
@@ -963,12 +1004,11 @@ function speakText(txt, onComplete) {
         const u = new SpeechSynthesisUtterance(part);
         u.lang = lang;
 
-        // ✅ 修正 Voice 選擇邏輯：確保傳入正確的 currentVoice
+        // 設定聲音
         let voice = null;
         if (!ios) {
-            voice = pickBestVoice(isEng, currentVoice); // 使用全域變數 currentVoice
+            voice = pickBestVoice(isEng, currentVoice);
         } else {
-            // iOS 邏輯保持不變...
              const voices = synth.getVoices ? synth.getVoices() : [];
              const wantPrefix = isEng ? "en" : "zh";
              const cand = voices.filter(v => (v.lang || "").toLowerCase().startsWith(wantPrefix));
@@ -977,6 +1017,7 @@ function speakText(txt, onComplete) {
         }
         if (voice) u.voice = voice;
 
+        // 設定語速與音調
         if (ios) {
             u.pitch = 1.0;
             u.rate = (uiRate === 1.0) ? 1.0 : Math.max(0.8, Math.min(1.2, uiRate));
@@ -985,12 +1026,21 @@ function speakText(txt, onComplete) {
             u.pitch = (currentVoice === 'male') ? 1.0 : 1.05;
         }
 
+        // 開始發音時更新按鈕 (防呆)
         u.onstart = () => {
-            isSpeaking = true;
-            document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
+            if (!isSpeaking) { synth.cancel(); return; }
+            const btn = document.getElementById('btn-play');
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
         };
+
+        // 唸完這一段，接下一段
         u.onend = speakNext;
-        u.onerror = speakNext;
+        
+        // 出錯也嘗試接下一段
+        u.onerror = () => {
+            if (isSpeaking) speakNext();
+        };
+
         synth.speak(u);
     };
 
