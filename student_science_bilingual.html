@@ -528,8 +528,18 @@ const unitMergeSet = buildCkipMergeSet(unitCkipTokens, getMaxKeyLen(activeVocabM
                     navItem.onclick=()=>{ document.getElementById(anchorId).scrollIntoView({behavior:'smooth',block:'center'}); };
                     document.getElementById('unit-list').appendChild(navItem);
 
-                    contentDiv.innerHTML += `<h2 id="${anchorId}" class="section-header">${escapeHtml(line)}</h2>`;
+                    // ✅ 新的寫法：包含中文與英文結構，讓系統自動翻譯
+                    contentDiv.innerHTML += `
+                        <h2 id="${anchorId}" class="section-header items-start">
+                            <div class="flex flex-col">
+                                <span class="zh-text cursor-pointer" onclick="speakText(this.innerText)">${escapeHtml(line)}</span>
+                                <span class="en-text hidden text-lg text-teal-200/80 italic mt-1 font-medium cursor-pointer" 
+                                      data-source="${encodeURIComponent(line)}"
+                                      onclick="speakText(this.innerText)"></span>
+                            </div>
+                        </h2>`;
                 } else {
+                    // ... (內文處理的部分不用動)
                     let processed = processXRayWithCKIP(line, activeVocabMap, unitCkipSet, unitMergeSet);
 
 
