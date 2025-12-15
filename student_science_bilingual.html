@@ -220,9 +220,25 @@
         };
 
         document.addEventListener('DOMContentLoaded', () => {
-            initCanvas(); fetchData();
-            if(synth) synth.onvoiceschanged = () => synth.getVoices();
-        });
+  initCanvas(); fetchData();
+  if(synth) synth.onvoiceschanged = () => synth.getVoices();
+
+  // iOS Safari：需要「使用者手勢」才會穩定載入/啟動 TTS
+  document.addEventListener('touchstart', () => {
+    try{
+      if(!synth) return;
+      synth.cancel();
+      const u = new SpeechSynthesisUtterance(" ");
+      u.volume = 0;              // 不出聲
+      u.rate = 1.0;
+      u.pitch = 1.0;
+      synth.speak(u);
+      synth.cancel();
+      synth.getVoices?.();
+    }catch(e){}
+  }, { once: true, passive: true });
+});
+
 
         function goBack() { window.location.href = 'student_science.html'; }
 
@@ -780,39 +796,192 @@ src = src.replace(/　/g,'');
           candidates.sort((a,b)=>score(b)-score(a));
           return candidates[0] || null;
         }
+function pickBestVoice(isEng, gender){
+  const voices = (synth && synth.getVoices) ? synth.getVoices() : [];
+  if(!voices.length) return null;
+
+  const wantLang = isEng ? ['en-us','en-gb','en'] : ['zh-tw','zh-hk','zh-cn','zh'];
+  const inLang = (v) => wantLang.some(l => (v.lang||'').toLowerCase().includes(l));
+
+  const score = (v) => {
+    const name = (v.name||'').toLowerCase();
+    const lang = (v.lang||'').toLowerCase();
+    let s = 0;
+
+    if(isEng){
+      if(lang.includes('en-us')) s += 20;
+      if(lang.includes('en-gb')) s += 15;
+      if(lang.includes('en')) s += 10;
+    }else{
+      if(lang.includes('zh-tw')) s += 40;
+      if(lang.includes('zh-hk')) s += 20;
+      if(lang.includes('zh-cn')) s += 10;
+      if(lang.includes('zh')) s += 5;
+    }
+
+    if(name.includes('microsoft') && name.includes('online')) s += 35;
+    if(name.includes('microsoft') && name.includes('natural')) s += 45;
+    if(name.includes('microsoft')) s += 10;
+
+    if(name.includes('google')) s += 12;
+
+    if(name.includes('compact')) s -= 8;
+    if(name.includes('standard')) s -= 5;
+
+    if(isEng){
+      if(gender==='male' && (name.includes('guy') || name.includes('david'))) s += 2;
+      if(gender==='female' && (name.includes('jenny') || name.includes('aria') || name.includes('zira') || name.includes('susan'))) s += 2;
+    }else{
+      if(name.includes('hsiaochen') || name.includes('yunjhe') || name.includes('yating') || name.includes('huihui')) s += 3;
+    }
+
+    return s;
+  };
+
+  const candidates = voices.filter(v => inLang(v));
+  if(!candidates.length) return null;
+  candidates.sort((a,b)=>score(b)-score(a));
+  return candidates[0] || null;
+}
+
+/* ===================== [ADD HERE] 貼在這裡：兩個新函式 ===================== */
+function isIOSDevice(){
+  return /iPad|iPhone|iPod/.test(navigator.userAgent)
+      || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+function isMostlyEnglish(txt){
+  const t = (txt || "").toString();
+  const latin = (t.match(/[A-Za-z]/g) || []).length;
+  const cjk   = (t.match(/[\u4E00-\u9FFF]/g) || []).length;
+  if (cjk === 0) return latin > 0;
+  return latin > cjk * 2;
+}
+/* ===================== [ADD HERE END] ===================== */
+function splitTextForSpeak(text, isEng){
+  const t = (text || "").toString().replace(/\s+/g, " ").trim();
+  if(!t) return [];
+
+  const maxLen = isEng ? 180 : 120; // iOS 建議短一點，避免怪聲/中斷
+  const out = [];
+
+  let s = t;
+  while(s.length > maxLen){
+    let cut = -1;
+
+    // 1) 先找標點切割
+    const punct = isEng ? /[.!?;:]/g : /[。！？；：]/g;
+    let m, last = -1;
+    while((m = punct.exec(s.substring(0, maxLen))) !== null){
+      last = m.index + 1;
+    }
+    if(last >= Math.floor(maxLen * 0.4)) cut = last;
+
+    // 2) 再用空白切（英文）
+    if(cut === -1 && isEng){
+      const sp = s.lastIndexOf(" ", maxLen);
+      if(sp >= Math.floor(maxLen * 0.5)) cut = sp;
+    }
+
+    // 3) 最後硬切
+    if(cut === -1) cut = maxLen;
+
+    out.push(s.slice(0, cut).trim());
+    s = s.slice(cut).trim();
+  }
+
+  if(s) out.push(s);
+  return out;
+}
+
 
         function speakText(txt) {
-          synth.cancel();
-          const cleanTxt = (txt || "").toString().replace(/<[^>]*>/g, '').trim();
-          if (!cleanTxt) return;
+  if(!synth) return;
 
-          const u = new SpeechSynthesisUtterance(cleanTxt);
-          const isEng = /[a-zA-Z]/.test(cleanTxt);
+  // 先停止上一段
+  synth.cancel();
 
-          const voice = pickBestVoice(isEng, currentVoice);
-          if (voice) u.voice = voice;
+  const cleanTxt = (txt || "")
+    .toString()
+    .replace(/<[^>]*>/g, "")
+    .replace(/\u00A0/g, " ")
+    .trim();
 
-          const uiRate = parseFloat(document.getElementById('play-rate').value);
+  if (!cleanTxt) return;
 
-          if (isEng) {
-            u.rate = uiRate;
-            u.pitch = (currentVoice === 'male') ? 1.0 : 1.03;
-          } else {
-            u.rate = Math.max(0.85, Math.min(1.05, uiRate * 0.95));
-            u.pitch = 1.0;
-          }
+  const ios = isIOSDevice();
+  const isEng = isMostlyEnglish(cleanTxt);
+  const lang = isEng ? "en-US" : "zh-TW";
 
-          u.onstart = () => {
-            isSpeaking = true;
-            document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
-          };
-          u.onend = () => {
-            isSpeaking = false;
-            document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
-          };
+  // iOS 長文本容易「怪聲/中斷」→ 切短再播
+  const chunks = (ios && cleanTxt.length > (isEng ? 220 : 140))
+    ? splitTextForSpeak(cleanTxt, isEng)
+    : [cleanTxt];
 
-          synth.speak(u);
-        }
+  const uiRate = parseFloat(document.getElementById('play-rate')?.value || "1.0");
+
+  let idx = 0;
+
+  const speakNext = () => {
+    if (idx >= chunks.length) {
+      isSpeaking = false;
+      document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
+      return;
+    }
+
+    const part = chunks[idx++];
+    const u = new SpeechSynthesisUtterance(part);
+    u.lang = lang;
+
+    // 取 voice：非 iOS 用你原本的 pickBestVoice；iOS 優先使用「系統預設」避免怪聲
+    let voice = null;
+
+    if (!ios) {
+      voice = pickBestVoice(isEng, currentVoice);
+    } else {
+      // iOS: 只有在找得到同語系 voice 才指定，否則讓系統自己選
+      const voices = synth.getVoices ? synth.getVoices() : [];
+      const wantPrefix = isEng ? "en" : "zh";
+      const cand = voices.filter(v => (v.lang || "").toLowerCase().startsWith(wantPrefix));
+      if (cand.length) voice = cand[0];
+    }
+
+    if (voice) u.voice = voice;
+
+    // iOS 對 pitch 很敏感，建議固定 1.0；rate 也要夾住範圍
+    if (ios) {
+      u.pitch = 1.0;
+      u.rate = Math.min(1.05, Math.max(0.9, uiRate));
+    } else {
+      if (isEng) {
+        u.rate = uiRate;
+        u.pitch = (currentVoice === 'male') ? 1.0 : 1.03;
+      } else {
+        u.rate = Math.max(0.85, Math.min(1.05, uiRate * 0.95));
+        u.pitch = 1.0;
+      }
+    }
+
+    u.onstart = () => {
+      isSpeaking = true;
+      document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
+    };
+
+    u.onend = () => {
+      speakNext();
+    };
+
+    u.onerror = () => {
+      // 出錯就跳下一段，避免卡死
+      speakNext();
+    };
+
+    synth.speak(u);
+  };
+
+  speakNext();
+}
+
 
         function setVoice(g) {
             currentVoice=g;
