@@ -172,13 +172,19 @@
         .content-block:hover { background: rgba(255, 255, 255, 0.02); }
 
         /* 正在朗讀的高亮 */
+        /* 🎯 [修改] 正在朗讀的高亮樣式：邊條改成桃紅色 */
         .reading-active {
             background: linear-gradient(90deg, rgba(74, 222, 128, 0.05) 0%, rgba(244, 114, 182, 0.1) 50%, rgba(74, 222, 128, 0.05) 100%) !important;
             background-size: 200% 100% !important;
             animation: reading-scan 3s linear infinite;
-            border-left: 4px solid #4ade80 !important; 
+            
+            /* 👇 修改這裡：將邊框顏色從綠色 (#4ade80) 改為桃紅 (#f472b6) */
+            border-left: 4px solid #f472b6 !important; 
+            
             border-radius: 4px 12px 12px 4px;
-            box-shadow: 0 0 25px rgba(74, 222, 128, 0.1);
+            
+            /* 👇 (選用) 陰影也可以一起改成粉色，看起來更發光 */
+            box-shadow: 0 0 25px rgba(244, 114, 182, 0.2);
         }
         .reading-active .zh-text,
         .reading-active .en-text,
