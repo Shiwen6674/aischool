@@ -88,12 +88,32 @@
         .loader { border: 2px solid rgba(45, 212, 191, 0.1); border-top: 2px solid #2dd4bf; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     /* 正在朗讀的高亮樣式 */
-        .reading-active {
-            background-color: rgba(45, 212, 191, 0.15) !important; /* 淺綠色背景 */
-            border-left: 4px solid #facc15 !important; /* 左側黃色亮條 */
-            box-shadow: 0 0 15px rgba(45, 212, 191, 0.1);
-            transition: all 0.3s ease;
-        }
+        /* 正在朗讀的高亮樣式：加入流光動畫 */
+    .reading-active {
+        /* 設定漸層背景：左邊淺 -> 中間亮 -> 右邊淺 */
+        background: linear-gradient(
+            90deg, 
+            rgba(45, 212, 191, 0.05) 0%, 
+            rgba(45, 212, 191, 0.25) 50%, 
+            rgba(45, 212, 191, 0.05) 100%
+        ) !important;
+        
+        /* 讓背景比區塊大，這樣才能移動 */
+        background-size: 200% 100% !important;
+        
+        /* 啟動動畫：3秒跑一次，無限循環 */
+        animation: reading-scan 3s linear infinite;
+        
+        border-left: 4px solid #facc15 !important;
+        box-shadow: 0 0 15px rgba(45, 212, 191, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    /* 定義動畫關鍵影格 */
+    @keyframes reading-scan {
+        0% { background-position: 100% 0; }
+        100% { background-position: -100% 0; }
+    }
     </style>
 </head>
 <body class="h-screen flex flex-col font-sans selection:bg-teal-500/30 selection:text-white">
