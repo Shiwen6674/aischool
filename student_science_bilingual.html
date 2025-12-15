@@ -25,7 +25,7 @@
                             bg: '#0f172a',
                             panel: 'rgba(15, 23, 42, 0.6)',
                             border: 'rgba(255, 255, 255, 0.08)',
-                            accent: '#4ade80', /* 改為螢光綠 */
+                            accent: '#4ade80',
                             highlight: '#facc15'
                         }
                     }
@@ -103,7 +103,7 @@
 
         /* 4. 科學詞彙 (文內) - 螢光黃 */
         .sci-term { 
-            color: #facc15; /* 螢光黃 */
+            color: #facc15; 
             font-weight: 700; 
             border-bottom: 1.5px solid rgba(250, 204, 21, 0.3); 
             cursor: pointer; 
@@ -131,27 +131,22 @@
             background: rgba(255, 255, 255, 0.02);
         }
 
-        /* 🎯 [重點] 正在朗讀的高亮樣式 */
+        /* 正在朗讀的高亮樣式 */
         .reading-active {
-            /* 背景流光 */
             background: linear-gradient(90deg, rgba(74, 222, 128, 0.05) 0%, rgba(244, 114, 182, 0.1) 50%, rgba(74, 222, 128, 0.05) 100%) !important;
             background-size: 200% 100% !important;
             animation: reading-scan 3s linear infinite;
-            
-            /* 句首綠色邊條 */
             border-left: 4px solid #4ade80 !important; 
-            
             border-radius: 4px 12px 12px 4px;
             box-shadow: 0 0 25px rgba(74, 222, 128, 0.1);
         }
         
-        /* 🎯 [重點] 當區塊被朗讀時，文字變色 */
         .reading-active .zh-text,
         .reading-active .en-text,
         .reading-active .sci-term {
-            color: #f472b6 !important; /* 桃紅色 (Hot Pink) */
+            color: #f472b6 !important; /* 桃紅色 */
             text-shadow: 0 0 5px rgba(244, 114, 182, 0.3);
-            border-left-color: #f472b6 !important; /* 中文左側線條也變粉 */
+            border-left-color: #f472b6 !important;
         }
 
         @keyframes reading-scan {
@@ -159,7 +154,7 @@
             100% { background-position: -100% 0; }
         }
 
-        /* 6. 文字排版 - 一般狀態 */
+        /* 6. 文字排版 */
         .en-text { 
             font-size: 1.15rem; 
             color: #4ade80; /* 螢光綠 */
@@ -203,11 +198,10 @@
             display: block; 
             width: 6px; 
             height: 28px; 
-            background: linear-gradient(to bottom, #4ade80, #059669); /* 綠色漸層 */
+            background: linear-gradient(to bottom, #4ade80, #059669); 
             border-radius: 4px; 
         }
 
-        /* 下拉選單 */
         .custom-select { 
             background-color: rgba(15, 23, 42, 0.6); 
             border: 1px solid rgba(255, 255, 255, 0.1); 
@@ -221,25 +215,17 @@
             background-color: rgba(15, 23, 42, 0.9);
         }
 
-        /* 隱藏 Canvas (改用 CSS 極光) */
         #canvas-container { display: none; }
-        
-        /* 底部控制島樣式與避讓 */
         #reading-container { padding-bottom: 140px !important; }
-        #control-dock { 
-            padding-bottom: env(safe-area-inset-bottom, 20px); 
-            bottom: max(1.5rem, env(safe-area-inset-bottom));
-        }
+        #control-dock { padding-bottom: env(safe-area-inset-bottom, 20px); bottom: max(1.5rem, env(safe-area-inset-bottom)); }
         #play-rate { text-align-last: center; }
 
-        /* Vocab List Style (側邊欄) */
+        /* 側邊欄英文詞彙 */
         .vocab-item { background: rgba(15, 23, 42, 0.4); border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 12px; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;}
         .vocab-item:hover { background: rgba(255, 255, 255, 0.05); }
-        
-        /* 側邊欄英文詞彙：大字 + 螢光綠 */
         .en-term-label {
-            color: #4ade80 !important; /* 螢光綠 */
-            font-size: 1.1rem !important; /* 加大 */
+            color: #4ade80 !important; 
+            font-size: 1.1rem !important; 
             font-weight: 600;
             margin-top: 2px;
         }
@@ -299,7 +285,6 @@
     </nav>
 
     <div class="flex-grow flex overflow-hidden p-4 gap-4 relative z-10">
-
         <aside class="w-64 glass-panel rounded-2xl flex flex-col overflow-hidden hidden md:flex border-l border-white/10">
             <div class="p-4 border-b border-white/10 bg-slate-900/30">
                 <h3 class="text-xs font-bold text-teal-500 tracking-widest mb-1" data-i18n="nav">目錄導航</h3>
@@ -391,7 +376,7 @@
         const COL_STAGE=0, COL_VERSION=2, COL_GRADE=3, COL_SEMESTER=4, COL_UNIT_NUM=6, COL_UNIT_NAME=7,
               COL_CONTENT=8, COL_CKIP=9, COL_VOCAB=18;
 
-        let rawData=[], processedUnits=[], isSpeaking=false, currentVoice='male', translationCache={}, synth=window.speechSynthesis;
+        let rawData=[], processedUnits=[], isSpeaking=false, currentVoice='female', translationCache={}, synth=window.speechSynthesis;
         let activeVocabMap = {};
         let currentBlockIndex = 0;
 
@@ -408,7 +393,9 @@
         document.addEventListener('DOMContentLoaded', () => {
             fetchData();
             if(synth) synth.onvoiceschanged = () => synth.getVoices();
-            setVoice('male');
+            
+            // ✅ [重要修正] 預設改為女聲 (iOS 上通常女聲較好)
+            setVoice('female');
 
             document.addEventListener('touchstart', () => {
                 try{
@@ -426,6 +413,7 @@
         function fetchData() {
             Papa.parse(TARGET_URL, {
                 download: true, header: false,
+                skipEmptyLines: true, // ✅ [重要修正] 跳過空行，防止資料庫載入卡死
                 complete: res => { processData(res.data); document.getElementById('loader-overlay').style.display='none'; showToast("資料庫連線成功"); },
                 error: () => document.getElementById('loader-overlay').innerHTML='<div class="text-red-500">Error: Check Network</div>'
             });
@@ -798,6 +786,7 @@
           return out;
         }
 
+        // ✅ [Siri 優先版] 瘋狂尋找 Siri 聲音
         function pickBestVoice(isEng, gender) {
             if (!window.speechSynthesis) return null;
             const voices = window.speechSynthesis.getVoices();
@@ -810,16 +799,25 @@
                 const lang = voice.lang.toLowerCase();
                 if (targetLang.some(t => lang === t || lang.replace('_', '-').startsWith(t))) { score += 1000; } else { return -1; }
                 
+                // 優先選擇高品質女聲 (Samantha / Siri / Meijia)
                 if (name.includes('siri') || uri.includes('siri')) score += 20000;
+                if (name.includes('samantha')) score += 15000; // 英文首選
+                if (name.includes('meijia')) score += 15000;   // 中文首選 (如果沒 Siri)
+                
                 if (name.includes('enhanced') || uri.includes('enhanced')) score += 5000;
                 if (name.includes('premium') || uri.includes('premium')) score += 5000;
                 if (name.includes('natural')) score += 3000;
-                if (name.includes('compact') || uri.includes('compact')) score -= 10000;
+                if (name.includes('compact') || uri.includes('compact')) score -= 10000; // 懲罰機器音
 
-                if (!name.includes('siri')) {
+                // iOS 專屬：如果是 iPhone，且沒找到 Siri，強制用美佳/Samantha，忽略性別以免變機器音
+                const isIphone = isIOSDevice();
+                if (isIphone && !name.includes('siri') && (name.includes('meijia') || name.includes('samantha'))) {
+                    score += 5000; 
+                } else if (!name.includes('siri')) {
+                    // 一般邏輯
                     if (gender === 'male') {
                         if (name.includes('male') || name.includes('man')) score += 500;
-                        if (name.includes('female') || name.includes('woman') || name.includes('meijia')) score -= 100;
+                        if (name.includes('female') || name.includes('woman')) score -= 100;
                     } else {
                         if (name.includes('female') || name.includes('woman')) score += 500;
                     }
@@ -864,9 +862,7 @@
                 const u = new SpeechSynthesisUtterance(part);
                 u.lang = lang;
                 
-                let voice = null;
-                if (!ios) { voice = pickBestVoice(isEng, currentVoice); } 
-                else { voice = pickBestVoice(isEng, currentVoice); }
+                let voice = pickBestVoice(isEng, currentVoice);
                 if (voice) u.voice = voice;
 
                 if (ios) { u.pitch = 1.0; u.rate = 1.0; } 
