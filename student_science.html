@@ -23,185 +23,179 @@
                         tech: ['Orbitron', 'sans-serif'],
                     },
                     colors: {
-                        deep: {
-                            900: '#020617', // Deep Space
-                            800: '#0f172a',
-                            700: '#1e293b',
-                        },
-                        neon: {
-                            teal: '#2dd4bf',
-                            blue: '#3b82f6',
-                            purple: '#a855f7'
+                        space: {
+                            bg: '#050b14', 
                         }
                     },
                     animation: {
-                        "float": "float 8s ease-in-out infinite",
-                        "pulse-glow": "pulseGlow 4s ease-in-out infinite",
-                        "shine": "shine 3s linear infinite",
+                        "float": "float 6s ease-in-out infinite",
+                        "pulse-slow": "pulseGlow 4s ease-in-out infinite",
+                        "grid-move": "gridMove 20s linear infinite",
+                        "spin-slow": "spin 12s linear infinite",
                     },
                     keyframes: {
                         float: {
                             "0%, 100%": { transform: "translateY(0)" },
-                            "50%": { transform: "translateY(-10px)" }
+                            "50%": { transform: "translateY(-6px)" }
                         },
                         pulseGlow: {
-                            "0%, 100%": { opacity: 0.6, filter: "blur(40px)" },
-                            "50%": { opacity: 0.8, filter: "blur(60px)" }
+                            "0%, 100%": { opacity: 0.4 },
+                            "50%": { opacity: 0.7 }
                         },
-                        shine: {
-                            "0%": { backgroundPosition: "200% center" },
-                            "100%": { backgroundPosition: "-200% center" }
+                        gridMove: {
+                            "0%": { backgroundPosition: "0 0" },
+                            "100%": { backgroundPosition: "0 40px" }
                         }
                     },
                     backgroundImage: {
-                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-                        'glass-gradient': 'linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%)',
-                        'card-hover': 'linear-gradient(145deg, rgba(45, 212, 191, 0.1) 0%, rgba(15, 23, 42, 0.4) 100%)',
+                        'tech-grid': "linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px)",
                     }
                 }
             }
         }
     </script>
     <style>
-        /* === 極致深空背景 === */
+        /* === 未來感深空背景 === */
         body {
-            background-color: #020617;
+            background-color: #050b14;
             color: #e2e8f0;
             overflow-x: hidden;
             font-family: 'Inter', 'Noto Sans TC', sans-serif;
-        }
-
-        /* 動態極光背景 - 增強層次感 */
-        body::before {
-            content: '';
-            position: fixed; top: -30%; left: -20%; width: 150%; height: 150%;
-            background: 
-                radial-gradient(circle at 50% 50%, rgba(45, 212, 191, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 20% 80%, rgba(168, 85, 247, 0.05) 0%, transparent 40%);
-            z-index: -2; pointer-events: none;
-            filter: blur(80px);
-            animation: pulse-glow 10s infinite alternate;
-        }
-
-        /* 網格紋理疊加 (Tech Texture) */
-        body::after {
-            content: "";
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: 
-                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 40px 40px;
-            z-index: -1; pointer-events: none;
-            mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
-            -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
-        }
-
-        /* === 頂級玻璃擬態導航 === */
-        .glass-nav {
-            background: rgba(2, 6, 23, 0.7);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        /* === 全息卡片 (Holo Card) - 核心設計 === */
-        .holo-card {
             position: relative;
-            background: rgba(30, 41, 59, 0.3); /* 初始更透 */
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 1.5rem;
-            overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 彈性動畫 */
-            transform-style: preserve-3d;
-            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
         }
 
-        /* 卡片光暈特效 */
-        .holo-card::before {
-            content: '';
-            position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
-            transform: skewX(-25deg);
-            transition: 0.5s;
+        /* 1. 動態網格地板 (營造 3D 空間感) */
+        .bg-grid-floor {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(rgba(45, 212, 191, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(45, 212, 191, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            transform: perspective(500px) rotateX(60deg) translateY(-100px) scale(2);
+            transform-origin: top center;
+            opacity: 0.3;
+            z-index: -3;
+            pointer-events: none;
+            /* animation: grid-move 20s linear infinite; */ /* 視效能開啟 */
+        }
+
+        /* 2. 頂部極光暈染 (氛圍) */
+        .ambient-glow {
+            position: fixed; top: -50%; left: 50%; transform: translateX(-50%);
+            width: 120vw; height: 100vh;
+            background: radial-gradient(circle, rgba(45, 212, 191, 0.1) 0%, rgba(99, 102, 241, 0.05) 40%, transparent 70%);
+            filter: blur(80px);
+            z-index: -2;
             pointer-events: none;
         }
 
-        /* 卡片懸停狀態 - 這是千萬級的關鍵 */
-        .holo-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            background: linear-gradient(160deg, rgba(45, 212, 191, 0.1), rgba(15, 23, 42, 0.6));
-            border-color: rgba(45, 212, 191, 0.4);
-            box-shadow: 
-                0 20px 50px -10px rgba(45, 212, 191, 0.15), /* 青色光暈 */
-                0 0 15px rgba(45, 212, 191, 0.1) inset; /* 內部發光 */
+        /* === 科技感導航 === */
+        .glass-nav {
+            background: rgba(5, 11, 20, 0.6);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
         }
 
-        .holo-card:hover::before { left: 150%; transition: 0.7s; }
+        /* === 核心卡片設計 (Energy Blocks) === */
+        .tech-card {
+            position: relative;
+            background: rgba(20, 30, 48, 0.4);
+            backdrop-filter: blur(10px);
+            border-radius: 1.5rem;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            height: 100%;
+            display: flex; flex-direction: column; justify-content: space-between;
+            
+            /* 預設邊框與光暈 (待機狀態) - 由下方 CSS 變數控制 */
+            border: 1px solid var(--card-border);
+            box-shadow: 0 0 15px var(--card-glow-idle), inset 0 0 20px var(--card-glow-idle-inner);
+        }
 
-        /* Icon 容器 - 懸浮感 */
-        .icon-box {
+        /* 各卡片專屬色系定義 */
+        .card-cyan   { --card-border: rgba(45, 212, 191, 0.3); --card-glow-idle: rgba(45, 212, 191, 0.05); --card-glow-idle-inner: rgba(45, 212, 191, 0.02); --card-accent: #2dd4bf; }
+        .card-purple { --card-border: rgba(168, 85, 247, 0.3); --card-glow-idle: rgba(168, 85, 247, 0.05); --card-glow-idle-inner: rgba(168, 85, 247, 0.02); --card-accent: #a855f7; }
+        .card-green  { --card-border: rgba(52, 211, 153, 0.3); --card-glow-idle: rgba(52, 211, 153, 0.05); --card-glow-idle-inner: rgba(52, 211, 153, 0.02); --card-accent: #34d399; }
+        .card-amber  { --card-border: rgba(251, 191, 36, 0.3); --card-glow-idle: rgba(251, 191, 36, 0.05); --card-glow-idle-inner: rgba(251, 191, 36, 0.02); --card-accent: #fbbf24; }
+        .card-rose   { --card-border: rgba(251, 113, 133, 0.3); --card-glow-idle: rgba(251, 113, 133, 0.05); --card-glow-idle-inner: rgba(251, 113, 133, 0.02); --card-accent: #fb7185; }
+        .card-blue   { --card-border: rgba(96, 165, 250, 0.3); --card-glow-idle: rgba(96, 165, 250, 0.05); --card-glow-idle-inner: rgba(96, 165, 250, 0.02); --card-accent: #60a5fa; }
+
+        /* 卡片懸停 (Hover) - 能量爆發 */
+        .tech-card:hover {
+            transform: translateY(-6px) scale(1.01);
+            border-color: var(--card-accent);
+            background: linear-gradient(160deg, rgba(20, 30, 48, 0.6), rgba(10, 15, 25, 0.9));
+            box-shadow: 
+                0 20px 40px -10px rgba(0, 0, 0, 0.6),
+                0 0 30px var(--card-glow-idle), /* 外發光增強 */
+                inset 0 0 20px var(--card-glow-idle); /* 內發光增強 */
+        }
+
+        /* 裝飾線條 (掃描線) */
+        .tech-card::after {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--card-accent), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+            opacity: 0.5;
+        }
+        .tech-card:hover::after {
+            transform: translateX(100%);
+            transition: transform 1s ease-in-out;
+        }
+
+        /* Icon 容器 */
+        .icon-wrapper {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            transition: all 0.4s ease;
+            transition: all 0.3s ease;
         }
-        .holo-card:hover .icon-box {
-            background: rgba(45, 212, 191, 0.2);
-            border-color: rgba(45, 212, 191, 0.5);
+        .tech-card:hover .icon-wrapper {
+            background: var(--card-glow-idle);
+            border-color: var(--card-accent);
             color: #fff;
-            transform: scale(1.1) rotate(5deg);
-            box-shadow: 0 0 20px rgba(45, 212, 191, 0.4);
+            transform: scale(1.1);
+            box-shadow: 0 0 15px var(--card-glow-idle);
         }
 
-        /* === 文字流光特效 === */
-        .text-glow-gradient {
-            background: linear-gradient(to right, #2dd4bf, #3b82f6, #2dd4bf);
-            background-size: 200% auto;
-            color: transparent;
-            -webkit-background-clip: text;
-            background-clip: text;
-            animation: shine 4s linear infinite;
-        }
-
-        /* === 麵包屑導航 === */
+        /* 麵包屑 */
         .breadcrumb-item + .breadcrumb-item::before {
-            content: "›"; padding: 0 0.6rem; color: rgba(148, 163, 184, 0.4); font-size: 1.1em;
+            content: "/"; padding: 0 0.6rem; color: rgba(148, 163, 184, 0.3); font-size: 0.9em;
         }
 
-        #canvas-container { position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: 0.6; }
+        #canvas-container { position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: 0.5; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col selection:bg-teal-500/30 selection:text-teal-100">
+<body class="min-h-screen flex flex-col font-sans selection:bg-teal-500/30 selection:text-teal-100">
 
     <div id="canvas-container"><canvas id="molecule-canvas"></canvas></div>
+    <div class="bg-grid-floor"></div>
+    <div class="ambient-glow"></div>
 
-    <nav class="glass-nav sticky top-0 z-50 h-20 flex items-center backdrop-blur-xl">
+    <nav class="glass-nav sticky top-0 z-50 h-20 flex items-center">
         <div class="max-w-7xl mx-auto px-6 w-full flex justify-between items-center">
             
             <div class="flex items-center gap-5">
-                <div onclick="window.location.href='index.html'" class="cursor-pointer group relative flex items-center justify-center w-11 h-11 rounded-xl bg-white/5 border border-white/10 hover:border-teal-400/50 hover:bg-teal-400/10 transition-all duration-300 overflow-hidden">
-                    <div class="absolute inset-0 bg-teal-400/20 blur-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <i class="fa-solid fa-robot text-teal-400 text-xl relative z-10 group-hover:scale-110 transition-transform duration-300"></i>
-                </div>
-                <div class="h-8 w-px bg-gradient-to-b from-transparent via-slate-700 to-transparent"></div>
-                <div class="flex items-center text-sm md:text-base font-medium tracking-wide">
-                    <span onclick="window.location.href='student_subject.html'" class="breadcrumb-item cursor-pointer text-slate-400 hover:text-white transition duration-300">Subjects</span>
-                    <span class="breadcrumb-item text-teal-400 font-bold drop-shadow-[0_0_8px_rgba(45,212,191,0.5)]" data-i18n="module_title">Natural Science</span>
+                <a href="index.html" class="relative group flex items-center justify-center w-10 h-10">
+                    <div class="absolute inset-0 bg-teal-500/20 rounded-full blur-md group-hover:bg-teal-400/40 transition"></div>
+                    <i class="fa-solid fa-atom text-teal-400 text-xl relative z-10 group-hover:scale-110 transition-transform group-hover:rotate-180 duration-700"></i>
+                </a>
+                <div class="flex items-center text-sm tracking-wide">
+                    <span class="text-slate-500 mr-3 hidden sm:inline font-tech tracking-widest text-[10px] uppercase">System Access</span>
+                    <a href="student_subject.html" class="breadcrumb-item text-slate-400 hover:text-white transition">Subjects</a>
+                    <span class="breadcrumb-item text-teal-400 font-bold" data-i18n="module_title">Natural Science</span>
                 </div>
             </div>
 
-            <div class="flex items-center space-x-6">
-                <div class="hidden md:flex items-center gap-3 px-4 py-1.5 rounded-full bg-slate-900/60 border border-teal-500/20 shadow-[0_0_15px_rgba(45,212,191,0.1)]">
-                    <span class="relative flex h-2 w-2">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
-                      <span class="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
-                    </span>
-                    <span class="text-xs font-tech text-teal-100 uppercase tracking-widest" id="user-display">STUDENT</span>
+            <div class="flex items-center space-x-5">
+                <div class="hidden md:flex items-center gap-2 px-3 py-1 rounded border border-teal-500/30 bg-teal-500/5">
+                    <div class="w-1.5 h-1.5 rounded-full bg-teal-400 shadow-[0_0_5px_#2dd4bf]"></div>
+                    <span class="text-[10px] font-tech text-teal-200 uppercase tracking-widest" id="user-display">Student ID: 001</span>
                 </div>
                 
-                <select id="language-selector" onchange="changeLanguage()" class="bg-slate-900/80 border border-slate-700 text-slate-300 rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-teal-500 focus:border-teal-500 outline-none text-xs tracking-wide cursor-pointer transition hover:bg-slate-800 hover:text-white">
+                <select id="language-selector" onchange="changeLanguage()" class="bg-black/40 border border-white/10 text-slate-300 rounded px-3 py-1 text-xs focus:border-teal-500 outline-none cursor-pointer hover:bg-white/5 transition">
                     <option value="zh-TW">繁體中文</option>
                     <option value="en">English</option>
                     <option value="ja">日本語</option>
@@ -214,130 +208,121 @@
     <main class="flex-grow p-6 md:p-12 relative z-10 flex flex-col items-center justify-start">
         
         <div class="max-w-7xl w-full">
-            <div class="mb-20 flex flex-col md:flex-row justify-between items-end gap-8 animate-fade-in-up">
-                <div class="relative pl-8 md:pl-0">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-[10px] font-tech tracking-[0.2em] mb-4">
-                        <i class="fa-solid fa-atom"></i> AI-POWERED LEARNING CORE
+            
+            <div class="mb-16 mt-4 flex flex-col md:flex-row justify-between items-end gap-8 animate-fade-in-up">
+                <div>
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-500/10 text-teal-400 border border-teal-500/20 tracking-wider">CORE MODULE</span>
+                        <div class="h-px w-20 bg-gradient-to-r from-teal-500/50 to-transparent"></div>
                     </div>
-                    
-                    <h1 class="text-5xl md:text-8xl font-black text-white mb-4 tracking-tighter font-heading leading-tight">
-                        Natural <br> <span class="text-glow-gradient">Science</span>
+                    <h1 class="text-4xl md:text-6xl font-black text-white mb-4 tracking-tight font-heading leading-tight drop-shadow-xl">
+                        Natural Science
                     </h1>
-                    <p class="text-slate-400 text-lg md:text-xl max-w-2xl font-light tracking-wide leading-relaxed border-l-2 border-teal-500/50 pl-6" data-i18n="science_desc">
+                    <p class="text-slate-400 text-lg max-w-xl font-light tracking-wide leading-relaxed" data-i18n="science_desc">
                         AI 驅動賦能，探索自然科學的無限可能。
                     </p>
                 </div>
                 
-                <div class="flex gap-8 p-6 rounded-2xl bg-slate-900/40 border border-white/5 backdrop-blur-md shadow-2xl">
-                    <div class="text-right">
-                        <div class="text-[10px] text-teal-500 font-tech tracking-widest mb-1 opacity-70">AI ENGINE</div>
-                        <div class="text-white font-bold text-2xl flex items-center justify-end gap-2 font-tech">
-                            <i class="fa-solid fa-bolt text-yellow-400 text-sm animate-pulse"></i> ONLINE
-                        </div>
+                <div class="hidden md:flex gap-6 p-4 rounded-xl border border-white/5 bg-white/5 backdrop-blur-sm">
+                    <div class="text-center px-2">
+                        <div class="text-[10px] text-slate-500 font-tech mb-1">NETWORK</div>
+                        <div class="text-emerald-400 font-bold text-sm"><i class="fa-solid fa-signal"></i> 100%</div>
                     </div>
-                    <div class="w-px h-12 bg-gradient-to-b from-transparent via-white/20 to-transparent"></div>
-                    <div class="text-right">
-                        <div class="text-[10px] text-teal-500 font-tech tracking-widest mb-1 opacity-70">SYSTEM</div>
-                        <div class="text-white font-bold text-2xl font-tech">V2.0</div>
+                    <div class="w-px h-8 bg-white/10"></div>
+                    <div class="text-center px-2">
+                        <div class="text-[10px] text-slate-500 font-tech mb-1">AI STATUS</div>
+                        <div class="text-teal-400 font-bold text-sm animate-pulse">ACTIVE</div>
                     </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-                <div onclick="enterModule('reading')" class="holo-card p-8 cursor-pointer group flex flex-col h-72 justify-between">
-                    <div class="flex justify-between items-start">
-                        <div class="icon-box w-16 h-16 rounded-2xl flex items-center justify-center text-3xl text-teal-400 group-hover:text-white">
+                <div onclick="enterModule('reading')" class="tech-card card-cyan p-6 cursor-pointer group animate-fade-in-up" style="animation-delay: 0.1s;">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="icon-wrapper w-14 h-14 rounded-xl flex items-center justify-center text-2xl text-teal-400 group-hover:text-white">
                             <i class="fa-solid fa-book-journal-whills"></i>
                         </div>
-                        <div class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-slate-400 group-hover:bg-teal-500 group-hover:border-teal-500 group-hover:text-white transition-all duration-300">
-                            <i class="fa-solid fa-arrow-right -rotate-45 group-hover:rotate-0 transition-transform duration-300"></i>
-                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-600 group-hover:text-teal-400 transition-colors"></i>
                     </div>
-                    <div class="relative z-10">
-                        <h3 class="text-2xl font-bold text-white mb-2 tracking-wide group-hover:text-teal-300 transition" data-i18n="mod_1_title">科學雙語閱讀</h3>
-                        <p class="text-slate-400 text-sm leading-relaxed group-hover:text-slate-200 transition" data-i18n="mod_1_desc">
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2 group-hover:text-teal-300 transition" data-i18n="mod_1_title">科學雙語閱讀</h3>
+                        <p class="text-slate-400 text-xs leading-relaxed group-hover:text-slate-300 transition" data-i18n="mod_1_desc">
                             以科學知識為主體，AI 輔助雙語對照，點擊術語即時圖解。
                         </p>
                     </div>
                 </div>
 
-                <div onclick="enterModule('mastery')" class="holo-card p-8 cursor-pointer group flex flex-col h-72 justify-between">
-                    <div class="flex justify-between items-start">
-                        <div class="icon-box w-16 h-16 rounded-2xl flex items-center justify-center text-3xl text-teal-400 group-hover:text-white">
+                <div onclick="enterModule('mastery')" class="tech-card card-purple p-6 cursor-pointer group animate-fade-in-up" style="animation-delay: 0.2s;">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="icon-wrapper w-14 h-14 rounded-xl flex items-center justify-center text-2xl text-purple-400 group-hover:text-white">
                             <i class="fa-solid fa-network-wired"></i>
                         </div>
-                        <div class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-slate-400 group-hover:bg-teal-500 group-hover:border-teal-500 group-hover:text-white transition-all duration-300">
-                            <i class="fa-solid fa-arrow-right -rotate-45 group-hover:rotate-0 transition-transform duration-300"></i>
-                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-600 group-hover:text-purple-400 transition-colors"></i>
                     </div>
-                    <div class="relative z-10">
-                        <h3 class="text-2xl font-bold text-white mb-2 tracking-wide group-hover:text-teal-300 transition" data-i18n="mod_2_title">單元重點精熟</h3>
-                        <p class="text-slate-400 text-sm leading-relaxed group-hover:text-slate-200 transition" data-i18n="mod_2_desc">
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2 group-hover:text-purple-300 transition" data-i18n="mod_2_title">單元重點精熟</h3>
+                        <p class="text-slate-400 text-xs leading-relaxed group-hover:text-slate-300 transition" data-i18n="mod_2_desc">
                             單元核心概念萃取，AI 自動生成每週必背重點與心智圖。
                         </p>
                     </div>
                 </div>
 
-                <div onclick="enterModule('quiz')" class="holo-card p-8 cursor-pointer group flex flex-col h-72 justify-between">
-                    <div class="flex justify-between items-start">
-                        <div class="icon-box w-16 h-16 rounded-2xl flex items-center justify-center text-3xl text-teal-400 group-hover:text-white">
+                <div onclick="enterModule('quiz')" class="tech-card card-green p-6 cursor-pointer group animate-fade-in-up" style="animation-delay: 0.3s;">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="icon-wrapper w-14 h-14 rounded-xl flex items-center justify-center text-2xl text-emerald-400 group-hover:text-white">
                             <i class="fa-solid fa-microchip"></i>
                         </div>
-                        <div class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-slate-400 group-hover:bg-teal-500 group-hover:border-teal-500 group-hover:text-white transition-all duration-300">
-                            <i class="fa-solid fa-arrow-right -rotate-45 group-hover:rotate-0 transition-transform duration-300"></i>
-                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-600 group-hover:text-emerald-400 transition-colors"></i>
                     </div>
-                    <div class="relative z-10">
-                        <h3 class="text-2xl font-bold text-white mb-2 tracking-wide group-hover:text-teal-300 transition" data-i18n="mod_3_title">AI 適性測驗</h3>
-                        <p class="text-slate-400 text-sm leading-relaxed group-hover:text-slate-200 transition" data-i18n="mod_3_desc">
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2 group-hover:text-emerald-300 transition" data-i18n="mod_3_title">AI 適性測驗</h3>
+                        <p class="text-slate-400 text-xs leading-relaxed group-hover:text-slate-300 transition" data-i18n="mod_3_desc">
                             動態調整難度的智慧測驗，精準偵測你的概念漏洞並修正。
                         </p>
                     </div>
                 </div>
 
-                <div onclick="enterModule('lab')" class="holo-card p-8 cursor-pointer group flex flex-col h-72 justify-between">
-                    <div class="flex justify-between items-start">
-                        <div class="icon-box w-16 h-16 rounded-2xl flex items-center justify-center text-3xl text-teal-400 group-hover:text-white">
+                <div onclick="enterModule('lab')" class="tech-card card-amber p-6 cursor-pointer group animate-fade-in-up" style="animation-delay: 0.4s;">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="icon-wrapper w-14 h-14 rounded-xl flex items-center justify-center text-2xl text-amber-400 group-hover:text-white">
                             <i class="fa-solid fa-flask-vial"></i>
                         </div>
-                        <div class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-slate-400 group-hover:bg-teal-500 group-hover:border-teal-500 group-hover:text-white transition-all duration-300">
-                            <i class="fa-solid fa-arrow-right -rotate-45 group-hover:rotate-0 transition-transform duration-300"></i>
-                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-600 group-hover:text-amber-400 transition-colors"></i>
                     </div>
-                    <div class="relative z-10">
-                        <h3 class="text-2xl font-bold text-white mb-2 tracking-wide group-hover:text-teal-300 transition" data-i18n="mod_4_title">虛擬實驗室</h3>
-                        <p class="text-slate-400 text-sm leading-relaxed group-hover:text-slate-200 transition" data-i18n="mod_4_desc">
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2 group-hover:text-amber-300 transition" data-i18n="mod_4_title">虛擬實驗室</h3>
+                        <p class="text-slate-400 text-xs leading-relaxed group-hover:text-slate-300 transition" data-i18n="mod_4_desc">
                             互動式虛擬實驗操作，安全地模擬化學反應與物理現象。
                         </p>
                     </div>
                 </div>
 
-                <div onclick="enterModule('cap')" class="holo-card p-8 cursor-pointer group flex flex-col h-72 justify-between">
-                    <div class="flex justify-between items-start">
-                        <div class="icon-box w-16 h-16 rounded-2xl flex items-center justify-center text-3xl text-teal-400 group-hover:text-white">
+                <div onclick="enterModule('cap')" class="tech-card card-rose p-6 cursor-pointer group animate-fade-in-up" style="animation-delay: 0.5s;">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="icon-wrapper w-14 h-14 rounded-xl flex items-center justify-center text-2xl text-rose-400 group-hover:text-white">
                             <i class="fa-solid fa-pen-nib"></i>
                         </div>
-                        <span class="text-[10px] font-bold text-yellow-400 bg-yellow-400/10 px-3 py-1 rounded-full border border-yellow-400/20 backdrop-blur-sm self-start tracking-wider">JUNIOR</span>
+                        <span class="text-[10px] font-bold text-rose-400 bg-rose-400/10 px-2 py-0.5 rounded border border-rose-400/20">JUNIOR</span>
                     </div>
-                    <div class="relative z-10">
-                        <h3 class="text-2xl font-bold text-white mb-2 tracking-wide group-hover:text-teal-300 transition" data-i18n="mod_5_title">國中會考模擬</h3>
-                        <p class="text-slate-400 text-sm leading-relaxed group-hover:text-slate-200 transition" data-i18n="mod_5_desc">
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2 group-hover:text-rose-300 transition" data-i18n="mod_5_title">國中會考模擬</h3>
+                        <p class="text-slate-400 text-xs leading-relaxed group-hover:text-slate-300 transition" data-i18n="mod_5_desc">
                             國中教育會考全真模擬，大數據分析歷屆試題與考點預測。
                         </p>
                     </div>
                 </div>
 
-                <div onclick="enterModule('gsat')" class="holo-card p-8 cursor-pointer group flex flex-col h-72 justify-between">
-                    <div class="flex justify-between items-start">
-                        <div class="icon-box w-16 h-16 rounded-2xl flex items-center justify-center text-3xl text-teal-400 group-hover:text-white">
+                <div onclick="enterModule('gsat')" class="tech-card card-blue p-6 cursor-pointer group animate-fade-in-up" style="animation-delay: 0.6s;">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="icon-wrapper w-14 h-14 rounded-xl flex items-center justify-center text-2xl text-blue-400 group-hover:text-white">
                             <i class="fa-solid fa-chess-knight"></i>
                         </div>
-                        <span class="text-[10px] font-bold text-green-400 bg-green-400/10 px-3 py-1 rounded-full border border-green-400/20 backdrop-blur-sm self-start tracking-wider">SENIOR</span>
+                        <span class="text-[10px] font-bold text-blue-400 bg-blue-400/10 px-2 py-0.5 rounded border border-blue-400/20">SENIOR</span>
                     </div>
-                    <div class="relative z-10">
-                        <h3 class="text-2xl font-bold text-white mb-2 tracking-wide group-hover:text-teal-300 transition" data-i18n="mod_6_title">高中學測戰略</h3>
-                        <p class="text-slate-400 text-sm leading-relaxed group-hover:text-slate-200 transition" data-i18n="mod_6_desc">
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2 group-hover:text-blue-300 transition" data-i18n="mod_6_title">高中學測戰略</h3>
+                        <p class="text-slate-400 text-xs leading-relaxed group-hover:text-slate-300 transition" data-i18n="mod_6_desc">
                             高中學測戰略中心，針對素養題型與混合題型進行 AI 深度解析。
                         </p>
                     </div>
@@ -347,10 +332,9 @@
         </div>
     </main>
 
-    <footer class="text-center py-10 relative z-10">
-        <div class="h-px w-full max-w-7xl mx-auto bg-gradient-to-r from-transparent via-teal-500/20 to-transparent mb-6"></div>
-        <p class="text-teal-500/40 text-[10px] font-tech tracking-[0.2em] uppercase">
-            AI School System v2.0 &bull; Secure Connection Established
+    <footer class="text-center py-8 relative z-10 border-t border-white/5 bg-black/20 backdrop-blur-md">
+        <p class="text-slate-600 text-[10px] font-tech tracking-[0.2em] uppercase">
+            AI SCHOOL SYSTEM &bull; CONNECTED
         </p>
     </footer>
 
@@ -362,10 +346,10 @@
         } catch(e) {}
 
         if (currentUser) {
-            document.getElementById("user-display").textContent = `${currentUser.role || 'User'}: ${currentUser.name}`;
+            document.getElementById("user-display").textContent = `${currentUser.role || 'Student'}: ${currentUser.name}`;
         }
 
-        // 2. 微觀分子網絡 (Molecular Network) Canvas - 調整為極簡風格
+        // 2. 微觀分子 Canvas (調整為更科技感的粒子)
         const canvas = document.getElementById('molecule-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
@@ -377,14 +361,14 @@
         window.addEventListener('resize', resize);
         resize();
 
-        class Atom {
+        class Particle {
             constructor() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                this.vx = (Math.random() - 0.5) * 0.15; // 速度更慢，更優雅
-                this.vy = (Math.random() - 0.5) * 0.15;
-                this.size = Math.random() * 2; // 粒子更小
-                this.color = `rgba(45, 212, 191, ${Math.random() * 0.2 + 0.05})`; // 更透明
+                this.vx = (Math.random() - 0.5) * 0.3;
+                this.vy = (Math.random() - 0.5) * 0.3;
+                this.size = Math.random() * 1.5;
+                this.alpha = Math.random() * 0.5 + 0.1;
             }
             update() {
                 this.x += this.vx;
@@ -395,29 +379,31 @@
             draw() {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
+                ctx.fillStyle = `rgba(45, 212, 191, ${this.alpha})`;
                 ctx.fill();
             }
         }
 
-        function initAtoms() {
+        function initParticles() {
             particles = [];
-            let count = (canvas.width * canvas.height) / 20000; // 降低密度
-            for (let i = 0; i < count; i++) particles.push(new Atom());
+            let count = (canvas.width * canvas.height) / 18000;
+            for (let i = 0; i < count; i++) particles.push(new Particle());
         }
 
-        function animateAtoms() {
+        function animateParticles() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => { p.update(); p.draw(); });
-            
-            // 連結線
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            // 減少連線數量以保持乾淨
             particles.forEach((a, i) => {
                 for (let j = i + 1; j < particles.length; j++) {
                     const b = particles[j];
                     const dist = (a.x - b.x) ** 2 + (a.y - b.y) ** 2;
-                    if (dist < 18000) {
+                    if (dist < 10000) {
                         ctx.beginPath();
-                        ctx.strokeStyle = `rgba(45, 212, 191, ${0.05 - dist/400000})`; // 極淡
+                        ctx.strokeStyle = `rgba(45, 212, 191, ${0.05 - dist/200000})`;
                         ctx.lineWidth = 0.5;
                         ctx.moveTo(a.x, a.y);
                         ctx.lineTo(b.x, b.y);
@@ -425,16 +411,16 @@
                     }
                 }
             });
-            requestAnimationFrame(animateAtoms);
+            requestAnimationFrame(animateParticles);
         }
 
-        initAtoms();
-        animateAtoms();
+        initParticles();
+        animateParticles();
 
         // 3. 多語系設定
         const translations = {
             "zh-TW": {
-                "module_title": "自然科學", "module_title_hero": "Natural Science",
+                "module_title": "自然科學",
                 "science_desc": "AI 驅動賦能，探索自然科學的無限可能。",
                 "mod_1_title": "科學雙語閱讀", "mod_1_desc": "以科學知識為主體，AI 輔助雙語對照，點擊術語即時圖解。",
                 "mod_2_title": "單元重點精熟", "mod_2_desc": "單元核心概念萃取，AI 自動生成每週必背重點與心智圖。",
@@ -444,7 +430,7 @@
                 "mod_6_title": "高中學測戰略", "mod_6_desc": "高中學測戰略中心，針對素養題型與混合題型進行 AI 深度解析。"
             },
             "en": {
-                "module_title": "Natural Science", "module_title_hero": "Natural Science",
+                "module_title": "Natural Science",
                 "science_desc": "AI-driven empowerment to explore the infinite possibilities of natural science.",
                 "mod_1_title": "Bilingual Reader", "mod_1_desc": "Science-focused bilingual texts with AI-assisted terminology diagrams.",
                 "mod_2_title": "Unit Mastery", "mod_2_desc": "Extract core concepts and auto-generate mind maps and key notes.",
@@ -454,7 +440,7 @@
                 "mod_6_title": "GSAT Strategy", "mod_6_desc": "Strategic analysis for GSAT, focusing on literacy and mixed question types."
             },
             "ja": {
-                "module_title": "自然科学", "module_title_hero": "Natural Science",
+                "module_title": "自然科学",
                 "science_desc": "AI駆動によるエンパワーメントで、自然科学の無限の可能性を探求します。",
                 "mod_1_title": "二言語読解", "mod_1_desc": "科学知識を中心とした、AI支援による対訳と用語解説。",
                 "mod_2_title": "単元マスター", "mod_2_desc": "核心概念を抽出し、マインドマップと重要ポイントを自動生成。",
@@ -464,7 +450,7 @@
                 "mod_6_title": "GSAT戦略", "mod_6_desc": "大学入試(GSAT)向けの戦略センター。AIによる深い分析を提供。"
             },
             "zh-CN": {
-                "module_title": "自然科学", "module_title_hero": "Natural Science",
+                "module_title": "自然科学",
                 "science_desc": "AI 驱动赋能，探索自然科学的无限可能。",
                 "mod_1_title": "科学双语阅读", "mod_1_desc": "以科学知识为主体，AI 辅助双语对照，点击术语即时图解。",
                 "mod_2_title": "单元重点精熟", "mod_2_desc": "单元核心概念萃取，AI 自动生成每周必背重点与思维导图。",
@@ -490,12 +476,11 @@
             changeLanguage();
         });
 
-        // 4. 導航邏輯 (保持不變)
+        // 4. 模組跳轉
         function enterModule(moduleName) {
             let targetUrl = "";
             switch(moduleName) {
                 case 'reading': targetUrl = "student_science_bilingual.html"; break;
-                // ✅ 連結至單元重點精熟網頁
                 case 'mastery': targetUrl = "science_unit_coreidea.html"; break; 
                 case 'quiz':    targetUrl = "science_adaptive_testing.html"; break;
                 case 'lab':     targetUrl = "science_virtural_lab.html"; break;
@@ -503,9 +488,9 @@
                 case 'gsat':    targetUrl = "science_csat.html"; break;
                 default: return;
             }
-            // 轉場特效
+            // 轉場
             document.querySelector('main').style.opacity = '0';
-            document.querySelector('main').style.transform = 'scale(0.95)';
+            document.querySelector('main').style.transform = 'translateY(-20px)';
             document.querySelector('main').style.transition = 'all 0.4s ease-in';
             setTimeout(() => { window.location.href = targetUrl; }, 300);
         }
