@@ -749,53 +749,7 @@ src = src.replace(/　/g,'');
 
         function stopSpeech() { synth.cancel(); isSpeaking=false; document.getElementById('btn-play').innerHTML='<i class="fa-solid fa-play text-xs"></i>'; }
 
-        function pickBestVoice(isEng, gender){
-          const voices = (synth && synth.getVoices) ? synth.getVoices() : [];
-          if(!voices.length) return null;
 
-          const wantLang = isEng ? ['en-us','en-gb','en'] : ['zh-tw','zh-hk','zh-cn','zh'];
-          const inLang = (v) => wantLang.some(l => (v.lang||'').toLowerCase().includes(l));
-
-          const score = (v) => {
-            const name = (v.name||'').toLowerCase();
-            const lang = (v.lang||'').toLowerCase();
-            let s = 0;
-
-            if(isEng){
-              if(lang.includes('en-us')) s += 20;
-              if(lang.includes('en-gb')) s += 15;
-              if(lang.includes('en')) s += 10;
-            }else{
-              if(lang.includes('zh-tw')) s += 40;
-              if(lang.includes('zh-hk')) s += 20;
-              if(lang.includes('zh-cn')) s += 10;
-              if(lang.includes('zh')) s += 5;
-            }
-
-            if(name.includes('microsoft') && name.includes('online')) s += 35;
-            if(name.includes('microsoft') && name.includes('natural')) s += 45;
-            if(name.includes('microsoft')) s += 10;
-
-            if(name.includes('google')) s += 12;
-
-            if(name.includes('compact')) s -= 8;
-            if(name.includes('standard')) s -= 5;
-
-            if(isEng){
-              if(gender==='male' && (name.includes('guy') || name.includes('david'))) s += 2;
-              if(gender==='female' && (name.includes('jenny') || name.includes('aria') || name.includes('zira') || name.includes('susan'))) s += 2;
-            }else{
-              if(name.includes('hsiaochen') || name.includes('yunjhe') || name.includes('yating') || name.includes('huihui')) s += 3;
-            }
-
-            return s;
-          };
-
-          const candidates = voices.filter(v => inLang(v));
-          if(!candidates.length) return null;
-          candidates.sort((a,b)=>score(b)-score(a));
-          return candidates[0] || null;
-        }
 function pickBestVoice(isEng, gender){
   const voices = (synth && synth.getVoices) ? synth.getVoices() : [];
   if(!voices.length) return null;
@@ -943,7 +897,8 @@ function splitTextForSpeak(text, isEng){
       const voices = synth.getVoices ? synth.getVoices() : [];
       const wantPrefix = isEng ? "en" : "zh";
       const cand = voices.filter(v => (v.lang || "").toLowerCase().startsWith(wantPrefix));
-      if (cand.length) voice = cand[0];
+const preferred = cand.find(v => v.default) || cand[0];
+if (preferred) voice = preferred;
     }
 
     if (voice) u.voice = voice;
