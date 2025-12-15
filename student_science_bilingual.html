@@ -6,7 +6,7 @@
     <title>AI School | 科學雙語閱讀</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -19,149 +19,141 @@
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+                        heading: ['Noto Sans TC', 'sans-serif'],
                     },
                     colors: {
-                        tech: {
-                            bg: '#0f172a',
-                            panel: 'rgba(15, 23, 42, 0.6)',
-                            border: 'rgba(255, 255, 255, 0.08)',
-                            accent: '#4ade80',
-                            highlight: '#facc15'
+                        student: {
+                            bg: '#0B1121',       /* 深宇宙藍 */
+                            card: '#1E293B',     /* 卡片底色 */
+                            english: '#4ade80',  /* 螢光薄荷綠 */
+                            highlight: '#f472b6',/* 亮桃紅 */
+                            term: '#fbbf24'      /* 金黃色 */
                         }
+                    },
+                    boxShadow: {
+                        'neon': '0 0 15px rgba(74, 222, 128, 0.3)',
+                        'glow': '0 0 20px rgba(244, 114, 182, 0.2)',
                     }
                 }
             }
         }
     </script>
     <style>
-        /* 1. 基礎設定：極光深色背景 */
+        /* 1. 基礎設定：學生友善的深色模式 */
         body { 
-            background-color: #0f172a; 
-            color: #e2e8f0; 
+            background-color: #0B1121; 
+            color: #f1f5f9; 
             overflow: hidden; 
             font-family: 'Inter', 'Noto Sans TC', sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 背景流動極光動畫 */
+        /* 柔和的極光背景 (不搶眼) */
         body::before {
             content: '';
-            position: fixed;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at center, rgba(74, 222, 128, 0.08) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.05) 0%, transparent 40%);
-            z-index: -2;
-            animation: aurora 20s infinite linear;
-            pointer-events: none;
-        }
-        @keyframes aurora {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle at 50% 50%, rgba(30, 58, 138, 0.15), transparent 60%);
+            z-index: -2; pointer-events: none;
         }
 
-        /* 2. 高級玻璃擬態面板 */
+        /* 2. 圓潤的玻璃卡片 (Student Card Style) */
         .glass-panel { 
-            background: rgba(15, 23, 42, 0.6); 
-            backdrop-filter: blur(24px); 
-            -webkit-backdrop-filter: blur(24px); 
+            background: rgba(30, 41, 59, 0.7); 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px); 
             border: 1px solid rgba(255, 255, 255, 0.08); 
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); 
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); 
+            border-radius: 1.5rem; /* 更圓的角 */
         }
 
         /* 捲軸美化 */
-        .scroll-area::-webkit-scrollbar { width: 4px; }
+        .scroll-area::-webkit-scrollbar { width: 6px; }
         .scroll-area::-webkit-scrollbar-track { background: transparent; }
-        .scroll-area::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
-        .scroll-area::-webkit-scrollbar-thumb:hover { background: rgba(74, 222, 128, 0.5); }
+        .scroll-area::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 99px; }
+        .scroll-area::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
 
-        /* 3. 導航選單優化 */
+        /* 3. 導航選單：像遊戲選單一樣好按 */
         .nav-item { 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            border-left: 2px solid transparent; 
+            transition: all 0.2s ease; 
             cursor: pointer; 
-            padding: 0.8rem 1rem; 
-            margin-bottom: 0.25rem; 
-            font-size: 0.95rem; 
+            padding: 1rem 1.2rem; 
+            margin-bottom: 0.5rem; 
+            font-size: 1rem; 
             color: #94a3b8; 
-            border-radius: 0 8px 8px 0;
+            border-radius: 1rem;
             font-weight: 500;
+            display: flex; align-items: center;
         }
         .nav-item:hover { 
-            background: linear-gradient(90deg, rgba(255,255,255,0.03), transparent); 
-            color: #f1f5f9; 
-            padding-left: 1.2rem;
+            background: rgba(255, 255, 255, 0.05); 
+            color: #fff; 
+            transform: translateX(4px);
         }
         .nav-item.active { 
-            background: linear-gradient(90deg, rgba(74, 222, 128, 0.1), transparent); 
-            border-left-color: #4ade80; 
+            background: linear-gradient(90deg, rgba(74, 222, 128, 0.15), transparent); 
             color: #4ade80; 
             font-weight: 700; 
+            box-shadow: inset 3px 0 0 #4ade80; /* 內發光指示條 */
         }
 
-        /* 4. 科學詞彙 (文內) - 螢光黃 */
+        /* 4. 科學詞彙 (像寶石一樣) */
         .sci-term { 
-            color: #facc15; 
+            color: #fbbf24; 
             font-weight: 700; 
-            border-bottom: 1.5px solid rgba(250, 204, 21, 0.3); 
+            border-bottom: 2px dashed rgba(251, 191, 36, 0.4); 
             cursor: pointer; 
             transition: all 0.2s; 
-            padding: 0 2px; 
-            text-shadow: 0 0 10px rgba(250, 204, 21, 0.2);
+            padding: 0 4px; 
+            border-radius: 4px;
         }
         .sci-term:hover { 
-            background-color: rgba(250, 204, 21, 0.2); 
+            background-color: rgba(251, 191, 36, 0.2); 
             color: #fff; 
-            border-radius: 4px; 
             border-bottom-color: transparent;
+            transform: scale(1.05);
+            display: inline-block;
         }
 
-        /* 5. 閱讀區塊優化 */
+        /* 5. 閱讀區塊：卡片式閱讀 */
         .content-block { 
-            margin-bottom: 2rem; 
+            margin-bottom: 2.5rem; 
             padding: 1.5rem; 
-            border-radius: 1rem; 
+            border-radius: 1.5rem; 
             background: transparent; 
             border: 1px solid transparent; 
             transition: all 0.3s ease; 
         }
-        .content-block:hover {
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        /* 正在朗讀的高亮樣式 */
+        
+        /* 🎯 [核心] 正在朗讀的高亮 (學生最在意的) */
         .reading-active {
-            background: linear-gradient(90deg, rgba(74, 222, 128, 0.05) 0%, rgba(244, 114, 182, 0.1) 50%, rgba(74, 222, 128, 0.05) 100%) !important;
-            background-size: 200% 100% !important;
-            animation: reading-scan 3s linear infinite;
-            border-left: 4px solid #4ade80 !important; 
-            border-radius: 4px 12px 12px 4px;
-            box-shadow: 0 0 25px rgba(74, 222, 128, 0.1);
+            /* 柔和的粉色光暈背景 */
+            background: linear-gradient(90deg, rgba(244, 114, 182, 0.08) 0%, rgba(244, 114, 182, 0.15) 50%, rgba(244, 114, 182, 0.08) 100%) !important;
+            
+            /* 左側明顯的桃紅指示條 */
+            border-left: 6px solid #f472b6 !important; 
+            border-radius: 0.5rem 1.5rem 1.5rem 0.5rem;
+            
+            /* 讓區塊微微浮起 */
+            transform: scale(1.01);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
         }
         
+        /* 朗讀時文字變色 */
         .reading-active .zh-text,
         .reading-active .en-text,
         .reading-active .sci-term {
-            color: #f472b6 !important; /* 桃紅色 */
-            text-shadow: 0 0 5px rgba(244, 114, 182, 0.3);
-            border-left-color: #f472b6 !important;
+            color: #f472b6 !important;
+            text-shadow: 0 0 10px rgba(244, 114, 182, 0.4);
+            border-bottom-color: transparent;
         }
 
-        @keyframes reading-scan {
-            0% { background-position: 100% 0; }
-            100% { background-position: -100% 0; }
-        }
-
-        /* 6. 文字排版 */
+        /* 6. 字體排版 (大一點，好讀) */
         .en-text { 
-            font-size: 1.15rem; 
-            color: #4ade80; /* 螢光綠 */
-            line-height: 1.7; 
-            margin-bottom: 0.75rem; 
-            font-weight: 500; 
-            letter-spacing: 0.01em; 
+            font-size: 1.25rem; /* 加大 */
+            color: #4ade80; 
+            line-height: 1.6; 
+            margin-bottom: 0.8rem; 
+            font-weight: 600; /* 加粗 */
             font-family: 'Inter', sans-serif; 
             cursor: pointer; 
             transition: color 0.3s;
@@ -169,278 +161,237 @@
         .en-text:hover { opacity: 0.8; color: #fff; }
 
         .zh-text { 
-            font-size: 1.05rem; 
-            color: #ffffff; /* 純白 */
+            font-size: 1.1rem; 
+            color: #ffffff; 
             line-height: 1.8; 
-            padding-left: 12px; 
-            border-left: 2px solid rgba(255, 255, 255, 0.1); 
+            padding-left: 14px; 
+            border-left: 3px solid rgba(255, 255, 255, 0.1); 
             cursor: pointer; 
-            font-weight: 400;
+            font-weight: 400; 
             letter-spacing: 0.05em; 
             transition: color 0.3s;
         }
-        .zh-text:hover { color: #4ade80; border-left-color: #4ade80; }
+        .zh-text:hover { color: #f472b6; border-left-color: #f472b6; }
 
         .section-header { 
-            font-size: 1.5rem; 
-            font-weight: 800; 
+            font-size: 1.6rem; 
+            font-weight: 900; 
             color: #fff; 
-            margin-top: 3rem; 
-            margin-bottom: 1.5rem; 
+            margin-top: 3.5rem; 
+            margin-bottom: 2rem; 
             padding-bottom: 0.5rem; 
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
-            display: flex; 
-            align-items: center; 
-            gap: 0.75rem; 
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1); 
+            display: flex; align-items: center; gap: 1rem; 
         }
         .section-header::before { 
-            content: ''; 
-            display: block; 
-            width: 6px; 
-            height: 28px; 
-            background: linear-gradient(to bottom, #4ade80, #059669); 
-            border-radius: 4px; 
+            content: ''; display: block; width: 8px; height: 32px; 
+            background: #4ade80; border-radius: 99px; 
+            box-shadow: 0 0 10px #4ade80;
         }
 
-        /* === 💎 百萬級下拉選單 UI === */
-        .glass-select-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-            background-color: rgba(30, 41, 59, 0.4);
+        /* === 學生友善下拉選單 (膠囊按鈕) === */
+        .student-select-wrapper {
+            position: relative; display: flex; align-items: center;
+            background-color: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 0 10px;
-            transition: all 0.3s ease;
-            min-width: 90px;
-        }
-        .glass-select-wrapper:hover {
-            background-color: rgba(30, 41, 59, 0.8);
-            border-color: #4ade80; 
-            box-shadow: 0 0 10px rgba(74, 222, 128, 0.2);
-        }
-        .glass-select-icon {
-            color: #4ade80;
-            font-size: 0.8rem;
-            margin-right: 8px;
-            pointer-events: none;
-        }
-        .glass-select {
-            appearance: none;
-            -webkit-appearance: none;
-            background-color: transparent;
-            border: none;
-            color: #e2e8f0;
-            font-size: 0.85rem;
-            font-weight: 600;
-            padding: 6px 20px 6px 0;
+            border-radius: 99px; /* 膠囊形狀 */
+            padding: 0 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 100px;
             cursor: pointer;
-            outline: none;
-            width: 100%;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right center;
-            background-repeat: no-repeat;
-            background-size: 1.2em 1.2em;
         }
-        .glass-select option { background-color: #0f172a; color: #e2e8f0; padding: 10px; }
-
-        /* 語速膠囊樣式 */
-        .speed-capsule {
-            appearance: none;
-            -webkit-appearance: none;
-            background-color: transparent;
-            color: #4ade80;
-            font-weight: 800;
-            font-size: 0.95rem;
-            text-align: center;
-            text-align-last: center;
-            border: none;
-            cursor: pointer;
-            outline: none;
-            background-image: none;
+        .student-select-wrapper:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
+            border-color: #4ade80;
         }
-        .speed-capsule:hover { text-shadow: 0 0 8px rgba(74, 222, 128, 0.6); }
+        .student-select-icon { color: #4ade80; font-size: 1rem; margin-right: 8px; pointer-events: none; }
+        .student-select {
+            appearance: none; -webkit-appearance: none;
+            background: transparent; border: none;
+            color: #fff; font-size: 0.95rem; font-weight: 700;
+            padding: 8px 24px 8px 0; width: 100%; cursor: pointer; outline: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right center; background-repeat: no-repeat; background-size: 1em 1em;
+        }
+        .student-select option { background-color: #1E293B; color: #fff; padding: 10px; }
 
-        #canvas-container { display: none; }
-        #reading-container { padding-bottom: 140px !important; }
+        /* 底部播放器 (像音樂播放器) */
+        .player-dock {
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 2rem;
+            padding: 0.75rem 1.5rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        #reading-container { padding-bottom: 160px !important; }
         #control-dock { padding-bottom: env(safe-area-inset-bottom, 20px); bottom: max(1.5rem, env(safe-area-inset-bottom)); }
-        #play-rate { text-align-last: center; }
 
-        /* 側邊欄英文詞彙 */
-        .vocab-item { background: rgba(15, 23, 42, 0.4); border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 12px; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;}
-        .vocab-item:hover { background: rgba(255, 255, 255, 0.05); }
-        .en-term-label {
-            color: #4ade80 !important; 
-            font-size: 1.1rem !important; 
-            font-weight: 600;
-            margin-top: 2px;
+        /* 側邊欄詞彙卡 */
+        .vocab-item { 
+            background: rgba(255, 255, 255, 0.03); 
+            border-radius: 12px;
+            margin-bottom: 8px;
+            padding: 12px 16px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            transition: all 0.2s; border: 1px solid transparent;
         }
+        .vocab-item:hover { background: rgba(255, 255, 255, 0.08); border-color: #4ade80; }
+        .en-term-label { color: #4ade80 !important; font-size: 1.1rem !important; font-weight: 700; }
 
-        .loader { border: 2px solid rgba(74, 222, 128, 0.1); border-top: 2px solid #4ade80; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; }
+        .loader { border: 3px solid rgba(74, 222, 128, 0.2); border-top: 3px solid #4ade80; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="h-screen flex flex-col font-sans selection:bg-teal-500/30 selection:text-white">
 
-    <div id="loader-overlay" class="absolute inset-0 bg-[#0f172a] z-50 flex flex-col items-center justify-center">
-        <i class="fa-solid fa-satellite-dish text-5xl text-teal-400 animate-pulse mb-4"></i>
-        <div class="text-teal-500 tracking-widest mt-2 font-bold">資料庫連線中...</div>
+    <div id="loader-overlay" class="absolute inset-0 bg-[#0B1121] z-50 flex flex-col items-center justify-center">
+        <div class="relative">
+            <div class="absolute inset-0 bg-green-400 blur-xl opacity-20 rounded-full animate-pulse"></div>
+            <i class="fa-solid fa-rocket text-6xl text-green-400 relative z-10 animate-bounce"></i>
+        </div>
+        <div class="text-green-400 tracking-widest mt-6 font-bold text-lg">載入科學宇宙...</div>
     </div>
 
-    <nav class="glass-panel sticky top-0 z-40 h-auto md:h-16 flex flex-col md:flex-row items-center shrink-0 border-b-0 shadow-lg">
-        <div class="w-full px-4 md:px-6 py-2 flex justify-between items-center border-b border-white/10 md:border-b-0">
-            <div class="flex items-center gap-4">
-                <button onclick="goBack()" class="flex items-center gap-2 text-teal-400 hover:text-white transition group">
-                    <div class="p-1 rounded border border-teal-500/30 group-hover:bg-teal-500/20 group-hover:border-teal-400">
-                        <i class="fa-solid fa-chevron-left"></i>
-                    </div>
-                    <span class="text-sm font-bold tracking-wider hidden md:inline" data-i18n="return">返回</span>
-                </button>
-                <div class="flex items-center gap-2 cursor-default">
-                    <div class="w-8 h-8 rounded-lg bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400">
-                        <i class="fa-solid fa-book-journal-whills"></i>
-                    </div>
-                    <span class="text-lg font-bold text-white tracking-wide" data-i18n="page_title">科學雙語閱讀</span>
+    <nav class="sticky top-4 z-40 px-4 flex flex-col md:flex-row items-center gap-3 shrink-0 pointer-events-none">
+        <div class="glass-panel px-4 py-2 flex items-center gap-4 pointer-events-auto shadow-lg">
+            <button onclick="goBack()" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-green-400 hover:text-white transition group">
+                <i class="fa-solid fa-arrow-left text-lg group-hover:-translate-x-1 transition-transform"></i>
+            </button>
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center text-green-400">
+                    <i class="fa-solid fa-atom text-lg"></i>
                 </div>
-            </div>
-
-            <div class="flex items-center gap-3">
-                <div class="flex bg-slate-900/50 rounded-lg p-1 border border-white/10">
-                    <button onclick="setMode('en')" class="mode-btn px-3 py-1 text-xs font-bold rounded text-teal-500 hover:text-white transition" id="btn-en">EN</button>
-                    <button onclick="setMode('dual')" class="mode-btn px-3 py-1 text-xs font-bold rounded bg-teal-600 text-white shadow-[0_0_10px_rgba(74,222,128,0.4)]" id="btn-dual">DUAL</button>
-                    <button onclick="setMode('zh')" class="mode-btn px-3 py-1 text-xs font-bold rounded text-teal-500 hover:text-white transition" id="btn-zh">繁中</button>
-                </div>
-
-                <select id="ui-lang" class="bg-slate-900/50 border border-white/10 text-teal-100 rounded-lg px-2 py-1 text-xs outline-none cursor-pointer hover:bg-slate-800" onchange="changeLanguage()">
-                    <option value="zh-TW">繁體中文</option>
-                    <option value="en">English</option>
-                    <option value="ja">日本語</option>
-                    <option value="zh-CN">简体中文</option>
-                </select>
+                <span class="text-lg font-black text-white tracking-wide" data-i18n="page_title">AI School</span>
             </div>
         </div>
 
-        <div class="w-full px-4 md:px-6 py-2 bg-slate-900/60 flex flex-wrap gap-3 items-center text-sm border-t border-white/10 md:border-t-0 md:bg-transparent justify-end">
-            <div class="glass-select-wrapper">
-                <i class="fa-solid fa-layer-group glass-select-icon"></i>
-                <select id="sel-stage" class="glass-select" onchange="filterUnits('stage')">
-                    <option value="" disabled selected data-i18n="stage">Stage</option>
+        <div class="flex-grow flex flex-wrap gap-2 justify-end pointer-events-auto">
+            <div class="student-select-wrapper">
+                <i class="fa-solid fa-layer-group student-select-icon"></i>
+                <select id="sel-stage" class="student-select" onchange="filterUnits('stage')">
+                    <option value="" disabled selected data-i18n="stage">階段</option>
                 </select>
             </div>
-
-            <div class="glass-select-wrapper w-24">
-                <i class="fa-solid fa-graduation-cap glass-select-icon"></i>
-                <select id="sel-grade" class="glass-select" onchange="filterUnits('grade')" disabled>
-                    <option value="" disabled selected data-i18n="grade">Grade</option>
+            <div class="student-select-wrapper w-24">
+                <i class="fa-solid fa-graduation-cap student-select-icon"></i>
+                <select id="sel-grade" class="student-select" onchange="filterUnits('grade')" disabled>
+                    <option value="" disabled selected data-i18n="grade">年級</option>
                 </select>
             </div>
-
-            <div class="glass-select-wrapper w-28">
-                <i class="fa-solid fa-book glass-select-icon"></i>
-                <select id="sel-version" class="glass-select" onchange="filterUnits('version')" disabled>
-                    <option value="" disabled selected data-i18n="version">Ver</option>
+            <div class="student-select-wrapper w-28">
+                <i class="fa-solid fa-book-open student-select-icon"></i>
+                <select id="sel-version" class="student-select" onchange="filterUnits('version')" disabled>
+                    <option value="" disabled selected data-i18n="version">版本</option>
                 </select>
             </div>
-
-            <div class="glass-select-wrapper w-24">
-                <i class="fa-regular fa-calendar glass-select-icon"></i>
-                <select id="sel-semester" class="glass-select" onchange="filterUnits('semester')" disabled>
-                    <option value="" disabled selected data-i18n="semester">Sem</option>
+            <div class="student-select-wrapper w-24">
+                <i class="fa-regular fa-calendar-days student-select-icon"></i>
+                <select id="sel-semester" class="student-select" onchange="filterUnits('semester')" disabled>
+                    <option value="" disabled selected data-i18n="semester">學期</option>
                 </select>
             </div>
-
-            <div class="glass-select-wrapper flex-grow md:flex-grow-0 md:w-64">
-                <i class="fa-solid fa-list-ul glass-select-icon"></i>
-                <select id="sel-unit" class="glass-select" onchange="loadSelectedUnit()" disabled>
-                    <option value="" disabled selected data-i18n="unit">Select Unit</option>
+            <div class="student-select-wrapper flex-grow md:flex-grow-0 md:w-64">
+                <i class="fa-solid fa-list-ul student-select-icon"></i>
+                <select id="sel-unit" class="student-select" onchange="loadSelectedUnit()" disabled>
+                    <option value="" disabled selected data-i18n="unit">選擇學習單元</option>
                 </select>
             </div>
         </div>
     </nav>
 
-    <div class="flex-grow flex overflow-hidden p-4 gap-4 relative z-10">
-        <aside class="w-64 glass-panel rounded-2xl flex flex-col overflow-hidden hidden md:flex border-l border-white/10">
-            <div class="p-4 border-b border-white/10 bg-slate-900/30">
-                <h3 class="text-xs font-bold text-teal-500 tracking-widest mb-1" data-i18n="nav">目錄導航</h3>
-                <div class="text-white font-bold text-sm truncate" id="nav-title">請選擇單元</div>
+    <div class="flex-grow flex overflow-hidden p-4 gap-4 relative z-10 mt-2">
+        <aside class="w-64 glass-panel flex flex-col overflow-hidden hidden md:flex">
+            <div class="p-5 border-b border-white/10 bg-black/20">
+                <h3 class="text-xs font-bold text-green-400 tracking-widest mb-1 uppercase" data-i18n="nav">MENU</h3>
+                <div class="text-white font-bold text-lg truncate" id="nav-title">請選擇單元</div>
             </div>
-            <div class="flex-grow scroll-area overflow-y-auto p-2 space-y-1" id="unit-list">
-                <div class="text-center text-slate-500 text-xs mt-10 p-4" data-i18n="select_hint">請先從上方選擇單元。</div>
+            <div class="flex-grow scroll-area overflow-y-auto p-3" id="unit-list">
+                <div class="text-center text-slate-500 text-sm mt-10 p-4" data-i18n="select_hint">👈 請先上方選擇單元</div>
             </div>
         </aside>
 
-        <section class="flex-grow glass-panel rounded-2xl flex flex-col relative overflow-hidden border-x border-white/10">
-            <div class="h-10 border-b border-white/10 bg-slate-900/30 flex items-center justify-between px-6 gap-3">
+        <section class="flex-grow glass-panel flex flex-col relative overflow-hidden">
+            <div class="h-14 border-b border-white/10 bg-black/20 flex items-center justify-between px-6 gap-3 shrink-0">
                 <div class="flex items-center gap-2 min-w-0">
-                    <i class="fa-solid fa-file-lines text-teal-400"></i>
-                    <span class="text-xs font-bold text-teal-200 truncate" id="status-bar">READY</span>
-                    <span id="trans-loading" class="hidden text-xs text-teal-400 flex items-center gap-1 ml-2"><div class="loader"></div> Translating...</span>
+                    <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                    <span class="text-xs font-bold text-green-200 truncate" id="status-bar">READY</span>
+                    <span id="trans-loading" class="hidden text-xs text-green-400 flex items-center gap-1 ml-2"><div class="loader w-3 h-3"></div> 翻譯中...</span>
+                </div>
+                
+                <div class="flex bg-black/30 rounded-full p-1 border border-white/10">
+                    <button onclick="setMode('en')" class="px-4 py-1.5 text-xs font-bold rounded-full text-slate-400 hover:text-white transition" id="btn-en">EN</button>
+                    <button onclick="setMode('dual')" class="px-4 py-1.5 text-xs font-bold rounded-full bg-green-500 text-white shadow-lg" id="btn-dual">雙語</button>
+                    <button onclick="setMode('zh')" class="px-4 py-1.5 text-xs font-bold rounded-full text-slate-400 hover:text-white transition" id="btn-zh">中文</button>
                 </div>
             </div>
 
-            <div class="flex-grow scroll-area overflow-y-auto p-6 md:p-8 relative" id="reading-container">
+            <div class="flex-grow scroll-area overflow-y-auto p-6 md:p-10 relative" id="reading-container">
                 <article class="max-w-4xl mx-auto transition-opacity duration-500" id="article-body">
-                    <h1 class="text-2xl md:text-3xl font-black text-white mb-6 font-heading tracking-tight text-center" id="article-title">
-                        <span class="text-slate-500 opacity-50" data-i18n="select_hint">請先從上方選擇單元</span>
+                    <h1 class="text-3xl md:text-4xl font-black text-white mb-8 text-center" id="article-title">
+                        <span class="text-slate-500 opacity-30 text-2xl">等待探索...</span>
                     </h1>
-                    <div id="article-content" class="space-y-4"></div>
+                    <div id="article-content" class="space-y-6"></div>
                 </article>
             </div>
         </section>
 
-        <aside class="w-80 glass-panel rounded-2xl flex flex-col overflow-hidden hidden lg:flex border-l border-white/10">
-            <div class="p-4 border-b border-white/10 bg-gradient-to-r from-slate-900/50 to-teal-900/10">
+        <aside class="w-80 glass-panel flex flex-col overflow-hidden hidden lg:flex">
+            <div class="p-5 border-b border-white/10 bg-gradient-to-r from-yellow-500/10 to-transparent">
                 <div class="flex items-center gap-2 mb-1">
-                    <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
-                    <h3 class="text-xs font-bold text-teal-400 tracking-widest" data-i18n="vocab_title">科學詞彙庫</h3>
+                    <i class="fa-solid fa-lightbulb text-yellow-400"></i>
+                    <h3 class="text-sm font-bold text-yellow-400 tracking-widest" data-i18n="vocab_title">科學詞彙庫</h3>
                 </div>
             </div>
-
-            <div class="flex-grow scroll-area overflow-y-auto" id="vocab-container">
-                <div class="text-center py-10 opacity-50 text-sm text-teal-200/50" data-i18n="vocab_empty">
-                    詞彙將顯示於此
-                </div>
+            <div class="flex-grow scroll-area overflow-y-auto p-3" id="vocab-container">
+                <div class="text-center py-10 opacity-30 text-sm text-white" data-i18n="vocab_empty">詞彙將顯示於此</div>
             </div>
         </aside>
     </div>
 
-    <div id="control-dock" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 flex items-center gap-3 p-2 pl-4 pr-3 rounded-full border border-teal-500/30 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl bg-slate-900/80 transition-all duration-300 w-[90%] max-w-md justify-between md:w-auto md:gap-6">
-        
-        <div class="flex items-center gap-2">
-            <span class="text-[10px] font-bold text-teal-500/70 uppercase tracking-wider hidden md:inline">SPEED</span>
-            <select id="play-rate" class="speed-capsule w-12 transition">
-                <option value="0.5">0.5x</option>
-                <option value="0.75">0.75x</option>
-                <option value="1.0" selected>1.0x</option>
-                <option value="1.25">1.25x</option>
-                <option value="1.5">1.5x</option>
-            </select>
-        </div>
-
-        <div class="h-6 w-px bg-teal-500/20"></div>
-
-        <div class="flex items-center gap-1 bg-black/20 rounded-full p-1">
-            <button onclick="setVoice('male')" id="btn-male" class="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 text-teal-400 hover:bg-teal-500/20 hover:text-white" title="男聲">
-                <i class="fa-solid fa-person text-lg"></i>
-            </button>
-            <button onclick="setVoice('female')" id="btn-female" class="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 text-slate-500 hover:bg-teal-500/20 hover:text-white" title="女聲">
-                <i class="fa-solid fa-person-dress text-lg"></i>
-            </button>
-        </div>
-
-        <div class="flex items-center gap-3">
-            <button onclick="toggleSpeech()" class="w-12 h-12 flex items-center justify-center rounded-full bg-gradient-to-br from-teal-400 to-teal-600 text-white shadow-[0_0_15px_rgba(74,222,128,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 group" id="btn-play">
-                <i class="fa-solid fa-play text-lg ml-1 group-hover:animate-pulse"></i>
-            </button>
+    <div id="control-dock" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-[95%] max-w-lg">
+        <div class="player-dock flex items-center justify-between gap-4">
             
-            <button onclick="stopSpeech()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 border border-teal-500/30 text-teal-400 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/50 transition-all duration-300 active:scale-95">
-                <i class="fa-solid fa-stop text-sm"></i>
-            </button>
+            <div class="flex flex-col items-center">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">SPEED</span>
+                <select id="play-rate" class="appearance-none bg-transparent text-green-400 font-black text-lg text-center outline-none cursor-pointer w-12 hover:scale-110 transition">
+                    <option value="0.5">0.5</option>
+                    <option value="0.75">0.75</option>
+                    <option value="1.0" selected>1.0</option>
+                    <option value="1.25">1.25</option>
+                    <option value="1.5">1.5</option>
+                </select>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <div class="flex bg-white/10 rounded-full p-1 gap-1">
+                    <button onclick="setVoice('male')" id="btn-male" class="w-9 h-9 rounded-full flex items-center justify-center transition text-slate-400 hover:text-white" title="男聲">
+                        <i class="fa-solid fa-person text-lg"></i>
+                    </button>
+                    <button onclick="setVoice('female')" id="btn-female" class="w-9 h-9 rounded-full flex items-center justify-center transition bg-green-500 text-white shadow-lg" title="女聲">
+                        <i class="fa-solid fa-person-dress text-lg"></i>
+                    </button>
+                </div>
+
+                <button onclick="toggleSpeech()" class="w-16 h-16 flex items-center justify-center rounded-full bg-white text-black hover:scale-105 active:scale-95 transition shadow-[0_0_20px_rgba(255,255,255,0.3)]" id="btn-play">
+                    <i class="fa-solid fa-play text-2xl ml-1"></i>
+                </button>
+
+                <button onclick="stopSpeech()" class="w-10 h-10 flex items-center justify-center rounded-full border-2 border-slate-600 text-slate-400 hover:border-red-500 hover:text-red-500 transition">
+                    <i class="fa-solid fa-stop text-sm"></i>
+                </button>
+            </div>
         </div>
     </div>
 
-    <div id="toast" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-slate-800/90 border border-teal-500/30 text-teal-100 px-4 py-2 rounded-full shadow-2xl transition-all duration-300 opacity-0 translate-y-10 z-50 flex items-center gap-2 pointer-events-none text-sm font-bold">
-        <i class="fa-solid fa-circle-check text-teal-400"></i> <span id="toast-msg">Ready</span>
+    <select id="ui-lang" class="hidden" onchange="changeLanguage()">
+        <option value="zh-TW" selected>繁體中文</option>
+    </select>
+
+    <div id="toast" class="fixed top-24 left-1/2 transform -translate-x-1/2 bg-slate-800/90 border border-green-500/30 text-green-100 px-6 py-3 rounded-full shadow-2xl transition-all duration-300 opacity-0 -translate-y-10 z-50 flex items-center gap-3 pointer-events-none text-sm font-bold backdrop-blur-md">
+        <i class="fa-solid fa-circle-check text-green-400 text-lg"></i> <span id="toast-msg">Ready</span>
     </div>
 
     <script>
@@ -453,32 +404,22 @@
         let rawData=[], processedUnits=[], isSpeaking=false, currentVoice='female', translationCache={}, synth=window.speechSynthesis;
         let activeVocabMap = {};
         let currentBlockIndex = 0;
-
         let currentUnitTitleZh = "";
         let currentUnitTitleEn = "";
 
+        // UI 文字 (內建繁中)
         const i18n = {
-            'zh-TW': { return: '返回', page_title: '科學雙語閱讀', nav: '目錄導航', vocab_title: '科學詞彙庫', select_hint: '請先選擇單元', vocab_empty: '詞彙將顯示於此', stage: '學習階段', grade: '年級', version: '版本', semester: '學期', unit: '選擇單元' },
-            'en': { return: 'RETURN', page_title: 'SCI-LINGUA READER', nav: 'NAVIGATION', vocab_title: 'VOCABULARY', select_hint: 'Select a unit to begin', vocab_empty: 'Terms will appear here', stage: 'Stage', grade: 'Grade', version: 'Version', semester: 'Semester', unit: 'Select Unit' },
-            'ja': { return: '戻る', page_title: '科学バイリンガル', nav: 'ナビゲーション', vocab_title: '科学用語', select_hint: '単元を選択してください', vocab_empty: '用語はここに表示されます', stage: '段階', grade: '学年', version: '版', semester: '学期', unit: '単元選択' },
-            'zh-CN': { return: '返回', page_title: '科学双语阅读', nav: '目录导航', vocab_title: '科学词汇库', select_hint: '请先选择单元', vocab_empty: '词汇将显示于此', stage: '学习阶段', grade: '年级', version: '版本', semester: '学期', unit: '选择单元' }
+            'zh-TW': { return: '返回', page_title: 'AI School', nav: '目錄', vocab_title: '科學詞彙庫', select_hint: '👈 請先選擇單元', vocab_empty: '詞彙將顯示於此', stage: '階段', grade: '年級', version: '版本', semester: '學期', unit: '選擇單元' }
         };
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchData();
             if(synth) synth.onvoiceschanged = () => synth.getVoices();
-            
-            // ✅ [重要修正] 預設改為女聲
-            setVoice('female');
+            setVoice('female'); // 預設女聲
 
+            // iOS 喚醒
             document.addEventListener('touchstart', () => {
-                try{
-                    if(!synth) return;
-                    synth.cancel();
-                    const u = new SpeechSynthesisUtterance(" ");
-                    u.volume = 0; u.rate = 1.0; u.pitch = 1.0;
-                    synth.speak(u); synth.cancel(); synth.getVoices?.();
-                }catch(e){}
+                try{ if(!synth)return; synth.cancel(); const u=new SpeechSynthesisUtterance(" "); u.volume=0; synth.speak(u); }catch(e){}
             }, { once: true, passive: true });
         });
 
@@ -487,9 +428,9 @@
         function fetchData() {
             Papa.parse(TARGET_URL, {
                 download: true, header: false,
-                skipEmptyLines: true, // ✅ [重要修正] 防止資料庫載入卡死
-                complete: res => { processData(res.data); document.getElementById('loader-overlay').style.display='none'; showToast("資料庫連線成功"); },
-                error: () => document.getElementById('loader-overlay').innerHTML='<div class="text-red-500">Error: Check Network</div>'
+                skipEmptyLines: true, // ✅ 防止空行卡死
+                complete: res => { processData(res.data); document.getElementById('loader-overlay').style.display='none'; showToast("準備完成，開始探索吧！"); },
+                error: () => document.getElementById('loader-overlay').innerHTML='<div class="text-red-500">連線錯誤，請重整</div>'
             });
         }
 
@@ -528,7 +469,7 @@
                     unitName = norm(row[COL_UNIT_NAME]);
                 let title = (unitNum + (unitName ? " " + unitName : "")).trim() || `Unit ${i+1}`;
                 return { id: i, stage: norm(row[COL_STAGE]), version: norm(row[COL_VERSION]), grade: norm(row[COL_GRADE]), semester: norm(row[COL_SEMESTER]), title, content, ckip, vocab: (row[COL_VOCAB]||"").toString() };
-            }).filter(u => u.title); // ✅ [重要修正] 移除字數限制，只檢查是否有標題
+            }).filter(u => u.title); // ✅ 只要有標題就顯示
             initFilters();
         }
 
@@ -544,11 +485,6 @@
                 return true;
             });
             
-            // ✅ [重要修正] 除錯提示：如果選了階段卻沒資料，提醒使用者檢查 Sheet
-            if(lvl === 'stage' && filtered.length === 0) {
-                alert("在此階段找不到任何資料！\n請確認您的 Google Sheet 中，該階段資料是否位於「第一個分頁」。");
-            }
-
             const update=(sel,p,key)=> populateSelect(sel.id, [...new Set(filtered.map(u=>u[p]).filter(Boolean))], key);
             if(lvl==='stage') { update(sels[1],'grade','grade'); resetSelects(sels.slice(2)); }
             else if(lvl==='grade') { update(sels[2],'version','version'); resetSelects(sels.slice(3)); }
@@ -557,24 +493,23 @@
                 sels[4].innerHTML='<option value="" disabled selected data-i18n="unit">選擇單元</option>';
                 filtered.forEach(u=>sels[4].add(new Option(u.title,u.id)));
                 sels[4].disabled=false;
-                changeLanguage();
             }
         }
 
         function populateSelect(id,items,i18nKey){
             const s=document.getElementById(id);
-            s.innerHTML=`<option value="" disabled selected data-i18n="${i18nKey}">${(i18n['zh-TW'][i18nKey]||'Select')}</option>`;
+            const label = i18n['zh-TW'][i18nKey] || '請選擇';
+            s.innerHTML=`<option value="" disabled selected>${label}</option>`;
             items.forEach(i=>s.add(new Option(i,i)));
             s.disabled=false;
-            changeLanguage();
         }
         function resetSelects(els){
             els.forEach(e=>{
                 const key = e.id.replace('sel-','');
-                e.innerHTML=`<option value="" disabled selected data-i18n="${key}">...</option>`;
+                const label = i18n['zh-TW'][key] || '...';
+                e.innerHTML=`<option value="" disabled selected>${label}</option>`;
                 e.disabled=true;
             });
-            changeLanguage();
         }
 
         function loadSelectedUnit(){ const u=processedUnits.find(i=>i.id==document.getElementById('sel-unit').value); if(u) renderArticle(u); }
@@ -584,7 +519,7 @@
           container.innerHTML = '';
           const keys = Object.keys(activeVocabMap || {});
           if(keys.length === 0) {
-            container.innerHTML = '<div class="text-center opacity-50 text-sm mt-10">無詞彙資料</div>';
+            container.innerHTML = '<div class="text-center opacity-30 text-sm mt-10 text-white">本單元無特定詞彙</div>';
             return;
           }
           keys.forEach(zh => {
@@ -594,12 +529,12 @@
             card.className = "vocab-item";
             card.innerHTML = `
               <div class="flex-1 pr-2">
-                <div class="text-base font-bold text-yellow-400 cursor-pointer" onclick="speakText('${zh.replace(/'/g,"\\'")}')">${escapeHtml(zh)}</div>
-                <div class="text-xs en-term-label cursor-pointer" data-zh="${escapeHtml(zh)}" onclick="speakVocabEn('${zh.replace(/'/g,"\\'")}', this)">${escapeHtml(showEn)}</div>
+                <div class="text-lg font-bold text-yellow-400 cursor-pointer mb-1" onclick="speakText('${zh.replace(/'/g,"\\'")}')">${escapeHtml(zh)}</div>
+                <div class="text-sm en-term-label cursor-pointer" data-zh="${escapeHtml(zh)}" onclick="speakVocabEn('${zh.replace(/'/g,"\\'")}', this)">${escapeHtml(showEn)}</div>
               </div>
               <div class="flex items-center gap-1">
-                <button onclick="event.stopPropagation(); speakText('${zh.replace(/'/g,"\\'")}')" class="text-teal-300 hover:text-white px-2 py-1 rounded-full hover:bg-white/10 text-xs font-bold" title="念中文">中</button>
-                <button onclick="event.stopPropagation(); speakVocabEn('${zh.replace(/'/g,"\\'")}', this)" class="text-teal-400 hover:text-white px-2 py-1 rounded-full hover:bg-white/10 text-xs font-bold" title="Read English">EN</button>
+                <button onclick="event.stopPropagation(); speakText('${zh.replace(/'/g,"\\'")}')" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center text-xs">中</button>
+                <button onclick="event.stopPropagation(); speakVocabEn('${zh.replace(/'/g,"\\'")}', this)" class="w-8 h-8 rounded-full bg-green-500/20 text-green-400 hover:bg-green-500 hover:text-white font-bold flex items-center justify-center text-xs">EN</button>
               </div>`;
             container.appendChild(card);
             if(!enVal) translateVocabItem(zh, card.querySelector('.en-term-label'));
@@ -653,7 +588,7 @@
             currentUnitTitleEn = "";
             document.getElementById('article-title').innerHTML = `
               <div id="title-zh">${escapeHtml(currentUnitTitleZh)}</div>
-              <div id="title-en" class="text-base md:text-lg font-semibold text-teal-400 italic mt-2">Translating...</div>
+              <div id="title-en" class="text-xl md:text-2xl font-bold text-green-400 mt-2">Translating...</div>
             `;
             document.getElementById('status-bar').innerText = unit.title;
             document.getElementById('nav-title').innerText = unit.title;
@@ -684,10 +619,10 @@
                     navItem.onclick=()=>{ document.getElementById(anchorId).scrollIntoView({behavior:'smooth',block:'center'}); };
                     document.getElementById('unit-list').appendChild(navItem);
                     contentDiv.innerHTML += `
-                        <h2 id="${anchorId}" class="section-header items-start">
+                        <h2 id="${anchorId}" class="section-header">
                             <div class="flex flex-col w-full">
-                                <span class="zh-text text-xl md:text-2xl font-black cursor-pointer transition" onclick="speakText(this.innerText)">${escapeHtml(line)}</span>
-                                <span class="en-text hidden text-base md:text-lg italic mt-1 font-medium cursor-pointer transition" 
+                                <span class="zh-text text-2xl md:text-3xl font-black cursor-pointer transition" onclick="speakText(this.innerText)">${escapeHtml(line)}</span>
+                                <span class="en-text hidden text-xl md:text-2xl mt-2 font-bold cursor-pointer transition" 
                                       data-source="${encodeURIComponent(line)}"
                                       onclick="speakText(this.innerText)"></span>
                             </div>
@@ -697,7 +632,7 @@
                     contentDiv.innerHTML += `
                         <div class="content-block">
                             <p class="zh-text" onclick="speakText(this.innerText)">${processed}</p>
-                            <p class="en-text hidden italic text-sm mt-2"
+                            <p class="en-text hidden mt-3"
                                onclick="speakText(this.innerText)"
                                data-source="${encodeURIComponent(line)}"></p>
                         </div>`;
@@ -814,7 +749,7 @@
             rehighlightEnglishBlocks();
         }
 
-        function makeClickable(html) { return `<span class="cursor-pointer hover:text-teal-300 transition">${html}</span>`; }
+        function makeClickable(html) { return `<span class="cursor-pointer hover:text-green-300 transition">${html}</span>`; }
         function escapeHtml(s){ return (s||"").toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
         function highlightEnglishVocabInText(txt){
           let safe = escapeHtml(txt);
@@ -833,8 +768,7 @@
           return safe;
         }
 
-        // ====================== [語音播放核心邏輯] ======================
-
+        // ====================== TTS ======================
         function isIOSDevice(){
           return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
         }
@@ -866,7 +800,6 @@
           return out;
         }
 
-        // ✅ [Siri 優先版] 瘋狂尋找 Siri 聲音
         function pickBestVoice(isEng, gender) {
             if (!window.speechSynthesis) return null;
             const voices = window.speechSynthesis.getVoices();
@@ -879,22 +812,18 @@
                 const lang = voice.lang.toLowerCase();
                 if (targetLang.some(t => lang === t || lang.replace('_', '-').startsWith(t))) { score += 1000; } else { return -1; }
                 
-                // 優先選擇高品質女聲 (Samantha / Siri / Meijia)
                 if (name.includes('siri') || uri.includes('siri')) score += 20000;
-                if (name.includes('samantha')) score += 15000; // 英文首選
-                if (name.includes('meijia')) score += 15000;   // 中文首選 (如果沒 Siri)
-                
+                if (name.includes('samantha')) score += 15000; 
+                if (name.includes('meijia')) score += 15000;   
                 if (name.includes('enhanced') || uri.includes('enhanced')) score += 5000;
                 if (name.includes('premium') || uri.includes('premium')) score += 5000;
                 if (name.includes('natural')) score += 3000;
-                if (name.includes('compact') || uri.includes('compact')) score -= 10000; // 懲罰機器音
+                if (name.includes('compact') || uri.includes('compact')) score -= 50000; 
 
-                // iOS 專屬：如果是 iPhone，且沒找到 Siri，強制用美佳/Samantha，忽略性別以免變機器音
                 const isIphone = isIOSDevice();
                 if (isIphone && !name.includes('siri') && (name.includes('meijia') || name.includes('samantha'))) {
                     score += 5000; 
                 } else if (!name.includes('siri')) {
-                    // 一般邏輯
                     if (gender === 'male') {
                         if (name.includes('male') || name.includes('man')) score += 500;
                         if (name.includes('female') || name.includes('woman')) score -= 100;
@@ -904,7 +833,7 @@
                 }
                 return score;
             };
-            const sorted = voices.map(v => ({ v, score: getScore(v) })).filter(item => item.score > -5000).sort((a, b) => b.score - a.score);
+            const sorted = voices.map(v => ({ v, score: getScore(v) })).filter(item => item.score > -10000).sort((a, b) => b.score - a.score);
             return sorted.length > 0 ? sorted[0].v : voices[0];
         }
 
@@ -914,13 +843,13 @@
             if (synth.paused) synth.resume();
             
             const btn = document.getElementById('btn-play');
-            if (btn) btn.innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
             synth.cancel();
 
             const cleanTxt = (txt || "").toString().replace(/<[^>]*>/g, "").replace(/\u00A0/g, " ").trim();
             if (!cleanTxt) {
                 if (onComplete) { setTimeout(() => { if (isSpeaking) onComplete(); }, 10); } 
-                else { isSpeaking = false; if (btn) btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>'; }
+                else { isSpeaking = false; if (btn) btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>'; }
                 return;
             }
 
@@ -935,7 +864,7 @@
                 if (!isSpeaking) return;
                 if (idx >= chunks.length) {
                     if (onComplete) { onComplete(); } 
-                    else { isSpeaking = false; if (btn) btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>'; }
+                    else { isSpeaking = false; if (btn) btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>'; }
                     return;
                 }
                 const part = chunks[idx++];
@@ -990,10 +919,10 @@
             if (isSpeaking) {
                 isSpeaking = false;
                 if (synth) synth.cancel();
-                if (btn) btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
+                if (btn) btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>';
             } else {
                 isSpeaking = true;
-                if (btn) btn.innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
+                if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
                 if (synth && synth.paused) synth.resume();
                 const blocks = document.querySelectorAll('.content-block');
                 if (currentBlockIndex >= blocks.length) currentBlockIndex = 0;
@@ -1007,7 +936,7 @@
             currentBlockIndex = 0;
             clearHighlights();
             const btn = document.getElementById('btn-play');
-            if (btn) btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>';
         }
 
         function clearHighlights() {
@@ -1016,15 +945,13 @@
 
         function setVoice(g) {
             currentVoice = g;
-            const activeClass = "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 bg-teal-500 text-white shadow-lg scale-105";
-            const inactiveClass = "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 text-slate-500 hover:bg-teal-500/20 hover:text-white";
-            document.getElementById('btn-male').className = (g === 'male') ? activeClass : inactiveClass;
-            document.getElementById('btn-female').className = (g === 'female') ? activeClass : inactiveClass;
+            document.getElementById('btn-male').className = g==='male' ? 'w-9 h-9 rounded-full flex items-center justify-center transition bg-green-500 text-white shadow-lg' : 'w-9 h-9 rounded-full flex items-center justify-center transition text-slate-400 hover:text-white';
+            document.getElementById('btn-female').className = g==='female' ? 'w-9 h-9 rounded-full flex items-center justify-center transition bg-green-500 text-white shadow-lg' : 'w-9 h-9 rounded-full flex items-center justify-center transition text-slate-400 hover:text-white';
             stopSpeech();
         }
 
         function setMode(m) {
-            ['en','dual','zh'].forEach(x=>document.getElementById(`btn-${x}`).className=x===m?"mode-btn px-3 py-1 text-xs font-bold rounded bg-teal-600 text-white shadow-[0_0_10px_rgba(74,222,128,0.4)] scale-105":"mode-btn px-3 py-1 text-xs font-bold rounded text-teal-500 hover:text-white transition");
+            ['en','dual','zh'].forEach(x=>document.getElementById(`btn-${x}`).className=x===m?"px-4 py-1.5 text-xs font-bold rounded-full bg-green-500 text-white shadow-lg":"px-4 py-1.5 text-xs font-bold rounded-full text-slate-400 hover:text-white transition");
             if(m!=='zh') translateVisibleBlocks();
             const en=document.querySelectorAll('.en-text'), zh=document.querySelectorAll('.zh-text');
             if(m==='en'){en.forEach(e=>e.classList.remove('hidden'));zh.forEach(z=>z.classList.add('hidden'));}
@@ -1040,16 +967,9 @@
             if(m !== 'zh') ensureTitleTranslated();
         }
 
-        function changeLanguage() {
-            const lang = document.getElementById('ui-lang').value;
-            const t = i18n[lang] || i18n['en'];
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const k = el.getAttribute('data-i18n');
-                if(t[k]) { if(el.tagName==='OPTION') el.text=t[k]; else el.innerText=t[k]; }
-            });
-        }
+        function changeLanguage() { return; } // 已整合至按鈕
 
-        function showToast(m) { const T=document.getElementById('toast'); document.getElementById('toast-msg').innerText=m; T.classList.remove('opacity-0','translate-y-10'); setTimeout(()=>T.classList.add('opacity-0','translate-y-10'),2000); }
+        function showToast(m) { const T=document.getElementById('toast'); document.getElementById('toast-msg').innerText=m; T.classList.remove('opacity-0','-translate-y-10'); setTimeout(()=>T.classList.add('opacity-0','-translate-y-10'),2500); }
     </script>
 </body>
 </html>
