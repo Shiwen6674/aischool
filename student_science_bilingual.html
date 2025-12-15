@@ -750,52 +750,73 @@ src = src.replace(/　/g,'');
         function stopSpeech() { synth.cancel(); isSpeaking=false; document.getElementById('btn-play').innerHTML='<i class="fa-solid fa-play text-xs"></i>'; }
 
 
-function pickBestVoice(isEng, gender){
-  const voices = (synth && synth.getVoices) ? synth.getVoices() : [];
-  if(!voices.length) return null;
+/**
+ * 智慧挑選最佳語音 (針對 Natural/Enhanced 優化)
+ */
+function pickBestVoice(isEng, gender) {
+    // 確保 synth 已經載入
+    if (!window.speechSynthesis) return null;
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length === 0) return null;
 
-  const wantLang = isEng ? ['en-us','en-gb','en'] : ['zh-tw','zh-hk','zh-cn','zh'];
-  const inLang = (v) => wantLang.some(l => (v.lang||'').toLowerCase().includes(l));
+    // 定義搜尋關鍵字
+    const targetLang = isEng ? ['en-us', 'en-gb', 'en'] : ['zh-tw', 'zh-hk', 'zh'];
+    
+    // 計分系統
+    const getScore = (voice) => {
+        let score = 0;
+        const name = voice.name.toLowerCase();
+        const lang = voice.lang.toLowerCase();
+        const localService = voice.localService; // true=本機, false=雲端(通常音質較好)
 
-  const score = (v) => {
-    const name = (v.name||'').toLowerCase();
-    const lang = (v.lang||'').toLowerCase();
-    let s = 0;
+        // 1. 語言匹配度 (權重最高)
+        if (targetLang.some(t => lang === t || lang.replace('_', '-').startsWith(t))) {
+            score += 1000;
+        } else {
+            return -1; // 語言不通直接淘汰
+        }
 
-    if(isEng){
-      if(lang.includes('en-us')) s += 20;
-      if(lang.includes('en-gb')) s += 15;
-      if(lang.includes('en')) s += 10;
-    }else{
-      if(lang.includes('zh-tw')) s += 40;
-      if(lang.includes('zh-hk')) s += 20;
-      if(lang.includes('zh-cn')) s += 10;
-      if(lang.includes('zh')) s += 5;
-    }
+        // 2. 優先選擇 "Natural" (微軟 Edge 雲端語音，目前最強)
+        if (name.includes('natural')) score += 500;
+        if (name.includes('online')) score += 200; // 微軟/Google 線上語音
 
-    if(name.includes('microsoft') && name.includes('online')) s += 35;
-    if(name.includes('microsoft') && name.includes('natural')) s += 45;
-    if(name.includes('microsoft')) s += 10;
+        // 3. Apple 系統的 "Enhanced" (高品質) 或 "Siri"
+        if (name.includes('enhanced') || name.includes('premium')) score += 300;
+        if (name.includes('siri')) score += 250;
 
-    if(name.includes('google')) s += 12;
+        // 4. Google 語音通常比一般本機語音好
+        if (name.includes('google')) score += 150;
 
-    if(name.includes('compact')) s -= 8;
-    if(name.includes('standard')) s -= 5;
+        // 5. 降低 "Compact" (壓縮版) 的分數
+        if (name.includes('compact')) score -= 100;
 
-    if(isEng){
-      if(gender==='male' && (name.includes('guy') || name.includes('david'))) s += 2;
-      if(gender==='female' && (name.includes('jenny') || name.includes('aria') || name.includes('zira') || name.includes('susan'))) s += 2;
-    }else{
-      if(name.includes('hsiaochen') || name.includes('yunjhe') || name.includes('yating') || name.includes('huihui')) s += 3;
-    }
+        // 6. 性別判定 (透過常見英文名或關鍵字猜測)
+        // 注意：Web Speech API 標準中沒有性別欄位，只能靠名字猜
+        if (gender === 'male') {
+            if (name.includes('male') || name.includes('guy') || name.includes('yunxi') || name.includes('yunjhe') || name.includes('daniel')) score += 50;
+        } else {
+            // Female
+            if (name.includes('female') || name.includes('aria') || name.includes('jenny') || name.includes('hsiaochen') || name.includes('meijia') || name.includes('samantha')) score += 50;
+        }
 
-    return s;
-  };
+        // 7. 特殊指定：微軟 Edge 的最強中文是 HsiaoChen (女) 和 YunJhe (男)
+        if (!isEng && name.includes('hsiaochen')) score += 300; 
+        if (!isEng && name.includes('yunjhe')) score += 300;
+        
+        // 特殊指定：微軟 Edge 的最強英文是 Aria (女) 和 Guy (男)
+        if (isEng && name.includes('aria')) score += 300;
+        if (isEng && name.includes('guy')) score += 300;
 
-  const candidates = voices.filter(v => inLang(v));
-  if(!candidates.length) return null;
-  candidates.sort((a,b)=>score(b)-score(a));
-  return candidates[0] || null;
+        return score;
+    };
+
+    // 排序並取出最高分
+    const sorted = voices
+        .map(v => ({ v, score: getScore(v) }))
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score);
+
+    return sorted.length > 0 ? sorted[0].v : null;
 }
 
 /* ===================== [ADD HERE] 貼在這裡：兩個新函式 ===================== */
@@ -905,16 +926,16 @@ if (preferred) voice = preferred;
 
     // iOS 對 pitch 很敏感，建議固定 1.0；rate 也要夾住範圍
     if (ios) {
-      u.pitch = 1.0;
-      u.rate = Math.min(1.05, Math.max(0.9, uiRate));
+        // iOS Safari 只要 pitch 不為 1 或 rate 偏離太多，常會變成機器音
+        u.pitch = 1.0; 
+        // iOS 語速限制嚴格一點
+        u.rate = (uiRate === 1.0) ? 1.0 : Math.max(0.8, Math.min(1.2, uiRate));
     } else {
-      if (isEng) {
+        // 電腦端 (Edge/Chrome) 可以自由一點
         u.rate = uiRate;
-        u.pitch = (currentVoice === 'male') ? 1.0 : 1.03;
-      } else {
-        u.rate = Math.max(0.85, Math.min(1.05, uiRate * 0.95));
-        u.pitch = 1.0;
-      }
+        // 微軟 Natural 語音如果調 Pitch 有時會怪怪的，建議保持 1.0 或微調
+        u.pitch = (currentVoice === 'male') ? 1.0 : 1.05; 
+    }
     }
 
     u.onstart = () => {
