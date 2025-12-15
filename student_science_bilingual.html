@@ -729,27 +729,22 @@ let currentBlockIndex = 0; // 記錄唸到第幾句
 
 // ✅ [修改] 切換播放/暫停邏輯
 // ✅ [修正版] 播放/暫停鍵：處理暫停邏輯，並不清除高亮
+// ✅ [修正版] 播放鍵邏輯：配合 speakText 的強制啟動
 function toggleSpeech() {
     const btn = document.getElementById('btn-play');
 
     if (isSpeaking) {
-        // === 按下暫停 ===
-        isSpeaking = false; // 1. 關掉開關
-        if (synth) synth.cancel(); // 2. 停止發音
+        // 暫停
+        isSpeaking = false;
+        if (synth) synth.cancel();
         btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
-        // 注意：這裡「不」歸零 index，也「不」清除高亮，這樣下次才能接關
     } else {
-        // === 按下播放 ===
-        isSpeaking = true; // 1. 打開開關
-        btn.innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
-
-        // 2. 如果之前已經全部唸完，才需要歸零重來
+        // 播放
+        // 注意：這裡不需要設 isSpeaking = true，因為 playSequence -> speakText 會自動設
         const blocks = document.querySelectorAll('.content-block');
         if (currentBlockIndex >= blocks.length) {
             currentBlockIndex = 0;
         }
-
-        // 3. 開始播放序列
         playSequence();
     }
 }
@@ -865,6 +860,7 @@ function stopSpeech() {
  * 智慧挑選最佳語音 (針對 Natural/Enhanced 優化)
  */
 // ✅ [針對 iOS 優化版] 強制優先抓取 Siri 和 Enhanced 高品質語音
+// ✅ [終極修正版] 語音選擇：優先保證音質，其次才是性別
 function pickBestVoice(isEng, gender) {
     if (!window.speechSynthesis) return null;
     const voices = window.speechSynthesis.getVoices();
@@ -884,28 +880,25 @@ function pickBestVoice(isEng, gender) {
             return -1;
         }
 
-        // 2. iOS 專屬優化：Siri 語音是 iOS 上最自然的，優先權最高
-        // 注意：iOS 的 Siri 語音在 API 裡通常叫 "Siri" 或包含 "siri"
-        if (name.includes('siri')) score += 2000;
+        // 2. 音質優先 (iOS Siri / Enhanced / Premium)
+        if (name.includes('siri')) score += 5000;      // Siri 最優先
+        if (name.includes('enhanced')) score += 4000;  // 增強版次之
+        if (name.includes('premium')) score += 4000;
+        if (name.includes('natural')) score += 3000;   // Edge Natural
 
-        // 3. 品質加分：Apple 的 "Enhanced" (增強版) 或 "Premium"
-        if (name.includes('enhanced')) score += 1500;
-        if (name.includes('premium')) score += 1500;
+        // 3. 懲罰機器音 (Compact)
+        // 這是關鍵：如果只有機器男聲，我們寧可不要選它，讓分數變很低
+        if (name.includes('compact')) score -= 10000; 
 
-        // 4. 微軟/Google 雲端語音 (如果在 Edge/Android 上)
-        if (name.includes('natural')) score += 1500;
-        if (name.includes('online')) score += 1000;
-
-        // 5. 懲罰 "Compact" (精簡版/機器音)，這是 iOS 預設最爛的聲音
-        if (name.includes('compact')) score -= 5000;
-
-        // 6. 性別過濾
-        if (gender === 'male') {
-            if (name.includes('female') || name.includes('woman') || name.includes('girl') || name.includes('meijia') || name.includes('shanshan')) score -= 5000;
-            if (name.includes('male') || name.includes('man') || name.includes('boy')) score += 500;
-        } else {
-            if (name.includes('male') || name.includes('man') || name.includes('boy')) score -= 5000;
-            if (name.includes('female') || name.includes('woman') || name.includes('girl')) score += 500;
+        // 4. 性別偏好 (權重降低，避免為了選性別而選到機器音)
+        // 只有在非機器音的情況下，性別才重要
+        if (!name.includes('compact')) {
+            if (gender === 'male') {
+                if (name.includes('male') || name.includes('man') || name.includes('boy')) score += 500;
+                // 注意：我們不再重罰女聲，因為 iOS 可能只有高品質女聲
+            } else {
+                if (name.includes('female') || name.includes('woman') || name.includes('girl')) score += 500;
+            }
         }
 
         return score;
@@ -913,13 +906,11 @@ function pickBestVoice(isEng, gender) {
 
     const sorted = voices
         .map(v => ({ v, score: getScore(v) }))
-        .filter(item => item.score > 0)
+        .filter(item => item.score > -5000) // 過濾掉極低分的選項
         .sort((a, b) => b.score - a.score);
 
-    // Debug 用：如果您想知道它到底選了誰，可以把下面這行註解打開，用電腦接手機看 console
-    // if(sorted.length > 0) console.log(`Selected Voice for ${isEng?'Eng':'Zh'}: ${sorted[0].v.name} (Score: ${sorted[0].score})`);
-
-    return sorted.length > 0 ? sorted[0].v : null;
+    // 如果找不到任何聲音，回傳第一個；否則回傳最高分
+    return sorted.length > 0 ? sorted[0].v : voices[0];
 }
 
 /* ===================== [ADD HERE] 貼在這裡：兩個新函式 ===================== */
@@ -974,17 +965,22 @@ function splitTextForSpeak(text, isEng){
 
 // ✅ [修改] 增加 onComplete 參數，讓它知道唸完後要幹嘛
 // ✅ [修正版] 發音核心：增加嚴格的狀態檢查
+// ✅ [終極修正版] 發音核心：點擊強制播放 + iOS 參數鎖定
 function speakText(txt, onComplete) {
     if (!synth) return;
     
-    // 先停止當前發音
+    // 1. 點擊發音時，視為「開始播放」，強制打開開關 (解決點擊無聲問題)
+    isSpeaking = true;
+    document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
+
+    // 停止當前發音
     synth.cancel();
 
     const cleanTxt = (txt || "").toString().replace(/<[^>]*>/g, "").replace(/\u00A0/g, " ").trim();
     
-    // 如果沒字，且現在是播放狀態，才呼叫完成
+    // 如果沒字，直接結束
     if (!cleanTxt) {
-        if (onComplete && isSpeaking) onComplete();
+        if (onComplete) onComplete();
         return;
     }
 
@@ -998,11 +994,10 @@ function speakText(txt, onComplete) {
     let idx = 0;
 
     const speakNext = () => {
-        // 🛑 關鍵修正：如果全域開關已經關閉 (按了暫停或停止)，直接中止，絕對不要呼叫 onComplete
+        // 🛑 安全檢查：如果中途被按了暫停/停止 (isSpeaking 變 false)，就中止
         if (!isSpeaking) return;
 
         if (idx >= chunks.length) {
-            // 全部片段唸完，執行回調 (去下一句)
             if (onComplete) onComplete();
             return;
         }
@@ -1016,34 +1011,29 @@ function speakText(txt, onComplete) {
         if (!ios) {
             voice = pickBestVoice(isEng, currentVoice);
         } else {
-             const voices = synth.getVoices ? synth.getVoices() : [];
-             const wantPrefix = isEng ? "en" : "zh";
-             const cand = voices.filter(v => (v.lang || "").toLowerCase().startsWith(wantPrefix));
-             const preferred = cand.find(v => v.default) || cand[0];
-             if (preferred) voice = preferred;
+             // iOS 語音選擇邏輯 (在 pickBestVoice 內部處理)
+             voice = pickBestVoice(isEng, currentVoice);
         }
         if (voice) u.voice = voice;
 
-        // 設定語速與音調
+        // ✅ [關鍵修正] iOS 參數鎖定
         if (ios) {
-            u.pitch = 1.0; // iOS 建議固定 1.0，改了容易變機器音
-            u.rate = (uiRate === 1.0) ? 0.95 : uiRate; // 稍微慢一點點(0.95)通常比 1.0 聽起來更穩
+            // iOS 的增強版語音 (Meijia Enhanced) 對參數極度敏感
+            // 只要 rate != 1 或 pitch != 1，它常常會直接「靜音」或變回「機器音」
+            // 所以在 iOS 上，我們必須犧牲語速調整功能，換取音質
+            u.pitch = 1.0;
+            u.rate = 1.0; 
         } else {
             u.rate = uiRate;
             u.pitch = (currentVoice === 'male') ? 1.0 : 1.05;
         }
 
-        // 開始發音時更新按鈕 (防呆)
         u.onstart = () => {
             if (!isSpeaking) { synth.cancel(); return; }
-            const btn = document.getElementById('btn-play');
-            if (btn) btn.innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
         };
 
-        // 唸完這一段，接下一段
         u.onend = speakNext;
         
-        // 出錯也嘗試接下一段
         u.onerror = () => {
             if (isSpeaking) speakNext();
         };
