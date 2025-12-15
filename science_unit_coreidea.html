@@ -24,23 +24,25 @@
                         sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
                     },
                     colors: {
-                        bg: '#121212',           // 極深灰背景
+                        bg: '#121212',           // 主背景
                         card: '#1E1E1E',         // 卡片背景
-                        border: '#2D2D2D',       // 邊框
-                        primary: '#3B82F6',      // 主色 (藍)
-                        accent: '#8B5CF6',       // 強調 (紫)
+                        border: '#2E2E2E',       // 邊框顏色
+                        primary: '#3B82F6',      // 主色調 (藍)
+                        accent: '#8B5CF6',       // 強調色 (紫)
+                        success: '#10B981',      // 成功 (綠)
                         text: {
                             main: '#E5E7EB',     // 主要文字
-                            mute: '#9CA3AF'      // 次要文字
+                            sub: '#9CA3AF'       // 次要文字
                         }
                     }
                 }
             }
         }
         
+        // Mermaid 設定 (保持預設主題以配合白底容器)
         mermaid.initialize({ 
             startOnLoad: false, 
-            theme: 'dark', 
+            theme: 'default', 
             securityLevel: 'loose',
             fontFamily: '"Noto Sans TC", sans-serif',
             flowchart: { useMaxWidth: false, htmlLabels: true, curve: 'basis' } 
@@ -55,21 +57,22 @@
             line-height: 1.6;
         }
 
-        /* 卡片樣式：乾淨、無干擾 */
+        /* 內容卡片：乾淨俐落 */
         .content-card {
             background-color: #1E1E1E;
-            border: 1px solid #2D2D2D;
+            border: 1px solid #2E2E2E;
             border-radius: 0.75rem;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-            transition: border-color 0.2s;
+            transition: transform 0.2s, border-color 0.2s;
         }
         .content-card:hover {
             border-color: #404040;
+            transform: translateY(-2px);
         }
 
-        /* 摘要排版：高可讀性 */
+        /* 摘要排版優化 */
         #summary-text h3 {
             font-size: 1.25rem; font-weight: 700; color: #60A5FA; 
             margin-top: 1.5rem; margin-bottom: 0.75rem;
@@ -85,73 +88,82 @@
 
         /* 詞彙卡 */
         .vocab-item {
-            background: #252525; border: 1px solid #333;
+            background: #262626; border: 1px solid #333;
             border-radius: 0.5rem; padding: 1rem; margin-bottom: 0.75rem;
-            transition: transform 0.2s;
+            transition: all 0.2s;
         }
-        .vocab-item:hover { transform: translateX(4px); border-color: #60A5FA; }
+        .vocab-item:hover { border-color: #60A5FA; background: #2A2A2A; }
 
         /* 下拉選單 */
         .select-clean {
-            background-color: #252525; border: 1px solid #404040;
+            background-color: #262626; border: 1px solid #404040;
             color: #E5E7EB; border-radius: 0.5rem;
             padding: 0.5rem 2rem 0.5rem 0.75rem;
             appearance: none;
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239CA3AF' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
             background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.2em 1.2em;
-            cursor: pointer; transition: all 0.2s;
+            cursor: pointer; transition: all 0.2s; width: 100%;
         }
         .select-clean:hover:not(:disabled) { border-color: #60A5FA; }
-        .select-clean:disabled { opacity: 0.5; cursor: not-allowed; }
+        .select-clean:disabled { opacity: 0.5; cursor: not-allowed; background-color: #1A1A1A; }
 
         /* 按鈕 */
         .btn-action {
             background-color: #2563EB; color: white;
             padding: 0.6rem 1.5rem; border-radius: 0.5rem; font-weight: 600;
             transition: background-color 0.2s; display: flex; items-center; gap: 0.5rem;
+            justify-content: center;
         }
         .btn-action:hover:not(:disabled) { background-color: #1D4ED8; }
         .btn-action:disabled { background-color: #333; color: #666; cursor: not-allowed; }
 
-        /* 架構圖容器 (白底以確保 Mermaid 可見) */
+        /* 架構圖容器 (白底確保 Mermaid 可讀性) */
         .mindmap-container {
             background-color: #ffffff; border-radius: 0.5rem;
             padding: 1.5rem; overflow: auto; min-height: 300px;
             display: flex; justify-content: center; align-items: center;
+            border: 1px solid #ddd;
         }
 
-        /* 卷軸 */
+        /* 卷軸美化 */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #121212; }
         ::-webkit-scrollbar-thumb { background: #404040; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #505050; }
 
         .pdf-page-break { page-break-before: always; }
-        @media print { .no-print { display: none; } body { background: white; color: black; } .content-card { border: 1px solid #ccc; box-shadow: none; background: white; color: black; } }
+        @media print { 
+            .no-print { display: none; } 
+            body { background: white; color: black; } 
+            .content-card { border: 1px solid #ccc; box-shadow: none; background: white; color: black; } 
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
 
-    <nav class="sticky top-0 z-50 bg-[#121212]/90 backdrop-blur border-b border-[#2D2D2D] h-16">
+    <nav class="sticky top-0 z-50 bg-[#121212]/95 backdrop-blur border-b border-[#2D2D2D] h-16 transition-all duration-300">
         <div class="max-w-7xl mx-auto px-4 h-full flex justify-between items-center">
             <div class="flex items-center gap-4">
-                <a href="student.html" class="flex items-center justify-center w-8 h-8 rounded hover:bg-[#2D2D2D] text-gray-400 hover:text-white transition">
+                <a href="student.html" class="flex items-center justify-center w-9 h-9 rounded-full hover:bg-[#2D2D2D] text-gray-400 hover:text-white transition">
                     <i class="fa-solid fa-arrow-left"></i>
                 </a>
-                <div class="flex items-center gap-2">
-                    <span class="w-1.5 h-6 bg-blue-500 rounded-full"></span>
-                    <span class="font-bold text-lg text-white" data-i18n="page_title">單元重點精熟</span>
+                <div class="flex items-center gap-3">
+                    <span class="w-1.5 h-6 bg-blue-600 rounded-full"></span>
+                    <span class="font-bold text-xl text-white tracking-wide" data-i18n="page_title">單元重點精熟</span>
                 </div>
             </div>
             
-            <div class="flex items-center gap-3">
-                <span id="user-info" class="text-xs text-gray-400 hidden sm:inline-block">訪客</span>
-                <select id="language-selector" onchange="changeLanguage()" class="bg-[#252525] border border-[#404040] text-gray-300 text-xs rounded px-2 py-1 outline-none">
-                    <option value="zh-TW">繁體中文</option>
-                    <option value="en">English</option>
-                    <option value="ja">日本語</option>
-                    <option value="zh-CN">简体中文</option>
-                </select>
+            <div class="flex items-center gap-4">
+                <span id="user-info" class="text-xs font-mono text-gray-400 border border-[#333] px-3 py-1 rounded bg-[#1A1A1A] hidden sm:inline-block">User: Guest</span>
+                <div class="relative">
+                    <i class="fa-solid fa-globe absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                    <select id="language-selector" onchange="changeLanguage()" class="bg-[#262626] border border-[#404040] text-gray-300 text-xs rounded pl-8 pr-3 py-1.5 outline-none hover:border-gray-500 transition cursor-pointer appearance-none">
+                        <option value="zh-TW">繁體中文</option>
+                        <option value="en">English</option>
+                        <option value="ja">日本語</option>
+                        <option value="zh-CN">简体中文</option>
+                    </select>
+                </div>
             </div>
         </div>
     </nav>
@@ -159,133 +171,149 @@
     <main class="flex-1 w-full max-w-7xl mx-auto px-4 py-8 pb-24">
         
         <div id="selection-panel" class="content-card">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                <h2 class="text-xl font-bold text-white flex items-center gap-2" data-i18n="settings_title">
-                    <i class="fa-solid fa-sliders text-blue-500"></i> 請挑選學習單元
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-[#2D2D2D] pb-4">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-blue-500"></i> <span data-i18n="settings_title">請挑選學習單元</span>
                 </h2>
-                <div id="db-status" class="text-xs font-mono px-3 py-1 rounded bg-[#252525] text-gray-500 border border-[#333]">
-                    Connecting...
+                <div id="db-status" class="text-xs font-mono px-3 py-1 rounded bg-[#252525] text-gray-500 border border-[#333] flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-gray-500"></span> Connecting...
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1 ml-1" data-i18n="label_stage">學習階段</label>
-                    <select id="sel-stage" class="select-clean w-full text-sm"><option disabled selected>Loading...</option></select>
+                    <label class="block text-xs text-gray-400 mb-1.5 ml-1 font-bold" data-i18n="label_stage">學習階段</label>
+                    <select id="sel-stage" class="select-clean"><option disabled selected data-i18n="loading">載入中...</option></select>
                 </div>
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1 ml-1" data-i18n="label_publisher">版本</label>
-                    <select id="sel-publisher" class="select-clean w-full text-sm" disabled><option disabled selected>--</option></select>
+                    <label class="block text-xs text-gray-400 mb-1.5 ml-1 font-bold" data-i18n="label_publisher">版本</label>
+                    <select id="sel-publisher" class="select-clean" disabled><option disabled selected>--</option></select>
                 </div>
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1 ml-1" data-i18n="label_grade">年級</label>
-                    <select id="sel-grade" class="select-clean w-full text-sm" disabled><option disabled selected>--</option></select>
+                    <label class="block text-xs text-gray-400 mb-1.5 ml-1 font-bold" data-i18n="label_grade">年級</label>
+                    <select id="sel-grade" class="select-clean" disabled><option disabled selected>--</option></select>
                 </div>
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1 ml-1" data-i18n="label_semester">學期</label>
-                    <select id="sel-semester" class="select-clean w-full text-sm" disabled><option disabled selected>--</option></select>
+                    <label class="block text-xs text-gray-400 mb-1.5 ml-1 font-bold" data-i18n="label_semester">學期</label>
+                    <select id="sel-semester" class="select-clean" disabled><option disabled selected>--</option></select>
                 </div>
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1 ml-1" data-i18n="label_unit">單元名稱</label>
-                    <select id="sel-unit" class="select-clean w-full text-sm" disabled><option disabled selected>--</option></select>
+                    <label class="block text-xs text-gray-400 mb-1.5 ml-1 font-bold" data-i18n="label_unit">單元名稱</label>
+                    <select id="sel-unit" class="select-clean" disabled><option disabled selected>--</option></select>
                 </div>
             </div>
 
-            <div class="mt-6 flex justify-end">
-                <button id="btn-generate" onclick="startGeneration()" disabled class="btn-action">
+            <div class="mt-8 flex justify-end">
+                <button id="btn-generate" onclick="startGeneration()" disabled class="btn-action shadow-lg shadow-blue-900/20">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="btn_generate">AI 整理重點</span>
                 </button>
             </div>
         </div>
 
-        <div id="loading-view" class="hidden flex-col items-center justify-center py-20">
-            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mb-4"></div>
-            <p class="text-blue-400 font-mono text-sm animate-pulse">AI PROCESSING...</p>
+        <div id="loading-view" class="hidden flex-col items-center justify-center py-24">
+            <div class="relative w-16 h-16 mb-4">
+                <div class="absolute inset-0 border-4 border-[#333] rounded-full"></div>
+                <div class="absolute inset-0 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+            <p class="text-blue-400 font-mono text-sm animate-pulse tracking-widest">AI PROCESSING...</p>
         </div>
 
         <div id="content-view" class="hidden space-y-6">
             
-            <div class="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-[#2D2D2D] pb-4">
+            <div class="flex flex-col md:flex-row justify-between items-end gap-4 mb-2">
                 <div>
-                    <span id="result-tag" class="text-xs font-bold text-blue-400 bg-blue-400/10 px-2 py-1 rounded border border-blue-400/20">READY</span>
-                    <h1 id="result-title" class="text-3xl font-bold text-white mt-2">單元名稱</h1>
+                    <div class="flex items-center gap-2 mb-2">
+                        <span id="result-tag" class="text-[10px] font-bold text-blue-400 bg-blue-400/10 px-2 py-0.5 rounded border border-blue-400/20 tracking-wider">READY</span>
+                    </div>
+                    <h1 id="result-title" class="text-3xl md:text-4xl font-black text-white leading-tight">單元名稱</h1>
                 </div>
-                <div class="flex gap-2 no-print">
-                    <button onclick="downloadTXT()" class="px-4 py-2 rounded bg-[#2D2D2D] hover:bg-[#3D3D3D] text-gray-300 text-sm font-medium transition border border-[#3D3D3D]">
-                        <i class="fa-regular fa-file-lines mr-1"></i> <span data-i18n="btn_txt">TXT</span>
+                <div class="flex gap-3 no-print">
+                    <button onclick="downloadTXT()" class="px-4 py-2 rounded bg-[#262626] hover:bg-[#333] text-gray-300 text-sm font-medium transition border border-[#333] flex items-center gap-2">
+                        <i class="fa-regular fa-file-lines"></i> <span data-i18n="btn_txt">TXT</span>
                     </button>
-                    <button onclick="downloadPDF()" class="px-4 py-2 rounded bg-[#2D2D2D] hover:bg-[#3D3D3D] text-gray-300 text-sm font-medium transition border border-[#3D3D3D]">
-                        <i class="fa-regular fa-file-pdf mr-1"></i> <span data-i18n="btn_pdf">PDF</span>
+                    <button onclick="downloadPDF()" class="px-4 py-2 rounded bg-[#262626] hover:bg-[#333] text-gray-300 text-sm font-medium transition border border-[#333] flex items-center gap-2">
+                        <i class="fa-regular fa-file-pdf"></i> <span data-i18n="btn_pdf">PDF</span>
                     </button>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 
-                <div class="lg:col-span-2">
+                <div class="lg:col-span-2 space-y-6">
                     <section class="content-card">
                         <div class="flex items-center gap-3 mb-6 border-b border-[#333] pb-4">
-                            <i class="fa-solid fa-star text-yellow-500 text-lg"></i>
+                            <div class="w-10 h-10 rounded bg-blue-500/10 flex items-center justify-center text-blue-500">
+                                <i class="fa-solid fa-list-ul"></i>
+                            </div>
                             <h3 class="text-xl font-bold text-white" data-i18n="title_summary">核心概念摘要</h3>
                         </div>
-                        <div id="summary-text" class="text-gray-300">
+                        <div id="summary-text" class="text-gray-300 leading-relaxed">
                             </div>
                     </section>
 
                     <section class="content-card">
                         <div class="flex justify-between items-center mb-4">
                             <div class="flex items-center gap-3">
-                                <i class="fa-solid fa-sitemap text-purple-500 text-lg"></i>
+                                <div class="w-10 h-10 rounded bg-purple-500/10 flex items-center justify-center text-purple-500">
+                                    <i class="fa-solid fa-sitemap"></i>
+                                </div>
                                 <h3 class="text-xl font-bold text-white" data-i18n="title_map">知識架構圖</h3>
                             </div>
-                            <button onclick="openModal()" class="text-xs text-gray-400 hover:text-white transition bg-[#333] px-2 py-1 rounded"><i class="fa-solid fa-expand"></i> 放大</button>
+                            <button onclick="openModal()" class="text-xs text-gray-400 hover:text-white transition bg-[#333] px-3 py-1.5 rounded flex items-center gap-1">
+                                <i class="fa-solid fa-expand"></i> <span data-i18n="btn_expand">放大</span>
+                            </button>
                         </div>
-                        <div class="mindmap-container cursor-zoom-in group" onclick="openModal()">
+                        <div class="mindmap-container cursor-zoom-in group border border-[#333]" onclick="openModal()">
                             <div id="mermaid-chart" class="w-full text-center text-gray-500">
-                                <i class="fa-solid fa-circle-notch fa-spin"></i> 圖表生成中...
+                                <i class="fa-solid fa-circle-notch fa-spin"></i> Generating...
                             </div>
                         </div>
                     </section>
 
                     <section class="content-card border-l-4 border-l-emerald-600">
                         <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-xl font-bold text-white flex items-center gap-2">
-                                <i class="fa-solid fa-clipboard-check text-emerald-500"></i> 單元小測驗
-                            </h3>
-                            <span id="quiz-progress" class="text-xs font-mono text-emerald-500"></span>
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                                    <i class="fa-solid fa-clipboard-check"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-white" data-i18n="title_quiz">單元小測驗</h3>
+                            </div>
+                            <span id="quiz-progress" class="text-xs font-mono text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded"></span>
                         </div>
                         
                         <div id="quiz-body">
                             <div id="quiz-question" class="text-lg font-bold text-white mb-6 leading-relaxed"></div>
                             <div id="quiz-options" class="space-y-3"></div>
                             <div id="quiz-feedback" class="hidden mt-4 p-4 rounded-lg bg-[#252525] border border-[#404040] text-sm"></div>
-                            <div class="mt-6 flex justify-center">
-                                <button id="quiz-main-btn" onclick="handleQuizMainButton()" disabled class="btn-action rounded-full">下一題</button>
+                            <div class="mt-8 flex justify-center">
+                                <button id="quiz-main-btn" onclick="handleQuizMainButton()" disabled class="btn-action rounded-full px-8 shadow-lg">
+                                    <span data-i18n="btn_next_q">下一題</span>
+                                </button>
                             </div>
                         </div>
 
                         <div id="quiz-result" class="hidden text-center py-8">
                             <div class="text-5xl font-black text-emerald-500 mb-2" id="quiz-score-number">0</div>
-                            <div class="text-gray-400 text-sm mb-6">總分</div>
-                            <div class="bg-[#252525] rounded-xl p-4 border border-[#404040] mb-4">
+                            <div class="text-gray-400 text-sm mb-6" data-i18n="label_total_score">總分</div>
+                            <div class="bg-[#262626] rounded-xl p-4 border border-[#404040] mb-4">
                                 <canvas id="quiz-radar" class="max-h-64"></canvas>
                             </div>
                             <div id="quiz-result-detail" class="text-sm text-gray-300 text-left leading-relaxed"></div>
                         </div>
 
-                        <div id="quiz-empty" class="hidden text-center text-gray-500 py-10">無測驗題目</div>
+                        <div id="quiz-empty" class="hidden text-center text-gray-500 py-10" data-i18n="msg_no_quiz">無測驗題目</div>
                     </section>
                 </div>
 
                 <div class="space-y-6 lg:sticky lg:top-24 h-fit">
-                    <div class="content-card">
+                    <div class="content-card p-5">
                         <h3 class="font-bold text-amber-500 mb-4 flex items-center gap-2" data-i18n="title_vocab">
                             <i class="fa-solid fa-font"></i> 科學詞彙
                         </h3>
-                        <div id="keywords-list" class="space-y-3 max-h-[500px] overflow-y-auto pr-2"></div>
+                        <div id="keywords-list" class="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar"></div>
                     </div>
 
-                    <div class="content-card">
+                    <div class="content-card p-5">
                         <h3 class="font-bold text-rose-500 mb-4 flex items-center gap-2" data-i18n="title_myth">
                             <i class="fa-regular fa-lightbulb"></i> 科學動動腦
                         </h3>
@@ -297,13 +325,13 @@
     </main>
 
     <div id="floating-chat" class="fixed bottom-6 right-6 z-50 hidden no-print">
-        <div id="xiaoke-window" class="chat-window closed bg-[#202020] border border-[#333] shadow-xl rounded-xl w-80 h-[450px] flex flex-col overflow-hidden mb-4 transition-all duration-300 origin-bottom-right transform scale-0 opacity-0">
-            <div class="bg-[#252525] p-3 border-b border-[#333] flex justify-between items-center">
-                <span class="font-bold text-blue-500 text-sm"><i class="fa-solid fa-robot mr-1"></i> 小科 AI</span>
+        <div id="xiaoke-window" class="chat-window closed bg-[#202020] border border-[#333] shadow-2xl rounded-xl w-80 h-[450px] flex flex-col overflow-hidden mb-4 transition-all duration-300 origin-bottom-right transform scale-0 opacity-0">
+            <div class="bg-[#262626] p-3 border-b border-[#333] flex justify-between items-center">
+                <span class="font-bold text-blue-500 text-sm flex items-center gap-2"><i class="fa-solid fa-robot"></i> <span data-i18n="ai_assistant">小科 AI</span></span>
                 <button onclick="toggleChat()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-times"></i></button>
             </div>
             <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 text-sm text-gray-300"></div>
-            <div class="p-3 border-t border-[#333] bg-[#252525]">
+            <div class="p-3 border-t border-[#333] bg-[#262626]">
                 <div class="flex gap-2">
                     <input type="text" id="chat-input" class="w-full bg-[#1a1a1a] border border-[#333] rounded px-3 py-1 text-sm text-white focus:border-blue-500 outline-none" placeholder="..." onkeypress="if(event.key==='Enter') sendChatMessage()">
                     <button onclick="sendChatMessage()" class="text-blue-500 hover:text-white"><i class="fa-solid fa-paper-plane"></i></button>
@@ -330,22 +358,27 @@
         let quizState = { questions: [], currentIndex: 0, hasAnswered: false, answers: [] };
         let quizRadarChart = null;
 
+        // 四語系全頁連動字典
         const i18n = {
             "zh-TW": {
                 page_title: "單元重點精熟", settings_title: "請挑選學習單元", label_stage: "學習階段", label_publisher: "版本", label_grade: "年級", label_semester: "學期", label_unit: "單元名稱", btn_generate: "AI 整理重點",
-                btn_txt: "TXT", btn_pdf: "PDF", title_summary: "核心概念摘要", title_map: "知識架構圖", title_vocab: "科學詞彙", title_myth: "科學動動腦"
+                btn_txt: "TXT", btn_pdf: "PDF", title_summary: "核心概念摘要", title_map: "知識架構圖", title_vocab: "科學詞彙", title_myth: "科學動動腦", title_quiz: "單元小測驗",
+                btn_expand: "放大", btn_next_q: "下一題", btn_see_result: "看結果", label_total_score: "總分", msg_no_quiz: "無測驗題目", ai_assistant: "小科 AI", loading: "載入中..."
             },
             "en": {
-                page_title: "Unit Mastery", settings_title: "Select Unit", label_stage: "Level", label_publisher: "Publisher", label_grade: "Grade", label_semester: "Semester", label_unit: "Unit", btn_generate: "AI Summarize",
-                btn_txt: "TXT", btn_pdf: "PDF", title_summary: "Summary", title_map: "Mind Map", title_vocab: "Vocabulary", title_myth: "Thinking Check"
+                page_title: "Unit Mastery", settings_title: "Select Learning Unit", label_stage: "Level", label_publisher: "Publisher", label_grade: "Grade", label_semester: "Semester", label_unit: "Unit Name", btn_generate: "AI Summarize",
+                btn_txt: "TXT", btn_pdf: "PDF", title_summary: "Key Concepts", title_map: "Mind Map", title_vocab: "Vocabulary", title_myth: "Science Myths", title_quiz: "Unit Quiz",
+                btn_expand: "Expand", btn_next_q: "Next", btn_see_result: "Results", label_total_score: "Total Score", msg_no_quiz: "No Quiz Available", ai_assistant: "AI Tutor", loading: "Loading..."
             },
             "ja": {
-                page_title: "単元マスター", settings_title: "学習単元を選択", label_stage: "段階", label_publisher: "出版社", label_grade: "学年", label_semester: "学期", label_unit: "単元", btn_generate: "AI 要点まとめ",
-                btn_txt: "TXT", btn_pdf: "PDF", title_summary: "要点まとめ", title_map: "知識マップ", title_vocab: "科学用語", title_myth: "考えてみよう"
+                page_title: "単元マスター", settings_title: "学習単元を選択", label_stage: "段階", label_publisher: "出版社", label_grade: "学年", label_semester: "学期", label_unit: "単元名", btn_generate: "AI 要点まとめ",
+                btn_txt: "TXT", btn_pdf: "PDF", title_summary: "核心概念", title_map: "知識マップ", title_vocab: "科学用語", title_myth: "科学の迷信", title_quiz: "単元クイズ",
+                btn_expand: "拡大", btn_next_q: "次へ", btn_see_result: "結果を見る", label_total_score: "総合得点", msg_no_quiz: "クイズなし", ai_assistant: "AI 助手", loading: "読み込み中..."
             },
             "zh-CN": {
                 page_title: "单元重点精熟", settings_title: "请挑选学习单元", label_stage: "学习阶段", label_publisher: "版本", label_grade: "年级", label_semester: "学期", label_unit: "单元名称", btn_generate: "AI 整理重点",
-                btn_txt: "TXT", btn_pdf: "PDF", title_summary: "核心概念摘要", title_map: "知识架构图", title_vocab: "科学词汇", title_myth: "科学动动脑"
+                btn_txt: "TXT", btn_pdf: "PDF", title_summary: "核心概念摘要", title_map: "知识架构图", title_vocab: "科学词汇", title_myth: "科学动动脑", title_quiz: "单元小测验",
+                btn_expand: "放大", btn_next_q: "下一题", btn_see_result: "看结果", label_total_score: "总分", msg_no_quiz: "无测验题目", ai_assistant: "小科 AI", loading: "加载中..."
             }
         };
 
@@ -360,8 +393,8 @@
                 
                 if(json.status === "success") {
                     allData = json.data;
-                    document.getElementById("db-status").innerText = "Connected";
-                    document.getElementById("db-status").className = "text-xs font-mono px-3 py-1 rounded bg-[#252525] text-emerald-500 border border-emerald-900";
+                    document.getElementById("db-status").innerHTML = '<span class="w-2 h-2 rounded-full bg-green-500 inline-block mr-1"></span> Connected';
+                    document.getElementById("db-status").className = "text-xs font-mono px-3 py-1 rounded bg-[#252525] text-green-500 border border-green-900 flex items-center";
                     initSelectors();
                 } else { throw new Error(json.message); }
             } catch(e) {
@@ -374,10 +407,26 @@
         function changeLanguage() {
             const lang = document.getElementById("language-selector").value;
             const t = i18n[lang] || i18n["en"];
+            
+            // 更新所有 data-i18n 元素
             document.querySelectorAll("[data-i18n]").forEach(el => {
                 const key = el.getAttribute("data-i18n");
-                if (t[key]) el.innerText = t[key];
+                if (t[key]) {
+                    // 如果是 input 的 placeholder
+                    if (el.tagName === 'INPUT' && el.hasAttribute('placeholder')) {
+                        // 這裡可以處理 placeholder，目前範例中沒用到多語系 placeholder
+                    } else {
+                        el.innerText = t[key];
+                    }
+                }
             });
+
+            // 更新動態生成的按鈕文字 (如測驗按鈕)
+            const quizBtn = document.getElementById("quiz-main-btn");
+            if (quizBtn && !quizBtn.disabled) {
+                const isLast = (quizState.currentIndex === quizState.questions.length - 1);
+                quizBtn.innerText = isLast ? t.btn_see_result : t.btn_next_q;
+            }
         }
 
         function initSelectors() {
@@ -400,10 +449,11 @@
             if(level===4){filters.semester=value; delete filters.unitName;}
 
             const ids=["sel-publisher","sel-grade","sel-semester","sel-unit"];
+            // 這些預設文字會被多語系覆蓋，但保留作為 fallback
             const labels=["版本","年級","學期","單元"];
             for(let i=level;i<4;i++){
                 const el = document.getElementById(ids[i]);
-                el.innerHTML=`<option disabled selected>${labels[i]}</option>`;
+                el.innerHTML=`<option disabled selected>--</option>`;
                 el.disabled=true;
             }
             document.getElementById("btn-generate").disabled=true;
@@ -421,7 +471,7 @@
             if(level===3) populate("sel-semester", [...new Set(relevantData.map(d=>d.semester))], "semester");
             if(level===4) {
                 const unitSelect = document.getElementById("sel-unit");
-                unitSelect.innerHTML='<option disabled selected>選擇單元</option>';
+                unitSelect.innerHTML='<option disabled selected>--</option>';
                 if(relevantData.length>0) {
                     relevantData.forEach(d => {
                         const opt = document.createElement("option");
@@ -436,8 +486,7 @@
 
         function populate(id, list, type) {
             const el = document.getElementById(id);
-            const defaultTxt = type==="grade"?"年級":(type==="semester"?"學期":"版本");
-            el.innerHTML=`<option disabled selected>${defaultTxt}</option>`;
+            el.innerHTML=`<option disabled selected>--</option>`;
             list.forEach(o => {
                 const opt = document.createElement("option");
                 opt.value = o;
@@ -461,11 +510,12 @@
             clean = clean.replace(/(?<!\\)\n/g, "\\n"); // 轉義換行符
             clean = clean.replace(/[\u0000-\u0019]+/g,""); // 移除控制字符
 
+            // 3. 嘗試解析
             try {
                 return JSON.parse(clean);
             } catch (e) {
-                console.warn("Parse Failed, attempting salvage...", e);
-                // 3. 暴力提取：只抓取最外層 {} 
+                console.warn("第一次解析失敗，嘗試修復 JSON...", e);
+                // 4. 暴力提取：只抓取最外層 {} 
                 const firstOpen = clean.indexOf('{');
                 const lastClose = clean.lastIndexOf('}');
                 if (firstOpen !== -1 && lastClose !== -1) {
@@ -495,12 +545,11 @@
                 const json = cleanAndParseJSON(text); // 使用強化解析
 
                 if(json && (json.status === "success" || json.data)) { 
-                    // 有些 API 可能沒回傳 status 但有 data，這裡做個寬容判斷
                     currentResultData = json.data || json; 
                     renderResult(currentResultData); 
                 } else {
-                    console.error("Original Text:", text);
-                    throw new Error("AI 資料格式錯誤，請重試 (Syntax Error)。");
+                    console.error("原始回應:", text);
+                    throw new Error("AI 資料格式錯誤 (Syntax Error)。");
                 }
             } catch(e) { 
                 alert("生成失敗: " + e.message); 
@@ -513,7 +562,6 @@
         function renderResult(data) {
             const raw = data.raw_content || {};
             
-            // 標題 (防呆)
             document.getElementById('result-title').innerText = data.topic || raw.unitName || filters.unitName || "單元重點";
             
             // 摘要 (多重來源檢查)
@@ -525,12 +573,11 @@
                 else if (data.summary.summary) summaryContent = data.summary.summary;
             }
             if (!summaryContent && raw.text_summary) summaryContent = raw.text_summary;
-            // 如果真的都沒有，嘗試用 raw.text 截斷
             if (!summaryContent && raw.text) summaryContent = raw.text.substring(0, 300) + "..."; 
             
             summaryBox.innerHTML = summaryContent || '<p class="text-gray-500">暫無摘要</p>';
 
-            // 詞彙 (防呆)
+            // 詞彙
             const keywordList = document.getElementById('keywords-list');
             keywordList.innerHTML = '';
             let kList = data.keywords || [];
@@ -551,7 +598,6 @@
             // Mermaid (容錯渲染)
             const chartDiv = document.getElementById('mermaid-chart');
             let mapData = data.mindMap || (data.summary && data.summary.mindMap) || '';
-            // 清理 Mermaid 代碼
             if (mapData) mapData = mapData.replace(/```mermaid/gi, '').replace(/```/g, '').trim();
 
             if (mapData && mapData.length > 10) {
@@ -560,7 +606,7 @@
                     mermaid.init(undefined, document.querySelectorAll('.mermaid'));
                 } catch(e) {
                     console.error("Mermaid 繪製失敗", e);
-                    chartDiv.innerHTML = '<span class="text-red-400 text-xs">圖表繪製錯誤 (Syntax Error)</span>';
+                    chartDiv.innerHTML = '<span class="text-red-400 text-xs">圖表繪製錯誤</span>';
                 }
             } else { 
                 chartDiv.innerHTML = '<span class="text-gray-400 text-xs">無架構圖數據</span>'; 
@@ -658,9 +704,19 @@
             });
 
             document.getElementById("quiz-feedback").classList.add("hidden");
-            const nextBtn = document.getElementById("quiz-main-btn");
-            nextBtn.disabled = true;
-            nextBtn.innerText = (quizState.currentIndex === total - 1) ? "查看結果" : "下一題";
+            
+            // 更新按鈕文字 (多語系)
+            updateQuizButton();
+        }
+
+        function updateQuizButton() {
+            const btn = document.getElementById("quiz-main-btn");
+            const lang = document.getElementById("language-selector").value;
+            const t = i18n[lang] || i18n["en"];
+            const isLast = (quizState.currentIndex === quizState.questions.length - 1);
+            
+            btn.disabled = true;
+            btn.innerText = isLast ? t.btn_see_result : t.btn_next_q;
         }
 
         function handleQuizAnswer(idx, btnElement) {
