@@ -34,7 +34,7 @@
         }
     </script>
     <style>
-        /* 1. 基礎設定 */
+        /* 1. 基礎設定：極光深色背景 */
         body { 
             background-color: #0f172a; 
             color: #e2e8f0; 
@@ -43,7 +43,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 極光背景 */
+        /* 背景流動極光動畫 */
         body::before {
             content: '';
             position: fixed;
@@ -62,7 +62,7 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* 2. 高級玻璃面板 */
+        /* 2. 高級玻璃擬態面板 */
         .glass-panel { 
             background: rgba(15, 23, 42, 0.6); 
             backdrop-filter: blur(24px); 
@@ -71,13 +71,13 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); 
         }
 
-        /* 3. 捲軸美化 */
+        /* 捲軸美化 */
         .scroll-area::-webkit-scrollbar { width: 4px; }
         .scroll-area::-webkit-scrollbar-track { background: transparent; }
         .scroll-area::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
         .scroll-area::-webkit-scrollbar-thumb:hover { background: rgba(74, 222, 128, 0.5); }
 
-        /* 4. 導航選單按鈕 */
+        /* 3. 導航選單優化 */
         .nav-item { 
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
             border-left: 2px solid transparent; 
@@ -101,7 +101,108 @@
             font-weight: 700; 
         }
 
-        /* === 💎 百萬級下拉選單 UI (新增) === */
+        /* 4. 科學詞彙 (文內) - 螢光黃 */
+        .sci-term { 
+            color: #facc15; 
+            font-weight: 700; 
+            border-bottom: 1.5px solid rgba(250, 204, 21, 0.3); 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            padding: 0 2px; 
+            text-shadow: 0 0 10px rgba(250, 204, 21, 0.2);
+        }
+        .sci-term:hover { 
+            background-color: rgba(250, 204, 21, 0.2); 
+            color: #fff; 
+            border-radius: 4px; 
+            border-bottom-color: transparent;
+        }
+
+        /* 5. 閱讀區塊優化 */
+        .content-block { 
+            margin-bottom: 2rem; 
+            padding: 1.5rem; 
+            border-radius: 1rem; 
+            background: transparent; 
+            border: 1px solid transparent; 
+            transition: all 0.3s ease; 
+        }
+        .content-block:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* 正在朗讀的高亮樣式 */
+        .reading-active {
+            background: linear-gradient(90deg, rgba(74, 222, 128, 0.05) 0%, rgba(244, 114, 182, 0.1) 50%, rgba(74, 222, 128, 0.05) 100%) !important;
+            background-size: 200% 100% !important;
+            animation: reading-scan 3s linear infinite;
+            border-left: 4px solid #4ade80 !important; 
+            border-radius: 4px 12px 12px 4px;
+            box-shadow: 0 0 25px rgba(74, 222, 128, 0.1);
+        }
+        
+        .reading-active .zh-text,
+        .reading-active .en-text,
+        .reading-active .sci-term {
+            color: #f472b6 !important; /* 桃紅色 */
+            text-shadow: 0 0 5px rgba(244, 114, 182, 0.3);
+            border-left-color: #f472b6 !important;
+        }
+
+        @keyframes reading-scan {
+            0% { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
+        }
+
+        /* 6. 文字排版 */
+        .en-text { 
+            font-size: 1.15rem; 
+            color: #4ade80; /* 螢光綠 */
+            line-height: 1.7; 
+            margin-bottom: 0.75rem; 
+            font-weight: 500; 
+            letter-spacing: 0.01em; 
+            font-family: 'Inter', sans-serif; 
+            cursor: pointer; 
+            transition: color 0.3s;
+        }
+        .en-text:hover { opacity: 0.8; color: #fff; }
+
+        .zh-text { 
+            font-size: 1.05rem; 
+            color: #ffffff; /* 純白 */
+            line-height: 1.8; 
+            padding-left: 12px; 
+            border-left: 2px solid rgba(255, 255, 255, 0.1); 
+            cursor: pointer; 
+            font-weight: 400;
+            letter-spacing: 0.05em; 
+            transition: color 0.3s;
+        }
+        .zh-text:hover { color: #4ade80; border-left-color: #4ade80; }
+
+        .section-header { 
+            font-size: 1.5rem; 
+            font-weight: 800; 
+            color: #fff; 
+            margin-top: 3rem; 
+            margin-bottom: 1.5rem; 
+            padding-bottom: 0.5rem; 
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+            display: flex; 
+            align-items: center; 
+            gap: 0.75rem; 
+        }
+        .section-header::before { 
+            content: ''; 
+            display: block; 
+            width: 6px; 
+            height: 28px; 
+            background: linear-gradient(to bottom, #4ade80, #059669); 
+            border-radius: 4px; 
+        }
+
+        /* === 💎 百萬級下拉選單 UI === */
         .glass-select-wrapper {
             position: relative;
             display: flex;
@@ -160,64 +261,20 @@
         }
         .speed-capsule:hover { text-shadow: 0 0 8px rgba(74, 222, 128, 0.6); }
 
-        /* 5. 閱讀區塊優化 */
-        .content-block { 
-            margin-bottom: 2rem; 
-            padding: 1.5rem; 
-            border-radius: 1rem; 
-            background: transparent; 
-            border: 1px solid transparent; 
-            transition: all 0.3s ease; 
-        }
-        .content-block:hover { background: rgba(255, 255, 255, 0.02); }
-
-        /* 正在朗讀的高亮 */
-        /* 🎯 [修改] 正在朗讀的高亮樣式：邊條改成桃紅色 */
-        .reading-active {
-            background: linear-gradient(90deg, rgba(74, 222, 128, 0.05) 0%, rgba(244, 114, 182, 0.1) 50%, rgba(74, 222, 128, 0.05) 100%) !important;
-            background-size: 200% 100% !important;
-            animation: reading-scan 3s linear infinite;
-            
-            /* 👇 修改這裡：將邊框顏色從綠色 (#4ade80) 改為桃紅 (#f472b6) */
-            border-left: 4px solid #f472b6 !important; 
-            
-            border-radius: 4px 12px 12px 4px;
-            
-            /* 👇 (選用) 陰影也可以一起改成粉色，看起來更發光 */
-            box-shadow: 0 0 25px rgba(244, 114, 182, 0.2);
-        }
-        .reading-active .zh-text,
-        .reading-active .en-text,
-        .reading-active .sci-term {
-            color: #f472b6 !important; /* 桃紅色 */
-            text-shadow: 0 0 5px rgba(244, 114, 182, 0.3);
-            border-left-color: #f472b6 !important;
-        }
-        @keyframes reading-scan {
-            0% { background-position: 100% 0; }
-            100% { background-position: -100% 0; }
-        }
-
-        /* 6. 文字排版 */
-        .en-text { font-size: 1.15rem; color: #4ade80; line-height: 1.7; margin-bottom: 0.75rem; font-weight: 500; font-family: 'Inter', sans-serif; cursor: pointer; transition: color 0.3s; }
-        .en-text:hover { opacity: 0.8; color: #fff; }
-        
-        .zh-text { font-size: 1.05rem; color: #ffffff; line-height: 1.8; padding-left: 12px; border-left: 2px solid rgba(255, 255, 255, 0.1); cursor: pointer; font-weight: 400; transition: color 0.3s; }
-        .zh-text:hover { color: #4ade80; border-left-color: #4ade80; }
-
-        .sci-term { color: #facc15; font-weight: 700; border-bottom: 1.5px solid rgba(250, 204, 21, 0.3); cursor: pointer; padding: 0 2px; text-shadow: 0 0 10px rgba(250, 204, 21, 0.2); transition: all 0.2s; }
-        .sci-term:hover { background-color: rgba(250, 204, 21, 0.2); color: #fff; border-radius: 4px; border-bottom-color: transparent; }
-
-        .section-header { font-size: 1.5rem; font-weight: 800; color: #fff; margin-top: 3rem; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; gap: 0.75rem; }
-        .section-header::before { content: ''; display: block; width: 6px; height: 28px; background: linear-gradient(to bottom, #4ade80, #059669); border-radius: 4px; }
-
         #canvas-container { display: none; }
         #reading-container { padding-bottom: 140px !important; }
         #control-dock { padding-bottom: env(safe-area-inset-bottom, 20px); bottom: max(1.5rem, env(safe-area-inset-bottom)); }
+        #play-rate { text-align-last: center; }
 
+        /* 側邊欄英文詞彙 */
         .vocab-item { background: rgba(15, 23, 42, 0.4); border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 12px; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;}
         .vocab-item:hover { background: rgba(255, 255, 255, 0.05); }
-        .en-term-label { color: #4ade80 !important; font-size: 1.1rem !important; font-weight: 600; margin-top: 2px; }
+        .en-term-label {
+            color: #4ade80 !important; 
+            font-size: 1.1rem !important; 
+            font-weight: 600;
+            margin-top: 2px;
+        }
 
         .loader { border: 2px solid rgba(74, 222, 128, 0.1); border-top: 2px solid #4ade80; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -411,7 +468,7 @@
             fetchData();
             if(synth) synth.onvoiceschanged = () => synth.getVoices();
             
-            // ✅ 預設改為女聲 (iOS 上通常女聲較好)
+            // ✅ [重要修正] 預設改為女聲
             setVoice('female');
 
             document.addEventListener('touchstart', () => {
@@ -430,7 +487,7 @@
         function fetchData() {
             Papa.parse(TARGET_URL, {
                 download: true, header: false,
-                skipEmptyLines: true, // ✅ [重要修正] 跳過空行，防止資料庫載入卡死
+                skipEmptyLines: true, // ✅ [重要修正] 防止資料庫載入卡死
                 complete: res => { processData(res.data); document.getElementById('loader-overlay').style.display='none'; showToast("資料庫連線成功"); },
                 error: () => document.getElementById('loader-overlay').innerHTML='<div class="text-red-500">Error: Check Network</div>'
             });
@@ -471,7 +528,7 @@
                     unitName = norm(row[COL_UNIT_NAME]);
                 let title = (unitNum + (unitName ? " " + unitName : "")).trim() || `Unit ${i+1}`;
                 return { id: i, stage: norm(row[COL_STAGE]), version: norm(row[COL_VERSION]), grade: norm(row[COL_GRADE]), semester: norm(row[COL_SEMESTER]), title, content, ckip, vocab: (row[COL_VOCAB]||"").toString() };
-            }).filter(u => (u.content || u.ckip).length > 5);
+            }).filter(u => u.title); // ✅ [重要修正] 移除字數限制，只檢查是否有標題
             initFilters();
         }
 
@@ -486,6 +543,12 @@
                 if(sels[3].value && !sels[3].disabled && u.semester!==sels[3].value) return false;
                 return true;
             });
+            
+            // ✅ [重要修正] 除錯提示：如果選了階段卻沒資料，提醒使用者檢查 Sheet
+            if(lvl === 'stage' && filtered.length === 0) {
+                alert("在此階段找不到任何資料！\n請確認您的 Google Sheet 中，該階段資料是否位於「第一個分頁」。");
+            }
+
             const update=(sel,p,key)=> populateSelect(sel.id, [...new Set(filtered.map(u=>u[p]).filter(Boolean))], key);
             if(lvl==='stage') { update(sels[1],'grade','grade'); resetSelects(sels.slice(2)); }
             else if(lvl==='grade') { update(sels[2],'version','version'); resetSelects(sels.slice(3)); }
@@ -808,7 +871,7 @@
             if (!window.speechSynthesis) return null;
             const voices = window.speechSynthesis.getVoices();
             if (voices.length === 0) return null;
-            const targetLang = isEng ? ['en-us', 'en-gb', 'en'] : ['zh-tw', 'zh-hk', 'zh-cn', 'zh'];
+            const targetLang = isEng ? ['en-us', 'en-gb', 'en'] : ['zh-tw', 'zh-hk', 'zh'];
             const getScore = (voice) => {
                 let score = 0;
                 const name = voice.name.toLowerCase();
@@ -816,17 +879,15 @@
                 const lang = voice.lang.toLowerCase();
                 if (targetLang.some(t => lang === t || lang.replace('_', '-').startsWith(t))) { score += 1000; } else { return -1; }
                 
-                // Siri & 高品質優先
+                // 優先選擇高品質女聲 (Samantha / Siri / Meijia)
                 if (name.includes('siri') || uri.includes('siri')) score += 20000;
                 if (name.includes('samantha')) score += 15000; // 英文首選
                 if (name.includes('meijia')) score += 15000;   // 中文首選 (如果沒 Siri)
-                if (name.includes('hsiaochen')) score += 20000; // Edge 曉臻
-                if (name.includes('yunxi')) score += 20000;     // Edge 雲希
                 
                 if (name.includes('enhanced') || uri.includes('enhanced')) score += 5000;
                 if (name.includes('premium') || uri.includes('premium')) score += 5000;
                 if (name.includes('natural')) score += 3000;
-                if (name.includes('compact') || uri.includes('compact')) score -= 50000; // 懲罰機器音
+                if (name.includes('compact') || uri.includes('compact')) score -= 10000; // 懲罰機器音
 
                 // iOS 專屬：如果是 iPhone，且沒找到 Siri，強制用美佳/Samantha，忽略性別以免變機器音
                 const isIphone = isIOSDevice();
@@ -835,16 +896,15 @@
                 } else if (!name.includes('siri')) {
                     // 一般邏輯
                     if (gender === 'male') {
-                        if (name.includes('male') || name.includes('man') || name.includes('boy')) score += 2000;
-                        if (name.includes('female') || name.includes('woman') || name.includes('girl')) score -= 500;
+                        if (name.includes('male') || name.includes('man')) score += 500;
+                        if (name.includes('female') || name.includes('woman')) score -= 100;
                     } else {
-                        if (name.includes('female') || name.includes('woman') || name.includes('girl')) score += 2000;
-                        if (name.includes('male') || name.includes('man') || name.includes('boy')) score -= 500;
+                        if (name.includes('female') || name.includes('woman')) score += 500;
                     }
                 }
                 return score;
             };
-            const sorted = voices.map(v => ({ v, score: getScore(v) })).filter(item => item.score > -10000).sort((a, b) => b.score - a.score);
+            const sorted = voices.map(v => ({ v, score: getScore(v) })).filter(item => item.score > -5000).sort((a, b) => b.score - a.score);
             return sorted.length > 0 ? sorted[0].v : voices[0];
         }
 
