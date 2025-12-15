@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AI School | 單元重點精熟</title>
     
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
@@ -18,38 +22,30 @@
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
-                        heading: ['Outfit', 'Noto Sans TC', 'sans-serif'],
-                        tech: ['Orbitron', 'sans-serif'],
                     },
                     colors: {
-                        bg: '#030712',       
-                        surface: '#0f172a',  
-                        primary: '#2dd4bf',  
-                        accent: '#818cf8',   
-                        highlight: '#f472b6' 
-                    },
-                    animation: {
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'grid-flow': 'gridFlow 20s linear infinite',
-                        'fade-in-up': 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                    },
-                    keyframes: {
-                        gridFlow: {
-                            '0%': { transform: 'translateY(0)' },
-                            '100%': { transform: 'translateY(40px)' }
-                        },
-                        fadeInUp: {
-                            '0%': { opacity: '0', transform: 'translateY(20px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        // Notion-like Dark Mode Palette
+                        bg: '#191919',           // 背景：深灰黑 (非純黑)
+                        card: '#202020',         // 卡片：稍淺的灰
+                        card_hover: '#2C2C2C',   // 卡片懸停
+                        border: '#333333',       // 邊框：低對比
+                        text: {
+                            primary: '#E6E6E6',  // 主文字：灰白
+                            secondary: '#A0A0A0',// 次文字：中灰
+                            accent: '#3B82F6'    // 強調色：藍色
                         }
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.1)',
                     }
                 }
             }
         }
         
+        // Mermaid 設定 (使用深色主題，但字體清晰)
         mermaid.initialize({ 
             startOnLoad: false, 
-            theme: 'default', 
+            theme: 'dark', 
             securityLevel: 'loose',
             fontFamily: '"Noto Sans TC", sans-serif',
             flowchart: { useMaxWidth: false, htmlLabels: true, curve: 'basis' } 
@@ -57,149 +53,139 @@
     </script>
 
     <style>
-        /* === 核心環境設定 === */
+        /* === 閱讀體驗優化 === */
         body {
-            background-color: #030712;
-            color: #f8fafc;
+            background-color: #191919;
+            color: #E6E6E6;
             font-family: 'Inter', 'Noto Sans TC', sans-serif;
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(45, 212, 191, 0.08), transparent 25%), 
-                radial-gradient(circle at 85% 30%, rgba(129, 140, 248, 0.08), transparent 25%);
-            min-height: 100vh;
-            overflow-x: hidden;
-            position: relative;
+            line-height: 1.6;
         }
 
-        /* 科技網格背景 */
-        .grid-bg {
-            position: fixed; inset: 0; pointer-events: none; z-index: -1;
-            background-size: 50px 50px;
-            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                              linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
-        }
-
-        /* === UI 元件 === */
-        /* 1. 導航欄 */
-        .nav-glass {
-            background: rgba(3, 7, 18, 0.8);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        /* 2. Bento Grid 卡片 */
-        .bento-card {
-            background-color: #0f172a; 
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-            transition: all 0.3s ease;
-            position: relative;
+        /* 內容卡片：模仿 Notion 的乾淨風格 */
+        .content-card {
+            background-color: #202020;
+            border: 1px solid #333333;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: border-color 0.2s;
             overflow: hidden;
         }
-        .bento-card:hover {
-            border-color: rgba(45, 212, 191, 0.4); 
-            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
-            transform: translateY(-2px);
+        .content-card:hover {
+            border-color: #4B4B4B;
         }
-        .bento-card::before {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(45, 212, 191, 0.5), transparent);
-            opacity: 0; transition: opacity 0.3s;
-        }
-        .bento-card:hover::before { opacity: 1; }
 
-        /* 3. 輸入/選單元件 */
-        .input-glass {
-            background: #1e293b;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
-            border-radius: 0.75rem;
-            transition: all 0.2s;
-            appearance: none; /* 移除預設箭頭 */
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 0.75rem center;
+        /* 摘要排版優化 */
+        #summary-text h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #60A5FA; /* 亮藍色標題 */
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.25rem;
+            border-bottom: 1px solid #333;
+        }
+        #summary-text ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+            color: #D4D4D4;
+        }
+        #summary-text li {
+            margin-bottom: 0.5rem;
+        }
+        #summary-text strong {
+            color: #F472B6; /* 亮粉紅強調重點 */
+            font-weight: 600;
+            background: rgba(244, 114, 182, 0.1);
+            padding: 0 4px;
+            border-radius: 4px;
+        }
+
+        /* 詞彙卡 */
+        .vocab-item {
+            background: #262626;
+            border: 1px solid #333;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            transition: transform 0.2s;
+        }
+        .vocab-item:hover {
+            transform: translateX(4px);
+            border-color: #60A5FA;
+        }
+
+        /* 下拉選單：簡潔實用 */
+        .select-clean {
+            background-color: #262626;
+            border: 1px solid #404040;
+            color: #E6E6E6;
+            border-radius: 0.5rem;
+            padding: 0.5rem 2rem 0.5rem 0.75rem;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23A0A0A0' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
             background-repeat: no-repeat;
             background-size: 1.2em 1.2em;
-            padding-right: 2.5rem;
-        }
-        .input-glass:disabled { opacity: 0.5; cursor: not-allowed; }
-        .input-glass:not(:disabled):hover { border-color: #2dd4bf; background: #263344; }
-        .input-glass:focus { border-color: #2dd4bf; outline: none; box-shadow: 0 0 0 2px rgba(45, 212, 191, 0.2); }
-        
-        /* 修正下拉選單選項背景色 */
-        .input-glass option { background-color: #0f172a; color: #fff; padding: 10px; }
-
-        /* 4. 按鈕特效 */
-        .btn-primary {
-            background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
-            color: white;
-            border: 1px solid rgba(45, 212, 191, 0.5);
-            box-shadow: 0 4px 15px rgba(13, 148, 136, 0.3);
+            cursor: pointer;
             transition: all 0.2s;
         }
-        .btn-primary:hover:not(:disabled) {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(13, 148, 136, 0.5);
-            filter: brightness(1.1);
-        }
-        .btn-primary:disabled { background: #334155; border-color: transparent; color: #94a3b8; box-shadow: none; }
+        .select-clean:hover:not(:disabled) { border-color: #60A5FA; }
+        .select-clean:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* === 內容排版優化 === */
-        #summary-text h3 {
-            font-size: 1.25rem; font-weight: 700; color: #2dd4bf; margin: 1.5rem 0 0.75rem;
-            display: flex; align-items: center; gap: 0.5rem;
+        /* 按鈕：明確的操作感 */
+        .btn-action {
+            background-color: #2563EB; /* Blue-600 */
+            color: white;
+            padding: 0.5rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.2s;
         }
-        #summary-text h3::before { content: '#'; color: #0f766e; }
-        #summary-text li { margin-bottom: 0.5rem; line-height: 1.8; color: #cbd5e1; }
-        #summary-text strong { color: #f472b6; font-weight: 700; background: rgba(244, 114, 182, 0.1); padding: 0 2px; rounded: 2px; }
+        .btn-action:hover:not(:disabled) { background-color: #1D4ED8; } /* Blue-700 */
+        .btn-action:disabled { background-color: #404040; color: #888; cursor: not-allowed; }
 
-        /* 架構圖容器 */
+        /* 架構圖容器：白底確保可讀性 */
         .mindmap-container {
-            background-color: #ffffff; 
-            border-radius: 0.75rem; 
+            background-color: #FFFFFF;
+            border-radius: 0.5rem;
             padding: 1.5rem;
-            overflow: auto; 
+            overflow: auto;
             min-height: 300px;
             display: flex; justify-content: center; align-items: center;
         }
-        
-        /* 卷軸美化 */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-        /* 列印設定 */
-        @media print {
-            body { background: white; color: black; }
-            .no-print { display: none; }
-            .bento-card { border: 1px solid #ddd; box-shadow: none; background: white; color: black; }
-            #summary-text strong { color: black; font-weight: bold; background: none; }
-        }
+        /* 卷軸 */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #191919; }
+        ::-webkit-scrollbar-thumb { background: #404040; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #505050; }
+
+        /* 列印 */
+        .pdf-page-break { page-break-before: always; }
+        @media print { .no-print { display: none; } body { background: white; color: black; } .content-card { border: 1px solid #ccc; box-shadow: none; background: white; color: black; } }
     </style>
 </head>
-<body class="flex flex-col">
+<body class="flex flex-col min-h-screen">
 
-    <div class="grid-bg"></div>
-
-    <nav class="nav-glass sticky top-0 z-50 h-16">
+    <nav class="sticky top-0 z-50 bg-[#191919]/90 backdrop-blur border-b border-[#333] h-16">
         <div class="max-w-7xl mx-auto px-4 h-full flex justify-between items-center">
             <div class="flex items-center gap-4">
-                <a href="student.html" class="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+                <a href="student.html" class="flex items-center justify-center w-8 h-8 rounded hover:bg-[#333] text-gray-400 hover:text-white transition">
                     <i class="fa-solid fa-arrow-left"></i>
                 </a>
                 <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-wand-magic-sparkles text-teal-400"></i>
-                    <span class="font-bold text-lg tracking-wide text-white">單元重點精熟</span>
+                    <span class="w-2 h-6 bg-blue-600 rounded-full"></span>
+                    <span class="font-bold text-lg text-white" data-i18n="page_title">單元重點精熟</span>
                 </div>
             </div>
             
-            <div class="flex items-center gap-4">
-                <span id="user-info" class="text-xs font-mono text-slate-400 bg-slate-900 px-3 py-1 rounded border border-slate-800 hidden sm:inline-block">User: Guest</span>
-                <select id="language-selector" onchange="changeLanguage()" class="bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded px-2 py-1 outline-none">
+            <div class="flex items-center gap-3">
+                <span id="user-info" class="text-xs text-gray-400 hidden sm:inline-block">訪客</span>
+                <select id="language-selector" onchange="changeLanguage()" class="bg-[#262626] border border-[#404040] text-gray-300 text-xs rounded px-2 py-1 outline-none">
                     <option value="zh-TW">繁體中文</option>
                     <option value="en">English</option>
+                    <option value="ja">日本語</option>
+                    <option value="zh-CN">简体中文</option>
                 </select>
             </div>
         </div>
@@ -207,70 +193,64 @@
 
     <main class="flex-1 w-full max-w-7xl mx-auto px-4 py-8 pb-24">
         
-        <div id="selection-panel" class="bento-card p-6 mb-8">
+        <div id="selection-panel" class="content-card p-6 mb-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                <div>
-                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                        <i class="fa-solid fa-sliders text-teal-400"></i> 學習單元配置
-                    </h2>
-                    <p class="text-slate-400 text-sm mt-1">AI 將根據選擇生成專屬筆記</p>
-                </div>
-                <div id="db-status" class="text-xs font-mono px-3 py-1 rounded bg-slate-950 text-slate-500 border border-slate-800">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2" data-i18n="settings_title">
+                    <i class="fa-solid fa-sliders text-blue-500"></i> 請挑選學習單元
+                </h2>
+                <div id="db-status" class="text-xs font-mono px-3 py-1 rounded bg-[#262626] text-gray-500 border border-[#333]">
                     Connecting...
                 </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1 ml-1">學習階段</label>
-                    <select id="sel-stage" class="input-glass w-full p-2.5 text-sm"><option disabled selected>載入中...</option></select>
+                    <label class="block text-xs text-gray-400 mb-1 ml-1" data-i18n="label_stage">學習階段</label>
+                    <select id="sel-stage" class="select-clean w-full text-sm"><option disabled selected>Loading...</option></select>
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1 ml-1">版本</label>
-                    <select id="sel-publisher" class="input-glass w-full p-2.5 text-sm" disabled><option disabled selected>--</option></select>
+                    <label class="block text-xs text-gray-400 mb-1 ml-1" data-i18n="label_publisher">版本</label>
+                    <select id="sel-publisher" class="select-clean w-full text-sm" disabled><option disabled selected>--</option></select>
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1 ml-1">年級</label>
-                    <select id="sel-grade" class="input-glass w-full p-2.5 text-sm" disabled><option disabled selected>--</option></select>
+                    <label class="block text-xs text-gray-400 mb-1 ml-1" data-i18n="label_grade">年級</label>
+                    <select id="sel-grade" class="select-clean w-full text-sm" disabled><option disabled selected>--</option></select>
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1 ml-1">學期</label>
-                    <select id="sel-semester" class="input-glass w-full p-2.5 text-sm" disabled><option disabled selected>--</option></select>
+                    <label class="block text-xs text-gray-400 mb-1 ml-1" data-i18n="label_semester">學期</label>
+                    <select id="sel-semester" class="select-clean w-full text-sm" disabled><option disabled selected>--</option></select>
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-500 mb-1 ml-1">單元名稱</label>
-                    <select id="sel-unit" class="input-glass w-full p-2.5 text-sm" disabled><option disabled selected>--</option></select>
+                    <label class="block text-xs text-gray-400 mb-1 ml-1" data-i18n="label_unit">單元名稱</label>
+                    <select id="sel-unit" class="select-clean w-full text-sm" disabled><option disabled selected>--</option></select>
                 </div>
             </div>
 
             <div class="mt-6 flex justify-end">
-                <button id="btn-generate" onclick="startGeneration()" disabled class="btn-primary px-6 py-2.5 rounded-lg font-bold flex items-center gap-2">
-                    <i class="fa-solid fa-bolt"></i> 立即生成重點
+                <button id="btn-generate" onclick="startGeneration()" disabled class="btn-action flex items-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="btn_generate">AI 分析並生成</span>
                 </button>
             </div>
         </div>
 
         <div id="loading-view" class="hidden flex-col items-center justify-center py-20">
-            <div class="relative w-16 h-16 mb-4">
-                <div class="absolute inset-0 border-4 border-slate-700 rounded-full"></div>
-                <div class="absolute inset-0 border-4 border-teal-400 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-            <p class="text-teal-400 font-mono text-sm animate-pulse">AI ANALYZING DATA...</p>
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+            <p class="text-blue-400 font-mono text-sm animate-pulse">AI PROCESSING...</p>
         </div>
 
         <div id="content-view" class="hidden space-y-6">
             
-            <div class="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-white/10 pb-4">
+            <div class="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-[#333] pb-4">
                 <div>
-                    <span id="result-tag" class="text-xs font-bold text-indigo-400 bg-indigo-400/10 px-2 py-1 rounded border border-indigo-400/20">UNIT READY</span>
+                    <span id="result-tag" class="text-xs font-bold text-blue-400 bg-blue-400/10 px-2 py-1 rounded border border-blue-400/20">READY</span>
                     <h1 id="result-title" class="text-3xl font-bold text-white mt-2">單元名稱</h1>
                 </div>
                 <div class="flex gap-2 no-print">
-                    <button onclick="downloadTXT()" class="px-4 py-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium transition border border-slate-700">
-                        <i class="fa-regular fa-file-lines mr-1"></i> TXT
+                    <button onclick="downloadTXT()" class="px-4 py-2 rounded bg-[#333] hover:bg-[#444] text-gray-300 text-sm font-medium transition border border-[#444]">
+                        <i class="fa-regular fa-file-lines mr-1"></i> <span data-i18n="btn_txt">TXT</span>
                     </button>
-                    <button onclick="downloadPDF()" class="px-4 py-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium transition border border-slate-700">
-                        <i class="fa-regular fa-file-pdf mr-1"></i> PDF
+                    <button onclick="downloadPDF()" class="px-4 py-2 rounded bg-[#333] hover:bg-[#444] text-gray-300 text-sm font-medium transition border border-[#444]">
+                        <i class="fa-regular fa-file-pdf mr-1"></i> <span data-i18n="btn_pdf">PDF</span>
                     </button>
                 </div>
             </div>
@@ -278,80 +258,71 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 
                 <div class="lg:col-span-2 space-y-6">
-                    <div class="bento-card p-6 md:p-8">
-                        <div class="flex items-center gap-3 mb-6">
-                            <div class="w-10 h-10 rounded-lg bg-teal-500/10 flex items-center justify-center text-teal-400 border border-teal-500/20">
-                                <i class="fa-solid fa-list-ul"></i>
+                    <section class="content-card p-6 md:p-8">
+                        <div class="flex items-center gap-3 mb-6 border-b border-[#333] pb-4">
+                            <i class="fa-solid fa-star text-yellow-400 text-lg"></i>
+                            <h3 class="text-xl font-bold text-white" data-i18n="title_summary">核心概念摘要</h3>
+                        </div>
+                        <div id="summary-text" class="text-gray-300">
                             </div>
-                            <h3 class="text-xl font-bold text-white">重點摘要</h3>
-                        </div>
-                        <div id="summary-text" class="prose prose-invert max-w-none text-slate-300">
-                            <p class="text-slate-500 italic">正在載入摘要...</p>
-                        </div>
-                    </div>
+                    </section>
 
-                    <div class="bento-card p-6 md:p-8">
+                    <section class="content-card p-6 md:p-8">
                         <div class="flex justify-between items-center mb-4">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 border border-purple-500/20">
-                                    <i class="fa-solid fa-sitemap"></i>
-                                </div>
-                                <h3 class="text-xl font-bold text-white">知識架構圖</h3>
+                                <i class="fa-solid fa-sitemap text-purple-400 text-lg"></i>
+                                <h3 class="text-xl font-bold text-white" data-i18n="title_map">知識架構圖</h3>
                             </div>
-                            <button onclick="openModal()" class="text-xs text-slate-400 hover:text-white transition"><i class="fa-solid fa-expand"></i> 放大</button>
+                            <button onclick="openModal()" class="text-xs text-gray-400 hover:text-white transition bg-[#333] px-2 py-1 rounded"><i class="fa-solid fa-expand"></i> 放大</button>
                         </div>
                         <div class="mindmap-container cursor-zoom-in group" onclick="openModal()">
-                            <div id="mermaid-chart" class="w-full flex justify-center text-slate-400">圖表生成中...</div>
+                            <div id="mermaid-chart" class="w-full text-center text-gray-400">圖表生成中...</div>
                         </div>
-                    </div>
+                    </section>
 
-                    <div class="bento-card p-6 md:p-8 border-l-4 border-l-emerald-500">
+                    <section class="content-card p-6 md:p-8 border-l-4 border-l-emerald-600">
                         <div class="flex justify-between items-center mb-6">
                             <h3 class="text-xl font-bold text-white flex items-center gap-2">
-                                <i class="fa-solid fa-clipboard-check text-emerald-400"></i> 單元小測驗
+                                <i class="fa-solid fa-clipboard-check text-emerald-500"></i> 單元小測驗
                             </h3>
-                            <span id="quiz-progress" class="text-xs font-mono text-emerald-400"></span>
+                            <span id="quiz-progress" class="text-xs font-mono text-emerald-500"></span>
                         </div>
                         
                         <div id="quiz-body">
-                            <div id="quiz-question" class="text-lg font-bold text-white mb-6"></div>
+                            <div id="quiz-question" class="text-lg font-bold text-white mb-6 leading-relaxed"></div>
                             <div id="quiz-options" class="space-y-3"></div>
-                            <div id="quiz-feedback" class="hidden mt-4 p-4 rounded-lg bg-slate-800 border border-slate-700 text-sm"></div>
+                            <div id="quiz-feedback" class="hidden mt-4 p-4 rounded-lg bg-[#262626] border border-[#444] text-sm"></div>
                             <div class="mt-6 flex justify-center">
-                                <button id="quiz-main-btn" onclick="handleQuizMainButton()" disabled class="btn-primary px-8 py-2 rounded-full">下一題</button>
+                                <button id="quiz-main-btn" onclick="handleQuizMainButton()" disabled class="btn-action px-8 py-2 rounded-full">下一題</button>
                             </div>
                         </div>
 
                         <div id="quiz-result" class="hidden text-center py-8">
-                            <div class="text-5xl font-black text-emerald-400 mb-2" id="quiz-score-number">0</div>
-                            <div class="text-slate-400 text-sm mb-6">總分</div>
-                            <div class="bg-slate-900 rounded-xl p-4 border border-slate-800">
+                            <div class="text-5xl font-black text-emerald-500 mb-2" id="quiz-score-number">0</div>
+                            <div class="text-gray-400 text-sm mb-6">總分</div>
+                            <div class="bg-[#262626] rounded-xl p-4 border border-[#444] mb-4">
                                 <canvas id="quiz-radar" class="max-h-64"></canvas>
                             </div>
-                            <div id="quiz-result-detail" class="mt-4 text-sm text-slate-300 text-left"></div>
+                            <div id="quiz-result-detail" class="text-sm text-gray-300 text-left leading-relaxed"></div>
                         </div>
 
-                        <div id="quiz-empty" class="hidden text-center text-slate-500 py-10">無測驗題目</div>
-                    </div>
+                        <div id="quiz-empty" class="hidden text-center text-gray-500 py-10">無測驗題目</div>
+                    </section>
                 </div>
 
                 <div class="space-y-6 lg:sticky lg:top-24 h-fit">
-                    <div class="bento-card p-5">
-                        <h3 class="font-bold text-amber-400 mb-4 flex items-center gap-2">
-                            <i class="fa-solid fa-font"></i> 關鍵詞彙
+                    <div class="content-card p-5">
+                        <h3 class="font-bold text-amber-500 mb-4 flex items-center gap-2" data-i18n="title_vocab">
+                            <i class="fa-solid fa-font"></i> 科學詞彙
                         </h3>
-                        <div id="keywords-list" class="space-y-3 max-h-[500px] overflow-y-auto pr-2 text-slate-400 italic text-sm">
-                            載入中...
-                        </div>
+                        <div id="keywords-list" class="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar"></div>
                     </div>
 
-                    <div class="bento-card p-5">
-                        <h3 class="font-bold text-rose-400 mb-4 flex items-center gap-2">
-                            <i class="fa-regular fa-lightbulb"></i> 科學迷思
+                    <div class="content-card p-5">
+                        <h3 class="font-bold text-rose-500 mb-4 flex items-center gap-2" data-i18n="title_myth">
+                            <i class="fa-regular fa-lightbulb"></i> 科學動動腦
                         </h3>
-                        <div id="myth-list" class="space-y-4 text-slate-400 italic text-sm">
-                            載入中...
-                        </div>
+                        <div id="myth-list" class="space-y-4 text-gray-400 text-sm"></div>
                     </div>
                 </div>
             </div>
@@ -359,20 +330,20 @@
     </main>
 
     <div id="floating-chat" class="fixed bottom-6 right-6 z-50 hidden no-print">
-        <div id="xiaoke-window" class="chat-window closed bg-slate-900 border border-slate-700 shadow-2xl rounded-2xl w-80 h-[450px] flex flex-col overflow-hidden mb-4 transition-all duration-300 origin-bottom-right transform scale-0 opacity-0">
-            <div class="bg-slate-800 p-3 border-b border-slate-700 flex justify-between items-center">
-                <span class="font-bold text-teal-400 text-sm"><i class="fa-solid fa-robot mr-1"></i> 小科 AI</span>
-                <button onclick="toggleChat()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-times"></i></button>
+        <div id="xiaoke-window" class="chat-window closed bg-[#202020] border border-[#333] shadow-xl rounded-xl w-80 h-[450px] flex flex-col overflow-hidden mb-4 transition-all duration-300 origin-bottom-right transform scale-0 opacity-0">
+            <div class="bg-[#262626] p-3 border-b border-[#333] flex justify-between items-center">
+                <span class="font-bold text-blue-500 text-sm"><i class="fa-solid fa-robot mr-1"></i> 小科 AI</span>
+                <button onclick="toggleChat()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-times"></i></button>
             </div>
-            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 text-sm text-slate-300"></div>
-            <div class="p-3 border-t border-slate-700 bg-slate-800">
+            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 text-sm text-gray-300"></div>
+            <div class="p-3 border-t border-[#333] bg-[#262626]">
                 <div class="flex gap-2">
-                    <input type="text" id="chat-input" class="w-full bg-slate-900 border border-slate-700 rounded px-3 py-1 text-sm text-white focus:border-teal-500 outline-none" placeholder="輸入問題..." onkeypress="if(event.key==='Enter') sendChatMessage()">
-                    <button onclick="sendChatMessage()" class="text-teal-400 hover:text-white"><i class="fa-solid fa-paper-plane"></i></button>
+                    <input type="text" id="chat-input" class="w-full bg-[#1a1a1a] border border-[#333] rounded px-3 py-1 text-sm text-white focus:border-blue-500 outline-none" placeholder="..." onkeypress="if(event.key==='Enter') sendChatMessage()">
+                    <button onclick="sendChatMessage()" class="text-blue-500 hover:text-white"><i class="fa-solid fa-paper-plane"></i></button>
                 </div>
             </div>
         </div>
-        <button onclick="toggleChat()" class="w-14 h-14 rounded-full bg-teal-600 hover:bg-teal-500 text-white shadow-lg flex items-center justify-center text-2xl transition hover:scale-110">
+        <button onclick="toggleChat()" class="w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-500 text-white shadow-lg flex items-center justify-center text-xl transition hover:scale-110">
             <i class="fa-solid fa-comment-dots"></i>
         </button>
     </div>
@@ -392,11 +363,29 @@
         let quizState = { questions: [], currentIndex: 0, hasAnswered: false, answers: [] };
         let quizRadarChart = null;
 
-        const i18n = { "zh-TW": { label_stage: "學習階段", label_publisher: "版本", label_grade: "年級", label_semester: "學期", label_unit: "單元名稱" } };
+        // 多語系字典 (完整版)
+        const i18n = {
+            "zh-TW": {
+                page_title: "單元重點精熟", settings_title: "請挑選學習單元", label_stage: "學習階段", label_publisher: "版本", label_grade: "年級", label_semester: "學期", label_unit: "單元名稱", btn_generate: "AI 分析並生成",
+                btn_txt: "TXT", btn_pdf: "PDF", title_summary: "核心概念摘要", title_map: "知識架構圖", title_vocab: "科學詞彙", title_myth: "科學動動腦"
+            },
+            "en": {
+                page_title: "Unit Mastery", settings_title: "Select Unit", label_stage: "Level", label_publisher: "Publisher", label_grade: "Grade", label_semester: "Semester", label_unit: "Unit", btn_generate: "Generate",
+                btn_txt: "TXT", btn_pdf: "PDF", title_summary: "Summary", title_map: "Mind Map", title_vocab: "Vocabulary", title_myth: "Thinking Check"
+            },
+            "ja": {
+                page_title: "単元マスター", settings_title: "学習単元を選択", label_stage: "段階", label_publisher: "出版社", label_grade: "学年", label_semester: "学期", label_unit: "単元", btn_generate: "生成する",
+                btn_txt: "TXT", btn_pdf: "PDF", title_summary: "要点まとめ", title_map: "知識マップ", title_vocab: "科学用語", title_myth: "考えてみよう"
+            },
+            "zh-CN": {
+                page_title: "单元重点精熟", settings_title: "请挑选学习单元", label_stage: "学习阶段", label_publisher: "版本", label_grade: "年级", label_semester: "学期", label_unit: "单元名称", btn_generate: "AI 分析并生成",
+                btn_txt: "TXT", btn_pdf: "PDF", title_summary: "核心概念摘要", title_map: "知识架构图", title_vocab: "科学词汇", title_myth: "科学动动脑"
+            }
+        };
 
         window.onload = async () => {
             const user = JSON.parse(sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || '{"name":"訪客"}');
-            document.getElementById("user-info").innerText = `User: ${user.name}`;
+            document.getElementById("user-info").innerText = user.name;
 
             try {
                 const res = await fetch(GAS_API_URL + "?action=get_metadata");
@@ -406,16 +395,24 @@
                 if(json.status === "success") {
                     allData = json.data;
                     document.getElementById("db-status").innerText = "Connected";
-                    document.getElementById("db-status").classList.replace("text-slate-500", "text-emerald-400");
+                    document.getElementById("db-status").className = "text-xs font-mono px-3 py-1 rounded bg-[#262626] text-emerald-500 border border-emerald-900";
                     initSelectors();
                 } else { throw new Error(json.message); }
             } catch(e) {
                 console.error(e);
-                document.getElementById("db-status").innerText = "Error";
-                document.getElementById("db-status").classList.add("text-red-400");
-                alert("無法連線至資料庫");
+                document.getElementById("db-status").innerText = "Connection Failed";
+                document.getElementById("db-status").className = "text-xs font-mono px-3 py-1 rounded bg-[#262626] text-red-500 border border-red-900";
             }
         };
+
+        function changeLanguage() {
+            const lang = document.getElementById("language-selector").value;
+            const t = i18n[lang] || i18n["en"];
+            document.querySelectorAll("[data-i18n]").forEach(el => {
+                const key = el.getAttribute("data-i18n");
+                if (t[key]) el.innerText = t[key];
+            });
+        }
 
         function initSelectors() {
             const stages = [...new Set(allData.map(d => d.stage))];
@@ -486,40 +483,35 @@
             el.disabled=false;
         }
 
-        // ========== 核心修復：JSON 清洗與容錯 ==========
+        // ========== 強化的 JSON 清洗邏輯 (關鍵修復) ==========
         function cleanAndParseJSON(text) {
-            console.log("原始回傳字串長度:", text.length);
-            // 1. 移除 markdown 代碼塊標記
+            // 1. 移除 Markdown 標記
             let clean = text.replace(/```json/g, "").replace(/```/g, "").trim();
             
-            // 2. 嘗試直接解析
+            // 2. 嘗試基本解析
             try {
                 return JSON.parse(clean);
             } catch (e) {
-                console.warn("第一次解析失敗:", e);
+                console.warn("第一次解析失敗，嘗試修復 JSON...", e);
                 
-                // 3. 嘗試修復常見錯誤
-                // 移除結尾多餘逗號
+                // 3. 修復常見錯誤：
+                // 移除陣列或物件最後多餘的逗號 (Ex: {"a":1,} -> {"a":1})
                 clean = clean.replace(/,\s*([\]}])/g, '$1');
-                
-                // 嘗試處理未轉義的換行符 (這在 AI 生成長文本時很常見)
+                // 處理未轉義的換行符
                 clean = clean.replace(/(?<!\\)\n/g, "\\n");
 
                 try {
                     return JSON.parse(clean);
                 } catch (e2) {
-                    console.warn("第二次解析失敗，嘗試提取部分 JSON...", e2);
-                    
-                    // 4. 進階救援：嘗試只提取最外層的大括號內容
+                    console.warn("第二次解析失敗，嘗試暴力提取...", e2);
+                    // 4. 暴力提取：只抓取最外層 {} 
                     const firstOpen = clean.indexOf('{');
                     const lastClose = clean.lastIndexOf('}');
                     if (firstOpen !== -1 && lastClose !== -1) {
-                        const sub = clean.substring(firstOpen, lastClose + 1);
                         try {
-                            return JSON.parse(sub);
+                            return JSON.parse(clean.substring(firstOpen, lastClose + 1));
                         } catch (e3) {
-                            console.error("無法救援 JSON");
-                            return null;
+                            return null; // 放棄
                         }
                     }
                     return null;
@@ -540,16 +532,14 @@
                 });
                 
                 const text = await res.text();
-                // ✅ 使用容錯解析
-                const json = cleanAndParseJSON(text);
+                const json = cleanAndParseJSON(text); // 使用強化解析
 
                 if(json && json.status === "success") { 
                     currentResultData = json.data; 
                     renderResult(json.data); 
-                } else if (json) {
-                    throw new Error(json.message || "未知錯誤");
                 } else {
-                    throw new Error("資料格式嚴重錯誤，無法解析。請重試。");
+                    console.error("原始回應:", text);
+                    throw new Error("AI 資料格式錯誤，請重試 (Syntax Error)。");
                 }
             } catch(e) { 
                 alert("生成失敗: " + e.message); 
@@ -562,10 +552,9 @@
         function renderResult(data) {
             const raw = data.raw_content || {};
             
-            // 標題
             document.getElementById('result-title').innerText = data.topic || raw.unitName || filters.unitName;
             
-            // 摘要
+            // 摘要 (防呆: 確保有預設值)
             const summaryBox = document.getElementById('summary-text');
             let summaryContent = "";
             if (data.summary) {
@@ -574,19 +563,13 @@
                 else if (data.summary.summary) summaryContent = data.summary.summary;
             }
             if (!summaryContent && raw.text_summary) summaryContent = raw.text_summary;
-            
-            // 如果還是沒有摘要，嘗試從 raw.text 擷取
-            if (!summaryContent && raw.text) {
-                summaryContent = raw.text.substring(0, 300) + "...";
-            }
-            
-            summaryBox.innerHTML = summaryContent || '<p class="text-slate-500">暫無摘要</p>';
+            if (!summaryContent && raw.text) summaryContent = raw.text.substring(0, 300) + "..."; // 最低限度顯示原文
+            summaryBox.innerHTML = summaryContent || '<p class="text-gray-500">暫無摘要</p>';
 
-            // 詞彙
+            // 詞彙 (防呆)
             const keywordList = document.getElementById('keywords-list');
             keywordList.innerHTML = '';
             let kList = data.keywords || [];
-            // 兼容舊格式
             if (kList.length === 0 && raw.vocab_list) kList = raw.vocab_list;
             
             if (Array.isArray(kList) && kList.length > 0) {
@@ -595,20 +578,16 @@
                     const def = typeof k === 'object' ? (k.def || k.definition) : '';
                     if (!term) return;
                     const div = document.createElement('div');
-                    div.className = 'vocab-card';
-                    div.innerHTML = `<div class="font-bold text-amber-400 mb-1">${term}</div><div class="text-xs text-slate-400">${def}</div>`;
+                    div.className = 'vocab-item';
+                    div.innerHTML = `<div class="font-bold text-amber-500 mb-1">${term}</div><div class="text-xs text-gray-400">${def}</div>`;
                     keywordList.appendChild(div);
                 });
-            } else { keywordList.innerHTML = '<span class="text-slate-500 text-xs">無特定詞彙</span>'; }
+            } else { keywordList.innerHTML = '<span class="text-gray-500 text-xs">無特定詞彙</span>'; }
 
-            // Mermaid
+            // Mermaid (防呆)
             const chartDiv = document.getElementById('mermaid-chart');
             let mapData = data.mindMap || (data.summary && data.summary.mindMap) || '';
-            
-            // 清理 Mermaid 代碼
-            if (mapData) {
-                mapData = mapData.replace(/```mermaid/g, '').replace(/```/g, '').trim();
-            }
+            if (mapData) mapData = mapData.replace(/```mermaid/g, '').replace(/```/g, '').trim();
 
             if (mapData) {
                 chartDiv.innerHTML = `<div class="mermaid">${mapData}</div>`;
@@ -616,10 +595,10 @@
                     mermaid.init(undefined, document.querySelectorAll('.mermaid'));
                 } catch(e) {
                     console.error("Mermaid 繪製失敗", e);
-                    chartDiv.innerHTML = '<span class="text-red-400 text-xs">圖表繪製錯誤</span>';
+                    chartDiv.innerHTML = '<span class="text-red-400 text-xs">圖表繪製錯誤，請點擊放大查看原始碼</span>';
                 }
             } else { 
-                chartDiv.innerHTML = '<span class="text-slate-400 text-xs">無架構圖數據</span>'; 
+                chartDiv.innerHTML = '<span class="text-gray-400 text-xs">無架構圖數據</span>'; 
             }
 
             // 迷思
@@ -632,18 +611,18 @@
                 mythData.forEach((m, index) => {
                     const q = m.question || m.myth || '迷思問題';
                     const div = document.createElement('div');
-                    div.className = 'bg-slate-800/50 p-4 rounded-xl border border-white/5 mb-3';
+                    div.className = 'bg-[#262626] p-3 rounded-lg border border-[#333] mb-3';
                     div.innerHTML = `
-                        <div class="text-sm font-bold text-slate-200 mb-2"><span class="text-rose-400 mr-2">Q${index+1}</span>${q}</div>
+                        <div class="text-sm font-bold text-gray-200 mb-2"><span class="text-rose-500 mr-2">Q${index+1}</span>${q}</div>
                         <div class="grid grid-cols-2 gap-2">
-                            <button onclick="answerMyth(${index}, true)" class="py-1.5 bg-slate-700 hover:bg-slate-600 rounded text-xs text-slate-300 transition">正確</button>
-                            <button onclick="answerMyth(${index}, false)" class="py-1.5 bg-slate-700 hover:bg-slate-600 rounded text-xs text-slate-300 transition">錯誤</button>
+                            <button onclick="answerMyth(${index}, true)" class="py-1.5 bg-[#333] hover:bg-[#444] rounded text-xs text-gray-300 transition">正確</button>
+                            <button onclick="answerMyth(${index}, false)" class="py-1.5 bg-[#333] hover:bg-[#444] rounded text-xs text-gray-300 transition">錯誤</button>
                         </div>
-                        <div id="myth-${index}-feedback" class="mt-2 hidden text-xs p-2 rounded bg-slate-900 text-slate-300"></div>
+                        <div id="myth-${index}-feedback" class="mt-2 hidden text-xs p-2 rounded bg-[#1a1a1a] text-gray-300 border border-[#333]"></div>
                     `;
                     mythListEl.appendChild(div);
                 });
-            } else { mythListEl.innerHTML = '<span class="text-slate-500 text-xs text-center">無迷思題目</span>'; }
+            } else { mythListEl.innerHTML = '<span class="text-gray-500 text-xs text-center">無迷思題目</span>'; }
 
             // 測驗
             const quizRaw = data.quiz || (data.summary && data.summary.quiz) || [];
@@ -707,8 +686,8 @@
             
             q.options.forEach((opt, idx) => {
                 const btn = document.createElement("button");
-                btn.className = "quiz-btn w-full text-left p-3 rounded-lg border border-slate-700 bg-slate-800/50 hover:bg-slate-700 hover:border-teal-500/50 transition text-slate-300 text-sm";
-                btn.innerHTML = `<span class="text-teal-400 font-bold mr-2">${letters[idx]}</span>${opt}`;
+                btn.className = "quiz-btn w-full text-left p-3 rounded-lg border border-[#333] bg-[#262626] hover:bg-[#333] transition text-gray-300 text-sm";
+                btn.innerHTML = `<span class="text-blue-500 font-bold mr-2">${letters[idx]}</span>${opt}`;
                 btn.onclick = () => handleQuizAnswer(idx, btn);
                 optsContainer.appendChild(btn);
             });
@@ -728,21 +707,21 @@
             allBtns.forEach(b => b.disabled = true);
 
             if(isCorrect) {
-                btnElement.classList.replace("bg-slate-800/50", "bg-emerald-900/30");
-                btnElement.classList.replace("border-slate-700", "border-emerald-500");
+                btnElement.classList.replace("bg-[#262626]", "bg-emerald-900/30");
+                btnElement.classList.replace("border-[#333]", "border-emerald-600");
             } else {
-                btnElement.classList.replace("bg-slate-800/50", "bg-red-900/30");
-                btnElement.classList.replace("border-slate-700", "border-red-500");
+                btnElement.classList.replace("bg-[#262626]", "bg-red-900/30");
+                btnElement.classList.replace("border-[#333]", "border-red-600");
                 if(q.correctIndex >= 0 && allBtns[q.correctIndex]) {
-                    allBtns[q.correctIndex].classList.replace("bg-slate-800/50", "bg-emerald-900/30");
-                    allBtns[q.correctIndex].classList.replace("border-slate-700", "border-emerald-500");
+                    allBtns[q.correctIndex].classList.replace("bg-[#262626]", "bg-emerald-900/30");
+                    allBtns[q.correctIndex].classList.replace("border-[#333]", "border-emerald-600");
                 }
             }
 
             const fb = document.getElementById("quiz-feedback");
             fb.innerHTML = isCorrect 
-                ? `<div class="text-emerald-400 font-bold mb-1"><i class="fa-solid fa-check"></i> 正確</div>${q.explanation}`
-                : `<div class="text-red-400 font-bold mb-1"><i class="fa-solid fa-xmark"></i> 錯誤</div>${q.explanation}`;
+                ? `<div class="text-emerald-500 font-bold mb-1"><i class="fa-solid fa-check"></i> 正確</div>${q.explanation}`
+                : `<div class="text-red-500 font-bold mb-1"><i class="fa-solid fa-xmark"></i> 錯誤</div>${q.explanation}`;
             fb.classList.remove("hidden");
             
             quizState.answers[quizState.currentIndex] = { correct: isCorrect, concept: q.concept };
@@ -786,13 +765,13 @@
                     datasets: [{
                         label: '掌握度',
                         data: dataScores,
-                        backgroundColor: 'rgba(45, 212, 191, 0.2)',
-                        borderColor: '#2dd4bf',
-                        pointBackgroundColor: '#2dd4bf'
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: '#3B82F6',
+                        pointBackgroundColor: '#3B82F6'
                     }]
                 },
                 options: {
-                    scales: { r: { min: 0, max: 100, ticks: { display: false }, grid: { color: 'rgba(255,255,255,0.1)' } } },
+                    scales: { r: { min: 0, max: 100, ticks: { display: false }, grid: { color: '#404040' } } },
                     plugins: { legend: { display: false } }
                 }
             });
@@ -808,12 +787,13 @@
             const fb = document.getElementById(`myth-${index}-feedback`);
             fb.classList.remove("hidden");
             if(isCorrect) {
-                fb.innerHTML = `<span class="text-emerald-400 font-bold">正確！</span> ${m.correct || m.explanation}`;
+                fb.innerHTML = `<span class="text-emerald-500 font-bold">正確！</span> ${m.correct || m.explanation}`;
             } else {
-                fb.innerHTML = `<span class="text-amber-400 font-bold">可惜...</span> ${m.correct || m.explanation}`;
+                fb.innerHTML = `<span class="text-amber-500 font-bold">可惜...</span> ${m.correct || m.explanation}`;
             }
         }
 
+        // Chat & Modal
         function toggleChat() {
             const w = document.getElementById("xiaoke-window");
             w.classList.toggle("closed");
@@ -825,21 +805,19 @@
                 w.classList.add("scale-100", "opacity-100");
             }
         }
-
         async function sendChatMessage() {
             const input = document.getElementById("chat-input");
             const msg = input.value.trim();
             if(!msg) return;
             const body = document.getElementById("chat-messages");
-            body.innerHTML += `<div class="text-right mb-2"><span class="bg-indigo-600 text-white py-1 px-3 rounded-lg inline-block text-xs">${msg}</span></div>`;
+            body.innerHTML += `<div class="text-right mb-2"><span class="bg-blue-600 text-white py-1 px-3 rounded-lg inline-block text-xs">${msg}</span></div>`;
             input.value = "";
             body.scrollTop = body.scrollHeight;
             setTimeout(() => {
-                body.innerHTML += `<div class="text-left mb-2"><span class="bg-slate-800 text-slate-300 py-1 px-3 rounded-lg inline-block border border-slate-700 text-xs">小科正在思考...</span></div>`;
+                body.innerHTML += `<div class="text-left mb-2"><span class="bg-[#262626] text-gray-300 py-1 px-3 rounded-lg inline-block border border-[#333] text-xs">小科正在思考...</span></div>`;
                 body.scrollTop = body.scrollHeight;
             }, 800);
         }
-
         function openModal() {
             const chart = document.getElementById("mermaid-chart").innerHTML;
             if(!chart || chart.includes("無法")) return;
@@ -855,7 +833,7 @@
         }
         function downloadTXT() { alert("TXT 下載功能 (待實作)"); }
         function downloadPDF() { alert("PDF 下載功能 (待實作)"); }
-        function changeLanguage() { }
+
     </script>
 </body>
 </html>
