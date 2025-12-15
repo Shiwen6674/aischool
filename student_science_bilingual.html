@@ -2,7 +2,7 @@
 <html lang="zh-TW" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AI School | 科學雙語閱讀</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,13 +18,13 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Noto Sans TC', 'Inter', 'sans-serif'],
+                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
                     },
                     colors: {
                         tech: {
-                            bg: '#020617',
-                            panel: 'rgba(15, 23, 42, 0.95)',
-                            border: 'rgba(45, 212, 191, 0.3)',
+                            bg: '#0f172a',
+                            panel: 'rgba(15, 23, 42, 0.6)',
+                            border: 'rgba(255, 255, 255, 0.08)',
                             accent: '#2dd4bf',
                             highlight: '#facc15'
                         }
@@ -34,102 +34,208 @@
         }
     </script>
     <style>
-        body { background-color: #020617; color: #ccfbf1; overflow: hidden; }
-        .glass-panel { background: rgba(10, 25, 47, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(45, 212, 191, 0.2); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); }
-        .scroll-area::-webkit-scrollbar { width: 6px; }
-        .scroll-area::-webkit-scrollbar-track { background: rgba(2, 6, 23, 0.5); }
-        .scroll-area::-webkit-scrollbar-thumb { background: #115e59; border-radius: 3px; }
+        /* 1. 基礎設定：極光深色背景 */
+        body { 
+            background-color: #0f172a; 
+            color: #e2e8f0; 
+            overflow: hidden; 
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-        .nav-item { transition: all 0.2s; border-left: 3px solid transparent; cursor: pointer; padding: 0.6rem 0.8rem; margin-bottom: 0.25rem; font-size: 0.9rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .nav-item:hover { background: rgba(45, 212, 191, 0.05); color: #ccfbf1; }
-        .nav-item.active { background: linear-gradient(90deg, rgba(45, 212, 191, 0.1), transparent); border-left-color: #2dd4bf; color: #2dd4bf; font-weight: 700; }
+        /* 背景流動極光動畫 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, rgba(45, 212, 191, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.05) 0%, transparent 40%);
+            z-index: -2;
+            animation: aurora 20s infinite linear;
+            pointer-events: none;
+        }
+        @keyframes aurora {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
-        /* 黃色標示 */
-        .sci-term { color: #facc15; font-weight: 700; border-bottom: 1px dashed rgba(250, 204, 21, 0.6); cursor: pointer; transition: all 0.2s; padding: 0 2px; }
-        .sci-term:hover { background-color: rgba(250, 204, 21, 0.2); color: #fff; text-shadow: 0 0 10px #facc15; border-radius: 4px; }
+        /* 2. 高級玻璃擬態面板 */
+        .glass-panel { 
+            background: rgba(15, 23, 42, 0.6); 
+            backdrop-filter: blur(24px); 
+            -webkit-backdrop-filter: blur(24px); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); 
+        }
 
-        .custom-select { background-color: rgba(15, 23, 42, 0.8); border: 1px solid rgba(45, 212, 191, 0.3); color: #ccfbf1; appearance: none; padding-right: 1.5rem; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%232dd4bf' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.3rem center; background-repeat: no-repeat; background-size: 1.2em 1.2em; }
+        /* 捲軸美化 */
+        .scroll-area::-webkit-scrollbar { width: 4px; }
+        .scroll-area::-webkit-scrollbar-track { background: transparent; }
+        .scroll-area::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+        .scroll-area::-webkit-scrollbar-thumb:hover { background: rgba(45, 212, 191, 0.5); }
 
-        .content-block { margin-bottom: 1rem; padding: 1rem; border-radius: 0.75rem; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.2s ease; }
-        /* ... 其他樣式 ... */
+        /* 3. 導航選單優化 */
+        .nav-item { 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            border-left: 2px solid transparent; 
+            cursor: pointer; 
+            padding: 0.8rem 1rem; 
+            margin-bottom: 0.25rem; 
+            font-size: 0.95rem; 
+            color: #94a3b8; 
+            border-radius: 0 8px 8px 0;
+            font-weight: 500;
+        }
+        .nav-item:hover { 
+            background: linear-gradient(90deg, rgba(255,255,255,0.03), transparent); 
+            color: #f1f5f9; 
+            padding-left: 1.2rem;
+        }
+        .nav-item.active { 
+            background: linear-gradient(90deg, rgba(45, 212, 191, 0.1), transparent); 
+            border-left-color: #2dd4bf; 
+            color: #2dd4bf; 
+            font-weight: 700; 
+        }
 
+        /* 4. 科學詞彙 */
+        .sci-term { 
+            color: #facc15; 
+            font-weight: 700; 
+            border-bottom: 1.5px solid rgba(250, 204, 21, 0.3); 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            padding: 0 2px; 
+        }
+        .sci-term:hover { 
+            background-color: rgba(250, 204, 21, 0.15); 
+            color: #fbbf24; 
+            border-radius: 4px; 
+            border-bottom-color: transparent;
+        }
+
+        /* 5. 閱讀區塊優化 */
+        .content-block { 
+            margin-bottom: 2rem; 
+            padding: 1.5rem; 
+            border-radius: 1rem; 
+            background: transparent; 
+            border: 1px solid transparent; 
+            transition: all 0.3s ease; 
+        }
+        .content-block:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* 正在朗讀的高亮 (流光效果) */
+        .reading-active {
+            background: linear-gradient(90deg, rgba(45, 212, 191, 0.05) 0%, rgba(45, 212, 191, 0.15) 50%, rgba(45, 212, 191, 0.05) 100%) !important;
+            background-size: 200% 100% !important;
+            animation: reading-scan 3s linear infinite;
+            border-left: 3px solid #2dd4bf !important;
+            border-radius: 4px 12px 12px 4px;
+            box-shadow: 0 0 20px rgba(45, 212, 191, 0.05);
+        }
+        @keyframes reading-scan {
+            0% { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
+        }
+
+        /* 6. 文字排版 */
         .en-text { 
-            font-size: 1.1rem; 
-            color: #2dd4bf; /* ✅ 改成亮綠色 (Teal-400) */
-            line-height: 1.6; 
-            margin-bottom: 0.5rem; 
+            font-size: 1.15rem; 
+            color: #2dd4bf; 
+            line-height: 1.7; 
+            margin-bottom: 0.75rem; 
             font-weight: 500; 
+            letter-spacing: 0.01em; 
             font-family: 'Inter', sans-serif; 
             cursor: pointer; 
-            transition: color 0.2s; 
+            transition: opacity 0.2s;
         }
-        .en-text:hover { color: #fff; } /* 滑鼠移過去變白色，比較明顯 */
+        .en-text:hover { opacity: 0.8; color: #fff; }
 
         .zh-text { 
-            font-size: 1rem; 
-            color: #ffffff; /* ✅ 改成純白色 */
-            line-height: 1.6; 
-            padding-left: 8px; 
-            border-left: 3px solid rgba(45, 212, 191, 0.3); 
+            font-size: 1.05rem; 
+            color: #f8fafc; 
+            line-height: 1.8; 
+            padding-left: 12px; 
+            border-left: 2px solid rgba(255, 255, 255, 0.1); 
             cursor: pointer; 
+            font-weight: 400;
+            letter-spacing: 0.05em; 
         }
-        .zh-text:hover { color: #2dd4bf; } /* 滑鼠移過去變亮綠色 */
+        .zh-text:hover { color: #2dd4bf; border-left-color: #2dd4bf; }
 
-        /* ... 其他樣式 ... */
+        .section-header { 
+            font-size: 1.5rem; 
+            font-weight: 800; 
+            color: #fff; 
+            margin-top: 3rem; 
+            margin-bottom: 1.5rem; 
+            padding-bottom: 0.5rem; 
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+            display: flex; 
+            align-items: center; 
+            gap: 0.75rem; 
+        }
+        .section-header::before { 
+            content: ''; 
+            display: block; 
+            width: 6px; 
+            height: 28px; 
+            background: linear-gradient(to bottom, #2dd4bf, #0d9488); 
+            border-radius: 4px; 
+        }
 
-        .section-header { font-size: 1.4rem; font-weight: 800; color: #fff; margin-top: 2rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(45, 212, 191, 0.3); display: flex; align-items: center; gap: 0.5rem; }
-        .section-header::before { content: ''; display: block; width: 5px; height: 24px; background: #2dd4bf; border-radius: 2px; }
+        /* 下拉選單 */
+        .custom-select { 
+            background-color: rgba(15, 23, 42, 0.6); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            color: #e2e8f0; 
+            padding-right: 2rem; 
+            background-position: right 0.5rem center; 
+            transition: all 0.2s;
+        }
+        .custom-select:hover {
+            border-color: #2dd4bf;
+            background-color: rgba(15, 23, 42, 0.9);
+        }
+
+        /* 隱藏 Canvas (改用 CSS 極光) */
+        #canvas-container { display: none; }
+        
+        /* 底部控制島樣式與避讓 */
+        #reading-container { padding-bottom: 140px !important; }
+        #control-dock { 
+            padding-bottom: env(safe-area-inset-bottom, 20px); 
+            bottom: max(1.5rem, env(safe-area-inset-bottom));
+        }
+        #play-rate { text-align-last: center; }
 
         /* Vocab List Style */
-        .vocab-item { background: rgba(15, 23, 42, 0.6); border-bottom: 1px solid rgba(45, 212, 191, 0.1); padding: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .vocab-item:hover { background: rgba(250, 204, 21, 0.05); }
+        .vocab-item { background: rgba(15, 23, 42, 0.4); border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 12px; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;}
+        .vocab-item:hover { background: rgba(255, 255, 255, 0.05); }
 
-        #canvas-container { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
         .loader { border: 2px solid rgba(45, 212, 191, 0.1); border-top: 2px solid #2dd4bf; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    /* 正在朗讀的高亮樣式 */
-        /* 正在朗讀的高亮樣式：加入流光動畫 */
-    .reading-active {
-        /* 設定漸層背景：左邊淺 -> 中間亮 -> 右邊淺 */
-        background: linear-gradient(
-            90deg, 
-            rgba(45, 212, 191, 0.05) 0%, 
-            rgba(45, 212, 191, 0.25) 50%, 
-            rgba(45, 212, 191, 0.05) 100%
-        ) !important;
-        
-        /* 讓背景比區塊大，這樣才能移動 */
-        background-size: 200% 100% !important;
-        
-        /* 啟動動畫：3秒跑一次，無限循環 */
-        animation: reading-scan 3s linear infinite;
-        
-        border-left: 4px solid #facc15 !important;
-        box-shadow: 0 0 15px rgba(45, 212, 191, 0.1);
-        transition: all 0.3s ease;
-    }
-
-    /* 定義動畫關鍵影格 */
-    @keyframes reading-scan {
-        0% { background-position: 100% 0; }
-        100% { background-position: -100% 0; }
-    }
     </style>
 </head>
 <body class="h-screen flex flex-col font-sans selection:bg-teal-500/30 selection:text-white">
 
-    <div id="canvas-container"><canvas id="molecule-canvas"></canvas></div>
-
-    <div id="loader-overlay" class="absolute inset-0 bg-[#020617] z-50 flex flex-col items-center justify-center">
+    <div id="loader-overlay" class="absolute inset-0 bg-[#0f172a] z-50 flex flex-col items-center justify-center">
         <i class="fa-solid fa-satellite-dish text-5xl text-teal-400 animate-pulse mb-4"></i>
         <div class="text-teal-500 tracking-widest mt-2 font-bold">資料庫連線中...</div>
     </div>
 
     <nav class="glass-panel sticky top-0 z-40 h-auto md:h-16 flex flex-col md:flex-row items-center shrink-0 border-b-0 shadow-lg">
-        <div class="w-full px-4 md:px-6 py-2 flex justify-between items-center border-b border-teal-500/20 md:border-b-0">
+        <div class="w-full px-4 md:px-6 py-2 flex justify-between items-center border-b border-white/10 md:border-b-0">
             <div class="flex items-center gap-4">
                 <button onclick="goBack()" class="flex items-center gap-2 text-teal-400 hover:text-white transition group">
-                    <div class="p-1 rounded border border-teal-500/30 group-hover:bg-teal-500/20">
+                    <div class="p-1 rounded border border-teal-500/30 group-hover:bg-teal-500/20 group-hover:border-teal-400">
                         <i class="fa-solid fa-chevron-left"></i>
                     </div>
                     <span class="text-sm font-bold tracking-wider hidden md:inline" data-i18n="return">返回</span>
@@ -143,13 +249,13 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <div class="flex bg-slate-900/80 rounded-lg p-1 border border-teal-500/30">
-                    <button onclick="setMode('en')" class="mode-btn px-2 py-1 text-xs font-bold rounded text-teal-500 hover:text-white transition" id="btn-en">EN</button>
-                    <button onclick="setMode('dual')" class="mode-btn px-2 py-1 text-xs font-bold rounded bg-teal-600 text-white shadow-[0_0_10px_rgba(45,212,191,0.4)]" id="btn-dual">DUAL</button>
-                    <button onclick="setMode('zh')" class="mode-btn px-2 py-1 text-xs font-bold rounded text-teal-500 hover:text-white transition" id="btn-zh">繁中</button>
+                <div class="flex bg-slate-900/50 rounded-lg p-1 border border-white/10">
+                    <button onclick="setMode('en')" class="mode-btn px-3 py-1 text-xs font-bold rounded text-teal-500 hover:text-white transition" id="btn-en">EN</button>
+                    <button onclick="setMode('dual')" class="mode-btn px-3 py-1 text-xs font-bold rounded bg-teal-600 text-white shadow-[0_0_10px_rgba(45,212,191,0.4)]" id="btn-dual">DUAL</button>
+                    <button onclick="setMode('zh')" class="mode-btn px-3 py-1 text-xs font-bold rounded text-teal-500 hover:text-white transition" id="btn-zh">繁中</button>
                 </div>
 
-                <select id="ui-lang" class="bg-slate-900/80 border border-teal-500/30 text-teal-100 rounded-lg px-2 py-1 text-xs outline-none cursor-pointer hover:bg-slate-800" onchange="changeLanguage()">
+                <select id="ui-lang" class="bg-slate-900/50 border border-white/10 text-teal-100 rounded-lg px-2 py-1 text-xs outline-none cursor-pointer hover:bg-slate-800" onchange="changeLanguage()">
                     <option value="zh-TW">繁體中文</option>
                     <option value="en">English</option>
                     <option value="ja">日本語</option>
@@ -158,7 +264,7 @@
             </div>
         </div>
 
-        <div class="w-full px-4 md:px-6 py-2 bg-slate-900/80 flex flex-wrap gap-2 items-center text-sm border-t border-teal-500/20 md:border-t-0 md:bg-transparent justify-end">
+        <div class="w-full px-4 md:px-6 py-2 bg-slate-900/60 flex flex-wrap gap-2 items-center text-sm border-t border-white/10 md:border-t-0 md:bg-transparent justify-end">
             <span class="text-xs font-bold text-teal-500 mr-2"><i class="fa-solid fa-filter"></i> 篩選:</span>
             <select id="sel-stage" class="custom-select px-2 py-1 rounded w-24 text-xs font-bold" onchange="filterUnits('stage')"><option value="" disabled selected data-i18n="stage">學習階段</option></select>
             <select id="sel-grade" class="custom-select px-2 py-1 rounded w-20 text-xs font-bold" onchange="filterUnits('grade')" disabled><option value="" disabled selected data-i18n="grade">年級</option></select>
@@ -170,8 +276,8 @@
 
     <div class="flex-grow flex overflow-hidden p-4 gap-4 relative z-10">
 
-        <aside class="w-64 glass-panel rounded-2xl flex flex-col overflow-hidden hidden md:flex">
-            <div class="p-4 border-b border-teal-500/20 bg-slate-900/40">
+        <aside class="w-64 glass-panel rounded-2xl flex flex-col overflow-hidden hidden md:flex border-l border-white/10">
+            <div class="p-4 border-b border-white/10 bg-slate-900/30">
                 <h3 class="text-xs font-bold text-teal-500 tracking-widest mb-1" data-i18n="nav">目錄導航</h3>
                 <div class="text-white font-bold text-sm truncate" id="nav-title">請選擇單元</div>
             </div>
@@ -180,44 +286,12 @@
             </div>
         </aside>
 
-        <section class="flex-grow glass-panel rounded-2xl flex flex-col relative overflow-hidden">
-            <div class="h-10 border-b border-teal-500/20 bg-slate-900/40 flex items-center justify-between px-6 gap-3">
+        <section class="flex-grow glass-panel rounded-2xl flex flex-col relative overflow-hidden border-x border-white/10">
+            <div class="h-10 border-b border-white/10 bg-slate-900/30 flex items-center justify-between px-6 gap-3">
                 <div class="flex items-center gap-2 min-w-0">
                     <i class="fa-solid fa-file-lines text-teal-400"></i>
                     <span class="text-xs font-bold text-teal-200 truncate" id="status-bar">READY</span>
                     <span id="trans-loading" class="hidden text-xs text-teal-400 flex items-center gap-1 ml-2"><div class="loader"></div> Translating...</span>
-                </div>
-
-                <div class="flex items-center gap-3 shrink-0 bg-slate-900/50 rounded-full px-3 py-1 border border-teal-500/20">
-                    <select id="play-rate" class="custom-select px-2 py-1 rounded w-20 text-xs font-bold" title="語速">
-                        <option value="0.5">0.5x</option>
-                        <option value="0.75">0.75x</option>
-                        <option value="1.0" selected>1.0x</option>
-                        <option value="1.25">1.25x</option>
-                        <option value="1.5">1.5x</option>
-                    </select>
-
-                    <div class="h-4 w-px bg-teal-500/30"></div>
-
-                    <div class="flex items-center gap-1">
-                        <button onclick="setVoice('male')" id="btn-male" class="text-teal-400 p-1 hover:text-white" title="男聲">
-                            <i class="fa-solid fa-person text-lg"></i>
-                        </button>
-                        <button onclick="setVoice('female')" id="btn-female" class="text-slate-500 p-1 hover:text-white" title="女聲">
-                            <i class="fa-solid fa-person-dress text-lg"></i>
-                        </button>
-                    </div>
-
-                    <div class="h-4 w-px bg-teal-500/30"></div>
-
-                    <div class="flex items-center gap-2">
-                        <button onclick="toggleSpeech()" class="w-8 h-8 flex items-center justify-center rounded-full bg-teal-600 hover:bg-teal-500 text-white transition shadow-lg" id="btn-play" title="播放/暫停">
-                            <i class="fa-solid fa-play text-xs"></i>
-                        </button>
-                        <button onclick="stopSpeech()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-700 hover:bg-red-500 text-white transition shadow-lg" title="停止">
-                            <i class="fa-solid fa-stop text-xs"></i>
-                        </button>
-                    </div>
                 </div>
             </div>
 
@@ -231,8 +305,8 @@
             </div>
         </section>
 
-        <aside class="w-80 glass-panel rounded-2xl flex flex-col overflow-hidden hidden lg:flex border-l border-teal-500/30">
-            <div class="p-4 border-b border-teal-500/20 bg-gradient-to-r from-slate-900/80 to-teal-900/20">
+        <aside class="w-80 glass-panel rounded-2xl flex flex-col overflow-hidden hidden lg:flex border-l border-white/10">
+            <div class="p-4 border-b border-white/10 bg-gradient-to-r from-slate-900/50 to-teal-900/10">
                 <div class="flex items-center gap-2 mb-1">
                     <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
                     <h3 class="text-xs font-bold text-teal-400 tracking-widest" data-i18n="vocab_title">科學詞彙庫</h3>
@@ -247,7 +321,42 @@
         </aside>
     </div>
 
-    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-slate-800/90 border border-teal-500/30 text-teal-100 px-4 py-2 rounded-full shadow-2xl transition-all duration-300 opacity-0 translate-y-10 z-50 flex items-center gap-2 pointer-events-none text-sm font-bold">
+    <div id="control-dock" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 flex items-center gap-3 p-2 pl-4 pr-3 rounded-full border border-teal-500/30 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl bg-slate-900/80 transition-all duration-300 w-[90%] max-w-md justify-between md:w-auto md:gap-6">
+        
+        <div class="flex items-center gap-2">
+            <span class="text-[10px] font-bold text-teal-500/70 uppercase tracking-wider hidden md:inline">SPEED</span>
+            <select id="play-rate" class="bg-transparent text-teal-300 text-sm font-bold outline-none cursor-pointer appearance-none text-center w-10 hover:text-white transition">
+                <option value="0.5">0.5x</option>
+                <option value="0.75">0.75x</option>
+                <option value="1.0" selected>1.0x</option>
+                <option value="1.25">1.25x</option>
+                <option value="1.5">1.5x</option>
+            </select>
+        </div>
+
+        <div class="h-6 w-px bg-teal-500/20"></div>
+
+        <div class="flex items-center gap-1 bg-black/20 rounded-full p-1">
+            <button onclick="setVoice('male')" id="btn-male" class="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 text-teal-400 hover:bg-teal-500/20 hover:text-white" title="男聲">
+                <i class="fa-solid fa-person text-lg"></i>
+            </button>
+            <button onclick="setVoice('female')" id="btn-female" class="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 text-slate-500 hover:bg-teal-500/20 hover:text-white" title="女聲">
+                <i class="fa-solid fa-person-dress text-lg"></i>
+            </button>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <button onclick="toggleSpeech()" class="w-12 h-12 flex items-center justify-center rounded-full bg-gradient-to-br from-teal-400 to-teal-600 text-white shadow-[0_0_15px_rgba(45,212,191,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 group" id="btn-play">
+                <i class="fa-solid fa-play text-lg ml-1 group-hover:animate-pulse"></i>
+            </button>
+            
+            <button onclick="stopSpeech()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 border border-teal-500/30 text-teal-400 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/50 transition-all duration-300 active:scale-95">
+                <i class="fa-solid fa-stop text-sm"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-slate-800/90 border border-teal-500/30 text-teal-100 px-4 py-2 rounded-full shadow-2xl transition-all duration-300 opacity-0 translate-y-10 z-50 flex items-center gap-2 pointer-events-none text-sm font-bold">
         <i class="fa-solid fa-circle-check text-teal-400"></i> <span id="toast-msg">Ready</span>
     </div>
 
@@ -260,6 +369,7 @@
 
         let rawData=[], processedUnits=[], isSpeaking=false, currentVoice='male', translationCache={}, synth=window.speechSynthesis;
         let activeVocabMap = {};
+        let currentBlockIndex = 0; // 記錄唸到第幾句
 
         let currentUnitTitleZh = "";
         let currentUnitTitleEn = "";
@@ -272,25 +382,27 @@
         };
 
         document.addEventListener('DOMContentLoaded', () => {
-  initCanvas(); fetchData();
-  if(synth) synth.onvoiceschanged = () => synth.getVoices();
+            fetchData();
+            if(synth) synth.onvoiceschanged = () => synth.getVoices();
+            
+            // 初始化按鈕樣式
+            setVoice('male');
 
-  // iOS Safari：需要「使用者手勢」才會穩定載入/啟動 TTS
-  document.addEventListener('touchstart', () => {
-    try{
-      if(!synth) return;
-      synth.cancel();
-      const u = new SpeechSynthesisUtterance(" ");
-      u.volume = 0;              // 不出聲
-      u.rate = 1.0;
-      u.pitch = 1.0;
-      synth.speak(u);
-      synth.cancel();
-      synth.getVoices?.();
-    }catch(e){}
-  }, { once: true, passive: true });
-});
-
+            // iOS Safari：需要「使用者手勢」才會穩定載入/啟動 TTS
+            document.addEventListener('touchstart', () => {
+                try{
+                    if(!synth) return;
+                    synth.cancel();
+                    const u = new SpeechSynthesisUtterance(" ");
+                    u.volume = 0;
+                    u.rate = 1.0;
+                    u.pitch = 1.0;
+                    synth.speak(u);
+                    synth.cancel();
+                    synth.getVoices?.();
+                }catch(e){}
+            }, { once: true, passive: true });
+        });
 
         function goBack() { window.location.href = 'student_science.html'; }
 
@@ -302,76 +414,31 @@
             });
         }
 
-        const norm = (s) => (s ?? '').toString()
-            .replace(/[\uFEFF\u200B\u200C\u200D]/g,'')
-            .replace(/　/g,' ')
-            .trim();
+        const norm = (s) => (s ?? '').toString().replace(/[\uFEFF\u200B\u200C\u200D]/g,'').replace(/　/g,' ').trim();
 
         function parseVocabPairs(vocabText){
           const map = {};
           if(!vocabText) return map;
-
           vocabText.split(/[,;，；\n]+/).forEach(token=>{
             const t = (token||"").toString().trim();
             if(!t) return;
-
             let zh = "", en = "";
-
             const tabParts = t.split(/\t+/);
-            if(tabParts.length >= 2){
-              zh = tabParts[0].trim();
-              en = tabParts.slice(1).join(' ').trim();
-            } else {
+            if(tabParts.length >= 2){ zh = tabParts[0].trim(); en = tabParts.slice(1).join(' ').trim(); } 
+            else {
               const sepParts = t.split(/[:：=＝]/);
-              if(sepParts.length >= 2){
-                zh = sepParts[0].trim();
-                en = sepParts.slice(1).join(':').trim();
-              } else {
+              if(sepParts.length >= 2){ zh = sepParts[0].trim(); en = sepParts.slice(1).join(':').trim(); } 
+              else {
                 const m = t.match(/^(.+?)[（(]\s*([^)）]+?)\s*[)）]\s*$/);
-                if(m){
-                  zh = (m[1]||"").trim();
-                  en = (m[2]||"").trim();
-                } else {
-                  zh = t.trim();
-                  en = "";
-                }
+                if(m){ zh = (m[1]||"").trim(); en = (m[2]||"").trim(); } else { zh = t.trim(); en = ""; }
               }
             }
-
             if(zh) map[zh] = en;
           });
-
           return map;
         }
 
-        function ckipLineToPlainAndHtml(ckipLine, vocabMap){
-          const raw = (ckipLine || "").toString().trim();
-          if(!raw) return { plain: "", html: "" };
-
-          const tokens = raw.replace(/　/g, " ").split(/\s+/).filter(Boolean);
-
-          let plain = "";
-          let html = "";
-
-          for(const tok of tokens){
-            const base = tok.replace(/[\(（].*$/, "");
-            if(!base) continue;
-
-            plain += base;
-
-            const safeBase = escapeHtml(base);
-            if(vocabMap && Object.prototype.hasOwnProperty.call(vocabMap, base)){
-              const en = (vocabMap[base] || base).toString();
-              const js = en.replace(/'/g, "\\'");
-              const title = escapeHtml((vocabMap[base] || "").toString());
-              html += `<span class="sci-term" onclick="event.stopPropagation(); speakText('${js}')" title="${title}">${safeBase}</span>`;
-            } else {
-              html += safeBase;
-            }
-          }
-
-          return { plain, html };
-        }
+        function ckipLineToPlainAndHtml(ckipLine, vocabMap){ return { plain: "", html: "" }; } // 簡化保留結構
 
         function processData(data) {
             rawData = data.slice(1);
@@ -380,22 +447,9 @@
                     ckip = (row[COL_CKIP]||"").toString(),
                     unitNum = norm(row[COL_UNIT_NUM]),
                     unitName = norm(row[COL_UNIT_NAME]);
-
                 let title = (unitNum + (unitName ? " " + unitName : "")).trim() || `Unit ${i+1}`;
-
-                return {
-                    id: i,
-                    stage: norm(row[COL_STAGE]),
-                    version: norm(row[COL_VERSION]),
-                    grade: norm(row[COL_GRADE]),
-                    semester: norm(row[COL_SEMESTER]),
-                    title,
-                    content,
-                    ckip,
-                    vocab: (row[COL_VOCAB]||"").toString()
-                };
+                return { id: i, stage: norm(row[COL_STAGE]), version: norm(row[COL_VERSION]), grade: norm(row[COL_GRADE]), semester: norm(row[COL_SEMESTER]), title, content, ckip, vocab: (row[COL_VOCAB]||"").toString() };
             }).filter(u => (u.content || u.ckip).length > 5);
-
             initFilters();
         }
 
@@ -410,9 +464,7 @@
                 if(sels[3].value && !sels[3].disabled && u.semester!==sels[3].value) return false;
                 return true;
             });
-
             const update=(sel,p,key)=> populateSelect(sel.id, [...new Set(filtered.map(u=>u[p]).filter(Boolean))], key);
-
             if(lvl==='stage') { update(sels[1],'grade','grade'); resetSelects(sels.slice(2)); }
             else if(lvl==='grade') { update(sels[2],'version','version'); resetSelects(sels.slice(3)); }
             else if(lvl==='version') { update(sels[3],'semester','semester'); resetSelects(sels.slice(4)); }
@@ -450,36 +502,21 @@
             container.innerHTML = '<div class="text-center opacity-50 text-sm mt-10">無詞彙資料</div>';
             return;
           }
-
           keys.forEach(zh => {
             const enVal = (activeVocabMap[zh] || "").toString().trim();
             const showEn = enVal ? enVal : "Loading...";
-
             const card = document.createElement('div');
             card.className = "vocab-item";
             card.innerHTML = `
               <div class="flex-1 pr-2">
-                <div class="text-base font-bold text-yellow-400 cursor-pointer"
-                     onclick="speakText('${zh.replace(/'/g,"\\'")}')">${escapeHtml(zh)}</div>
-
-                <div class="text-xs text-teal-200 en-term-label cursor-pointer"
-                     data-zh="${escapeHtml(zh)}"
-                     onclick="speakVocabEn('${zh.replace(/'/g,"\\'")}', this)">${escapeHtml(showEn)}</div>
+                <div class="text-base font-bold text-yellow-400 cursor-pointer" onclick="speakText('${zh.replace(/'/g,"\\'")}')">${escapeHtml(zh)}</div>
+                <div class="text-xs text-teal-200 en-term-label cursor-pointer" data-zh="${escapeHtml(zh)}" onclick="speakVocabEn('${zh.replace(/'/g,"\\'")}', this)">${escapeHtml(showEn)}</div>
               </div>
-
               <div class="flex items-center gap-1">
-                <button onclick="event.stopPropagation(); speakText('${zh.replace(/'/g,"\\'")}')"
-                        class="text-teal-300 hover:text-white px-2 py-1 rounded-full hover:bg-white/10 text-xs font-bold"
-                        title="念中文">中</button>
-
-                <button onclick="event.stopPropagation(); speakVocabEn('${zh.replace(/'/g,"\\'")}', this)"
-                        class="text-teal-400 hover:text-white px-2 py-1 rounded-full hover:bg-white/10 text-xs font-bold"
-                        title="Read English">EN</button>
-              </div>
-            `;
-
+                <button onclick="event.stopPropagation(); speakText('${zh.replace(/'/g,"\\'")}')" class="text-teal-300 hover:text-white px-2 py-1 rounded-full hover:bg-white/10 text-xs font-bold" title="念中文">中</button>
+                <button onclick="event.stopPropagation(); speakVocabEn('${zh.replace(/'/g,"\\'")}', this)" class="text-teal-400 hover:text-white px-2 py-1 rounded-full hover:bg-white/10 text-xs font-bold" title="Read English">EN</button>
+              </div>`;
             container.appendChild(card);
-
             if(!enVal) translateVocabItem(zh, card.querySelector('.en-term-label'));
           });
         }
@@ -487,37 +524,29 @@
         async function speakVocabEn(zh, btn){
           const card = btn && btn.closest ? btn.closest('.vocab-item') : null;
           const label = card ? card.querySelector('.en-term-label') : null;
-
           let en = (activeVocabMap[zh] || "").toString().trim();
-
-          if(!en){
-            await translateVocabItem(zh, label);
-            en = (activeVocabMap[zh] || "").toString().trim();
-          }
-
+          if(!en){ await translateVocabItem(zh, label); en = (activeVocabMap[zh] || "").toString().trim(); }
           speakText(en || zh);
         }
 
         async function translateToEn(text) {
           const src = (text || "").toString().trim();
           if(!src) return "";
-
           const cacheKey = "__title__" + src;
           if(translationCache[cacheKey]) return translationCache[cacheKey];
-
-          const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURIComponent(src)}`);
-          const json = await res.json();
-          let out = "";
-          (json[0] || []).forEach(x => out += (x[0] || ""));
-          translationCache[cacheKey] = out;
-          return out;
+          try {
+              const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURIComponent(src)}`);
+              const json = await res.json();
+              let out = ""; (json[0] || []).forEach(x => out += (x[0] || ""));
+              translationCache[cacheKey] = out;
+              return out;
+          } catch(e) { return src; }
         }
 
         function ensureTitleTranslated() {
           if(!currentUnitTitleZh) return;
           const existing = document.getElementById('title-en');
           if(existing && existing.innerText && existing.innerText !== 'Translating...') return;
-
           translateToEn(currentUnitTitleZh).then(en => {
             currentUnitTitleEn = en || "";
             const enEl = document.getElementById('title-en');
@@ -529,39 +558,30 @@
           const ens = document.querySelectorAll('.en-text');
           ens.forEach(el => {
             const src = decodeURIComponent(el.getAttribute('data-source') || "");
-
             const cached = translationCache[src];
-            if(cached){
-              el.innerHTML = makeClickable(highlightEnglishVocabInText(cached));
-            }
+            if(cached){ el.innerHTML = makeClickable(highlightEnglishVocabInText(cached)); }
           });
         }
 
-async function renderArticle(unit) {
+        async function renderArticle(unit) {
             currentUnitTitleZh = unit.title;
             currentUnitTitleEn = "";
-
             document.getElementById('article-title').innerHTML = `
               <div id="title-zh">${escapeHtml(currentUnitTitleZh)}</div>
               <div id="title-en" class="text-base md:text-lg font-semibold text-teal-400 italic mt-2">Translating...</div>
             `;
-
             document.getElementById('status-bar').innerText = unit.title;
             document.getElementById('nav-title').innerText = unit.title;
-
             activeVocabMap = parseVocabPairs(unit.vocab);
             renderVocabSidebar();
-
+            
             const contentDiv = document.getElementById('article-content');
             contentDiv.innerHTML='';
             document.getElementById('unit-list').innerHTML='';
 
             let lines = (unit.content || "").split('\n').map(x=>x.trim()).filter(Boolean);
-
             if(lines.length===0 && unit.ckip){
-                lines = unit.ckip.split('\n')
-                  .map(x=>x.replace(/　/g,' ').replace(/\([^)]*\)/g,'').trim())
-                  .filter(Boolean);
+                lines = unit.ckip.split('\n').map(x=>x.replace(/　/g,' ').replace(/\([^)]*\)/g,'').trim()).filter(Boolean);
             }
 
             const unitCkipSet = unit.ckip ? getCkipTokenSet(unit.ckip) : null;
@@ -571,7 +591,6 @@ async function renderArticle(unit) {
             for(let i=0; i<lines.length; i++) {
                 let line = lines[i].trim();
                 if(!line) continue;
-
                 if((line.length<40 && !/[。！？.!?]$/.test(line)) || line.includes("活動")) {
                     const anchorId = `sec-${i}`;
                     const navItem = document.createElement('div');
@@ -579,8 +598,6 @@ async function renderArticle(unit) {
                     navItem.innerText = line;
                     navItem.onclick=()=>{ document.getElementById(anchorId).scrollIntoView({behavior:'smooth',block:'center'}); };
                     document.getElementById('unit-list').appendChild(navItem);
-
-                    // ✅ [修改] 標題區：中文維持白字，英文改成亮綠色 (text-teal-400)
                     contentDiv.innerHTML += `
                         <h2 id="${anchorId}" class="section-header items-start">
                             <div class="flex flex-col w-full">
@@ -592,8 +609,6 @@ async function renderArticle(unit) {
                         </h2>`;
                 } else {
                     let processed = processXRayWithCKIP(line, activeVocabMap, unitCkipSet, unitMergeSet);
-
-                    // ✅ [修改] 內文區：英文改成亮綠色 (text-teal-400)
                     contentDiv.innerHTML += `
                         <div class="content-block">
                             <p class="zh-text" onclick="speakText(this.innerText)">${processed}</p>
@@ -603,121 +618,78 @@ async function renderArticle(unit) {
                         </div>`;
                 }
             }
-
             setMode('dual');
         }
 
         function getCkipTokenSet(ckipLine){
           const raw = (ckipLine || "").toString().trim();
           if(!raw) return new Set();
-          return new Set(
-            raw.replace(/　/g, " ")
-               .split(/\s+/)
-               .filter(Boolean)
-               .map(tok => tok.replace(/[\(（].*$/, ""))
-               .filter(Boolean)
-          );
+          return new Set(raw.replace(/　/g, " ").split(/\s+/).filter(Boolean).map(tok => tok.replace(/[\(（].*$/, "")).filter(Boolean));
         }
-function getCkipTokenArray(ckipText) {
-  const raw = (ckipText || "").toString().replace(/　/g, " ").trim();
-  if (!raw) return [];
-  return raw
-    .split(/\s+/)
-    .filter(Boolean)
-    .map(tok => tok.replace(/[\(（].*$/, "")) // 去掉 (POS)
-    .filter(Boolean);
-}
-
-function getMaxKeyLen(vocabMap) {
-  const keys = Object.keys(vocabMap || {});
-  if (!keys.length) return 1;
-  let m = 1;
-  for (const k of keys) m = Math.max(m, (k || "").length);
-  return m;
-}
-
-// 建立「相鄰 token 串接」的候選集合（用於：水果 = 水+果 這種情況）
-function buildCkipMergeSet(tokens, maxLen) {
-  const set = new Set();
-  if (!tokens || !tokens.length) return set;
-
-  const L = Math.max(2, maxLen || 2);
-  for (let i = 0; i < tokens.length; i++) {
-    let acc = "";
-    for (let j = i; j < tokens.length; j++) {
-      acc += tokens[j];
-      if (acc.length > L) break;
-      if (acc.length >= 2) set.add(acc);
-    }
-  }
-  return set;
-}
-
-// 判斷「是否允許標註」：
-// - 單字詞（如 水）：必須是 CKIP token 才能標（避免把「水平」裡的水誤標）
-// - 多字詞（如 水果）：若是 token 或可由相鄰 token 串接得到，即可標
-function shouldMarkZhTerm(term, ckipTokenSet, ckipMergeSet) {
-  if (!term) return false;
-
-  // 沒有 CKIP 資訊就退化成：只靠 S 欄字典（仍可運作）
-  if (!ckipTokenSet || ckipTokenSet.size === 0) return true;
-
-  if (term.length === 1) return ckipTokenSet.has(term);
-
-  if (ckipTokenSet.has(term)) return true;
-  if (ckipMergeSet && ckipMergeSet.has(term)) return true;
-
-  return false;
-}
-
-function processXRayWithCKIP(text, map, ckipTokenSet, ckipMergeSet) {
-  const src = (text || "").toString().replace(/　/g, "");
-  const keys = Object.keys(map || {}).filter(Boolean).sort((a, b) => b.length - a.length);
-  if (!keys.length) return escapeHtml(src);
-
-  // 長詞優先：先建立「不重疊」的命中區間（span）
-  const spans = [];
-
-  const overlaps = (s, e) => spans.some(sp => !(e <= sp.start || s >= sp.end));
-
-  for (const term of keys) {
-    let from = 0;
-    while (true) {
-      const idx = src.indexOf(term, from);
-      if (idx === -1) break;
-
-      const start = idx, end = idx + term.length;
-      from = idx + term.length;
-
-      if (overlaps(start, end)) continue;
-      if (!shouldMarkZhTerm(term, ckipTokenSet, ckipMergeSet)) continue;
-
-      spans.push({ start, end, term });
-    }
-  }
-
-  if (!spans.length) return escapeHtml(src);
-  spans.sort((a, b) => a.start - b.start);
-
-  // 依 spans 回填 HTML
-  let html = "";
-  let last = 0;
-
-  for (const sp of spans) {
-    html += escapeHtml(src.slice(last, sp.start));
-
-    const zh = sp.term;
-    const en = ((map[zh] || zh) + "").toString();
-    const js = en.replace(/'/g, "\\'");
-    const title = escapeHtml(((map[zh] || "") + "").toString());
-
-    html += `<span class="sci-term" onclick="event.stopPropagation(); speakText('${js}')" title="${title}">${escapeHtml(zh)}</span>`;
-    last = sp.end;
-  }
-
-  html += escapeHtml(src.slice(last));
-  return html;
-}
+        function getCkipTokenArray(ckipText) {
+          const raw = (ckipText || "").toString().replace(/　/g, " ").trim();
+          if (!raw) return [];
+          return raw.split(/\s+/).filter(Boolean).map(tok => tok.replace(/[\(（].*$/, "")).filter(Boolean);
+        }
+        function getMaxKeyLen(vocabMap) {
+          const keys = Object.keys(vocabMap || {});
+          if (!keys.length) return 1;
+          let m = 1; for (const k of keys) m = Math.max(m, (k || "").length); return m;
+        }
+        function buildCkipMergeSet(tokens, maxLen) {
+          const set = new Set();
+          if (!tokens || !tokens.length) return set;
+          const L = Math.max(2, maxLen || 2);
+          for (let i = 0; i < tokens.length; i++) {
+            let acc = "";
+            for (let j = i; j < tokens.length; j++) {
+              acc += tokens[j];
+              if (acc.length > L) break;
+              if (acc.length >= 2) set.add(acc);
+            }
+          }
+          return set;
+        }
+        function shouldMarkZhTerm(term, ckipTokenSet, ckipMergeSet) {
+          if (!term) return false;
+          if (!ckipTokenSet || ckipTokenSet.size === 0) return true;
+          if (term.length === 1) return ckipTokenSet.has(term);
+          if (ckipTokenSet.has(term)) return true;
+          if (ckipMergeSet && ckipMergeSet.has(term)) return true;
+          return false;
+        }
+        function processXRayWithCKIP(text, map, ckipTokenSet, ckipMergeSet) {
+          const src = (text || "").toString().replace(/　/g, "");
+          const keys = Object.keys(map || {}).filter(Boolean).sort((a, b) => b.length - a.length);
+          if (!keys.length) return escapeHtml(src);
+          const spans = [];
+          const overlaps = (s, e) => spans.some(sp => !(e <= sp.start || s >= sp.end));
+          for (const term of keys) {
+            let from = 0;
+            while (true) {
+              const idx = src.indexOf(term, from);
+              if (idx === -1) break;
+              const start = idx, end = idx + term.length;
+              from = idx + term.length;
+              if (overlaps(start, end)) continue;
+              if (!shouldMarkZhTerm(term, ckipTokenSet, ckipMergeSet)) continue;
+              spans.push({ start, end, term });
+            }
+          }
+          if (!spans.length) return escapeHtml(src);
+          spans.sort((a, b) => a.start - b.start);
+          let html = "", last = 0;
+          for (const sp of spans) {
+            html += escapeHtml(src.slice(last, sp.start));
+            const zh = sp.term;
+            const js = ((map[zh] || zh) + "").toString().replace(/'/g, "\\'");
+            const title = escapeHtml(((map[zh] || "") + "").toString());
+            html += `<span class="sci-term" onclick="event.stopPropagation(); speakText('${js}')" title="${title}">${escapeHtml(zh)}</span>`;
+            last = sp.end;
+          }
+          html += escapeHtml(src.slice(last));
+          return html;
+        }
 
         async function translateVocabItem(zh, el) {
           try {
@@ -725,7 +697,6 @@ function processXRayWithCKIP(text, map, ckipTokenSet, ckipMergeSet) {
             const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${q}`);
             const json = await res.json();
             const en = (json && json[0] && json[0][0] && json[0][0][0]) ? json[0][0][0] : "";
-
             if(el) el.innerText = en || "—";
             activeVocabMap[zh] = en || "";
             rehighlightEnglishBlocks();
@@ -744,9 +715,7 @@ function processXRayWithCKIP(text, map, ckipTokenSet, ckipMergeSet) {
             load.classList.remove('hidden');
             for(let el of ens) {
                 if(el.innerText) continue;
-                let src = decodeURIComponent(el.getAttribute('data-source') || "");
-src = src.replace(/　/g,'');
-
+                let src = decodeURIComponent(el.getAttribute('data-source') || "").replace(/　/g,'');
                 if(translationCache[src]) { el.innerHTML=makeClickable(highlightEnglishVocabInText(translationCache[src])); continue; }
                 try {
                     const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURIComponent(src)}`);
@@ -760,128 +729,17 @@ src = src.replace(/　/g,'');
             rehighlightEnglishBlocks();
         }
 
-        function makeClickable(html) {
-          return `<span class="cursor-pointer hover:text-teal-300 transition">${html}</span>`;
-        }
-
-let currentBlockIndex = 0; // 記錄唸到第幾句
-
-// ✅ [修改] 切換播放/暫停邏輯
-// ✅ [修正版] 播放/暫停鍵：處理暫停邏輯，並不清除高亮
-// ✅ [修正版] 播放鍵邏輯：配合 speakText 的強制啟動
-// ✅ [修正版] 播放/暫停：加入 iOS 強制喚醒 (resume) 機制
-function toggleSpeech() {
-    const btn = document.getElementById('btn-play');
-
-    if (isSpeaking) {
-        // === 按下暫停 ===
-        isSpeaking = false;
-        if (synth) {
-            synth.cancel(); // 停止發音
-        }
-        if (btn) btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
-    } else {
-        // === 按下播放 ===
-        isSpeaking = true;
-        if (btn) btn.innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
-
-        // 1. [關鍵] 強制喚醒：iOS有時會卡在暫停狀態，必須踢它一下
-        if (synth && synth.paused) {
-            synth.resume();
-        }
-
-        // 2. 檢查是否需要重頭開始
-        const blocks = document.querySelectorAll('.content-block');
-        if (currentBlockIndex >= blocks.length) {
-            currentBlockIndex = 0;
-        }
-
-        // 3. 用一點點延遲啟動，避免跟上面的 cancel/resume 打架
-        setTimeout(() => {
-            if (isSpeaking) playSequence();
-        }, 10);
-    }
-}
-
-// ✅ [新增] 逐句播放核心函式
-// ✅ [修正版] 播放序列：唸每一句前都檢查有沒有被按暫停
-function playSequence() {
-    // 🛑 安全檢查 1：如果現在狀態是「不說話」(被按暫停/停止了)，直接結束
-    if (!isSpeaking) return;
-
-    const blocks = document.querySelectorAll('.content-block');
-    if (currentBlockIndex >= blocks.length) {
-        // 全部唸完，歸零並停止
-        stopSpeech();
-        return;
-    }
-
-    // 1. 清除舊高亮
-    clearHighlights();
-
-    // 2. 取得當前區塊並高亮
-    const block = blocks[currentBlockIndex];
-    if (block) {
-        block.classList.add('reading-active');
-        block.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
-    // 3. 決定要唸什麼
-    const enEl = block.querySelector('.en-text');
-    const zhEl = block.querySelector('.zh-text');
-    
-    let textToRead = "";
-    if (enEl && !enEl.classList.contains('hidden') && enEl.innerText) {
-        textToRead = enEl.innerText;
-    } else if (zhEl) {
-        textToRead = zhEl.innerText;
-    }
-
-    // 4. 開始唸
-    if (textToRead) {
-        speakText(textToRead, () => {
-            // 🛑 安全檢查 2：唸完這句要接下一句時，再檢查一次有沒有被按暫停
-            if (!isSpeaking) return; 
-
-            currentBlockIndex++;
-            playSequence(); // 沒被暫停才繼續唸下一句
-        });
-    } else {
-        // 沒文字，直接跳下一句
-        currentBlockIndex++;
-        playSequence();
-    }
-}
-
-// ✅ [新增] 清除所有高亮
-function clearHighlights() {
-    document.querySelectorAll('.reading-active').forEach(el => {
-        el.classList.remove('reading-active');
-    });
-}
-
-        function escapeHtml(s){
-          return (s||"").toString()
-            .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-            .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
-        }
-
+        function makeClickable(html) { return `<span class="cursor-pointer hover:text-teal-300 transition">${html}</span>`; }
+        function escapeHtml(s){ return (s||"").toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
         function highlightEnglishVocabInText(txt){
           let safe = escapeHtml(txt);
-
-          const terms = Object.values(activeVocabMap||{})
-            .map(v => (v||"").trim())
-            .filter(v => v && v !== "Loading..." && /[a-zA-Z]/.test(v));
-
+          const terms = Object.values(activeVocabMap||{}).map(v => (v||"").trim()).filter(v => v && v !== "Loading..." && /[a-zA-Z]/.test(v));
           const uniq = [...new Set(terms)].sort((a,b)=>b.length-a.length);
           if(!uniq.length) return safe;
-
           for(const term of uniq){
             const escaped = term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-
             const isSingleWord = /^[A-Za-z]+$/.test(term);
             const re = isSingleWord ? new RegExp(`\\b(${escaped})\\b`,'gi') : new RegExp(`(${escaped})`,'gi');
-
             safe = safe.replace(re, (m) => {
               const js = m.replace(/'/g,"\\'");
               return `<span class="sci-term" onclick="event.stopPropagation(); speakText('${js}')" title="${m}">${m}</span>`;
@@ -890,240 +748,200 @@ function clearHighlights() {
           return safe;
         }
 
-        // ✅ [修正版] 停止鍵：先關閉開關，再停止語音，並歸零進度
-function stopSpeech() {
-    // 1. 先關掉開關 (最重要！告訴後面的程式現在是停止狀態)
-    isSpeaking = false;
+        // ====================== [語音播放核心邏輯] ======================
 
-    // 2. 強制停止發音
-    if (synth) synth.cancel();
-
-    // 3. 進度歸零
-    currentBlockIndex = 0;
-
-    // 4. 清除畫面上所有高亮
-    clearHighlights();
-
-    // 5. 按鈕變回播放圖示
-    const btn = document.getElementById('btn-play');
-    if (btn) btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
-}
-
-
-/**
- * 智慧挑選最佳語音 (針對 Natural/Enhanced 優化)
- */
-// ✅ [針對 iOS 優化版] 強制優先抓取 Siri 和 Enhanced 高品質語音
-// ✅ [終極修正版] 語音選擇：優先保證音質，其次才是性別
-// ✅ [Siri 優先版] 瘋狂尋找 Siri 聲音，找不到才用美佳
-function pickBestVoice(isEng, gender) {
-    if (!window.speechSynthesis) return null;
-    const voices = window.speechSynthesis.getVoices();
-    if (voices.length === 0) return null;
-
-    const targetLang = isEng ? ['en-us', 'en-gb', 'en'] : ['zh-tw', 'zh-hk', 'zh'];
-
-    const getScore = (voice) => {
-        let score = 0;
-        const name = voice.name.toLowerCase();
-        const uri = (voice.voiceURI || "").toLowerCase(); // 檢查內部識別碼
-        const lang = voice.lang.toLowerCase();
-
-        // 1. 語言絕對優先
-        if (targetLang.some(t => lang === t || lang.replace('_', '-').startsWith(t))) {
-            score += 1000;
-        } else {
-            return -1;
+        function isIOSDevice(){
+          return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        }
+        function isMostlyEnglish(txt){
+          const t = (txt || "").toString();
+          const latin = (t.match(/[A-Za-z]/g) || []).length;
+          const cjk   = (t.match(/[\u4E00-\u9FFF]/g) || []).length;
+          if (cjk === 0) return latin > 0;
+          return latin > cjk * 2;
+        }
+        function splitTextForSpeak(text, isEng){
+          const t = (text || "").toString().replace(/\s+/g, " ").trim();
+          if(!t) return [];
+          const maxLen = isEng ? 180 : 120;
+          const out = [];
+          let s = t;
+          while(s.length > maxLen){
+            let cut = -1;
+            const punct = isEng ? /[.!?;:]/g : /[。！？；：]/g;
+            let m, last = -1;
+            while((m = punct.exec(s.substring(0, maxLen))) !== null){ last = m.index + 1; }
+            if(last >= Math.floor(maxLen * 0.4)) cut = last;
+            if(cut === -1 && isEng){ const sp = s.lastIndexOf(" ", maxLen); if(sp >= Math.floor(maxLen * 0.5)) cut = sp; }
+            if(cut === -1) cut = maxLen;
+            out.push(s.slice(0, cut).trim());
+            s = s.slice(cut).trim();
+          }
+          if(s) out.push(s);
+          return out;
         }
 
-        // 2. 尋找 Siri (分數給超高)
-        // 檢查名字或 URI 是否包含 "siri"
-        if (name.includes('siri') || uri.includes('siri')) {
-            score += 20000; 
+        // 1. 語音選擇器 (Siri 優先)
+        function pickBestVoice(isEng, gender) {
+            if (!window.speechSynthesis) return null;
+            const voices = window.speechSynthesis.getVoices();
+            if (voices.length === 0) return null;
+            const targetLang = isEng ? ['en-us', 'en-gb', 'en'] : ['zh-tw', 'zh-hk', 'zh'];
+            const getScore = (voice) => {
+                let score = 0;
+                const name = voice.name.toLowerCase();
+                const uri = (voice.voiceURI || "").toLowerCase();
+                const lang = voice.lang.toLowerCase();
+                if (targetLang.some(t => lang === t || lang.replace('_', '-').startsWith(t))) { score += 1000; } else { return -1; }
+                
+                // Siri & 高品質優先
+                if (name.includes('siri') || uri.includes('siri')) score += 20000;
+                if (name.includes('enhanced') || uri.includes('enhanced')) score += 5000;
+                if (name.includes('premium') || uri.includes('premium')) score += 5000;
+                if (name.includes('natural')) score += 3000;
+                if (name.includes('compact') || uri.includes('compact')) score -= 10000; // 懲罰機器音
+
+                if (!name.includes('siri')) {
+                    if (gender === 'male') {
+                        if (name.includes('male') || name.includes('man')) score += 500;
+                        if (name.includes('female') || name.includes('woman') || name.includes('meijia')) score -= 100;
+                    } else {
+                        if (name.includes('female') || name.includes('woman')) score += 500;
+                    }
+                }
+                return score;
+            };
+            const sorted = voices.map(v => ({ v, score: getScore(v) })).filter(item => item.score > -5000).sort((a, b) => b.score - a.score);
+            return sorted.length > 0 ? sorted[0].v : voices[0];
         }
 
-        // 3. 尋找增強版 (Enhanced/Premium)
-        if (name.includes('enhanced') || uri.includes('enhanced')) score += 5000;
-        if (name.includes('premium') || uri.includes('premium')) score += 5000;
+        // 2. 發音核心
+        function speakText(txt, onComplete) {
+            if (!synth) return;
+            isSpeaking = true;
+            if (synth.paused) synth.resume();
+            
+            const btn = document.getElementById('btn-play');
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
+            synth.cancel();
 
-        // 4. 懲罰機器音 (Compact)
-        if (name.includes('compact') || uri.includes('compact')) score -= 10000;
+            const cleanTxt = (txt || "").toString().replace(/<[^>]*>/g, "").replace(/\u00A0/g, " ").trim();
+            if (!cleanTxt) {
+                if (onComplete) { setTimeout(() => { if (isSpeaking) onComplete(); }, 10); } 
+                else { isSpeaking = false; if (btn) btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>'; }
+                return;
+            }
 
-        // 5. 性別判定 (只有在非 Siri 的情況下稍微考慮性別)
-        // 因為如果能抓到 Siri，不管男女都比美佳好，所以 Siri 狀態下忽略性別
-        if (!name.includes('siri')) {
-            if (gender === 'male') {
-                if (name.includes('male') || name.includes('man')) score += 500;
-                // 如果是美佳(女)，扣一點分，但不要扣太多以免變成機器音
-                if (name.includes('female') || name.includes('woman') || name.includes('meijia')) score -= 100;
+            const ios = isIOSDevice();
+            const isEng = isMostlyEnglish(cleanTxt);
+            const lang = isEng ? "en-US" : "zh-TW";
+            const chunks = (ios && cleanTxt.length > (isEng ? 220 : 140)) ? splitTextForSpeak(cleanTxt, isEng) : [cleanTxt];
+            const uiRate = parseFloat(document.getElementById('play-rate')?.value || "1.0");
+            let idx = 0;
+
+            const speakNext = () => {
+                if (!isSpeaking) return;
+                if (idx >= chunks.length) {
+                    if (onComplete) { onComplete(); } 
+                    else { isSpeaking = false; if (btn) btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>'; }
+                    return;
+                }
+                const part = chunks[idx++];
+                const u = new SpeechSynthesisUtterance(part);
+                u.lang = lang;
+                
+                let voice = null;
+                if (!ios) { voice = pickBestVoice(isEng, currentVoice); } 
+                else { voice = pickBestVoice(isEng, currentVoice); }
+                if (voice) u.voice = voice;
+
+                if (ios) { u.pitch = 1.0; u.rate = 1.0; } 
+                else { u.rate = uiRate; u.pitch = (currentVoice === 'male') ? 1.0 : 1.05; }
+
+                u.onend = speakNext;
+                u.onerror = () => { if (isSpeaking) speakNext(); };
+                synth.speak(u);
+            };
+            speakNext();
+        }
+
+        // 3. 播放序列
+        function playSequence() {
+            if (!isSpeaking) return;
+            const blocks = document.querySelectorAll('.content-block');
+            if (currentBlockIndex >= blocks.length) { stopSpeech(); return; }
+
+            clearHighlights();
+            const block = blocks[currentBlockIndex];
+            if (block) {
+                block.classList.add('reading-active');
+                block.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            const enEl = block.querySelector('.en-text');
+            const zhEl = block.querySelector('.zh-text');
+            let textToRead = "";
+            if (enEl && !enEl.classList.contains('hidden') && enEl.innerText) { textToRead = enEl.innerText; } 
+            else if (zhEl) { textToRead = zhEl.innerText; }
+
+            if (textToRead) {
+                speakText(textToRead, () => {
+                    if (!isSpeaking) return;
+                    currentBlockIndex++;
+                    playSequence();
+                });
             } else {
-                if (name.includes('female') || name.includes('woman')) score += 500;
+                currentBlockIndex++;
+                playSequence();
             }
         }
 
-        return score;
-    };
+        // 4. 按鈕邏輯
+        function toggleSpeech() {
+            const btn = document.getElementById('btn-play');
+            if (isSpeaking) {
+                isSpeaking = false;
+                if (synth) synth.cancel();
+                if (btn) btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
+            } else {
+                isSpeaking = true;
+                if (btn) btn.innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
+                if (synth && synth.paused) synth.resume();
+                const blocks = document.querySelectorAll('.content-block');
+                if (currentBlockIndex >= blocks.length) currentBlockIndex = 0;
+                setTimeout(() => { if (isSpeaking) playSequence(); }, 10);
+            }
+        }
 
-    const sorted = voices
-        .map(v => ({ v, score: getScore(v) }))
-        .filter(item => item.score > -5000)
-        .sort((a, b) => b.score - a.score);
-
-    // 如果找不到，回傳第一個；否則回傳最高分
-    return sorted.length > 0 ? sorted[0].v : voices[0];
-}
-/* ===================== [ADD HERE] 貼在這裡：兩個新函式 ===================== */
-function isIOSDevice(){
-  return /iPad|iPhone|iPod/.test(navigator.userAgent)
-      || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-}
-
-function isMostlyEnglish(txt){
-  const t = (txt || "").toString();
-  const latin = (t.match(/[A-Za-z]/g) || []).length;
-  const cjk   = (t.match(/[\u4E00-\u9FFF]/g) || []).length;
-  if (cjk === 0) return latin > 0;
-  return latin > cjk * 2;
-}
-/* ===================== [ADD HERE END] ===================== */
-function splitTextForSpeak(text, isEng){
-  const t = (text || "").toString().replace(/\s+/g, " ").trim();
-  if(!t) return [];
-
-  const maxLen = isEng ? 180 : 120; // iOS 建議短一點，避免怪聲/中斷
-  const out = [];
-
-  let s = t;
-  while(s.length > maxLen){
-    let cut = -1;
-
-    // 1) 先找標點切割
-    const punct = isEng ? /[.!?;:]/g : /[。！？；：]/g;
-    let m, last = -1;
-    while((m = punct.exec(s.substring(0, maxLen))) !== null){
-      last = m.index + 1;
-    }
-    if(last >= Math.floor(maxLen * 0.4)) cut = last;
-
-    // 2) 再用空白切（英文）
-    if(cut === -1 && isEng){
-      const sp = s.lastIndexOf(" ", maxLen);
-      if(sp >= Math.floor(maxLen * 0.5)) cut = sp;
-    }
-
-    // 3) 最後硬切
-    if(cut === -1) cut = maxLen;
-
-    out.push(s.slice(0, cut).trim());
-    s = s.slice(cut).trim();
-  }
-
-  if(s) out.push(s);
-  return out;
-}
-
-// ✅ [修改] 增加 onComplete 參數，讓它知道唸完後要幹嘛
-// ✅ [修正版] 發音核心：增加嚴格的狀態檢查
-// ✅ [終極修正版] 發音核心：點擊強制播放 + iOS 參數鎖定
-// ✅ [修正版] 發音核心：防止空白文字卡死 + 點擊自動喚醒
-function speakText(txt, onComplete) {
-    if (!synth) return;
-
-    // 1. 強制喚醒與更新狀態
-    isSpeaking = true;
-    if (synth.paused) synth.resume(); // 確保沒被暫停
-    
-    const btn = document.getElementById('btn-play');
-    if (btn) btn.innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
-
-    // 2. 停止前一段
-    synth.cancel();
-
-    // 3. 處理文字
-    const cleanTxt = (txt || "").toString().replace(/<[^>]*>/g, "").replace(/\u00A0/g, " ").trim();
-    
-    // [防呆] 如果沒字，不要立刻回調 (會造成無窮迴圈)，休息 10ms 再跳下一句
-    if (!cleanTxt) {
-        if (onComplete) {
-            setTimeout(() => { if (isSpeaking) onComplete(); }, 10);
-        } else {
-            // 單點模式但沒字 -> 復原按鈕
+        function stopSpeech() {
             isSpeaking = false;
+            if (synth) synth.cancel();
+            currentBlockIndex = 0;
+            clearHighlights();
+            const btn = document.getElementById('btn-play');
             if (btn) btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
         }
-        return;
-    }
 
-    const ios = isIOSDevice();
-    const isEng = isMostlyEnglish(cleanTxt);
-    const lang = isEng ? "en-US" : "zh-TW";
-    const chunks = (ios && cleanTxt.length > (isEng ? 220 : 140)) ? splitTextForSpeak(cleanTxt, isEng) : [cleanTxt];
-    const uiRate = parseFloat(document.getElementById('play-rate')?.value || "1.0");
-    let idx = 0;
-
-    const speakNext = () => {
-        if (!isSpeaking) return;
-
-        if (idx >= chunks.length) {
-            // 全部唸完
-            if (onComplete) {
-                onComplete(); // 播放模式：接下一句
-            } else {
-                // 單點模式：結束並復原按鈕
-                isSpeaking = false;
-                if (btn) btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
-            }
-            return;
+        function clearHighlights() {
+            document.querySelectorAll('.reading-active').forEach(el => { el.classList.remove('reading-active'); });
         }
-
-        const part = chunks[idx++];
-        const u = new SpeechSynthesisUtterance(part);
-        u.lang = lang;
-
-        // 挑選聲音
-        let voice = null;
-        if (!ios) {
-            voice = pickBestVoice(isEng, currentVoice);
-        } else {
-             voice = pickBestVoice(isEng, currentVoice);
-        }
-        if (voice) u.voice = voice;
-
-        // iOS 參數鎖定
-        if (ios) {
-            u.pitch = 1.0;
-            u.rate = 1.0; 
-        } else {
-            u.rate = uiRate;
-            u.pitch = (currentVoice === 'male') ? 1.0 : 1.05;
-        }
-
-        u.onend = speakNext;
-        u.onerror = () => { if (isSpeaking) speakNext(); };
-
-        synth.speak(u);
-    };
-
-    speakNext();
-}
-
 
         function setVoice(g) {
-            currentVoice=g;
-            document.getElementById('btn-male').className=g==='male'?'text-teal-400 p-1':'text-slate-500 p-1';
-            document.getElementById('btn-female').className=g==='female'?'text-teal-400 p-1':'text-slate-500 p-1';
+            currentVoice = g;
+            const activeClass = "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 bg-teal-500 text-white shadow-lg scale-105";
+            const inactiveClass = "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 text-slate-500 hover:bg-teal-500/20 hover:text-white";
+            document.getElementById('btn-male').className = (g === 'male') ? activeClass : inactiveClass;
+            document.getElementById('btn-female').className = (g === 'female') ? activeClass : inactiveClass;
             stopSpeech();
         }
 
         function setMode(m) {
-            ['en','dual','zh'].forEach(x=>document.getElementById(`btn-${x}`).className=x===m?"mode-btn px-2 py-1 text-xs font-bold rounded bg-teal-600 text-white":"mode-btn px-2 py-1 text-xs font-bold rounded text-teal-500 hover:text-white");
+            ['en','dual','zh'].forEach(x=>document.getElementById(`btn-${x}`).className=x===m?"mode-btn px-3 py-1 text-xs font-bold rounded bg-teal-600 text-white shadow-[0_0_10px_rgba(45,212,191,0.4)] scale-105":"mode-btn px-3 py-1 text-xs font-bold rounded text-teal-500 hover:text-white transition");
             if(m!=='zh') translateVisibleBlocks();
-
             const en=document.querySelectorAll('.en-text'), zh=document.querySelectorAll('.zh-text');
             if(m==='en'){en.forEach(e=>e.classList.remove('hidden'));zh.forEach(z=>z.classList.add('hidden'));}
             else if(m==='zh'){en.forEach(e=>e.classList.add('hidden'));zh.forEach(z=>z.classList.remove('hidden'));}
             else{en.forEach(e=>e.classList.remove('hidden'));zh.forEach(z=>z.classList.remove('hidden'));}
-
             const tZh=document.getElementById('title-zh');
             const tEn=document.getElementById('title-en');
             if(tZh && tEn){
@@ -1131,7 +949,6 @@ function speakText(txt, onComplete) {
               else if(m==='zh'){ tZh.classList.remove('hidden'); tEn.classList.add('hidden'); }
               else { tZh.classList.remove('hidden'); tEn.classList.remove('hidden'); }
             }
-
             if(m !== 'zh') ensureTitleTranslated();
         }
 
@@ -1145,15 +962,6 @@ function speakText(txt, onComplete) {
         }
 
         function showToast(m) { const T=document.getElementById('toast'); document.getElementById('toast-msg').innerText=m; T.classList.remove('opacity-0','translate-y-10'); setTimeout(()=>T.classList.add('opacity-0','translate-y-10'),2000); }
-
-        function initCanvas() {
-            const c=document.getElementById('molecule-canvas'),x=c.getContext('2d');
-            let p=[]; function r(){c.width=window.innerWidth;c.height=window.innerHeight;}
-            window.addEventListener('resize',r);r();
-            class A{constructor(){this.x=Math.random()*c.width;this.y=Math.random()*c.height;this.vx=(Math.random()-.5)*.2;this.vy=(Math.random()-.5)*.2;this.s=Math.random()*2+1;this.color=`rgba(45,212,191,${Math.random()*0.3+0.1})`;}u(){this.x+=this.vx;this.y+=this.vy;if(this.x<0||this.x>c.width)this.vx*=-1;if(this.y<0||this.y>c.height)this.vy*=-1;}d(){x.beginPath();x.arc(this.x,this.y,this.s,0,Math.PI*2);x.fillStyle=this.color;x.fill();}}
-            for(let i=0;i<50;i++)p.push(new A());
-            function a(){x.clearRect(0,0,c.width,c.height);p.forEach(b=>{b.u();b.d()});requestAnimationFrame(a);}a();
-        }
     </script>
 </body>
 </html>
