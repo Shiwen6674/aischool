@@ -278,12 +278,13 @@
     #vocab-panel {
         display: flex;
         flex-direction: column;
-        /* 移除固定高度，依靠 Grid stretch */
+        /* 高度將由 JS 動態控制，以對齊摘要欄 */
     }
     #vocab-list-container {
         flex: 1;
-        overflow-y: auto;
-        min-height: 0; /* 關鍵：允許 flex item 縮小產生捲軸 */
+        overflow-y: auto; /* 內容過長時顯示捲軸 */
+        min-height: 0;    /* 關鍵：允許 Flex 子元素縮小以產生捲軸 */
+        padding-right: 6px; /* 避免文字貼著捲軸 */
     }
 
     /* [修正點 2] 預覽圖容器優化 */
