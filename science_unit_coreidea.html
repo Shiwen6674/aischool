@@ -47,15 +47,15 @@
       }
     };
 
-    // Mermaid 設定：科技藍圖風格
+    // Mermaid 設定：科技藍圖風格 (對應摘要卡片顏色)
     mermaid.initialize({
       startOnLoad: false,
       theme: 'base',
       themeVariables: { 
         primaryColor: '#0f172a',      // 節點背景深藍
-        primaryTextColor: '#22d3ee',  // 節點文字青色
+        primaryTextColor: '#22d3ee',  // 節點文字青色 (對應摘要主題)
         primaryBorderColor: '#06b6d4',// 節點邊框青色
-        lineColor: '#64748b',         // 線條灰色
+        lineColor: '#475569',         // 連接線灰色
         secondaryColor: '#1e293b', 
         tertiaryColor: '#0f172a',
         fontFamily: '"Inter", "Noto Sans TC", sans-serif',
@@ -104,32 +104,31 @@
       overflow: hidden;
     }
 
-    /* Level 3: 重點強調卡片 (摘要區塊) */
-    .highlight-card {
-        background: linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.8));
-        border-left: 4px solid #06b6d4; /* 青色邊條對應科技感 */
-        border-radius: 0.5rem 1rem 1rem 0.5rem;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        transition: transform 0.2s;
+    /* ===== [修正 1] 選單優化 (精緻化、不擁擠) ===== */
+    /* 容器設定 */
+    .select-group {
+        position: relative;
     }
-    .highlight-card:hover {
-        transform: translateX(4px);
-        box-shadow: 0 4px 25px rgba(6, 182, 212, 0.15);
-        border-left-color: #22d3ee;
+    .select-label {
+        position: absolute;
+        top: -8px; left: 10px;
+        background: #020617; /* 遮擋線條 */
+        padding: 0 4px;
+        font-size: 10px;
+        font-weight: 700;
+        color: #94a3b8;
+        z-index: 10;
     }
 
-    /* ===== [修正 1] 選單優化 (更精緻、不擁擠) ===== */
     select {
       appearance: none; -webkit-appearance: none;
       background-color: rgba(15, 23, 42, 0.8);
       border: 1px solid rgba(71, 85, 105, 0.5);
       color: #f1f5f9;
       border-radius: 8px; /* 較小的圓角 */
-      padding: 8px 32px 8px 12px; /* 緊湊的 Padding */
+      padding: 10px 32px 10px 12px; /* 緊湊的 Padding */
       font-family: 'Inter', 'Noto Sans TC', sans-serif;
-      font-size: 0.875rem; /* text-sm (14px) */
+      font-size: 0.875rem; /* text-sm (14px) 解決字體過大 */
       font-weight: 500;
       cursor: pointer;
       width: 100%;
@@ -137,7 +136,7 @@
       background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3e%3c/svg%3e");
       background-position: right 0.75rem center;
       background-repeat: no-repeat;
-      background-size: 1rem;
+      background-size: 0.85rem;
       color-scheme: dark;
     }
     select:hover:not(:disabled) {
@@ -154,92 +153,106 @@
       background-color: rgba(15, 23, 42, 0.4);
     }
 
-    /* ===== [修正 2] 核心概念卡片化樣式 ===== */
-    /* 這裡透過 CSS 將 API 回傳的 HTML 結構視覺化為卡片 */
+    /* ===== [修正 2] 核心概念卡片化與高亮 ===== */
+    /* 透過 CSS 將 API 回傳的 HTML 結構視覺化為卡片 */
     #summary-text h3 {
         font-family: 'Orbitron', 'Noto Sans TC', sans-serif;
-        color: #22d3ee; /* 亮青色標題 */
+        color: #22d3ee; /* 亮青色標題，對應架構圖 */
         font-size: 1.1rem;
         font-weight: 700;
-        margin-top: 2rem;
-        margin-bottom: 0.75rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 1px dashed rgba(34, 211, 238, 0.3);
-        display: flex;
-        align-items: center;
-    }
-    #summary-text h3::before {
-        content: '◈';
-        margin-right: 0.5rem;
-        color: #06b6d4;
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+        padding: 0.75rem 1rem;
+        background: linear-gradient(90deg, rgba(6, 182, 212, 0.1), transparent);
+        border-left: 4px solid #06b6d4;
+        border-radius: 4px;
+        display: flex; align-items: center;
     }
     
-    #summary-text p, #summary-text ul {
-        background: rgba(255, 255, 255, 0.03);
+    /* 內容區塊卡片化 */
+    #summary-text ul, #summary-text p {
+        background: rgba(30, 41, 59, 0.3);
         border: 1px solid rgba(255, 255, 255, 0.05);
         border-radius: 0.75rem;
         padding: 1.25rem;
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem;
     }
     
     #summary-text li { 
         position: relative; 
         padding-left: 1.2rem; 
-        margin-bottom: 0.5rem; 
+        margin-bottom: 0.8rem; 
         line-height: 1.7;
         color: #cbd5e1;
     }
     #summary-text li::before { 
         content: "•"; 
-        color: #f472b6; /* 桃紅點綴 */
+        color: #22d3ee; 
         font-weight: bold; 
         font-size: 1.2em;
         position: absolute; left: 0; top: -2px; 
     }
+    /* 高亮重點 (Neon Pink) */
     #summary-text strong, #summary-text b {
         color: #f472b6; 
-        background: rgba(244, 114, 182, 0.1);
-        padding: 0 4px; border-radius: 4px;
-        font-weight: 600;
+        background: rgba(244, 114, 182, 0.15);
+        padding: 2px 6px; 
+        border-radius: 4px;
+        font-weight: 700;
+        box-shadow: 0 0 10px rgba(244, 114, 182, 0.1);
+        border-bottom: 1px solid rgba(244, 114, 182, 0.5);
     }
 
-    /* ===== [修正 3] 知識架構圖優化 ===== */
+    /* ===== [修正 3] 知識架構圖優化 (科技藍圖) ===== */
     .mermaid-container {
         background-color: #020617; /* 深底 */
         background-image: 
             linear-gradient(rgba(34, 211, 238, 0.05) 1px, transparent 1px),
             linear-gradient(90deg, rgba(34, 211, 238, 0.05) 1px, transparent 1px);
-        background-size: 30px 30px; /* 網格背景 */
+        background-size: 40px 40px; /* 藍圖網格 */
         border: 1px solid rgba(6, 182, 212, 0.2);
-        border-radius: 1rem;
-        min-height: 400px;
+        border-radius: 0 0 1rem 1rem;
+        min-height: 500px; /* 加高 */
         display: flex; justify-content: center; align-items: center;
         position: relative;
         overflow: hidden;
     }
-    /* 強制圖表可見 */
-    .mermaid svg { max-width: none !important; width: 100% !important; height: auto !important; }
+    /* 強制圖表展開與放大 */
+    .mermaid svg { 
+        max-width: none !important; 
+        width: 100% !important; 
+        height: auto !important; 
+        min-width: 800px; /* 確保不被壓縮 */
+    }
     
-    /* Modal 優化 */
-    #image-modal { background-color: rgba(0, 0, 0, 0.95); backdrop-filter: blur(20px); }
+    /* Modal 全螢幕深色劇院模式 */
+    #image-modal { background-color: rgba(0, 0, 0, 0.98); backdrop-filter: blur(20px); }
     #modal-content { 
-        width: 98vw !important; height: 95vh !important; max-width: none; 
-        background: #020617; /* 深色劇院模式 */
-        border: 1px solid #334155;
+        width: 100vw !important; height: 100vh !important; max-width: none; 
+        background: #020617; 
         display: flex; justify-content: center; align-items: center;
+        padding: 0 !important;
+        overflow: auto; /* 允許捲動 */
     }
     /* 放大時的圖表樣式 */
-    #modal-content .mermaid svg { width: auto !important; height: 90% !important; }
+    #modal-content .mermaid svg { 
+        width: auto !important; 
+        height: auto !important; 
+        min-width: 1200px; /* 確保放大 */
+        transform: scale(1.2); 
+        transform-origin: center;
+    }
 
     /* ===== [修正 5] 科學動動腦 (Alert Style) ===== */
     .myth-card {
-        background: linear-gradient(145deg, rgba(67, 20, 7, 0.4), rgba(41, 11, 2, 0.6));
+        background: linear-gradient(145deg, rgba(67, 20, 7, 0.3), rgba(41, 11, 2, 0.5));
         border: 1px solid rgba(249, 115, 22, 0.3); /* Orange border */
-        box-shadow: 0 0 20px rgba(249, 115, 22, 0.1);
+        box-shadow: 0 0 20px rgba(249, 115, 22, 0.05);
         border-radius: 1rem;
         transition: all 0.3s;
+        padding: 1.5rem;
     }
-    .myth-card:hover { border-color: rgba(249, 115, 22, 0.6); transform: translateY(-2px); }
+    .myth-card:hover { border-color: rgba(249, 115, 22, 0.6); transform: translateY(-2px); box-shadow: 0 0 30px rgba(249, 115, 22, 0.15); }
     .myth-btn {
         background: rgba(0, 0, 0, 0.3);
         border: 1px solid rgba(255, 255, 255, 0.2);
@@ -247,14 +260,15 @@
         font-family: 'Orbitron', sans-serif;
         letter-spacing: 1px;
         transition: all 0.2s;
+        font-size: 0.85rem;
     }
-    .myth-btn:hover { background: rgba(249, 115, 22, 0.2); border-color: #f97316; color: #fff; }
+    .myth-btn:hover { background: rgba(249, 115, 22, 0.2); border-color: #f97316; color: #fff; transform: scale(1.02); }
 
     /* ===== [修正 5] 單元小測驗 (Holographic Style) ===== */
     .quiz-panel {
         background: rgba(6, 78, 59, 0.2); /* 深綠基底 */
         border: 1px solid rgba(16, 185, 129, 0.3);
-        box-shadow: 0 0 30px rgba(16, 185, 129, 0.1);
+        box-shadow: 0 0 30px rgba(16, 185, 129, 0.05);
         border-radius: 1rem;
         position: relative;
     }
@@ -268,11 +282,14 @@
         border: 1px solid rgba(52, 211, 153, 0.2);
         color: #d1fae5;
         transition: all 0.2s;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        display: flex; align-items: center; gap: 1rem;
     }
     .quiz-option:hover:not(:disabled) {
         background: rgba(16, 185, 129, 0.2);
         border-color: #34d399;
-        transform: translateX(6px);
+        transform: translateX(4px);
     }
     
     /* Scrollbar & Misc */
@@ -313,12 +330,14 @@
       </div>
       
       <div class="flex items-center gap-4">
-        <select id="language-selector" onchange="changeLanguage()" class="w-32 bg-slate-800 border-slate-700 text-xs">
-          <option value="zh-TW">繁體中文</option>
-          <option value="en">English</option>
-          <option value="ja">日本語</option>
-          <option value="zh-CN">简体中文</option>
-        </select>
+        <div class="w-32">
+            <select id="language-selector" onchange="changeLanguage()">
+              <option value="zh-TW">繁體中文</option>
+              <option value="en">English</option>
+              <option value="ja">日本語</option>
+              <option value="zh-CN">简体中文</option>
+            </select>
+        </div>
         <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700">
           <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></div>
           <span id="user-info" class="text-xs font-mono text-slate-300">Guest</span>
@@ -343,30 +362,34 @@
         </span>
       </div>
 
-      <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1" data-i18n="label_stage">Stage</label>
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
+        <div class="select-group">
+          <label class="select-label" data-i18n="label_stage">STAGE</label>
           <select id="sel-stage"></select>
         </div>
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1" data-i18n="label_publisher">Version</label>
+        <div class="select-group">
+          <label class="select-label" data-i18n="label_publisher">VERSION</label>
           <select id="sel-publisher" disabled></select>
         </div>
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1" data-i18n="label_grade">Grade</label>
+        <div class="select-group">
+          <label class="select-label" data-i18n="label_grade">GRADE</label>
           <select id="sel-grade" disabled></select>
         </div>
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1" data-i18n="label_semester">Semester</label>
+        <div class="select-group">
+          <label class="select-label" data-i18n="label_semester">SEMESTER</label>
           <select id="sel-semester" disabled></select>
         </div>
-        <div class="space-y-1 col-span-2 md:col-span-1">
-          <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1" data-i18n="label_unit">Unit</label>
+        <div class="select-group col-span-2 md:col-span-1">
+          <label class="select-label" data-i18n="label_unit">UNIT</label>
           <select id="sel-unit" disabled></select>
         </div>
       </div>
 
-      <div class="mt-6 flex justify-end">
+      <div class="mt-8 flex justify-end items-center gap-4">
+        <div class="flex items-center gap-2 bg-slate-900/50 px-3 py-1.5 rounded-lg border border-white/5">
+             <span class="text-[10px] text-slate-400 font-bold" data-i18n="question_count">題數</span>
+             <input id="inpN" type="number" min="5" max="40" step="1" value="15" class="w-8 bg-transparent text-center text-cyan-400 font-bold text-sm focus:outline-none">
+        </div>
         <button id="btn-generate" onclick="startGeneration()" disabled class="px-6 py-2.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-sm shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none flex items-center gap-2">
           <i class="fa-solid fa-wand-magic-sparkles"></i> 
           <span data-i18n="btn_generate">AI 整理重點</span>
@@ -399,7 +422,7 @@
             <div class="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center"><i class="fa-solid fa-star"></i></div>
             <h3 class="font-tech text-xl text-white tracking-wide" data-i18n="title_summary">CORE CONCEPTS</h3>
           </div>
-          <div id="summary-text" class="text-slate-300 leading-relaxed space-y-4"></div>
+          <div id="summary-text" class="text-slate-300 leading-relaxed"></div>
         </div>
 
         <div id="vocab-panel" class="md:col-span-4 hud-panel p-6 bg-slate-800/50">
@@ -429,17 +452,12 @@
         </div>
       </div>
 
-      <div class="myth-card p-6 md:p-8">
-        <div class="flex items-center gap-3 mb-6">
-          <div class="w-10 h-10 rounded-xl bg-orange-600 text-white flex items-center justify-center text-xl shadow-lg shadow-orange-500/30">
-            <i class="fa-solid fa-lightbulb"></i>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="col-span-1 md:col-span-2 flex items-center gap-3 mb-2">
+             <div class="w-8 h-8 rounded-lg bg-orange-500/20 text-orange-400 flex items-center justify-center"><i class="fa-solid fa-lightbulb"></i></div>
+             <h3 class="font-tech text-xl text-white tracking-wide" data-i18n="title_myth">MYTH BUSTING</h3>
           </div>
-          <div>
-            <h3 class="font-tech text-xl text-white tracking-wide" data-i18n="title_myth">MYTH BUSTING</h3>
-            <p class="text-[10px] text-orange-300 font-mono tracking-wider">CRITICAL THINKING</p>
-          </div>
-        </div>
-        <div id="myth-list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+          <div id="myth-list" class="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6"></div>
       </div>
 
       <div id="quiz-panel" class="quiz-panel p-6 md:p-8">
@@ -568,7 +586,7 @@
     let allData = [], filters = {}, currentResultData = null, mythData = [], quizState = { questions: [], currentIndex: 0, hasAnswered: false, answers: [] }, quizRadarChart = null;
 
     const translations = {
-      "zh-TW": { back_science: "返回自然科學", page_title: "單元重點整理", page_subtitle: "AI 驅動分析", settings_title: "單元選單", settings_subtitle: "Initialize Protocol", label_stage: "學習階段", label_publisher: "版本", label_grade: "年級", label_semester: "學期", label_unit: "單元名稱", btn_generate: "AI 整理重點", btn_txt: "下載 TXT", title_summary: "核心概念摘要", title_vocab: "科學詞彙與定義", title_map: "知識架構圖", title_myth: "科學動動腦", db_loading: "系統連線中...", db_success: "連線成功", db_fail: "連線失敗", db_fail_retry: "重試", ai_generating: "正在運算...", tap_to_zoom: "點擊放大", myth_true: "正確 O", myth_false: "錯誤 X", msg_correct: "正確！", msg_wrong: "錯誤", msg_seq: "請依序作答", vocab_none: "無詞彙", summary_fail: "生成失敗", map_fail: "繪圖失敗", map_none: "無架構圖", myth_none: "無資料", quiz: "單元小測驗", quiz_prefix: "單元小測驗－{unit}", quiz_not_ready: "準備中...", quiz_result_btn: "看結果", quiz_next: "下一題", quiz_score_title: "測驗成績", quiz_ai_analyzing: "分析中...", quiz_result_text: "答對 {correct} / {total}", txt_need_generate: "請先生成", txt_download_fail: "下載失敗", chat_greet: "你好，我是小科。關於「{unit}」有什麼問題嗎？", chat_placeholder: "輸入問題...", select_default: "請選擇..." }
+      "zh-TW": { back_science: "返回自然科學", page_title: "單元重點整理", page_subtitle: "AI 驅動分析", settings_title: "單元選單", settings_subtitle: "Initialize Protocol", label_stage: "學習階段", label_publisher: "版本", label_grade: "年級", label_semester: "學期", label_unit: "單元名稱", btn_generate: "AI 整理重點", btn_txt: "下載 TXT", title_summary: "核心概念摘要", title_vocab: "科學詞彙與定義", title_map: "知識架構圖", title_myth: "科學動動腦", db_loading: "系統連線中...", db_success: "連線成功", db_fail: "連線失敗", db_fail_retry: "重試", ai_generating: "正在運算...", tap_to_zoom: "點擊放大", myth_true: "正確 O", myth_false: "錯誤 X", msg_correct: "正確！", msg_wrong: "錯誤", msg_seq: "請依序作答", vocab_none: "無詞彙", summary_fail: "生成失敗", map_fail: "繪圖失敗", map_none: "無架構圖", myth_none: "無資料", quiz: "單元小測驗", quiz_prefix: "單元小測驗－{unit}", quiz_not_ready: "準備中...", quiz_result_btn: "看結果", quiz_next: "下一題", quiz_score_title: "測驗成績", quiz_ai_analyzing: "分析中...", quiz_result_text: "答對 {correct} / {total}", txt_need_generate: "請先生成", txt_download_fail: "下載失敗", chat_greet: "你好，我是小科。關於「{unit}」有什麼問題嗎？", chat_placeholder: "輸入問題...", select_default: "請選擇...", question_count: "題數" }
     };
     let currentLang = "zh-TW";
     function t(key){ return (translations[currentLang] && translations[currentLang][key]) || key; }
@@ -743,13 +761,13 @@
          mythData.forEach((m, i) => {
              const cardId = `myth-${i}`;
              const div = document.createElement('div');
-             div.className = 'bg-slate-900/50 p-5 rounded-xl border border-orange-500/20 shadow-lg flex flex-col gap-3 hover:border-orange-500/50 transition';
+             div.className = 'myth-card flex flex-col gap-3';
              div.innerHTML = `
-                 <div class="flex justify-between"><span class="bg-orange-600 text-white text-xs font-bold px-2 py-1 rounded">Q${i+1}</span></div>
-                 <div class="text-white font-bold tracking-wide">${m.question || m.myth}</div>
-                 <div class="flex gap-2 mt-2">
-                    <button id="${cardId}-btn-true" onclick="answerMyth(${i}, true)" class="myth-btn flex-1 py-2 rounded text-sm font-bold text-orange-200 border border-orange-500/30 hover:bg-orange-500/20">${t("myth_true")}</button>
-                    <button id="${cardId}-btn-false" onclick="answerMyth(${i}, false)" class="myth-btn flex-1 py-2 rounded text-sm font-bold text-orange-200 border border-orange-500/30 hover:bg-orange-500/20">${t("myth_false")}</button>
+                 <div class="flex justify-between items-center"><span class="bg-orange-600 text-white text-xs font-bold px-2 py-1 rounded">Q${i+1}</span></div>
+                 <div class="text-white font-bold tracking-wide text-sm">${m.question || m.myth}</div>
+                 <div class="flex gap-2 mt-auto">
+                    <button id="${cardId}-btn-true" onclick="answerMyth(${i}, true)" class="myth-btn flex-1 py-2 rounded">${t("myth_true")}</button>
+                    <button id="${cardId}-btn-false" onclick="answerMyth(${i}, false)" class="myth-btn flex-1 py-2 rounded">${t("myth_false")}</button>
                  </div>
                  <div id="${cardId}-feedback" class="hidden mt-2 p-3 bg-black/40 rounded text-sm text-orange-100 border border-orange-500/30"></div>
              `;
@@ -793,8 +811,8 @@
 
        q.options.forEach((opt, idx) => {
            const btn = document.createElement('button');
-           btn.className = "quiz-option w-full text-left p-4 rounded-lg text-emerald-100 font-bold mb-2 flex gap-3 items-center";
-           btn.innerHTML = `<span class="bg-emerald-900/50 w-6 h-6 rounded flex items-center justify-center text-xs text-emerald-400 border border-emerald-500/30">${String.fromCharCode(65+idx)}</span> ${opt}`;
+           btn.className = "quiz-option w-full text-left";
+           btn.innerHTML = `<span class="bg-emerald-900/50 w-6 h-6 rounded flex items-center justify-center text-xs text-emerald-400 border border-emerald-500/30 mr-3">${String.fromCharCode(65+idx)}</span> <span class="font-bold">${opt}</span>`;
            btn.onclick = () => handleQuizAnswer(idx, btn);
            opts.appendChild(btn);
        });
@@ -865,9 +883,6 @@
     // Helpers
     function answerMyth(idx, choice) {
        const m = mythData[idx];
-       // Assuming API returns boolean or string logic. 
-       // Implementing basic visual feedback based on 'choice' for now as logic depends on data structure.
-       // Here we assume true/false logic is handled visually.
        const fb = document.getElementById(`myth-${idx}-feedback`);
        fb.classList.remove('hidden');
        fb.innerHTML = `<span class="text-orange-300">${m.explanation || "參考答案"}</span>`;
@@ -880,7 +895,6 @@
         const body = document.getElementById('chat-messages');
         body.innerHTML += `<div class="chat-bubble-user self-end p-3 shadow-sm max-w-[85%] text-sm mb-2 text-blue-100">${msg}</div>`;
         inp.value = '';
-        // API Call simulation or implementation
         fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'chat_with_ai', message: msg, contextText: "...", userName: "Guest" }) })
             .then(r=>r.json()).then(j=>{
                 body.innerHTML += `<div class="chat-bubble-ai self-start p-3 shadow-sm max-w-[85%] text-sm mb-2 text-cyan-200">${j.data}</div>`;
