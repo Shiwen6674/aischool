@@ -731,33 +731,51 @@
         function stopSpeech() { resetAudio(); }
 
         // [核心修正] 上一句
-        function playPrev() {
+       function playPrev() {
+            // 1. 強制切斷所有發音與自動連結
+            isSpeaking = false; 
+            synth.cancel();
+
+            // 2. 移動索引
             const blocks = document.querySelectorAll('.content-block, .section-header');
             if (currentBlockIndex > 0) {
                 currentBlockIndex--;
-                if (isSpeaking) {
-                    synth.cancel(); 
-                    setTimeout(playSequence, 50); 
-                } else {
-                    clearHighlights();
-                    highlightBlock(blocks[currentBlockIndex]);
-                }
             }
+
+            // 3. 更新畫面焦點
+            clearHighlights();
+            highlightBlock(blocks[currentBlockIndex]);
+
+            // 4. 重新啟動播放 (延遲 100ms 確保舊訊號完全清除)
+            setTimeout(() => {
+                isSpeaking = true;
+                document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-pause"></i>';
+                playSequence();
+            }, 100);
         }
 
-        // [核心修正] 下一句
+        // [核心修正] 下一句 (絕對穩定版)
         function playNext() {
+            // 1. 強制切斷所有發音與自動連結
+            isSpeaking = false; 
+            synth.cancel();
+
+            // 2. 移動索引
             const blocks = document.querySelectorAll('.content-block, .section-header');
             if (currentBlockIndex < blocks.length - 1) {
                 currentBlockIndex++;
-                if (isSpeaking) {
-                    synth.cancel();
-                    setTimeout(playSequence, 50);
-                } else {
-                    clearHighlights();
-                    highlightBlock(blocks[currentBlockIndex]);
-                }
             }
+
+            // 3. 更新畫面焦點
+            clearHighlights();
+            highlightBlock(blocks[currentBlockIndex]);
+
+            // 4. 重新啟動播放 (延遲 100ms 確保舊訊號完全清除)
+            setTimeout(() => {
+                isSpeaking = true;
+                document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-pause"></i>';
+                playSequence();
+            }, 100);
         }
 
         function highlightBlock(block) {
@@ -767,17 +785,22 @@
         }
 
         // [核心修正] 播放序列邏輯
-        function playSequence() {
-            isSpeaking = true; 
+       function playSequence() {
+            // 安全檢查：如果旗標被關閉，絕對禁止執行
+            if (!isSpeaking) return;
+
+            // 更新播放按鈕狀態
             document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-pause"></i>';
 
             const blocks = document.querySelectorAll('.content-block, .section-header');
             if (currentBlockIndex >= blocks.length) { resetAudio(); return; }
 
+            // 高亮當前區塊
             clearHighlights();
             const block = blocks[currentBlockIndex];
             highlightBlock(block);
 
+            // 抓取文字
             const enEl = block.querySelector('.en-text');
             const zhEl = block.querySelector('.zh-text');
             
@@ -785,8 +808,7 @@
             const zhVisible = zhEl && !zhEl.classList.contains('hidden');
             
             let texts = [];
-            
-            // [注音支援] 讀取 data-speak 屬性 (純文字)
+            // 優先讀取 data-speak (純文字/注音對應字)，若無則讀 innerText
             if (zhVisible) {
                 const txt = zhEl.getAttribute('data-speak') || zhEl.innerText;
                 if(txt) texts.push(txt);
@@ -795,24 +817,38 @@
 
             if (texts.length > 0) {
                 let tIdx = 0;
+                
+                // 定義遞迴播放函式
                 const playNextPart = () => {
-                    if(!isSpeaking) return;
+                    // [關鍵] 每次播放下一小段前，再次檢查是否被使用者卡斷
+                    if(!isSpeaking) return; 
+
                     if(tIdx >= texts.length) {
+                        // 這一句唸完了
                         if (!isLooping) {
-                            currentBlockIndex++;
+                            currentBlockIndex++; // 如果沒開重覆，索引+1
                         }
-                        setTimeout(playSequence, 300);
+                        
+                        // 準備唸下一句 (中間停頓 0.3秒)
+                        setTimeout(() => {
+                            // [關鍵] 在啟動下一句之前，最後一次檢查 flag
+                            if(isSpeaking) playSequence();
+                        }, 300);
                         return;
                     }
+
+                    // 執行發音
                     speakText(texts[tIdx], () => {
                         tIdx++;
-                        setTimeout(playNextPart, 300); 
+                        // 段落間的小停頓 (例如中文唸完接英文)
+                        setTimeout(playNextPart, 100); 
                     });
                 };
                 playNextPart();
             } else {
+                // 如果這區塊沒文字 (防呆)，直接跳下一句
                 if (!isLooping) currentBlockIndex++;
-                playSequence();
+                if(isSpeaking) playSequence();
             }
         }
 
