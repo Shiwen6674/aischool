@@ -49,7 +49,6 @@
     mermaid.initialize({
       startOnLoad: false,
       theme: 'base',
-      // 預設為深色主題
       themeVariables: { primaryColor: '#1e293b', edgeLabelBackground: '#ffffff', tertiaryColor: '#fff', lineColor: '#3b82f6', textColor: '#f1f5f9', mainBkg: '#0f172a' },
       securityLevel: 'loose',
       flowchart: { useMaxWidth: false, htmlLabels: true }
@@ -57,7 +56,7 @@
   </script>
 
   <style>
-    /* ===== 全局設定：深空科技風 ===== */
+    /* ===== 全局設定 ===== */
     body {
       background-color: #050b14;
       color: #e2e8f0;
@@ -99,34 +98,33 @@
     }
     .reading-paper:hover { box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.6); }
 
-    /* [修正點 3] 高質感深色閱讀卡片 (用於測驗與動動腦) */
+    /* [修正] 高質感深色閱讀卡片 (用於測驗與動動腦) - 解決閱讀吃力問題 */
     .reading-paper-dark {
       background: rgba(30, 41, 59, 0.75); /* 更深、更透的藍灰色 */
-      backdrop-filter: blur(16px);        /* 強力毛玻璃 */
+      backdrop-filter: blur(16px);
       border-radius: 1rem;
-      border: 1px solid rgba(255, 255, 255, 0.08); /* 微妙的亮邊框 */
+      border: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
-      color: #f1f5f9; /* 柔和的亮灰白文字，不刺眼 */
+      color: #f1f5f9; /* 亮白文字，對比度高 */
       transition: all 0.3s ease;
     }
     .reading-paper-dark:hover {
       box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
-      border-color: rgba(6, 182, 212, 0.2); /* hover時帶點科技藍光 */
+      border-color: rgba(6, 182, 212, 0.2);
       background: rgba(30, 41, 59, 0.85);
     }
 
-
-    /* 核心概念高亮樣式 */
+    /* [修正] 核心概念高亮樣式 */
     #summary-text strong, #summary-text b {
-        color: #f472b6; /* Neon Pink */
+        color: #f472b6; /* 桃紅高亮 */
         font-weight: 900;
-        background: rgba(244, 114, 182, 0.1);
+        background: rgba(244, 114, 182, 0.1); /* 黃底/粉底標示 */
         padding: 0 4px;
         border-radius: 4px;
         border-bottom: 2px solid #f472b6;
     }
 
-    /* ===== 表單元件 (Select 優化版) ===== */
+    /* ===== 表單元件 (Select) ===== */
     select {
       appearance: none;
       -webkit-appearance: none;
@@ -240,7 +238,7 @@
       border-radius: 1rem 1rem 0 1rem;
     }
     
-    /* Mermaid SVG 樣式 */
+    /* [修正] Mermaid SVG 樣式 */
     .mermaid svg {
         width: 100% !important;
         height: auto !important;
@@ -253,7 +251,7 @@
     ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #06b6d4; }
 
-    /* [修正點 2] Modal 樣式優化 */
+    /* [修正] Modal 樣式優化 */
     #image-modal { backdrop-filter: blur(12px); background-color: rgba(5, 11, 20, 0.85); }
     #modal-content { 
         width: 95vw !important; 
@@ -274,22 +272,23 @@
     .pdf-page-break { page-break-before: always; }
     .click-mask { cursor: zoom-in; }
 
-    /* [修正點 1] 詞彙欄捲軸設定 */
+    /* [修正] 詞彙欄捲軸設定 */
     #vocab-panel {
         display: flex;
         flex-direction: column;
-        /* 移除固定高度，依靠 Grid stretch */
+        /* 高度由 JS 動態控制 */
     }
     #vocab-list-container {
         flex: 1;
-        overflow-y: auto;
-        min-height: 0; /* 關鍵：允許 flex item 縮小產生捲軸 */
+        overflow-y: auto; /* 內容過長時顯示捲軸 */
+        min-height: 0;    
+        padding-right: 6px; 
     }
 
-    /* [修正點 2] 預覽圖容器優化 */
+    /* [修正] 預覽圖容器優化 */
     #chart-container {
-        min-height: 350px; /* 增加最小高度確保可見性 */
-        background: rgba(15, 23, 42, 0.6); /* 半透明深色底，增加層次 */
+        min-height: 350px; 
+        background: rgba(15, 23, 42, 0.6); 
         backdrop-filter: blur(8px);
         border: 1px solid rgba(255,255,255,0.05);
         border-radius: 0 0 1rem 1rem;
@@ -411,7 +410,7 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
         
         <div id="summary-panel" class="md:col-span-8 reading-paper p-8">
           <div class="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
@@ -423,7 +422,7 @@
           <div id="summary-text" class="prose prose-slate max-w-none text-slate-700 leading-loose text-base md:text-lg"></div>
         </div>
 
-        <div id="vocab-panel" class="md:col-span-4 reading-paper p-6 bg-slate-50/50 h-full">
+        <div id="vocab-panel" class="md:col-span-4 reading-paper p-6 bg-slate-50/50">
           <div class="flex items-center gap-3 mb-6 flex-shrink-0">
             <div class="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
               <i class="fa-solid fa-spell-check"></i>
@@ -542,7 +541,7 @@
     </div>
 
     <div class="relative group cursor-pointer" onclick="toggleChat()">
-        <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-cyan-900/80 text-cyan-300 text-xs font-bold px-3 py-1 rounded-full border border-cyan-500/50 opacity-0 group-hover:opacity-100 transition whitespace-nowrap shadow-[0_0_10px_rgba(6,182,212,0.5)]">
+        <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-cyan-900/80 text-cyan-300 text-xs font-bold px-3 py-1 rounded-full border border-cyan-500/50 opacity-0 group-hover:opacity-100 transition whitespace-nowrap shadow-[0_0_10px_rgba(6,182,212,0.5)] pointer-events-none">
             我是小科
         </div>
         <button class="w-16 h-16 rounded-full shadow-[0_0_25px_rgba(6,182,212,0.6)] flex items-center justify-center hover:scale-105 transition-all overflow-hidden border-2 border-cyan-400 relative bg-slate-900">
@@ -1063,6 +1062,26 @@
       }
     }
 
+    // [修正] 高度同步函式：以摘要欄高度為基準
+    function syncVocabHeight() {
+        const summaryPanel = document.getElementById('summary-panel');
+        const vocabPanel = document.getElementById('vocab-panel');
+        
+        if (summaryPanel && vocabPanel) {
+            // 重置高度 (針對 RWD 切換時)
+            vocabPanel.style.height = 'auto';
+            
+            // 手機版 (小於 768px) 為上下排列，不需要同步高度
+            if (window.innerWidth < 768) return;
+
+            // 1. 獲取摘要欄的實際內容高度
+            const targetHeight = summaryPanel.offsetHeight;
+            
+            // 2. 強制設定詞彙欄高度與摘要欄一致
+            vocabPanel.style.height = `${targetHeight}px`;
+        }
+    }
+
     function renderResult(data) {
       const raw = data.raw_content || {};
 
@@ -1123,6 +1142,7 @@
             mermaid.init(undefined, document.querySelectorAll('.mermaid')).then(() => {
               const svg = chartDiv.querySelector('svg');
               if (svg) {
+                // [修正] 移除 inline style 讓 CSS 控制
                 svg.removeAttribute('style'); 
                 svg.removeAttribute('width'); 
                 svg.removeAttribute('height');
@@ -1151,7 +1171,7 @@
             statement = statement.replace(/^迷思[:：]\s*/,'').replace(/^常見想法[:：]\s*/,'').trim();
             const cardId = `myth-${index}`;
             const div = document.createElement('div');
-            // [修正點 3] 優化科學動動腦卡片樣式
+            // [修正] 亮字 (text-white) 與深色背景
             div.className = 'bg-slate-800/80 p-5 rounded-xl border border-white/10 shadow-lg flex flex-col gap-4 backdrop-blur-sm transition hover:border-red-400/30';
             div.innerHTML = `
               <div class="flex items-center justify-between">
@@ -1188,6 +1208,10 @@
       if (chatBtn) chatBtn.classList.remove('hidden');
       
       changeLanguage();
+      
+      // [修正] 觸發高度同步
+      setTimeout(syncVocabHeight, 200);
+      window.addEventListener('resize', syncVocabHeight);
     }
 
     function downloadTXT() {
@@ -1275,10 +1299,12 @@
       content.innerHTML = chartDiv.innerHTML;
       const svg = content.querySelector("svg");
       if (svg) { 
+          // [修正] 確保 Modal 內的 SVG 可見且放大
           svg.removeAttribute("style"); 
           svg.style.width = "100%"; 
           svg.style.height = "auto";
-          svg.style.minWidth = "800px";
+          svg.style.minWidth = "800px"; // 強制最小寬度
+          svg.style.backgroundColor = "transparent"; // 由 Modal 背景控制
       }
       modal.classList.remove("hidden"); modal.classList.add("flex");
     }
@@ -1368,7 +1394,7 @@
       const total = quizState.questions.length;
       const index = quizState.currentIndex;
 
-      quizQuestionEl.innerHTML = `<span class="block text-sm font-bold text-cyan-400 mb-3 uppercase tracking-widest">Question ${index+1}</span>${q.stem}`;
+      quizQuestionEl.innerHTML = `<span class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Question ${index+1}</span>${q.stem}`;
       quizOptionsEl.innerHTML = "";
       quizFeedbackEl.classList.add("hidden"); quizFeedbackEl.innerHTML = "";
       quizState.hasAnswered = false;
@@ -1377,7 +1403,7 @@
       q.options.forEach((opt, optIndex) => {
         const btn = document.createElement("button");
         btn.type = "button";
-        // [修正點 3] 優化測驗選項按鈕樣式
+        // [修正] 優化測驗選項按鈕樣式
         btn.className = "quiz-option-btn w-full text-left px-5 py-4 text-base rounded-xl border border-slate-600 bg-slate-700/40 text-slate-100 font-medium flex items-center hover:bg-slate-700/60 hover:border-cyan-400/50 transition-all group";
         btn.setAttribute("data-opt-index", optIndex);
         btn.onclick = () => handleQuizAnswer(optIndex);
@@ -1404,7 +1430,7 @@
 
       if (isCorrect) {
         buttons[selectedIndex].classList.add("selected-correct");
-        // [修正點 3] 優化測驗回饋樣式
+        // [修正] 優化測驗回饋樣式
         quizFeedbackEl.className = "mt-6 text-sm rounded-xl p-5 bg-emerald-900/40 border border-emerald-500/50 text-emerald-100 shadow-lg backdrop-blur-sm";
         quizFeedbackEl.innerHTML = `<div class="font-bold flex items-center gap-3 text-lg mb-2"><i class="fa-solid fa-circle-check text-emerald-400"></i> ${t("msg_correct")}</div><div class="mt-2 opacity-90 leading-relaxed pl-8 border-l-2 border-emerald-500/30">${q.explanation}</div>`;
       } else {
