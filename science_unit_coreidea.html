@@ -62,6 +62,7 @@
   </script>
 
   <style>
+    /* ===== 環境設定 ===== */
     body {
       background-color: #02040a;
       background-image: 
@@ -72,23 +73,21 @@
       overflow-x: hidden;
     }
     body::after {
-      content: "";
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
-      background-size: 100% 4px;
-      z-index: 9999; pointer-events: none; opacity: 0.2;
+      background-size: 100% 4px; z-index: 9999; pointer-events: none; opacity: 0.2;
     }
 
+    /* ===== 全息卡片 (Holo-Card) ===== */
     .holo-card {
-      background: rgba(13, 18, 30, 0.7);
+      background: rgba(13, 18, 30, 0.75);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-top: 1px solid rgba(255, 255, 255, 0.15);
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
       border-radius: 16px;
-      position: relative;
-      overflow: hidden;
+      position: relative; overflow: hidden;
       transition: all 0.3s ease;
     }
     .holo-card::before {
@@ -108,6 +107,7 @@
       box-shadow: 0 10px 40px rgba(6, 182, 212, 0.15);
     }
 
+    /* ===== 閱讀優化 (Summary Text) ===== */
     #summary-text { font-size: 1.05rem; letter-spacing: 0.02em; color: #cbd5e1; }
     #summary-text h3 {
       font-family: 'Rajdhani', 'Noto Sans TC', sans-serif;
@@ -118,8 +118,7 @@
       background: linear-gradient(90deg, rgba(6,182,212,0.1) 0%, transparent 100%);
       padding-top: 0.5rem; padding-bottom: 0.5rem;
       border-radius: 0 8px 8px 0;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      text-transform: uppercase; letter-spacing: 0.05em;
     }
     #summary-text p { line-height: 1.8; margin-bottom: 1.2rem; text-align: justify; }
     #summary-text ul { padding-left: 0; display: grid; gap: 0.8rem; }
@@ -127,12 +126,13 @@
     #summary-text li::before { content: "▹"; color: #22d3ee; position: absolute; left: 0.2rem; top: 0; font-family: monospace; font-size: 1.2rem; }
     #summary-text strong, #summary-text b { color: #22d3ee; font-weight: 600; text-shadow: 0 0 8px rgba(34,211,238,0.4); }
 
+    /* ===== 選單 (Selectors) ===== */
     .tech-select {
       background-color: rgba(2, 6, 23, 0.6);
       border: 1px solid rgba(51, 65, 85, 0.6);
       color: #f1f5f9; padding: 12px 16px;
       font-size: 0.9rem; border-radius: 8px;
-      width: 100%; min-width: 120px;
+      width: 100%; min-width: 120px; /* 防止內容少時縮小 */
       appearance: none;
       background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2322d3ee'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3e%3c/svg%3e");
       background-position: right 1rem center; background-repeat: no-repeat; background-size: 1em;
@@ -142,17 +142,17 @@
     .tech-select:disabled { opacity: 0.5; cursor: not-allowed; background-color: rgba(15,23,42,0.5); }
     .tech-select:focus { outline: none; border-color: #22d3ee; box-shadow: 0 0 0 2px rgba(6,182,212,0.2); }
 
+    /* ===== 詞彙卡 (Vocab) ===== */
     .vocab-item {
       background: linear-gradient(145deg, rgba(30,41,59,0.4), rgba(15,23,42,0.6));
       border: 1px solid rgba(255,255,255,0.05);
       border-radius: 8px; padding: 12px;
-      transition: all 0.2s;
-      position: relative;
-      overflow: hidden;
+      transition: all 0.2s; position: relative; overflow: hidden;
     }
     .vocab-item:hover { border-color: #8b5cf6; transform: translateX(4px); background: rgba(139, 92, 246, 0.1); }
     .vocab-item::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: #8b5cf6; opacity: 0.5; }
 
+    /* ===== 藍圖網格 (Blueprint Grid) ===== */
     .blueprint-grid {
       background-image: 
         linear-gradient(rgba(6,182,212,0.05) 1px, transparent 1px),
@@ -164,12 +164,12 @@
       box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
     }
 
+    /* ===== 測驗按鈕 (Quiz) ===== */
     .quiz-opt-btn {
       background: rgba(255,255,255,0.03);
       border: 1px solid rgba(255,255,255,0.1);
       color: #cbd5e1; font-weight: 500;
-      transition: all 0.2s;
-      position: relative; overflow: hidden;
+      transition: all 0.2s; position: relative; overflow: hidden;
     }
     .quiz-opt-btn:hover:not(:disabled) {
       background: rgba(6,182,212,0.1);
@@ -177,11 +177,13 @@
       box-shadow: 0 0 15px rgba(6,182,212,0.15);
     }
 
+    /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: #02040a; }
     ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
+    /* Loader */
     .scanner-loader { width: 100%; height: 2px; background: #1e293b; position: relative; overflow: hidden; }
     .scanner-loader::after {
       content: ''; position: absolute; top: 0; left: 0; height: 100%; width: 50%;
@@ -242,23 +244,23 @@
 
       <div class="grid grid-cols-1 md:grid-cols-5 gap-4 w-full">
         <div class="w-full">
-          <label class="block text-[10px] text-cyan-400/80 font-bold mb-2 tracking-widest font-data">01 // STAGE</label>
+          <label class="block text-[10px] text-cyan-400/80 font-bold mb-2 tracking-widest font-data" data-i18n="label_stage">01 // STAGE</label>
           <select id="sel-stage" class="tech-select"><option disabled selected>Loading...</option></select>
         </div>
         <div class="w-full">
-          <label class="block text-[10px] text-cyan-400/80 font-bold mb-2 tracking-widest font-data">02 // VERSION</label>
+          <label class="block text-[10px] text-cyan-400/80 font-bold mb-2 tracking-widest font-data" data-i18n="label_publisher">02 // VERSION</label>
           <select id="sel-publisher" disabled class="tech-select"><option disabled selected>--</option></select>
         </div>
         <div class="w-full">
-          <label class="block text-[10px] text-cyan-400/80 font-bold mb-2 tracking-widest font-data">03 // GRADE</label>
+          <label class="block text-[10px] text-cyan-400/80 font-bold mb-2 tracking-widest font-data" data-i18n="label_grade">03 // GRADE</label>
           <select id="sel-grade" disabled class="tech-select"><option disabled selected>--</option></select>
         </div>
         <div class="w-full">
-          <label class="block text-[10px] text-cyan-400/80 font-bold mb-2 tracking-widest font-data">04 // SEMESTER</label>
+          <label class="block text-[10px] text-cyan-400/80 font-bold mb-2 tracking-widest font-data" data-i18n="label_semester">04 // SEMESTER</label>
           <select id="sel-semester" disabled class="tech-select"><option disabled selected>--</option></select>
         </div>
         <div class="w-full">
-          <label class="block text-[10px] text-cyan-400/80 font-bold mb-2 tracking-widest font-data">05 // UNIT</label>
+          <label class="block text-[10px] text-cyan-400/80 font-bold mb-2 tracking-widest font-data" data-i18n="label_unit">05 // UNIT</label>
           <select id="sel-unit" disabled class="tech-select"><option disabled selected>--</option></select>
         </div>
       </div>
@@ -433,74 +435,41 @@
   </div>
 
   <script>
-    const chatWindow = document.getElementById("xiaoke-window");
-    window.toggleChat = function() {
-        if (!chatWindow) return;
-        const isClosed = chatWindow.classList.contains("closed");
-        if (isClosed) {
-            chatWindow.classList.remove("closed", "scale-0", "opacity-0");
-            const chatBody = document.getElementById("chat-messages");
-            if (chatBody && !chatBody.innerHTML.trim()) {
-                const unitName = (filters && filters.unitName) || "此單元";
-                chatBody.innerHTML = `<div class="bg-cyan-900/30 border border-cyan-500/20 text-cyan-100 rounded-br-xl rounded-tr-xl rounded-bl-xl p-3 shadow-sm max-w-[85%] text-sm mb-2 self-start">${tf("chat_greet", {unit: unitName})}</div>`;
-            }
-        } else {
-            chatWindow.classList.add("closed", "scale-0", "opacity-0");
-        }
-    };
-    
-    const dragItem = document.getElementById("floating-chat");
-    let active = false;
-    let currentX, currentY, initialX, initialY;
-    let xOffset = 0, yOffset = 0;
-
-    dragItem.addEventListener("mousedown", dragStart, false);
-    document.addEventListener("mouseup", dragEnd, false);
-    document.addEventListener("mousemove", drag, false);
-
-    function dragStart(e) {
-      if (e.target.closest("#xiaoke-window")) return;
-      initialX = e.clientX - xOffset;
-      initialY = e.clientY - yOffset;
-      if (e.target.closest("button") || e.target.closest(".group")) active = true;
-    }
-    function dragEnd() {
-      initialX = currentX; initialY = currentY; active = false;
-    }
-    function drag(e) {
-      if (active) {
-        e.preventDefault();
-        currentX = e.clientX - initialX;
-        currentY = e.clientY - initialY;
-        xOffset = currentX; yOffset = currentY;
-        dragItem.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
-      }
-    }
-
+    // --- Configuration & Global Variables ---
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxBWrZCp-xLckDGZnhe64K0IUa_8CJZRzqZbrgL8lQdNn3S1WgaEzbdOtpo4mGwN6_H/exec";
-    let allData = [], filters = {}, currentResultData = null, mythData = [], quizState = { questions: [], currentIndex: 0, hasAnswered: false, answers: [] }, quizRadarChart = null;
+    let allData = [], filters = {}, currentResultData = null, mythData = [];
+    let quizState = { questions: [], currentIndex: 0, hasAnswered: false, answers: [] };
+    let quizRadarChart = null;
 
+    // --- Translations ---
     const translations = {
-      "zh-TW": { back_science: "返回自然科學", page_title: "單元重點整理", page_subtitle: "AI 驅動分析", settings_title: "單元選單", settings_subtitle: "Initialize Protocol", label_stage: "學習階段", label_publisher: "版本", label_grade: "年級", label_semester: "學期", label_unit: "單元名稱", btn_generate: "AI 整理重點", btn_txt: "下載 TXT", title_summary: "核心概念摘要", title_vocab: "科學詞彙與定義", title_map: "知識架構圖", title_myth: "科學動動腦", db_loading: "系統連線中...", db_success: "連線成功", db_fail: "連線失敗", db_fail_retry: "重試", ai_generating: "正在運算...", tap_to_zoom: "點擊放大", myth_true: "正確 O", myth_false: "錯誤 X", msg_correct: "正確！", msg_wrong: "錯誤", msg_seq: "請依序作答", vocab_none: "無詞彙", summary_fail: "生成失敗", map_fail: "繪圖失敗", map_none: "無架構圖", myth_none: "無資料", quiz: "單元小測驗", quiz_prefix: "單元小測驗－{unit}", quiz_not_ready: "準備中...", quiz_result_btn: "看結果", quiz_next: "下一題", quiz_score_title: "測驗成績", quiz_ai_analyzing: "分析中...", quiz_result_text: "答對 {correct} / {total}", txt_need_generate: "請先生成", txt_download_fail: "下載失敗", chat_greet: "你好，我是小科。關於「{unit}」有什麼問題嗎？", chat_placeholder: "輸入問題...", select_default: "請選擇..." }
+      "zh-TW": { back_science: "返回自然科學", page_title: "單元重點整理", page_subtitle: "AI 驅動分析", settings_title: "單元選單", settings_subtitle: "Initialize Protocol", label_stage: "01 // 學習階段", label_publisher: "02 // 版本", label_grade: "03 // 年級", label_semester: "04 // 學期", label_unit: "05 // 單元名稱", btn_generate: "AI 整理重點", btn_txt: "下載 TXT", title_summary: "核心概念摘要", title_vocab: "科學詞彙與定義", title_map: "知識架構圖", title_myth: "科學動動腦", db_loading: "系統連線中...", db_success: "連線成功", db_fail: "連線失敗", ai_generating: "正在運算...", tap_to_zoom: "點擊放大", myth_true: "正確 O", myth_false: "錯誤 X", msg_correct: "正確！", msg_wrong: "錯誤", quiz: "單元小測驗", quiz_result_btn: "看結果", quiz_next: "下一題", quiz_score_title: "測驗成績", quiz_result_text: "答對 {correct} / {total}", txt_need_generate: "請先生成", chat_greet: "你好，我是小科。關於「{unit}」有什麼問題嗎？", select_default: "請選擇..." },
+      "en": { back_science: "RETURN", page_title: "UNIT SUMMARY", settings_title: "CONFIGURATION", settings_subtitle: "Initialize Protocol", label_stage: "01 // STAGE", label_publisher: "02 // VERSION", label_grade: "03 // GRADE", label_semester: "04 // SEMESTER", label_unit: "05 // UNIT", btn_generate: "INITIATE ANALYSIS", btn_txt: "EXPORT DATA", title_summary: "CORE CONCEPTS", title_vocab: "KEYWORDS", title_map: "KNOWLEDGE MAP", title_myth: "MYTH BUSTING", db_loading: "CONNECTING...", db_success: "CONNECTED", db_fail: "FAILED", ai_generating: "PROCESSING...", tap_to_zoom: "EXPAND", myth_true: "TRUE", myth_false: "FALSE", msg_correct: "Correct!", msg_wrong: "Wrong", quiz: "UNIT QUIZ", quiz_result_btn: "RESULTS", quiz_next: "NEXT", quiz_score_title: "FINAL SCORE", quiz_result_text: "Score: {correct} / {total}", txt_need_generate: "Generate first", chat_greet: "Hi, I'm Xiaoke. Any questions about '{unit}'?", select_default: "Select..." },
+      "ja": { back_science: "戻る", page_title: "単元のまとめ", settings_title: "設定", settings_subtitle: "プロトコル初期化", label_stage: "01 // 段階", label_publisher: "02 // 版", label_grade: "03 // 学年", label_semester: "04 // 学期", label_unit: "05 // 単元", btn_generate: "分析開始", btn_txt: "TXT保存", title_summary: "核心概念", title_vocab: "キーワード", title_map: "知識マップ", title_myth: "迷信バスター", db_loading: "接続中...", db_success: "接続成功", db_fail: "接続失敗", ai_generating: "処理中...", tap_to_zoom: "拡大", myth_true: "正解", myth_false: "不正解", msg_correct: "正解！", msg_wrong: "不正解", quiz: "小テスト", quiz_result_btn: "結果を見る", quiz_next: "次へ", quiz_score_title: "スコア", quiz_result_text: "正解数 {correct} / {total}", txt_need_generate: "先に生成してください", chat_greet: "こんにちは、小科です。「{unit}」について質問はありますか？", select_default: "選択..." },
+      "zh-CN": { back_science: "返回自然科学", page_title: "单元重点整理", settings_title: "单元菜单", settings_subtitle: "Initialize Protocol", label_stage: "01 // 学习阶段", label_publisher: "02 // 版本", label_grade: "03 // 年级", label_semester: "04 // 学期", label_unit: "05 // 单元名称", btn_generate: "AI 整理重点", btn_txt: "下载 TXT", title_summary: "核心概念摘要", title_vocab: "科学词汇与定义", title_map: "知识架构图", title_myth: "科学动动脑", db_loading: "系统连线中...", db_success: "连线成功", db_fail: "连线失败", ai_generating: "正在运算...", tap_to_zoom: "点击放大", myth_true: "正确 O", myth_false: "错误 X", msg_correct: "正确！", msg_wrong: "错误", quiz: "单元小测验", quiz_result_btn: "看结果", quiz_next: "下一题", quiz_score_title: "测验成绩", quiz_result_text: "答对 {correct} / {total}", txt_need_generate: "请先生成", chat_greet: "你好，我是小科。关于「{unit}」有什么问题吗？", select_default: "请选择..." }
     };
     let currentLang = "zh-TW";
     function t(key){ return (translations[currentLang] && translations[currentLang][key]) || key; }
     function tf(key, vars={}){ let s = t(key); Object.keys(vars).forEach(k => { s = s.replace(new RegExp("\\{"+k+"\\}","g"), String(vars[k])); }); return s; }
+    
+    // [修復 6] 多語系切換
     function changeLanguage(){ 
         const langSel = document.getElementById("language-selector");
         if(langSel) currentLang = langSel.value;
         document.querySelectorAll("[data-i18n]").forEach(el => { el.innerText = t(el.getAttribute("data-i18n")); });
-        document.querySelectorAll("[data-i18n-placeholder]").forEach(el => { el.setAttribute("placeholder", t(el.getAttribute("data-i18n-placeholder"))); });
+        // Update placeholders/options if needed
         ["sel-stage", "sel-publisher", "sel-grade", "sel-semester", "sel-unit"].forEach(id => {
              const el = document.getElementById(id);
              if(el && el.options.length>0 && el.options[0].disabled) el.options[0].text = t('select_default');
         });
     }
 
+    // --- Initialization ---
     window.onload = async () => {
       const langSel = document.getElementById("language-selector");
       if(langSel) langSel.value = currentLang;
       changeLanguage();
+      
       const user = JSON.parse(sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || '{"name":"Guest"}');
       const userInfo = document.getElementById("user-info");
       if(userInfo) userInfo.innerText = user.name;
@@ -512,11 +481,11 @@
         const json = JSON.parse(await res.text());
         if(json.status === "success") {
           allData = json.data;
-          if (dbStatus) { dbStatus.dataset.state = "success"; dbStatus.innerHTML = `<i class="fa-solid fa-check mr-1"></i> ${t("db_success")}`; dbStatus.className = "text-[10px] font-mono text-emerald-400 px-3 py-1 rounded bg-emerald-950/50 border border-emerald-900"; }
+          if (dbStatus) { dbStatus.innerHTML = `<i class="fa-solid fa-check mr-1"></i> ${t("db_success")}`; dbStatus.className = "font-mono text-[10px] px-3 py-1 rounded bg-emerald-950/50 border border-emerald-900 text-emerald-400 flex items-center gap-2"; }
           initSelectors();
         } else throw new Error("Status Fail");
       } catch(e) {
-        if (dbStatus) { dbStatus.dataset.state = "fail"; dbStatus.innerText = t("db_fail"); dbStatus.className = "text-[10px] font-mono text-red-500 bg-red-950/50 px-3 py-1 rounded"; }
+        if (dbStatus) { dbStatus.innerText = t("db_fail"); dbStatus.className = "font-mono text-[10px] px-3 py-1 rounded bg-red-950/50 border border-red-900 text-red-500 flex items-center gap-2"; }
       }
     };
 
@@ -580,6 +549,7 @@
       el.disabled=false;
     }
 
+    // --- Core Generation Logic ---
     async function startGeneration() {
       document.getElementById("selection-panel").classList.add("hidden");
       document.getElementById("loading-view").classList.remove("hidden");
@@ -592,23 +562,13 @@
           renderResult(json.data);
         } else throw new Error("Failed");
       } catch(e) {
-        alert(tf("ai_generate_fail",{msg:e.message}));
+        alert("Generation failed: " + e.message);
         document.getElementById("selection-panel").classList.remove("hidden");
         document.getElementById("loading-view").classList.add("hidden");
         document.getElementById("loading-view").classList.remove("flex");
       }
     }
 
-    function syncVocabHeight() {
-        const summaryPanel = document.getElementById('summary-panel');
-        const vocabPanel = document.getElementById('vocab-panel');
-        if (summaryPanel && vocabPanel) {
-            vocabPanel.style.height = 'auto';
-            if (window.innerWidth < 768) return;
-        }
-    }
-
-    // [修復重點] 核心渲染函式：確保資料正確綁定到新版面
     function renderResult(data) {
       document.getElementById("loading-view").classList.add("hidden");
       document.getElementById("loading-view").classList.remove("flex");
@@ -624,27 +584,25 @@
       if (!summaryContent && raw.text_summary) summaryContent = raw.text_summary;
       document.getElementById('summary-text').innerHTML = summaryContent || t("summary_fail");
 
-      // [修復 1] Vocab: 增加檢查，支援字串或物件格式
+      // [修復 1] Vocab: 支援物件或字串
       const keywordList = document.getElementById('keywords-list');
       keywordList.innerHTML = '';
       let kList = data.keywords || [];
       if (kList.length > 0) {
           kList.forEach(k => {
-             // 支援純字串陣列或 {term, def} 物件陣列
              const term = typeof k === 'object' ? (k.term || k.word) : k;
              const def = typeof k === 'object' ? (k.def || k.definition || '') : '';
              keywordList.innerHTML += `<div class="vocab-item"><div class="text-cyan-400 font-bold font-tech mb-1 tracking-wide">${term}</div><div class="text-xs text-slate-300 leading-relaxed">${def}</div></div>`;
           });
       } else { keywordList.innerHTML = `<div class="text-slate-500 text-xs text-center py-4 border border-dashed border-slate-700 rounded">${t("vocab_none")}</div>`; }
 
-      // [修復 2] Mermaid: 確保容器狀態重置並清洗 Markdown 標記
+      // [修復 2] Mermaid: 清除與重繪
       const chartDiv = document.getElementById('mermaid-chart');
       let mapData = data.mindMap || (data.summary && data.summary.mermaid) || '';
-      chartDiv.removeAttribute('data-processed'); // 重要：清除 Mermaid 舊狀態
+      chartDiv.removeAttribute('data-processed'); 
       if(mapData) {
           mapData = mapData.replace(/```mermaid/i, '').replace(/```/g, '').trim();
           chartDiv.innerHTML = `<div class="mermaid">${mapData}</div>`;
-          // 使用 mermaid.init 重新渲染
           mermaid.init(undefined, document.querySelectorAll('.mermaid')).then(()=>{
              const svg = chartDiv.querySelector('svg');
              if(svg) { 
@@ -656,7 +614,7 @@
           });
       } else { chartDiv.innerText = t("map_none"); }
 
-      // [修復 3] Myth: 產生按鈕時綁定正確 ID
+      // [修復 3] Myth: 產生按鈕並綁定事件
       const mythListEl = document.getElementById('myth-list');
       mythListEl.innerHTML = '';
       mythData = (data.myths || []).slice(0, 10);
@@ -676,9 +634,9 @@
              `;
              mythListEl.appendChild(div);
          });
-      } else { mythListEl.innerText = t("myth_none"); }
+      } else { mythListEl.innerText = "No Data"; }
 
-      // [修復 4] Quiz: 初始化測驗
+      // [修復 4] Quiz: 初始化
       quizState.questions = (data.quiz || []).slice(0, 10).map((q,i)=>({
           id: i, stem: q.question, options: q.options, correctIndex: q.correctIndex||0, explanation: q.explanation||""
       }));
@@ -688,6 +646,7 @@
       window.addEventListener('resize', syncVocabHeight);
     }
 
+    // --- Quiz Logic ---
     function initQuiz() {
        quizState.currentIndex = 0; quizState.hasAnswered = false; quizState.answers = [];
        if(quizState.questions.length > 0) {
@@ -731,22 +690,18 @@
         const allBtns = document.getElementById('quiz-options').children;
         for(let b of allBtns) b.disabled = true;
 
-        // [修復 4] Quiz: 使用 !important 或 style 屬性確保顏色覆蓋預設樣式
         if(isCorrect) {
-            btn.style.backgroundColor = "rgba(16, 185, 129, 0.25)";
+            btn.style.background = "rgba(16, 185, 129, 0.2)";
             btn.style.borderColor = "#10b981";
             btn.style.boxShadow = "0 0 15px rgba(16,185,129,0.3)";
             btn.querySelector('span:first-child').style.borderColor="#10b981";
             btn.querySelector('span:first-child').style.color="#10b981";
         } else {
-            btn.style.backgroundColor = "rgba(239, 68, 68, 0.25)";
+            btn.style.background = "rgba(239, 68, 68, 0.2)";
             btn.style.borderColor = "#ef4444";
-            
-            // Highlight correct one
-            const correctBtn = allBtns[q.correctIndex];
-            correctBtn.style.backgroundColor = "rgba(16, 185, 129, 0.25)";
-            correctBtn.style.borderColor = "#10b981";
-            correctBtn.style.boxShadow = "0 0 15px rgba(16,185,129,0.3)";
+            allBtns[q.correctIndex].style.background = "rgba(16, 185, 129, 0.2)";
+            allBtns[q.correctIndex].style.borderColor = "#10b981";
+            allBtns[q.correctIndex].style.boxShadow = "0 0 15px rgba(16,185,129,0.3)";
         }
         
         const fb = document.getElementById('quiz-feedback');
@@ -802,7 +757,7 @@
         }
     }
     
-    // [修復 3] Myth: 按鈕點擊後顯示正確回饋
+    // --- Interaction ---
     function answerMyth(idx, choice) {
        const m = mythData[idx];
        const fb = document.getElementById(`myth-${idx}-feedback`);
@@ -810,6 +765,22 @@
        fb.innerHTML = `<span class="text-orange-200">${m.explanation || "參考答案"}</span>`;
     }
     
+    const chatWindow = document.getElementById("xiaoke-window");
+    window.toggleChat = function() {
+        if (!chatWindow) return;
+        const isClosed = chatWindow.classList.contains("closed");
+        if (isClosed) {
+            chatWindow.classList.remove("closed", "scale-0", "opacity-0");
+            const chatBody = document.getElementById("chat-messages");
+            if (chatBody && !chatBody.innerHTML.trim()) {
+                const unitName = (filters && filters.unitName) || "此單元";
+                chatBody.innerHTML = `<div class="bg-cyan-900/30 border border-cyan-500/20 text-cyan-100 rounded-br-xl rounded-tr-xl rounded-bl-xl p-3 shadow-sm max-w-[85%] text-sm mb-2 self-start">${tf("chat_greet", {unit: unitName})}</div>`;
+            }
+        } else {
+            chatWindow.classList.add("closed", "scale-0", "opacity-0");
+        }
+    };
+
     function sendChatMessage() {
        const inp = document.getElementById('chat-input');
        const msg = inp.value.trim();
@@ -824,7 +795,7 @@
            });
     }
 
-    // [修復 5] 下載 TXT 功能：將目前資料打包下載
+    // [修復 5] 下載 TXT
     function downloadTXT() {
        if (!currentResultData) {
            alert(t("txt_need_generate"));
@@ -835,7 +806,6 @@
        text += `TAG: ${filters.publisher} / ${filters.grade}\n\n`;
        
        text += `=== SUMMARY ===\n`;
-       // 移除 HTML 標籤轉純文字
        const summaryRaw = (typeof d.summary === 'object' ? d.summary.content : d.summary) || "";
        text += summaryRaw.replace(/<[^>]*>/g, '') + "\n\n";
 
@@ -867,6 +837,70 @@
 
     function submitQuizLog(q, ans, corr, isCorr) {
        // Silent log
+    }
+
+    // --- Modal Logic ---
+    function openModal() {
+        const chartDiv = document.getElementById("mermaid-chart");
+        if (!chartDiv || !chartDiv.innerHTML.trim()) return;
+        const modal = document.getElementById("image-modal");
+        const content = document.getElementById("modal-content");
+        content.innerHTML = chartDiv.innerHTML;
+        const svg = content.querySelector("svg");
+        if (svg) {
+            svg.removeAttribute("style");
+            svg.removeAttribute("width");
+            svg.removeAttribute("height");
+            svg.style.maxWidth = "none";
+            svg.style.width = "auto";
+            svg.style.height = "90%";
+        }
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+    }
+    
+    function closeModal() {
+        const modal = document.getElementById("image-modal");
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+    }
+
+    // Floating Chat Dragging
+    const dragItem = document.getElementById("floating-chat");
+    let active = false;
+    let currentX, currentY, initialX, initialY;
+    let xOffset = 0, yOffset = 0;
+
+    dragItem.addEventListener("mousedown", dragStart, false);
+    document.addEventListener("mouseup", dragEnd, false);
+    document.addEventListener("mousemove", drag, false);
+
+    function dragStart(e) {
+      if (e.target.closest("#xiaoke-window")) return;
+      initialX = e.clientX - xOffset;
+      initialY = e.clientY - yOffset;
+      if (e.target.closest("button") || e.target.closest(".group")) active = true;
+    }
+    function dragEnd() {
+      initialX = currentX; initialY = currentY; active = false;
+    }
+    function drag(e) {
+      if (active) {
+        e.preventDefault();
+        currentX = e.clientX - initialX;
+        currentY = e.clientY - initialY;
+        xOffset = currentX; yOffset = currentY;
+        dragItem.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+      }
+    }
+    
+    function syncVocabHeight() {
+        const summaryPanel = document.getElementById('summary-panel');
+        const vocabPanel = document.getElementById('vocab-panel');
+        if (summaryPanel && vocabPanel) {
+            vocabPanel.style.height = 'auto';
+            if (window.innerWidth < 768) return;
+        }
     }
   </script>
 </body>
