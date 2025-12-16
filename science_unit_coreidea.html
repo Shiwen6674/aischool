@@ -330,6 +330,7 @@
   <main class="max-w-7xl mx-auto px-4 py-8 flex-1 pb-32 relative z-10">
     
 <div id="selection-panel" class="hud-panel p-6 mb-8 animate-fade-in-up w-full">
+      
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
           <h2 class="text-lg font-bold text-white flex items-center gap-2">
@@ -338,7 +339,7 @@
           </h2>
           <p class="text-slate-400 text-xs mt-1 ml-3" data-i18n="settings_subtitle">Initialize Protocol</p>
         </div>
-        <span id="db-status" class="text-xs font-mono text-cyan-500 px-3 py-1 rounded bg-cyan-950/50 border border-cyan-900 min-w-[120px] text-center" data-state="loading">
+        <span id="db-status" class="text-xs font-mono text-cyan-500 px-3 py-1 rounded bg-cyan-950/50 border border-cyan-900 min-w-[140px] text-center" data-state="loading">
           <i class="fa-solid fa-circle-notch fa-spin mr-1"></i> <span data-i18n="db_loading">System Check...</span>
         </span>
       </div>
@@ -366,12 +367,10 @@
         </div>
       </div>
 
-      <div class="mt-8 flex justify-end items-center gap-4">
-        <div class="flex items-center gap-2 bg-slate-900/50 px-3 py-1.5 rounded-lg border border-white/5">
-             <span class="text-[10px] text-slate-400 font-bold" data-i18n="question_count">題數</span>
-             <input id="inpN" type="number" min="5" max="40" step="1" value="15" class="w-10 bg-transparent text-center text-cyan-400 font-bold text-sm focus:outline-none">
-        </div>
-        <button id="btn-generate" onclick="startGeneration()" disabled class="px-6 py-2.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-sm shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none flex items-center gap-2">
+      <div class="mt-8 flex justify-end">
+        <input id="inpN" type="hidden" value="15">
+        
+        <button id="btn-generate" onclick="startGeneration()" disabled class="px-8 py-3 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-sm shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none flex items-center gap-2">
           <i class="fa-solid fa-wand-magic-sparkles"></i> 
           <span data-i18n="btn_generate">AI 整理重點</span>
         </button>
