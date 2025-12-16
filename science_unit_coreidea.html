@@ -3,17 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI School | 單元重點精熟</title>
+    <title>AI School | 科學雙語閱讀</title>
     
+    <script>
+        // 開發階段暫時註解，上線前請打開
+        /*
+        if (!sessionStorage.getItem('isLoggedIn')) {
+            window.location.href = 'index.html';
+        }
+        */
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 
     <script>
         tailwind.config = {
@@ -22,839 +30,748 @@
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+                        heading: ['Noto Sans TC', 'sans-serif'],
                     },
                     colors: {
-                        bg: '#121212',           // 主背景
-                        card: '#1E1E1E',         // 卡片背景
-                        border: '#2E2E2E',       // 邊框顏色
-                        primary: '#3B82F6',      // 主色調 (藍)
-                        accent: '#8B5CF6',       // 強調色 (紫)
-                        success: '#10B981',      // 成功 (綠)
-                        text: {
-                            main: '#E5E7EB',     // 主要文字
-                            sub: '#9CA3AF'       // 次要文字
+                        student: {
+                            bg: '#0B1121',
+                            card: '#1E293B',
+                            english: '#4ade80',
+                            highlight: '#f472b6',
+                            term: '#fbbf24'
                         }
                     }
                 }
             }
         }
-        
-        // Mermaid 設定 (保持預設主題以配合白底容器)
-        mermaid.initialize({ 
-            startOnLoad: false, 
-            theme: 'default', 
-            securityLevel: 'loose',
-            fontFamily: '"Noto Sans TC", sans-serif',
-            flowchart: { useMaxWidth: false, htmlLabels: true, curve: 'basis' } 
-        });
     </script>
-
     <style>
-        body {
-            background-color: #121212;
-            color: #E5E7EB;
+        /* 1. 基礎與背景 */
+        body { 
+            background-color: #0B1121; 
+            color: #f1f5f9; 
+            overflow: hidden; 
             font-family: 'Inter', 'Noto Sans TC', sans-serif;
-            line-height: 1.6;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body::before {
+            content: '';
+            position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle at 50% 50%, rgba(30, 58, 138, 0.15), transparent 60%);
+            z-index: -2; pointer-events: none;
         }
 
-        /* 內容卡片：乾淨俐落 */
-        .content-card {
-            background-color: #1E1E1E;
-            border: 1px solid #2E2E2E;
-            border-radius: 0.75rem;
+        /* 2. 玻璃面板 */
+        .glass-panel { 
+            background: rgba(30, 41, 59, 0.7); 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); 
+            border-radius: 1.5rem; 
+        }
+
+        /* 3. 捲軸美化 (超細緻版) */
+        .scroll-area::-webkit-scrollbar { width: 4px; }
+        .scroll-area::-webkit-scrollbar-track { background: transparent; }
+        .scroll-area::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 99px; }
+        .scroll-area::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
+
+        /* 4. 側邊選單 */
+        .nav-item { 
+            transition: all 0.2s ease; cursor: pointer; padding: 1rem 1.2rem; 
+            margin-bottom: 0.5rem; font-size: 0.95rem; color: #94a3b8; 
+            border-radius: 1rem; font-weight: 500; display: flex; align-items: center;
+        }
+        .nav-item:hover { background: rgba(255, 255, 255, 0.05); color: #fff; transform: translateX(4px); }
+        .nav-item.active { 
+            background: linear-gradient(90deg, rgba(74, 222, 128, 0.15), transparent); 
+            color: #4ade80; font-weight: 700; box-shadow: inset 3px 0 0 #4ade80; 
+        }
+
+        /* 5. 摘要卡片 (重點設計：多彩卡片) */
+        .summary-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1.25rem;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-            transition: transform 0.2s, border-color 0.2s;
+            position: relative;
+            transition: all 0.3s ease;
+            overflow: hidden;
         }
-        .content-card:hover {
-            border-color: #404040;
+        .summary-card:hover {
             transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        /* 卡片左側的彩色條 (由 JS 動態上色) */
+        .summary-card::before {
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+            background: var(--card-color, #4ade80);
+            box-shadow: 0 0 10px var(--card-color, #4ade80);
         }
 
-        /* 摘要排版優化 */
-        #summary-text h3 {
-            font-size: 1.25rem; font-weight: 700; color: #60A5FA; 
-            margin-top: 1.5rem; margin-bottom: 0.75rem;
-            padding-bottom: 0.25rem; border-bottom: 1px solid #333;
+        /* 6. 文字樣式優化 */
+        .en-text { font-size: 1.15rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 0.8rem; font-weight: 600; cursor: pointer; transition: color 0.3s; }
+        .en-text:hover { color: #fff; }
+        .zh-text { font-size: 1.05rem; color: #94a3b8; line-height: 1.8; cursor: pointer; font-weight: 400; transition: color 0.3s; }
+        .zh-text:hover { color: #fff; }
+
+        /* 朗讀中的高亮效果 */
+        .reading-active {
+            background: linear-gradient(90deg, rgba(255,255,255,0.05), transparent) !important;
+            border-color: var(--card-color, #f472b6) !important;
         }
-        #summary-text ul { list-style-type: disc; padding-left: 1.5rem; color: #D1D5DB; }
-        #summary-text li { margin-bottom: 0.5rem; }
-        #summary-text strong {
-            color: #F472B6; font-weight: 600;
-            background: rgba(244, 114, 182, 0.1);
-            padding: 0 4px; rounded: 4px;
+        .reading-active .en-text { color: var(--card-color, #f472b6) !important; text-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .reading-active .zh-text { color: #fff !important; }
+
+        /* 7. 科學詞彙 (去除醜底線，改為高級高亮) */
+        .sci-term { 
+            color: var(--card-color, #f472b6); /* 跟隨卡片顏色 */
+            font-weight: 700; 
+            cursor: pointer; 
+            padding: 0 2px;
+            text-shadow: 0 0 5px rgba(0,0,0,0.5);
+            border-bottom: none !important; /* 移除底線 */
+        }
+        .sci-term:hover { 
+            color: #fff; 
+            background: var(--card-color, #f472b6);
+            border-radius: 4px;
+            box-shadow: 0 0 10px var(--card-color, #f472b6);
         }
 
-        /* 詞彙卡 */
-        .vocab-item {
-            background: #262626; border: 1px solid #333;
-            border-radius: 0.5rem; padding: 1rem; margin-bottom: 0.75rem;
+        /* 8. 詞彙欄 (跟隨高度 + 內部捲動) */
+        #vocab-column {
+            /* 關鍵：讓它填充父容器高度，但內容過多時捲動 */
+            height: 100%; 
+            overflow-y: auto;
+            max-height: calc(100vh - 200px); /* 防爆版 */
+        }
+        .vocab-card-item {
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px; margin-bottom: 8px; padding: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
             transition: all 0.2s;
         }
-        .vocab-item:hover { border-color: #60A5FA; background: #2A2A2A; }
-
-        /* 下拉選單 */
-        .select-clean {
-            background-color: #262626; border: 1px solid #404040;
-            color: #E5E7EB; border-radius: 0.5rem;
-            padding: 0.5rem 2rem 0.5rem 0.75rem;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239CA3AF' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.2em 1.2em;
-            cursor: pointer; transition: all 0.2s; width: 100%;
-        }
-        .select-clean:hover:not(:disabled) { border-color: #60A5FA; }
-        .select-clean:disabled { opacity: 0.5; cursor: not-allowed; background-color: #1A1A1A; }
-
-        /* 按鈕 */
-        .btn-action {
-            background-color: #2563EB; color: white;
-            padding: 0.6rem 1.5rem; border-radius: 0.5rem; font-weight: 600;
-            transition: background-color 0.2s; display: flex; items-center; gap: 0.5rem;
-            justify-content: center;
-        }
-        .btn-action:hover:not(:disabled) { background-color: #1D4ED8; }
-        .btn-action:disabled { background-color: #333; color: #666; cursor: not-allowed; }
-
-        /* 架構圖容器 (白底確保 Mermaid 可讀性) */
-        .mindmap-container {
-            background-color: #ffffff; border-radius: 0.5rem;
-            padding: 1.5rem; overflow: auto; min-height: 300px;
-            display: flex; justify-content: center; align-items: center;
-            border: 1px solid #ddd;
+        .vocab-card-item:hover {
+            border-color: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05);
         }
 
-        /* 卷軸美化 */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #121212; }
-        ::-webkit-scrollbar-thumb { background: #404040; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #505050; }
-
-        .pdf-page-break { page-break-before: always; }
-        @media print { 
-            .no-print { display: none; } 
-            body { background: white; color: black; } 
-            .content-card { border: 1px solid #ccc; box-shadow: none; background: white; color: black; } 
+        /* 9. 知識圖譜 Modal (滿版深色) */
+        #graph-modal {
+            position: fixed; inset: 0; z-index: 100;
+            background: #0B1121; /* 純深色背景 */
+            display: none; flex-direction: column;
+            animation: fadeIn 0.3s ease;
         }
+        #graph-container { flex-grow: 1; width: 100%; height: 100%; }
+        #graph-close {
+            position: absolute; top: 20px; right: 20px; z-index: 101;
+            width: 48px; height: 48px; border-radius: 50%;
+            background: rgba(255,255,255,0.1); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; border: 1px solid rgba(255,255,255,0.2);
+            font-size: 1.5rem; transition: all 0.2s;
+        }
+        #graph-close:hover { background: #ef4444; border-color: #ef4444; transform: rotate(90deg); }
+
+        /* 下拉選單 UI 優化 */
+        .student-select-wrapper {
+            position: relative; display: flex; align-items: center;
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 99px; padding: 0 14px; height: 40px;
+            transition: all 0.3s; cursor: pointer; min-width: max-content; 
+        }
+        .student-select-wrapper:hover { background-color: rgba(255, 255, 255, 0.15); border-color: #4ade80; }
+        .student-select-icon { color: #4ade80; font-size: 0.875rem; margin-right: 8px; pointer-events: none; }
+        .student-select {
+            appearance: none; background: transparent; border: none; color: #fff; 
+            font-size: 0.875rem; font-weight: 600; padding: 0 24px 0 0; width: 100%; height: 100%;
+            cursor: pointer; outline: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right center; background-repeat: no-repeat; background-size: 0.85em;
+        }
+        .student-select option { background-color: #1E293B; color: #fff; padding: 10px; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* 播放器 */
+        .player-dock { background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 2rem; padding: 0.75rem 1.5rem; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
     </style>
 </head>
-<body class="flex flex-col min-h-screen">
+<body class="h-screen flex flex-col font-sans selection:bg-teal-500/30 selection:text-white">
 
-    <nav class="sticky top-0 z-50 bg-[#121212]/95 backdrop-blur border-b border-[#2D2D2D] h-16 transition-all duration-300">
-        <div class="max-w-7xl mx-auto px-4 h-full flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <a href="student.html" class="flex items-center justify-center w-9 h-9 rounded-full hover:bg-[#2D2D2D] text-gray-400 hover:text-white transition">
-                    <i class="fa-solid fa-arrow-left"></i>
-                </a>
-                <div class="flex items-center gap-3">
-                    <span class="w-1.5 h-6 bg-blue-600 rounded-full"></span>
-                    <span class="font-bold text-xl text-white tracking-wide" data-i18n="page_title">單元重點精熟</span>
+    <div id="loader-overlay" class="absolute inset-0 bg-[#0B1121] z-50 flex flex-col items-center justify-center">
+        <div class="relative">
+            <div class="absolute inset-0 bg-green-400 blur-xl opacity-20 rounded-full animate-pulse"></div>
+            <i class="fa-solid fa-rocket text-6xl text-green-400 relative z-10 animate-bounce"></i>
+        </div>
+        <div class="text-green-400 tracking-widest mt-6 font-bold text-lg">載入科學宇宙...</div>
+    </div>
+
+    <div id="graph-modal">
+        <button id="graph-close" onclick="closeGraph()"><i class="fa-solid fa-xmark"></i></button>
+        <div id="graph-container"></div>
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-black/50 px-6 py-2 rounded-full text-white/70 text-sm backdrop-blur-md pointer-events-none">
+            <i class="fa-solid fa-mouse-pointer mr-2"></i>滾輪縮放 · 拖曳移動 · 雙擊節點聚焦
+        </div>
+    </div>
+
+    <nav class="sticky top-4 z-40 px-4 flex flex-col md:flex-row items-center gap-3 shrink-0 pointer-events-none">
+        <div class="glass-panel px-4 py-2 flex items-center gap-4 pointer-events-auto shadow-lg">
+            <button onclick="goBack()" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-green-400 hover:text-white transition group">
+                <i class="fa-solid fa-arrow-left text-lg group-hover:-translate-x-1 transition-transform"></i>
+            </button>
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center text-green-400">
+                    <i class="fa-solid fa-atom text-lg"></i>
                 </div>
+                <span class="text-lg font-black text-white tracking-wide" data-i18n="page_title">AI School</span>
             </div>
-            
-            <div class="flex items-center gap-4">
-                <span id="user-info" class="text-xs font-mono text-gray-400 border border-[#333] px-3 py-1 rounded bg-[#1A1A1A] hidden sm:inline-block">User: Guest</span>
-                <div class="relative">
-                    <i class="fa-solid fa-globe absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                    <select id="language-selector" onchange="changeLanguage()" class="bg-[#262626] border border-[#404040] text-gray-300 text-xs rounded pl-8 pr-3 py-1.5 outline-none hover:border-gray-500 transition cursor-pointer appearance-none">
-                        <option value="zh-TW">繁體中文</option>
-                        <option value="en">English</option>
-                        <option value="ja">日本語</option>
-                        <option value="zh-CN">简体中文</option>
-                    </select>
-                </div>
+        </div>
+
+        <div class="flex-grow flex flex-wrap gap-2 justify-end pointer-events-auto">
+            <div class="student-select-wrapper w-auto">
+                <i class="fa-solid fa-globe student-select-icon"></i>
+                <select id="sel-lang" class="student-select" onchange="changeLanguage(this.value)">
+                    <option value="zh-TW">繁體中文</option>
+                    <option value="en">English</option>
+                    <option value="ja">日本語</option>
+                    <option value="zh-CN">简体中文</option>
+                </select>
             </div>
+            <div class="student-select-wrapper w-32"><select id="sel-stage" class="student-select" onchange="filterUnits('stage')"><option disabled selected data-i18n="stage">階段</option></select></div>
+            <div class="student-select-wrapper w-28"><select id="sel-grade" class="student-select" onchange="filterUnits('grade')" disabled><option disabled selected data-i18n="grade">年級</option></select></div>
+            <div class="student-select-wrapper w-32"><select id="sel-version" class="student-select" onchange="filterUnits('version')" disabled><option disabled selected data-i18n="version">版本</option></select></div>
+            <div class="student-select-wrapper w-28"><select id="sel-semester" class="student-select" onchange="filterUnits('semester')" disabled><option disabled selected data-i18n="semester">學期</option></select></div>
+            <div class="student-select-wrapper flex-grow md:w-auto min-w-[180px]"><select id="sel-unit" class="student-select" onchange="loadSelectedUnit()" disabled><option disabled selected data-i18n="unit">選擇單元</option></select></div>
         </div>
     </nav>
 
-    <main class="flex-1 w-full max-w-7xl mx-auto px-4 py-8 pb-24">
+    <div class="flex-grow flex overflow-hidden p-4 gap-4 relative z-10 mt-2">
         
-        <div id="selection-panel" class="content-card">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-[#2D2D2D] pb-4">
-                <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-sliders text-blue-500"></i> <span data-i18n="settings_title">請挑選學習單元</span>
-                </h2>
-                <div id="db-status" class="text-xs font-mono px-3 py-1 rounded bg-[#252525] text-gray-500 border border-[#333] flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-gray-500"></span> Connecting...
-                </div>
+        <aside class="w-64 glass-panel flex flex-col overflow-hidden hidden md:flex">
+            <div class="p-5 border-b border-white/10 bg-black/20">
+                <h3 class="text-xs font-bold text-green-400 tracking-widest mb-1 uppercase" data-i18n="nav">MENU</h3>
+                <div class="text-white font-bold text-lg truncate" id="nav-title">請選擇單元</div>
             </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1.5 ml-1 font-bold" data-i18n="label_stage">學習階段</label>
-                    <select id="sel-stage" class="select-clean"><option disabled selected data-i18n="loading">載入中...</option></select>
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1.5 ml-1 font-bold" data-i18n="label_publisher">版本</label>
-                    <select id="sel-publisher" class="select-clean" disabled><option disabled selected>--</option></select>
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1.5 ml-1 font-bold" data-i18n="label_grade">年級</label>
-                    <select id="sel-grade" class="select-clean" disabled><option disabled selected>--</option></select>
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1.5 ml-1 font-bold" data-i18n="label_semester">學期</label>
-                    <select id="sel-semester" class="select-clean" disabled><option disabled selected>--</option></select>
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1.5 ml-1 font-bold" data-i18n="label_unit">單元名稱</label>
-                    <select id="sel-unit" class="select-clean" disabled><option disabled selected>--</option></select>
-                </div>
+            <div class="flex-grow scroll-area overflow-y-auto p-3" id="unit-list">
+                <div class="text-center text-slate-500 text-sm mt-10 p-4" data-i18n="select_hint">👈 請先上方選擇單元</div>
             </div>
+        </aside>
 
-            <div class="mt-8 flex justify-end">
-                <button id="btn-generate" onclick="startGeneration()" disabled class="btn-action shadow-lg shadow-blue-900/20">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="btn_generate">AI 整理重點</span>
+        <div class="flex-grow flex gap-4 overflow-hidden relative">
+            
+            <section class="flex-1 glass-panel flex flex-col relative overflow-hidden" style="min-width: 0;">
+                <div class="h-14 border-b border-white/10 bg-black/20 flex items-center justify-between px-6 gap-3 shrink-0">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                        <span class="text-xs font-bold text-green-200 truncate" id="status-bar">READY</span>
+                        <span id="trans-loading" class="hidden text-xs text-green-400 flex items-center gap-1 ml-2"><div class="loader w-3 h-3"></div> 翻譯中...</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="openGraph()" class="px-3 py-1.5 text-xs font-bold rounded-full bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500 hover:text-white border border-indigo-500/30 transition flex items-center gap-1">
+                            <i class="fa-solid fa-share-nodes"></i> 知識圖譜
+                        </button>
+                        <div class="flex bg-black/30 rounded-full p-1 border border-white/10">
+                            <button onclick="setMode('en')" class="px-3 py-1 text-xs font-bold rounded-full text-slate-400 hover:text-white transition" id="btn-en">EN</button>
+                            <button onclick="setMode('dual')" class="px-3 py-1 text-xs font-bold rounded-full bg-green-500 text-white shadow-lg" id="btn-dual">雙語</button>
+                            <button onclick="setMode('zh')" class="px-3 py-1 text-xs font-bold rounded-full text-slate-400 hover:text-white transition" id="btn-zh">中文</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex-grow scroll-area overflow-y-auto p-6 md:p-8 pb-32" id="reading-container">
+                    <article class="max-w-4xl mx-auto transition-opacity duration-500" id="article-body">
+                        <h1 class="text-3xl md:text-4xl font-black text-white mb-8 text-center" id="article-title">
+                            <span class="text-slate-500 opacity-30 text-2xl">等待探索...</span>
+                        </h1>
+                        <div id="article-content" class="space-y-6"></div>
+                    </article>
+                </div>
+            </section>
+
+            <aside class="w-80 glass-panel flex flex-col overflow-hidden hidden lg:flex shrink-0">
+                <div class="p-5 border-b border-white/10 bg-gradient-to-r from-yellow-500/10 to-transparent shrink-0">
+                    <div class="flex items-center gap-2 mb-1">
+                        <i class="fa-solid fa-lightbulb text-yellow-400"></i>
+                        <h3 class="text-sm font-bold text-yellow-400 tracking-widest" data-i18n="vocab_title">科學詞彙庫</h3>
+                    </div>
+                </div>
+                <div class="flex-grow scroll-area p-3" id="vocab-column">
+                    <div id="vocab-container">
+                        <div class="text-center py-10 opacity-30 text-sm text-white" data-i18n="vocab_empty">詞彙將顯示於此</div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <div id="control-dock" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-[95%] max-w-lg">
+        <div class="player-dock flex items-center justify-between gap-4">
+            <div class="flex flex-col items-center">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">SPEED</span>
+                <select id="play-rate" class="appearance-none bg-transparent text-green-400 font-black text-lg text-center outline-none cursor-pointer w-12 hover:scale-110 transition">
+                    <option value="0.5">0.5</option>
+                    <option value="0.75">0.75</option>
+                    <option value="1.0" selected>1.0</option>
+                    <option value="1.25">1.25</option>
+                    <option value="1.5">1.5</option>
+                </select>
+            </div>
+            <div class="flex items-center gap-6">
+                <div class="flex bg-white/10 rounded-full p-1 gap-1">
+                    <button onclick="setVoice('male')" id="btn-male" class="w-9 h-9 rounded-full flex items-center justify-center transition text-slate-400 hover:text-white"><i class="fa-solid fa-person text-lg"></i></button>
+                    <button onclick="setVoice('female')" id="btn-female" class="w-9 h-9 rounded-full flex items-center justify-center transition bg-green-500 text-white shadow-lg"><i class="fa-solid fa-person-dress text-lg"></i></button>
+                </div>
+                <button onclick="toggleSpeech()" class="w-16 h-16 flex items-center justify-center rounded-full bg-white text-black hover:scale-105 active:scale-95 transition shadow-[0_0_20px_rgba(255,255,255,0.3)]" id="btn-play">
+                    <i class="fa-solid fa-play text-2xl ml-1"></i>
+                </button>
+                <button onclick="stopSpeech()" class="w-10 h-10 flex items-center justify-center rounded-full border-2 border-slate-600 text-slate-400 hover:border-red-500 hover:text-red-500 transition">
+                    <i class="fa-solid fa-stop text-sm"></i>
                 </button>
             </div>
         </div>
-
-        <div id="loading-view" class="hidden flex-col items-center justify-center py-24">
-            <div class="relative w-16 h-16 mb-4">
-                <div class="absolute inset-0 border-4 border-[#333] rounded-full"></div>
-                <div class="absolute inset-0 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-            <p class="text-blue-400 font-mono text-sm animate-pulse tracking-widest">AI PROCESSING...</p>
-        </div>
-
-        <div id="content-view" class="hidden space-y-6">
-            
-            <div class="flex flex-col md:flex-row justify-between items-end gap-4 mb-2">
-                <div>
-                    <div class="flex items-center gap-2 mb-2">
-                        <span id="result-tag" class="text-[10px] font-bold text-blue-400 bg-blue-400/10 px-2 py-0.5 rounded border border-blue-400/20 tracking-wider">READY</span>
-                    </div>
-                    <h1 id="result-title" class="text-3xl md:text-4xl font-black text-white leading-tight">單元名稱</h1>
-                </div>
-                <div class="flex gap-3 no-print">
-                    <button onclick="downloadTXT()" class="px-4 py-2 rounded bg-[#262626] hover:bg-[#333] text-gray-300 text-sm font-medium transition border border-[#333] flex items-center gap-2">
-                        <i class="fa-regular fa-file-lines"></i> <span data-i18n="btn_txt">TXT</span>
-                    </button>
-                    <button onclick="downloadPDF()" class="px-4 py-2 rounded bg-[#262626] hover:bg-[#333] text-gray-300 text-sm font-medium transition border border-[#333] flex items-center gap-2">
-                        <i class="fa-regular fa-file-pdf"></i> <span data-i18n="btn_pdf">PDF</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                <div class="lg:col-span-2 space-y-6">
-                    <section class="content-card">
-                        <div class="flex items-center gap-3 mb-6 border-b border-[#333] pb-4">
-                            <div class="w-10 h-10 rounded bg-blue-500/10 flex items-center justify-center text-blue-500">
-                                <i class="fa-solid fa-list-ul"></i>
-                            </div>
-                            <h3 class="text-xl font-bold text-white" data-i18n="title_summary">核心概念摘要</h3>
-                        </div>
-                        <div id="summary-text" class="text-gray-300 leading-relaxed">
-                            </div>
-                    </section>
-
-                    <section class="content-card">
-                        <div class="flex justify-between items-center mb-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded bg-purple-500/10 flex items-center justify-center text-purple-500">
-                                    <i class="fa-solid fa-sitemap"></i>
-                                </div>
-                                <h3 class="text-xl font-bold text-white" data-i18n="title_map">知識架構圖</h3>
-                            </div>
-                            <button onclick="openModal()" class="text-xs text-gray-400 hover:text-white transition bg-[#333] px-3 py-1.5 rounded flex items-center gap-1">
-                                <i class="fa-solid fa-expand"></i> <span data-i18n="btn_expand">放大</span>
-                            </button>
-                        </div>
-                        <div class="mindmap-container cursor-zoom-in group border border-[#333]" onclick="openModal()">
-                            <div id="mermaid-chart" class="w-full text-center text-gray-500">
-                                <i class="fa-solid fa-circle-notch fa-spin"></i> Generating...
-                            </div>
-                        </div>
-                    </section>
-
-                    <section class="content-card border-l-4 border-l-emerald-600">
-                        <div class="flex justify-between items-center mb-6">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded bg-emerald-500/10 flex items-center justify-center text-emerald-500">
-                                    <i class="fa-solid fa-clipboard-check"></i>
-                                </div>
-                                <h3 class="text-xl font-bold text-white" data-i18n="title_quiz">單元小測驗</h3>
-                            </div>
-                            <span id="quiz-progress" class="text-xs font-mono text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded"></span>
-                        </div>
-                        
-                        <div id="quiz-body">
-                            <div id="quiz-question" class="text-lg font-bold text-white mb-6 leading-relaxed"></div>
-                            <div id="quiz-options" class="space-y-3"></div>
-                            <div id="quiz-feedback" class="hidden mt-4 p-4 rounded-lg bg-[#252525] border border-[#404040] text-sm"></div>
-                            <div class="mt-8 flex justify-center">
-                                <button id="quiz-main-btn" onclick="handleQuizMainButton()" disabled class="btn-action rounded-full px-8 shadow-lg">
-                                    <span data-i18n="btn_next_q">下一題</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div id="quiz-result" class="hidden text-center py-8">
-                            <div class="text-5xl font-black text-emerald-500 mb-2" id="quiz-score-number">0</div>
-                            <div class="text-gray-400 text-sm mb-6" data-i18n="label_total_score">總分</div>
-                            <div class="bg-[#262626] rounded-xl p-4 border border-[#404040] mb-4">
-                                <canvas id="quiz-radar" class="max-h-64"></canvas>
-                            </div>
-                            <div id="quiz-result-detail" class="text-sm text-gray-300 text-left leading-relaxed"></div>
-                        </div>
-
-                        <div id="quiz-empty" class="hidden text-center text-gray-500 py-10" data-i18n="msg_no_quiz">無測驗題目</div>
-                    </section>
-                </div>
-
-                <div class="space-y-6 lg:sticky lg:top-24 h-fit">
-                    <div class="content-card p-5">
-                        <h3 class="font-bold text-amber-500 mb-4 flex items-center gap-2" data-i18n="title_vocab">
-                            <i class="fa-solid fa-font"></i> 科學詞彙
-                        </h3>
-                        <div id="keywords-list" class="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar"></div>
-                    </div>
-
-                    <div class="content-card p-5">
-                        <h3 class="font-bold text-rose-500 mb-4 flex items-center gap-2" data-i18n="title_myth">
-                            <i class="fa-regular fa-lightbulb"></i> 科學動動腦
-                        </h3>
-                        <div id="myth-list" class="space-y-4 text-gray-400 text-sm"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <div id="floating-chat" class="fixed bottom-6 right-6 z-50 hidden no-print">
-        <div id="xiaoke-window" class="chat-window closed bg-[#202020] border border-[#333] shadow-2xl rounded-xl w-80 h-[450px] flex flex-col overflow-hidden mb-4 transition-all duration-300 origin-bottom-right transform scale-0 opacity-0">
-            <div class="bg-[#262626] p-3 border-b border-[#333] flex justify-between items-center">
-                <span class="font-bold text-blue-500 text-sm flex items-center gap-2"><i class="fa-solid fa-robot"></i> <span data-i18n="ai_assistant">小科 AI</span></span>
-                <button onclick="toggleChat()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-times"></i></button>
-            </div>
-            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 text-sm text-gray-300"></div>
-            <div class="p-3 border-t border-[#333] bg-[#262626]">
-                <div class="flex gap-2">
-                    <input type="text" id="chat-input" class="w-full bg-[#1a1a1a] border border-[#333] rounded px-3 py-1 text-sm text-white focus:border-blue-500 outline-none" placeholder="..." onkeypress="if(event.key==='Enter') sendChatMessage()">
-                    <button onclick="sendChatMessage()" class="text-blue-500 hover:text-white"><i class="fa-solid fa-paper-plane"></i></button>
-                </div>
-            </div>
-        </div>
-        <button onclick="toggleChat()" class="w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-500 text-white shadow-lg flex items-center justify-center text-xl transition hover:scale-110">
-            <i class="fa-solid fa-comment-dots"></i>
-        </button>
     </div>
 
-    <div id="image-modal" class="fixed inset-0 z-[100] bg-black/90 hidden items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal()">
-        <div id="modal-content" class="bg-white rounded-lg p-4 max-w-[90vw] max-h-[90vh] overflow-auto" onclick="event.stopPropagation()"></div>
-        <button class="absolute top-4 right-4 text-white text-3xl" onclick="closeModal()">&times;</button>
+    <div id="toast" class="fixed top-24 left-1/2 transform -translate-x-1/2 bg-slate-800/90 border border-green-500/30 text-green-100 px-6 py-3 rounded-full shadow-2xl transition-all duration-300 opacity-0 -translate-y-10 z-50 flex items-center gap-3 pointer-events-none text-sm font-bold backdrop-blur-md">
+        <i class="fa-solid fa-circle-check text-green-400 text-lg"></i> <span id="toast-msg">Ready</span>
     </div>
 
     <script>
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxBWrZCp-xLckDGZnhe64K0IUa_8CJZRzqZbrgL8lQdNn3S1WgaEzbdOtpo4mGwN6_H/exec";
+        // 設定檔與變數
+        const SHEET_ID = '1cEfMEy3bvDa1tET3xmh7ShGeJy8KLUMa_JuULGBD-mk';
+        const TARGET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRbgkNiMflfeLQd3KN8F4yjjIr6G2flnCAy-nUPMiC7_xDfdg_0hJ2Qzbsr92u8htlPLFR8GwwQPK_g/pub?gid=0&single=true&output=csv';
+        const COL_STAGE=0, COL_VERSION=2, COL_GRADE=3, COL_SEMESTER=4, COL_UNIT_NUM=6, COL_UNIT_NAME=7, COL_CONTENT=8, COL_CKIP=9, COL_VOCAB=18;
         
-        let allData = [];
-        let filters = {};
-        let currentResultData = null;
-        let mythData = [];
-        let quizState = { questions: [], currentIndex: 0, hasAnswered: false, answers: [] };
-        let quizRadarChart = null;
+        let rawData=[], processedUnits=[], isSpeaking=false, currentVoice='female', translationCache={}, synth=window.speechSynthesis;
+        let activeVocabMap = {};
+        let currentBlockIndex = 0;
+        let currentUnitTitleZh = "", currentUnitTitleEn = "";
+        let currentLang = localStorage.getItem('appLang') || 'zh-TW';
+        let network = null; // Graph instance
 
-        // 四語系全頁連動字典
+        // 鮮明的配色盤 (用於卡片與節點)
+        const colorPalette = [
+            '#f472b6', // Pink
+            '#34d399', // Emerald
+            '#60a5fa', // Blue
+            '#fbbf24', // Amber
+            '#a78bfa', // Purple
+            '#f87171'  // Red
+        ];
+
         const i18n = {
-            "zh-TW": {
-                page_title: "單元重點精熟", settings_title: "請挑選學習單元", label_stage: "學習階段", label_publisher: "版本", label_grade: "年級", label_semester: "學期", label_unit: "單元名稱", btn_generate: "AI 整理重點",
-                btn_txt: "TXT", btn_pdf: "PDF", title_summary: "核心概念摘要", title_map: "知識架構圖", title_vocab: "科學詞彙", title_myth: "科學動動腦", title_quiz: "單元小測驗",
-                btn_expand: "放大", btn_next_q: "下一題", btn_see_result: "看結果", label_total_score: "總分", msg_no_quiz: "無測驗題目", ai_assistant: "小科 AI", loading: "載入中..."
-            },
-            "en": {
-                page_title: "Unit Mastery", settings_title: "Select Learning Unit", label_stage: "Level", label_publisher: "Publisher", label_grade: "Grade", label_semester: "Semester", label_unit: "Unit Name", btn_generate: "AI Summarize",
-                btn_txt: "TXT", btn_pdf: "PDF", title_summary: "Key Concepts", title_map: "Mind Map", title_vocab: "Vocabulary", title_myth: "Science Myths", title_quiz: "Unit Quiz",
-                btn_expand: "Expand", btn_next_q: "Next", btn_see_result: "Results", label_total_score: "Total Score", msg_no_quiz: "No Quiz Available", ai_assistant: "AI Tutor", loading: "Loading..."
-            },
-            "ja": {
-                page_title: "単元マスター", settings_title: "学習単元を選択", label_stage: "段階", label_publisher: "出版社", label_grade: "学年", label_semester: "学期", label_unit: "単元名", btn_generate: "AI 要点まとめ",
-                btn_txt: "TXT", btn_pdf: "PDF", title_summary: "核心概念", title_map: "知識マップ", title_vocab: "科学用語", title_myth: "科学の迷信", title_quiz: "単元クイズ",
-                btn_expand: "拡大", btn_next_q: "次へ", btn_see_result: "結果を見る", label_total_score: "総合得点", msg_no_quiz: "クイズなし", ai_assistant: "AI 助手", loading: "読み込み中..."
-            },
-            "zh-CN": {
-                page_title: "单元重点精熟", settings_title: "请挑选学习单元", label_stage: "学习阶段", label_publisher: "版本", label_grade: "年级", label_semester: "学期", label_unit: "单元名称", btn_generate: "AI 整理重点",
-                btn_txt: "TXT", btn_pdf: "PDF", title_summary: "核心概念摘要", title_map: "知识架构图", title_vocab: "科学词汇", title_myth: "科学动动脑", title_quiz: "单元小测验",
-                btn_expand: "放大", btn_next_q: "下一题", btn_see_result: "看结果", label_total_score: "总分", msg_no_quiz: "无测验题目", ai_assistant: "小科 AI", loading: "加载中..."
-            }
+            'zh-TW': { page_title: 'AI School', nav: '目錄', vocab_title: '科學詞彙庫', select_hint: '👈 請先上方選擇單元', vocab_empty: '詞彙將顯示於此', stage: '階段', grade: '年級', version: '版本', semester: '學期', unit: '選擇單元' },
+            'en': { page_title: 'AI School', nav: 'MENU', vocab_title: 'Science Vocab', select_hint: '👈 Select Unit Above', vocab_empty: 'Vocab will appear here', stage: 'Stage', grade: 'Grade', version: 'Version', semester: 'Semester', unit: 'Select Unit' },
+            'ja': { page_title: 'AI School', nav: 'メニュー', vocab_title: '科学用語集', select_hint: '👈 上から単元を選択', vocab_empty: 'ここに用語が表示されます', stage: '段階', grade: '学年', version: '版', semester: '学期', unit: '単元を選択' },
+            'zh-CN': { page_title: 'AI School', nav: '目录', vocab_title: '科学词汇库', select_hint: '👈 请先上方选择单元', vocab_empty: '词汇将显示于此', stage: '阶段', grade: '年级', version: '版本', semester: '学期', unit: '选择单元' }
         };
 
-        window.onload = async () => {
-            const user = JSON.parse(sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || '{"name":"訪客"}');
-            document.getElementById("user-info").innerText = user.name;
+        document.addEventListener('DOMContentLoaded', () => {
+            initLanguage();
+            fetchData();
+            if(synth) synth.onvoiceschanged = () => synth.getVoices();
+            setVoice('female'); 
+            document.addEventListener('touchstart', () => { try{ if(!synth)return; synth.cancel(); const u=new SpeechSynthesisUtterance(" "); u.volume=0; synth.speak(u); }catch(e){} }, { once: true, passive: true });
+        });
 
-            try {
-                const res = await fetch(GAS_API_URL + "?action=get_metadata");
-                if (!res.ok) throw new Error("API Error");
-                const json = await res.json();
-                
-                if(json.status === "success") {
-                    allData = json.data;
-                    document.getElementById("db-status").innerHTML = '<span class="w-2 h-2 rounded-full bg-green-500 inline-block mr-1"></span> Connected';
-                    document.getElementById("db-status").className = "text-xs font-mono px-3 py-1 rounded bg-[#252525] text-green-500 border border-green-900 flex items-center";
-                    initSelectors();
-                } else { throw new Error(json.message); }
-            } catch(e) {
-                console.error(e);
-                document.getElementById("db-status").innerText = "Connection Failed";
-                document.getElementById("db-status").className = "text-xs font-mono px-3 py-1 rounded bg-[#252525] text-red-500 border border-red-900";
-            }
-        };
-
-        function changeLanguage() {
-            const lang = document.getElementById("language-selector").value;
-            const t = i18n[lang] || i18n["en"];
-            
-            // 更新所有 data-i18n 元素
-            document.querySelectorAll("[data-i18n]").forEach(el => {
-                const key = el.getAttribute("data-i18n");
-                if (t[key]) {
-                    // 如果是 input 的 placeholder
-                    if (el.tagName === 'INPUT' && el.hasAttribute('placeholder')) {
-                        // 這裡可以處理 placeholder，目前範例中沒用到多語系 placeholder
-                    } else {
-                        el.innerText = t[key];
-                    }
-                }
+        function initLanguage() {
+            const sel = document.getElementById('sel-lang');
+            if(sel) sel.value = currentLang;
+            applyLanguage(currentLang);
+        }
+        function changeLanguage(lang) {
+            currentLang = lang; localStorage.setItem('appLang', lang); applyLanguage(lang);
+            const ids=['stage','grade','version','semester','unit'];
+            ids.forEach(id => {
+               const el = document.getElementById(`sel-${id}`);
+               if(el && el.disabled) el.options[0].text = i18n[currentLang][id] || '...';
             });
-
-            // 更新動態生成的按鈕文字 (如測驗按鈕)
-            const quizBtn = document.getElementById("quiz-main-btn");
-            if (quizBtn && !quizBtn.disabled) {
-                const isLast = (quizState.currentIndex === quizState.questions.length - 1);
-                quizBtn.innerText = isLast ? t.btn_see_result : t.btn_next_q;
-            }
+            if(processedUnits.length > 0) filterUnits('stage');
         }
-
-        function initSelectors() {
-            const stages = [...new Set(allData.map(d => d.stage))];
-            populate("sel-stage", stages);
-            document.getElementById("sel-stage").onchange = (e) => updateLevel(1, e.target.value);
-            document.getElementById("sel-publisher").onchange = (e) => updateLevel(2, e.target.value);
-            document.getElementById("sel-grade").onchange = (e) => updateLevel(3, e.target.value);
-            document.getElementById("sel-semester").onchange = (e) => updateLevel(4, e.target.value);
-            document.getElementById("sel-unit").onchange = (e) => { 
-                filters.unitName = e.target.value; 
-                document.getElementById("btn-generate").disabled = false; 
-            };
+        function applyLanguage(lang) {
+            const texts = i18n[lang] || i18n['zh-TW'];
+            document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.getAttribute('data-i18n'); if(texts[key]) el.innerText = texts[key]; });
         }
+        function goBack() { window.location.href = 'student_science.html'; }
 
-        function updateLevel(level, value) {
-            if(level===1) filters={stage:value};
-            if(level===2){filters.publisher=value; delete filters.grade; delete filters.semester; delete filters.unitName;}
-            if(level===3){filters.grade=value; delete filters.semester; delete filters.unitName;}
-            if(level===4){filters.semester=value; delete filters.unitName;}
-
-            const ids=["sel-publisher","sel-grade","sel-semester","sel-unit"];
-            // 這些預設文字會被多語系覆蓋，但保留作為 fallback
-            const labels=["版本","年級","學期","單元"];
-            for(let i=level;i<4;i++){
-                const el = document.getElementById(ids[i]);
-                el.innerHTML=`<option disabled selected>--</option>`;
-                el.disabled=true;
-            }
-            document.getElementById("btn-generate").disabled=true;
-
-            const relevantData = allData.filter(d => {
-                const safeMatch = (dVal, fVal) => !fVal || String(dVal).trim() == String(fVal).trim();
-                return safeMatch(d.stage, filters.stage) &&
-                       safeMatch(d.publisher, filters.publisher) &&
-                       safeMatch(d.grade, filters.grade) &&
-                       safeMatch(d.semester, filters.semester);
+        // Data Fetching
+        function fetchData() {
+            Papa.parse(TARGET_URL, {
+                download: true, header: false, skipEmptyLines: true,
+                complete: res => { processData(res.data); document.getElementById('loader-overlay').style.display='none'; showToast("準備完成，開始探索吧！"); },
+                error: () => document.getElementById('loader-overlay').innerHTML='<div class="text-red-500">連線錯誤，請重整</div>'
             });
-
-            if(level===1) populate("sel-publisher", [...new Set(relevantData.map(d=>d.publisher))]);
-            if(level===2) populate("sel-grade", [...new Set(relevantData.map(d=>d.grade))].sort((a,b)=>a-b), "grade");
-            if(level===3) populate("sel-semester", [...new Set(relevantData.map(d=>d.semester))], "semester");
-            if(level===4) {
-                const unitSelect = document.getElementById("sel-unit");
-                unitSelect.innerHTML='<option disabled selected>--</option>';
-                if(relevantData.length>0) {
-                    relevantData.forEach(d => {
-                        const opt = document.createElement("option");
-                        opt.value = d.unitName;
-                        opt.text = (d.unitType && !isNaN(d.unitType)) ? `第${d.unitType}課 ${d.unitName}` : d.unitName;
-                        unitSelect.add(opt);
-                    });
-                    unitSelect.disabled=false;
-                }
+        }
+        const norm = (s) => (s ?? '').toString().replace(/[\uFEFF\u200B\u200C\u200D]/g,'').replace(/　/g,' ').trim();
+        function parseVocabPairs(vocabText){
+          const map = {}; if(!vocabText) return map;
+          vocabText.split(/[,;，；\n]+/).forEach(token=>{
+            const t = (token||"").toString().trim(); if(!t) return;
+            let zh = "", en = "";
+            const tabParts = t.split(/\t+/);
+            if(tabParts.length >= 2){ zh = tabParts[0].trim(); en = tabParts.slice(1).join(' ').trim(); } 
+            else {
+              const sepParts = t.split(/[:：=＝]/);
+              if(sepParts.length >= 2){ zh = sepParts[0].trim(); en = sepParts.slice(1).join(':').trim(); } 
+              else {
+                const m = t.match(/^(.+?)[（(]\s*([^)）]+?)\s*[)）]\s*$/);
+                if(m){ zh = (m[1]||"").trim(); en = (m[2]||"").trim(); } else { zh = t.trim(); en = ""; }
+              }
             }
+            if(zh) map[zh] = en;
+          });
+          return map;
+        }
+        function processData(data) {
+            rawData = data.slice(1);
+            processedUnits = rawData.map((row, i) => {
+                let content = (row[COL_CONTENT]||"").toString(), ckip = (row[COL_CKIP]||"").toString(),
+                    unitNum = norm(row[COL_UNIT_NUM]), unitName = norm(row[COL_UNIT_NAME]);
+                let title = (unitNum + (unitName ? " " + unitName : "")).trim() || `Unit ${i+1}`;
+                return { id: i, stage: norm(row[COL_STAGE]), version: norm(row[COL_VERSION]), grade: norm(row[COL_GRADE]), semester: norm(row[COL_SEMESTER]), title, content, ckip, vocab: (row[COL_VOCAB]||"").toString() };
+            }).filter(u => u.title);
+            initFilters();
         }
 
-        function populate(id, list, type) {
-            const el = document.getElementById(id);
-            el.innerHTML=`<option disabled selected>--</option>`;
-            list.forEach(o => {
-                const opt = document.createElement("option");
-                opt.value = o;
-                if(type==="grade") opt.text=o+"年級";
-                else if(type==="semester") opt.text=(o==="上"?"上學期":(o==="下"?"下學期":o));
-                else opt.text=o;
-                el.add(opt);
+        // Filters
+        function initFilters() { populateSelect('sel-stage', [...new Set(processedUnits.map(u=>u.stage).filter(Boolean))], 'stage'); }
+        function filterUnits(lvl) {
+            const ids=['stage','grade','version','semester','unit'], sels=ids.map(id=>document.getElementById(`sel-${id}`));
+            let filtered = processedUnits.filter(u => {
+                if(sels[0].value && u.stage!==sels[0].value) return false;
+                if(sels[1].value && !sels[1].disabled && u.grade!==sels[1].value) return false;
+                if(sels[2].value && !sels[2].disabled && u.version!==sels[2].value) return false;
+                if(sels[3].value && !sels[3].disabled && u.semester!==sels[3].value) return false;
+                return true;
             });
-            el.disabled=false;
-        }
-
-        // ========== 核心修復：JSON 清洗與容錯 ==========
-        function cleanAndParseJSON(text) {
-            console.log("Raw Response Length:", text.length);
-            
-            // 1. 移除 Markdown 標記 (支援大小寫)
-            let clean = text.replace(/```json/gi, "").replace(/```/g, "").trim();
-            
-            // 2. 嘗試修復常見錯誤
-            clean = clean.replace(/,\s*([\]}])/g, '$1'); // 移除陣列/物件尾部逗號
-            clean = clean.replace(/(?<!\\)\n/g, "\\n"); // 轉義換行符
-            clean = clean.replace(/[\u0000-\u0019]+/g,""); // 移除控制字符
-
-            // 3. 嘗試解析
-            try {
-                return JSON.parse(clean);
-            } catch (e) {
-                console.warn("第一次解析失敗，嘗試修復 JSON...", e);
-                // 4. 暴力提取：只抓取最外層 {} 
-                const firstOpen = clean.indexOf('{');
-                const lastClose = clean.lastIndexOf('}');
-                if (firstOpen !== -1 && lastClose !== -1) {
-                    try {
-                        return JSON.parse(clean.substring(firstOpen, lastClose + 1));
-                    } catch (e2) {
-                        return null; // 放棄
-                    }
-                }
-                return null;
+            const update=(sel,p,key)=> populateSelect(sel.id, [...new Set(filtered.map(u=>u[p]).filter(Boolean))], key);
+            if(lvl==='stage') { update(sels[1],'grade','grade'); resetSelects(sels.slice(2)); }
+            else if(lvl==='grade') { update(sels[2],'version','version'); resetSelects(sels.slice(3)); }
+            else if(lvl==='version') { update(sels[3],'semester','semester'); resetSelects(sels.slice(4)); }
+            else if(lvl==='semester') {
+                const label = i18n[currentLang]['unit'] || '選擇單元';
+                sels[4].innerHTML=`<option value="" disabled selected data-i18n="unit">${label}</option>`;
+                filtered.forEach(u=>sels[4].add(new Option(u.title,u.id)));
+                sels[4].disabled=false;
             }
         }
+        function populateSelect(id,items,i18nKey){
+            const s=document.getElementById(id);
+            const label = i18n[currentLang][i18nKey] || i18n['zh-TW'][i18nKey] || '請選擇';
+            s.innerHTML=`<option value="" disabled selected>${label}</option>`;
+            items.forEach(i=>s.add(new Option(i,i))); s.disabled=false;
+        }
+        function resetSelects(els){
+            els.forEach(e=>{
+                const key = e.id.replace('sel-','');
+                const label = i18n[currentLang][key] || i18n['zh-TW'][key] || '...';
+                e.innerHTML=`<option value="" disabled selected>${label}</option>`; e.disabled=true;
+            });
+        }
+        function loadSelectedUnit(){ const u=processedUnits.find(i=>i.id==document.getElementById('sel-unit').value); if(u) renderArticle(u); }
 
-        async function startGeneration() {
-            document.getElementById("selection-panel").classList.add("hidden");
-            const loading = document.getElementById("loading-view");
-            loading.classList.remove("hidden");
-            loading.classList.add("flex");
+        // Render Article & Cards
+        async function renderArticle(unit) {
+            currentUnitTitleZh = unit.title; currentUnitTitleEn = "";
+            document.getElementById('article-title').innerHTML = `
+              <div id="title-zh">${escapeHtml(currentUnitTitleZh)}</div>
+              <div id="title-en" class="text-xl md:text-2xl font-bold text-green-400 mt-2">Translating...</div>
+            `;
+            document.getElementById('status-bar').innerText = unit.title;
+            document.getElementById('nav-title').innerText = unit.title;
+            activeVocabMap = parseVocabPairs(unit.vocab);
+            renderVocabSidebar();
+            
+            const contentDiv = document.getElementById('article-content');
+            contentDiv.innerHTML='';
+            document.getElementById('unit-list').innerHTML='';
 
-            try {
-                const res = await fetch(GAS_API_URL, { 
-                    method: "POST", 
-                    body: JSON.stringify({ action: "get_content_and_generate", filters: filters }) 
-                });
-                
-                const text = await res.text();
-                const json = cleanAndParseJSON(text); // 使用強化解析
+            let lines = (unit.content || "").split('\n').map(x=>x.trim()).filter(Boolean);
+            if(lines.length===0 && unit.ckip){
+                lines = unit.ckip.split('\n').map(x=>x.replace(/　/g,' ').replace(/\([^)]*\)/g,'').trim()).filter(Boolean);
+            }
 
-                if(json && (json.status === "success" || json.data)) { 
-                    currentResultData = json.data || json; 
-                    renderResult(currentResultData); 
+            const unitCkipSet = unit.ckip ? getCkipTokenSet(unit.ckip) : null;
+            const unitCkipTokens = unit.ckip ? getCkipTokenArray(unit.ckip) : [];
+            const unitMergeSet = buildCkipMergeSet(unitCkipTokens, getMaxKeyLen(activeVocabMap));
+
+            // 生成摘要卡片
+            let cardIndex = 0;
+            for(let i=0; i<lines.length; i++) {
+                let line = lines[i].trim();
+                if(!line) continue;
+                if((line.length<40 && !/[。！？.!?]$/.test(line)) || line.includes("活動")) {
+                    // 標題
+                    const anchorId = `sec-${i}`;
+                    const navItem = document.createElement('div');
+                    navItem.className='nav-item'; navItem.innerText = line;
+                    navItem.onclick=()=>{ document.getElementById(anchorId).scrollIntoView({behavior:'smooth',block:'center'}); };
+                    document.getElementById('unit-list').appendChild(navItem);
+                    contentDiv.innerHTML += `
+                        <h2 id="${anchorId}" class="section-header">
+                            <div class="flex flex-col w-full">
+                                <span class="zh-text text-2xl md:text-3xl font-black cursor-pointer transition" onclick="speakText(this.innerText)">${escapeHtml(line)}</span>
+                                <span class="en-text hidden text-xl md:text-2xl mt-2 font-bold cursor-pointer transition" 
+                                      data-source="${encodeURIComponent(line)}"
+                                      onclick="speakText(this.innerText)"></span>
+                            </div>
+                        </h2>`;
                 } else {
-                    console.error("原始回應:", text);
-                    throw new Error("AI 資料格式錯誤 (Syntax Error)。");
+                    // 內容區塊 -> 轉為卡片
+                    let processed = processXRayWithCKIP(line, activeVocabMap, unitCkipSet, unitMergeSet, cardIndex);
+                    // 輪替顏色
+                    const myColor = colorPalette[cardIndex % colorPalette.length];
+                    
+                    contentDiv.innerHTML += `
+                        <div class="summary-card content-block" style="--card-color: ${myColor}">
+                            <p class="zh-text" onclick="speakText(this.innerText)">${processed}</p>
+                            <p class="en-text hidden mt-3"
+                               onclick="speakText(this.innerText)"
+                               data-source="${encodeURIComponent(line)}"></p>
+                        </div>`;
+                    cardIndex++;
                 }
-            } catch(e) { 
-                alert("生成失敗: " + e.message); 
-                document.getElementById("selection-panel").classList.remove("hidden");
-                loading.classList.add("hidden");
-                loading.classList.remove("flex");
             }
+            setMode('dual');
+            initGraph(lines); // 初始化圖表
         }
 
-        function renderResult(data) {
-            const raw = data.raw_content || {};
-            
-            document.getElementById('result-title').innerText = data.topic || raw.unitName || filters.unitName || "單元重點";
-            
-            // 摘要 (多重來源檢查)
-            const summaryBox = document.getElementById('summary-text');
-            let summaryContent = "";
-            if (data.summary) {
-                if (typeof data.summary === 'string') summaryContent = data.summary;
-                else if (data.summary.content) summaryContent = data.summary.content;
-                else if (data.summary.summary) summaryContent = data.summary.summary;
-            }
-            if (!summaryContent && raw.text_summary) summaryContent = raw.text_summary;
-            if (!summaryContent && raw.text) summaryContent = raw.text.substring(0, 300) + "..."; 
-            
-            summaryBox.innerHTML = summaryContent || '<p class="text-gray-500">暫無摘要</p>';
-
-            // 詞彙
-            const keywordList = document.getElementById('keywords-list');
-            keywordList.innerHTML = '';
-            let kList = data.keywords || [];
-            if (kList.length === 0 && raw.vocab_list) kList = raw.vocab_list;
-            
-            if (Array.isArray(kList) && kList.length > 0) {
-                kList.forEach(k => {
-                    const term = typeof k === 'object' ? (k.term || k.word) : k;
-                    const def = typeof k === 'object' ? (k.def || k.definition) : '';
-                    if (!term) return;
-                    const div = document.createElement('div');
-                    div.className = 'vocab-item';
-                    div.innerHTML = `<div class="font-bold text-amber-500 mb-1">${term}</div><div class="text-xs text-gray-400">${def}</div>`;
-                    keywordList.appendChild(div);
-                });
-            } else { keywordList.innerHTML = '<span class="text-gray-500 text-xs">無特定詞彙</span>'; }
-
-            // Mermaid (容錯渲染)
-            const chartDiv = document.getElementById('mermaid-chart');
-            let mapData = data.mindMap || (data.summary && data.summary.mindMap) || '';
-            if (mapData) mapData = mapData.replace(/```mermaid/gi, '').replace(/```/g, '').trim();
-
-            if (mapData && mapData.length > 10) {
-                chartDiv.innerHTML = `<div class="mermaid">${mapData}</div>`;
-                try {
-                    mermaid.init(undefined, document.querySelectorAll('.mermaid'));
-                } catch(e) {
-                    console.error("Mermaid 繪製失敗", e);
-                    chartDiv.innerHTML = '<span class="text-red-400 text-xs">圖表繪製錯誤</span>';
-                }
-            } else { 
-                chartDiv.innerHTML = '<span class="text-gray-400 text-xs">無架構圖數據</span>'; 
-            }
-
-            // 迷思
-            const mythListEl = document.getElementById('myth-list');
-            mythListEl.innerHTML = '';
-            let mList = data.myths || (data.summary && data.summary.myths) || [];
-            mythData = mList.slice(0, 10);
-            
-            if (mythData.length > 0) {
-                mythData.forEach((m, index) => {
-                    const q = m.question || m.myth || '迷思問題';
-                    const div = document.createElement('div');
-                    div.className = 'bg-[#252525] p-3 rounded-lg border border-[#333] mb-3';
-                    div.innerHTML = `
-                        <div class="text-sm font-bold text-gray-200 mb-2"><span class="text-rose-500 mr-2">Q${index+1}</span>${q}</div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button onclick="answerMyth(${index}, true)" class="py-1.5 bg-[#333] hover:bg-[#444] rounded text-xs text-gray-300 transition">正確</button>
-                            <button onclick="answerMyth(${index}, false)" class="py-1.5 bg-[#333] hover:bg-[#444] rounded text-xs text-gray-300 transition">錯誤</button>
-                        </div>
-                        <div id="myth-${index}-feedback" class="mt-2 hidden text-xs p-2 rounded bg-[#1a1a1a] text-gray-300 border border-[#333]"></div>
-                    `;
-                    mythListEl.appendChild(div);
-                });
-            } else { mythListEl.innerHTML = '<span class="text-gray-500 text-xs text-center">無迷思題目</span>'; }
-
-            // 測驗
-            const quizRaw = data.quiz || (data.summary && data.summary.quiz) || [];
-            initQuiz(quizRaw);
-
-            document.getElementById('loading-view').classList.add('hidden');
-            document.getElementById('loading-view').classList.remove('flex');
-            document.getElementById('content-view').classList.remove('hidden');
-            document.getElementById('floating-chat').classList.remove('hidden');
-            document.getElementById('btn-generate').disabled = false;
+        // 渲染右側詞彙
+        function renderVocabSidebar() {
+          const container = document.getElementById('vocab-container');
+          container.innerHTML = '';
+          const keys = Object.keys(activeVocabMap || {});
+          if(keys.length === 0) {
+            container.innerHTML = `<div class="text-center opacity-30 text-sm mt-10 text-white">${i18n[currentLang]['vocab_empty']}</div>`;
+            return;
+          }
+          keys.forEach(zh => {
+            const enVal = (activeVocabMap[zh] || "").toString().trim();
+            const showEn = enVal ? enVal : "Loading...";
+            const card = document.createElement('div');
+            card.className = "vocab-card-item"; // 改用卡片樣式
+            card.innerHTML = `
+              <div class="flex-1 pr-2">
+                <div class="text-lg font-bold text-yellow-400 cursor-pointer mb-1" onclick="speakText('${zh.replace(/'/g,"\\'")}')">${escapeHtml(zh)}</div>
+                <div class="text-sm en-term-label cursor-pointer text-slate-300" data-zh="${escapeHtml(zh)}" onclick="speakVocabEn('${zh.replace(/'/g,"\\'")}', this)">${escapeHtml(showEn)}</div>
+              </div>
+              <div class="flex items-center gap-1 mt-2">
+                <button onclick="event.stopPropagation(); speakText('${zh.replace(/'/g,"\\'")}')" class="px-2 py-1 rounded bg-white/10 hover:bg-white/20 text-xs text-white">中文發音</button>
+                <button onclick="event.stopPropagation(); speakVocabEn('${zh.replace(/'/g,"\\'")}', this)" class="px-2 py-1 rounded bg-green-500/20 text-green-400 hover:bg-green-500 hover:text-white text-xs">EN</button>
+              </div>`;
+            container.appendChild(card);
+            if(!enVal) translateVocabItem(zh, card.querySelector('.en-term-label'));
+          });
         }
 
-        // Quiz Logic
-        function initQuiz(quizRaw) {
-            const quizBody = document.getElementById("quiz-body");
-            const quizEmpty = document.getElementById("quiz-empty");
-            const sourceArray = Array.isArray(quizRaw) ? quizRaw.slice(0, 10) : [];
-            
-            if (sourceArray.length === 0) {
-                quizBody.classList.add("hidden");
-                quizEmpty.classList.remove("hidden");
-                return;
+        // CKIP Logic (with Color injection)
+        function processXRayWithCKIP(text, map, ckipTokenSet, ckipMergeSet, cardIdx) {
+          const src = (text || "").toString().replace(/　/g, "");
+          const keys = Object.keys(map || {}).filter(Boolean).sort((a, b) => b.length - a.length);
+          // 取得該卡片的顏色，讓重點詞彙也用這顏色高亮
+          const highlightColor = colorPalette[cardIdx % colorPalette.length];
+          
+          if (!keys.length) return escapeHtml(src);
+          const spans = [];
+          const overlaps = (s, e) => spans.some(sp => !(e <= sp.start || s >= sp.end));
+          for (const term of keys) {
+            let from = 0;
+            while (true) {
+              const idx = src.indexOf(term, from); if (idx === -1) break;
+              const start = idx, end = idx + term.length; from = idx + term.length;
+              if (overlaps(start, end)) continue;
+              if (!shouldMarkZhTerm(term, ckipTokenSet, ckipMergeSet)) continue;
+              spans.push({ start, end, term });
             }
-            
-            quizEmpty.classList.add("hidden");
-            quizBody.classList.remove("hidden");
+          }
+          if (!spans.length) return escapeHtml(src);
+          spans.sort((a, b) => a.start - b.start);
+          let html = "", last = 0;
+          for (const sp of spans) {
+            html += escapeHtml(src.slice(last, sp.start));
+            const zh = sp.term;
+            const js = ((map[zh] || zh) + "").toString().replace(/'/g, "\\'");
+            const title = escapeHtml(((map[zh] || "") + "").toString());
+            // 這裡將 highlightColor 注入 CSS 變數
+            html += `<span class="sci-term" style="--card-color:${highlightColor}" onclick="event.stopPropagation(); speakText('${js}')" title="${title}">${escapeHtml(zh)}</span>`;
+            last = sp.end;
+          }
+          html += escapeHtml(src.slice(last));
+          return html;
+        }
 
-            quizState.questions = sourceArray.map((q, idx) => {
-                let correctIndex = -1;
-                if (typeof q.correctIndex === "number") correctIndex = q.correctIndex;
-                else if (typeof q.ans === "number") correctIndex = q.ans;
-                else if (typeof q.answer === "string") {
-                    const map = { "A": 0, "B": 1, "C": 2, "D": 3 };
-                    correctIndex = map[q.answer.trim().toUpperCase()[0]] || 0;
+        function getCkipTokenSet(ckipLine){ const raw=(ckipLine||"").toString().trim(); if(!raw)return new Set(); return new Set(raw.replace(/　/g," ").split(/\s+/).filter(Boolean).map(tok=>tok.replace(/[\(（].*$/,"")).filter(Boolean)); }
+        function getCkipTokenArray(ckipText){ const raw=(ckipText||"").toString().replace(/　/g," ").trim(); if(!raw)return[]; return raw.split(/\s+/).filter(Boolean).map(tok=>tok.replace(/[\(（].*$/,"")).filter(Boolean)); }
+        function getMaxKeyLen(vocabMap){ const keys=Object.keys(vocabMap||{}); if(!keys.length)return 1; let m=1;for(const k of keys)m=Math.max(m,(k||"").length); return m; }
+        function buildCkipMergeSet(tokens,maxLen){ const set=new Set(); if(!tokens||!tokens.length)return set; const L=Math.max(2,maxLen||2); for(let i=0;i<tokens.length;i++){ let acc=""; for(let j=i;j<tokens.length;j++){ acc+=tokens[j]; if(acc.length>L)break; if(acc.length>=2)set.add(acc); } } return set; }
+        function shouldMarkZhTerm(term,ckipSet,mergeSet){ if(!term)return false; if(!ckipSet||ckipSet.size===0)return true; if(term.length===1)return ckipSet.has(term); if(ckipSet.has(term))return true; if(mergeSet&&mergeSet.has(term))return true; return false; }
+
+        // ====================== Knowledge Graph (Vis.js) ======================
+        function openGraph() {
+            document.getElementById('graph-modal').style.display = 'flex';
+            if(network) network.fit();
+        }
+        function closeGraph() { document.getElementById('graph-modal').style.display = 'none'; }
+
+        function initGraph(lines) {
+            const container = document.getElementById('graph-container');
+            const nodes = new vis.DataSet([]);
+            const edges = new vis.DataSet([]);
+            
+            // 簡單演算法：將段落中的關鍵字作為節點，段落標題作為中心
+            let parentId = 0;
+            nodes.add({ id: 0, label: currentUnitTitleZh, shape: 'hexagon', color: '#fff', font: {size: 40, color: '#000'} });
+
+            let cardIndex = 0;
+            lines.forEach((line, idx) => {
+                const isTitle = (line.length<40 && !/[。！？.!?]$/.test(line)) || line.includes("活動");
+                if(isTitle) {
+                    parentId = idx + 1;
+                    nodes.add({ 
+                        id: parentId, label: line, shape: 'box', 
+                        color: { background: '#334155', border: '#94a3b8' }, 
+                        font: {color: '#fff', size: 24} 
+                    });
+                    edges.add({ from: 0, to: parentId, color: {color: 'rgba(255,255,255,0.2)'} });
+                } else {
+                    // 分析該段落中的詞彙
+                    const keys = Object.keys(activeVocabMap).filter(k => line.includes(k));
+                    const myColor = colorPalette[cardIndex % colorPalette.length];
+                    
+                    if(keys.length > 0) {
+                        keys.forEach(k => {
+                            // 避免重複節點 ID (簡單 hash)
+                            const nodeId = k; 
+                            try {
+                                if(!nodes.get(nodeId)) {
+                                    nodes.add({ 
+                                        id: nodeId, label: k, shape: 'dot', size: 15,
+                                        color: { background: myColor, border: '#fff' },
+                                        font: {color: '#cbd5e1', size: 18}
+                                    });
+                                }
+                                edges.add({ from: parentId, to: nodeId, color: {color: 'rgba(255,255,255,0.1)'} });
+                            } catch(e){}
+                        });
+                    }
+                    cardIndex++;
                 }
-                return {
-                    stem: q.stem || q.question || `題目 ${idx+1}`,
-                    options: q.options || q.choices || ["A", "B", "C", "D"],
-                    correctIndex: correctIndex,
-                    explanation: q.explanation || "",
-                    concept: q.concept || `概念 ${idx+1}`
-                };
             });
 
-            quizState.currentIndex = 0;
-            quizState.hasAnswered = false;
-            quizState.answers = [];
-            renderQuizQuestion();
-        }
-
-        function renderQuizQuestion() {
-            if (quizState.questions.length === 0) return;
-            
-            const q = quizState.questions[quizState.currentIndex];
-            const total = quizState.questions.length;
-            document.getElementById("quiz-question").innerText = `${quizState.currentIndex + 1}. ${q.stem}`;
-            document.getElementById("quiz-progress").innerText = `${quizState.currentIndex + 1}/${total}`;
-            const optsContainer = document.getElementById("quiz-options");
-            optsContainer.innerHTML = "";
-            const letters = ["A", "B", "C", "D"];
-            
-            q.options.forEach((opt, idx) => {
-                const btn = document.createElement("button");
-                btn.className = "quiz-btn w-full text-left p-3 rounded-lg border border-[#333] bg-[#252525] hover:bg-[#333] transition text-gray-300 text-sm";
-                btn.innerHTML = `<span class="text-blue-500 font-bold mr-2">${letters[idx]}</span>${opt}`;
-                btn.onclick = () => handleQuizAnswer(idx, btn);
-                optsContainer.appendChild(btn);
-            });
-
-            document.getElementById("quiz-feedback").classList.add("hidden");
-            
-            // 更新按鈕文字 (多語系)
-            updateQuizButton();
-        }
-
-        function updateQuizButton() {
-            const btn = document.getElementById("quiz-main-btn");
-            const lang = document.getElementById("language-selector").value;
-            const t = i18n[lang] || i18n["en"];
-            const isLast = (quizState.currentIndex === quizState.questions.length - 1);
-            
-            btn.disabled = true;
-            btn.innerText = isLast ? t.btn_see_result : t.btn_next_q;
-        }
-
-        function handleQuizAnswer(idx, btnElement) {
-            if (quizState.hasAnswered) return;
-            const q = quizState.questions[quizState.currentIndex];
-            const isCorrect = (idx === q.correctIndex);
-            
-            const allBtns = document.querySelectorAll("#quiz-options button");
-            allBtns.forEach(b => b.disabled = true);
-
-            if(isCorrect) {
-                btnElement.classList.replace("bg-[#252525]", "bg-emerald-900/30");
-                btnElement.classList.replace("border-[#333]", "border-emerald-600");
-            } else {
-                btnElement.classList.replace("bg-[#252525]", "bg-red-900/30");
-                btnElement.classList.replace("border-[#333]", "border-red-600");
-                if(q.correctIndex >= 0 && allBtns[q.correctIndex]) {
-                    allBtns[q.correctIndex].classList.replace("bg-[#252525]", "bg-emerald-900/30");
-                    allBtns[q.correctIndex].classList.replace("border-[#333]", "border-emerald-600");
-                }
-            }
-
-            const fb = document.getElementById("quiz-feedback");
-            fb.innerHTML = isCorrect 
-                ? `<div class="text-emerald-500 font-bold mb-1"><i class="fa-solid fa-check"></i> 正確</div>${q.explanation}`
-                : `<div class="text-red-500 font-bold mb-1"><i class="fa-solid fa-xmark"></i> 錯誤</div>${q.explanation}`;
-            fb.classList.remove("hidden");
-            
-            quizState.answers[quizState.currentIndex] = { correct: isCorrect, concept: q.concept };
-            quizState.hasAnswered = true;
-            document.getElementById("quiz-main-btn").disabled = false;
-        }
-
-        function handleQuizMainButton() {
-            if (quizState.currentIndex < quizState.questions.length - 1) {
-                quizState.currentIndex++;
-                quizState.hasAnswered = false;
-                renderQuizQuestion();
-            } else {
-                renderQuizResult();
-            }
-        }
-
-        function renderQuizResult() {
-            document.getElementById("quiz-body").classList.add("hidden");
-            document.getElementById("quiz-result").classList.remove("hidden");
-            document.getElementById("quiz-progress").classList.add("hidden");
-
-            const total = quizState.questions.length;
-            const correct = quizState.answers.filter(a => a && a.correct).length;
-            const score = Math.round((correct / total) * 100);
-            document.getElementById("quiz-score-number").innerText = score;
-
-            const ctx = document.getElementById("quiz-radar");
-            const concepts = [...new Set(quizState.answers.map(a => a.concept))];
-            const dataScores = concepts.map(c => {
-                const related = quizState.answers.filter(a => a.concept === c);
-                const ok = related.filter(a => a.correct).length;
-                return (ok / related.length) * 100;
-            });
-
-            if(quizRadarChart) quizRadarChart.destroy();
-            quizRadarChart = new Chart(ctx, {
-                type: 'radar',
-                data: {
-                    labels: concepts,
-                    datasets: [{
-                        label: '掌握度',
-                        data: dataScores,
-                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                        borderColor: '#3B82F6',
-                        pointBackgroundColor: '#3B82F6'
-                    }]
+            const data = { nodes: nodes, edges: edges };
+            const options = {
+                nodes: { borderWidth: 2, shadow: true },
+                edges: { width: 2, smooth: { type: 'continuous' } },
+                physics: { 
+                    stabilization: false, 
+                    barnesHut: { gravitationalConstant: -3000, springLength: 200 } 
                 },
-                options: {
-                    scales: { r: { min: 0, max: 100, ticks: { display: false }, grid: { color: '#404040' } } },
-                    plugins: { legend: { display: false } }
+                layout: { randomSeed: 2 } // 固定佈局
+            };
+            network = new vis.Network(container, data, options);
+            
+            // 雙擊聚焦
+            network.on("doubleClick", function (params) {
+                if (params.nodes.length > 0) {
+                    network.focus(params.nodes[0], { scale: 1.5, animation: true });
                 }
             });
-            
-            document.getElementById("quiz-result-detail").innerText = `作答完成！共 ${total} 題，答對 ${correct} 題。`;
         }
 
-        function answerMyth(index, choice) {
-            const m = mythData[index];
-            const isTrue = (typeof m.isTrue === "boolean") ? m.isTrue : false;
-            const isCorrect = (choice === isTrue);
-            
-            const fb = document.getElementById(`myth-${index}-feedback`);
-            fb.classList.remove("hidden");
-            if(isCorrect) {
-                fb.innerHTML = `<span class="text-emerald-500 font-bold">正確！</span> ${m.correct || m.explanation}`;
-            } else {
-                fb.innerHTML = `<span class="text-amber-500 font-bold">可惜...</span> ${m.correct || m.explanation}`;
-            }
+        // ====================== TTS & Translation ======================
+        async function translateVocabItem(zh, el) {
+          try { const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURIComponent(zh)}`); const json=await res.json(); const en=(json&&json[0]&&json[0][0]&&json[0][0][0])?json[0][0][0]:""; if(el)el.innerText=en||"—"; activeVocabMap[zh]=en||""; rehighlightEnglishBlocks(); return en||""; } catch(e){ if(el)el.innerText="—"; activeVocabMap[zh]=""; rehighlightEnglishBlocks(); return ""; }
+        }
+        async function speakVocabEn(zh, btn){ const card=btn?.closest('.vocab-card-item'); const label=card?.querySelector('.en-term-label'); let en=(activeVocabMap[zh]||"").trim(); if(!en){ await translateVocabItem(zh, label); en=(activeVocabMap[zh]||"").trim(); } speakText(en||zh); }
+        async function translateToEn(text) {
+          const src=(text||"").trim(); if(!src)return""; const k="__title__"+src; if(translationCache[k])return translationCache[k];
+          try { const res=await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURIComponent(src)}`); const json=await res.json(); let out=""; (json[0]||[]).forEach(x=>out+=(x[0]||"")); translationCache[k]=out; return out; } catch(e){return src;}
+        }
+        function ensureTitleTranslated() { if(!currentUnitTitleZh)return; const el=document.getElementById('title-en'); if(el&&el.innerText&&el.innerText!=='Translating...')return; translateToEn(currentUnitTitleZh).then(e=>{currentUnitTitleEn=e||""; if(el)el.innerText=currentUnitTitleEn;}).catch(()=>{}); }
+        function rehighlightEnglishBlocks(){ const ens=document.querySelectorAll('.en-text'); ens.forEach(el=>{ const s=decodeURIComponent(el.getAttribute('data-source')||""); const c=translationCache[s]; if(c) el.innerHTML=makeClickable(highlightEnglishVocabInText(c)); }); }
+        async function translateVisibleBlocks() {
+            const ens=document.querySelectorAll('.en-text'), load=document.getElementById('trans-loading');
+            let need=false; ens.forEach(e=>{if(!e.innerText)need=true}); if(!need)return;
+            load.classList.remove('hidden');
+            for(let el of ens) {
+                if(el.innerText)continue; let src=decodeURIComponent(el.getAttribute('data-source')||"").replace(/　/g,'');
+                if(translationCache[src]){ el.innerHTML=makeClickable(highlightEnglishVocabInText(translationCache[src])); continue; }
+                try { const res=await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURIComponent(src)}`); const json=await res.json(); let txt=""; json[0].forEach(i=>txt+=i[0]); el.innerHTML=makeClickable(highlightEnglishVocabInText(txt)); translationCache[src]=txt; } catch(e){el.innerText="Error";}
+            } load.classList.add('hidden'); rehighlightEnglishBlocks();
+        }
+        function makeClickable(h){return `<span class="cursor-pointer hover:text-green-300 transition">${h}</span>`;}
+        function escapeHtml(s){return (s||"").toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
+        function highlightEnglishVocabInText(txt){
+          let s=escapeHtml(txt); const terms=Object.values(activeVocabMap||{}).map(v=>(v||"").trim()).filter(v=>v&&v!=="Loading..."&&/[a-zA-Z]/.test(v)); const uniq=[...new Set(terms)].sort((a,b)=>b.length-a.length);
+          if(!uniq.length)return s;
+          for(const t of uniq){ const esc=t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); const re=new RegExp(`\\b(${esc})\\b`,'gi'); s=s.replace(re,m=>`<span class="sci-term" onclick="event.stopPropagation(); speakText('${m.replace(/'/g,"\\'")}')" title="${m}">${m}</span>`); } return s;
         }
 
-        // Chat & Modal
-        function toggleChat() {
-            const w = document.getElementById("xiaoke-window");
-            w.classList.toggle("closed");
-            if(w.classList.contains("closed")) {
-                w.classList.remove("scale-100", "opacity-100");
-                w.classList.add("scale-0", "opacity-0");
-            } else {
-                w.classList.remove("scale-0", "opacity-0");
-                w.classList.add("scale-100", "opacity-100");
-            }
+        // TTS & Player
+        function isIOSDevice(){ return /iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1); }
+        function isMostlyEnglish(t){ const l=(t.match(/[A-Za-z]/g)||[]).length, c=(t.match(/[\u4E00-\u9FFF]/g)||[]).length; return c===0?l>0:l>c*2; }
+        function pickBestVoice(isEng, gender) {
+            if(!window.speechSynthesis)return null; const vs=window.speechSynthesis.getVoices(); if(!vs.length)return null;
+            const target = isEng ? ['en-us','en-gb','en'] : ['zh-tw','zh-hk','zh'];
+            const getScore = (v) => {
+                let s=0, n=v.name.toLowerCase(), u=(v.voiceURI||"").toLowerCase(), l=v.lang.toLowerCase();
+                if(target.some(t=>l.includes(t))) { s+=1000; if(!isEng&&l.includes('tw'))s+=500; if(isEng&&l.includes('us'))s+=200; } else return -1e5;
+                if(n.includes('enhanced')||u.includes('enhanced')||n.includes('premium')) s+=5000;
+                if(gender==='female') { if(isEng&&(n.includes('samantha')||n.includes('ava')))s+=2e4; else if(!isEng&&(n.includes('meijia')||n.includes('tingting')))s+=2e4; if(n.includes('female'))s+=1000; }
+                else { if(isEng&&(n.includes('daniel')||n.includes('alex')))s+=2e4; else if(!isEng&&n.includes('sinji'))s+=1e4; if(n.includes('male'))s+=1000; }
+                return s;
+            };
+            return vs.map(v=>({v,s:getScore(v)})).sort((a,b)=>b.s-a.s)[0]?.v || vs[0];
         }
-        async function sendChatMessage() {
-            const input = document.getElementById("chat-input");
-            const msg = input.value.trim();
-            if(!msg) return;
-            const body = document.getElementById("chat-messages");
-            body.innerHTML += `<div class="text-right mb-2"><span class="bg-blue-600 text-white py-1 px-3 rounded-lg inline-block text-xs">${msg}</span></div>`;
-            input.value = "";
-            body.scrollTop = body.scrollHeight;
-            setTimeout(() => {
-                body.innerHTML += `<div class="text-left mb-2"><span class="bg-[#262626] text-gray-300 py-1 px-3 rounded-lg inline-block border border-[#333] text-xs">小科正在思考...</span></div>`;
-                body.scrollTop = body.scrollHeight;
-            }, 800);
+        function speakText(txt, cb) {
+            if(!synth)return; isSpeaking=true; if(synth.paused)synth.resume();
+            document.getElementById('btn-play').innerHTML='<i class="fa-solid fa-pause"></i>'; synth.cancel();
+            const clean=(txt||"").replace(/<[^>]*>/g,"").trim();
+            if(!clean){ if(cb)setTimeout(cb,10); else { isSpeaking=false; document.getElementById('btn-play').innerHTML='<i class="fa-solid fa-play ml-1"></i>'; } return; }
+            const isEng=isMostlyEnglish(clean), u=new SpeechSynthesisUtterance(clean);
+            u.voice=pickBestVoice(isEng, currentVoice); u.lang=isEng?'en-US':'zh-TW';
+            if(isIOSDevice()){ u.pitch=1; u.rate=parseFloat(document.getElementById('play-rate').value)*(isEng?1:0.95); }
+            else { u.rate=parseFloat(document.getElementById('play-rate').value); u.pitch=currentVoice==='male'?0.9:1.1; }
+            u.onend=()=>{ if(cb)cb(); else { isSpeaking=false; document.getElementById('btn-play').innerHTML='<i class="fa-solid fa-play ml-1"></i>'; } };
+            u.onerror=()=>{ if(isSpeaking && cb) cb(); };
+            synth.speak(u);
         }
-        function openModal() {
-            const chart = document.getElementById("mermaid-chart").innerHTML;
-            if(!chart || chart.includes("無法")) return;
-            document.getElementById("modal-content").innerHTML = chart;
-            const svg = document.querySelector("#modal-content svg");
-            if(svg) { svg.style.width="100%"; svg.style.height="auto"; }
-            document.getElementById("image-modal").classList.remove("hidden");
-            document.getElementById("image-modal").classList.add("flex");
+        function playSequence() {
+            if(!isSpeaking)return; const cards=document.querySelectorAll('.summary-card');
+            if(currentBlockIndex>=cards.length){ stopSpeech(); return; }
+            clearHighlights(); const card=cards[currentBlockIndex];
+            if(card){ card.classList.add('reading-active'); card.scrollIntoView({behavior:'smooth',block:'center'}); }
+            const en=card.querySelector('.en-text'), zh=card.querySelector('.zh-text');
+            const texts=[]; if(en&&!en.classList.contains('hidden')&&en.innerText)texts.push(en.innerText); if(zh&&!zh.classList.contains('hidden')&&zh.innerText)texts.push(zh.innerText);
+            if(texts.length){
+                let i=0; const next=()=>{ if(!isSpeaking)return; if(i>=texts.length){ currentBlockIndex++; playSequence(); return; } speakText(texts[i], ()=>{ i++; setTimeout(next,300); }); }; next();
+            } else { currentBlockIndex++; playSequence(); }
         }
-        function closeModal() {
-            document.getElementById("image-modal").classList.add("hidden");
-            document.getElementById("image-modal").classList.remove("flex");
+        function toggleSpeech(){ 
+            if(isSpeaking){ isSpeaking=false; synth.cancel(); document.getElementById('btn-play').innerHTML='<i class="fa-solid fa-play ml-1"></i>'; }
+            else { isSpeaking=true; document.getElementById('btn-play').innerHTML='<i class="fa-solid fa-pause"></i>'; if(synth.paused)synth.resume(); setTimeout(playSequence,10); }
         }
-        function downloadTXT() { alert("TXT 下載功能 (待實作)"); }
-        function downloadPDF() { alert("PDF 下載功能 (待實作)"); }
-
+        function stopSpeech(){ isSpeaking=false; synth.cancel(); currentBlockIndex=0; clearHighlights(); document.getElementById('btn-play').innerHTML='<i class="fa-solid fa-play ml-1"></i>'; }
+        function clearHighlights(){ document.querySelectorAll('.reading-active').forEach(e=>e.classList.remove('reading-active')); }
+        function setVoice(g){ currentVoice=g; document.getElementById('btn-male').className=g==='male'?'w-9 h-9 rounded-full flex items-center justify-center transition bg-green-500 text-white shadow-lg':'w-9 h-9 rounded-full flex items-center justify-center transition text-slate-400 hover:text-white'; document.getElementById('btn-female').className=g==='female'?'w-9 h-9 rounded-full flex items-center justify-center transition bg-green-500 text-white shadow-lg':'w-9 h-9 rounded-full flex items-center justify-center transition text-slate-400 hover:text-white'; stopSpeech(); }
+        function setMode(m){ 
+            ['en','dual','zh'].forEach(x=>document.getElementById(`btn-${x}`).className=x===m?"px-3 py-1 text-xs font-bold rounded-full bg-green-500 text-white shadow-lg":"px-3 py-1 text-xs font-bold rounded-full text-slate-400 hover:text-white transition");
+            if(m!=='zh') translateVisibleBlocks();
+            const ens=document.querySelectorAll('.en-text'), zhs=document.querySelectorAll('.zh-text');
+            if(m==='en'){ens.forEach(e=>e.classList.remove('hidden'));zhs.forEach(z=>z.classList.add('hidden'));}
+            else if(m==='zh'){ens.forEach(e=>e.classList.add('hidden'));zhs.forEach(z=>z.classList.remove('hidden'));}
+            else{ens.forEach(e=>e.classList.remove('hidden'));zhs.forEach(z=>z.classList.remove('hidden'));}
+            const tZh=document.getElementById('title-zh'), tEn=document.getElementById('title-en');
+            if(tZh&&tEn){ if(m==='en'){tZh.classList.add('hidden');tEn.classList.remove('hidden');} else if(m==='zh'){tZh.classList.remove('hidden');tEn.classList.add('hidden');} else{tZh.classList.remove('hidden');tEn.classList.remove('hidden');} }
+            if(m!=='zh') ensureTitleTranslated();
+        }
+        function showToast(m) { const T=document.getElementById('toast'); document.getElementById('toast-msg').innerText=m; T.classList.remove('opacity-0','-translate-y-10'); setTimeout(()=>T.classList.add('opacity-0','-translate-y-10'),2500); }
     </script>
 </body>
 </html>
