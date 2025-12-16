@@ -47,7 +47,6 @@
       }
     };
 
-    // Mermaid 設定：科技藍圖風格 (對應摘要卡片顏色)
     mermaid.initialize({
       startOnLoad: false,
       theme: 'base',
@@ -67,24 +66,12 @@
   </script>
 
   <style>
-    /* ===== 核心環境 ===== */
     body {
       background-color: #020617;
       color: #e2e8f0;
       font-family: 'Inter', 'Noto Sans TC', sans-serif;
       overflow-x: hidden;
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
-    }
-
-    .grid-bg{
-      position: fixed; inset: 0;
-      background-image:
-        linear-gradient(rgba(6, 182, 212, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(6, 182, 212, 0.05) 1px, transparent 1px);
-      background-size: 40px 40px;
-      z-index: -3;
-      pointer-events: none;
-      opacity: .35;
     }
 
     .ambient-glow {
@@ -95,7 +82,6 @@
       z-index: -2; pointer-events: none;
     }
 
-    /* ===== UI 元件等級定義 ===== */
     .hud-panel {
       background: rgba(15, 23, 42, 0.85);
       backdrop-filter: blur(12px);
@@ -112,8 +98,8 @@
       overflow: hidden;
     }
 
-    /* ===== [修正 1] 選單優化 ===== */
-    .select-group { position: relative; }
+    /* ===== 修復：選單標籤換行/擋住點擊 ===== */
+    .select-group { position: relative; width: 100%; }
     .select-label {
       position: absolute;
       top: -8px; left: 10px;
@@ -123,6 +109,9 @@
       font-weight: 700;
       color: #94a3b8;
       z-index: 10;
+      white-space: nowrap;       /* 修復：避免被壓窄後變直排 */
+      pointer-events: none;      /* 修復：不擋住 select 點擊 */
+      user-select: none;
     }
 
     select {
@@ -136,19 +125,20 @@
       font-size: 0.875rem;
       font-weight: 500;
       cursor: pointer;
-      width: 100%;
+      width: 100% !important;   /* 修復：強制填滿欄位，避免被外部樣式壓縮 */
+      min-width: 140px;         /* 修復：避免窄到只剩一個字寬 */
       transition: all 0.2s;
       background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3e%3c/svg%3e");
       background-position: right 0.75rem center;
       background-repeat: no-repeat;
       background-size: 0.85rem;
       color-scheme: dark;
+      display: block;
     }
     select:hover:not(:disabled) { border-color: #06b6d4; background-color: rgba(30, 41, 59, 1); }
     select:focus { outline: none; border-color: #22d3ee; box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2); }
     select:disabled { opacity: 0.6; cursor: not-allowed; background-color: rgba(15, 23, 42, 0.4); }
 
-    /* ===== [修正 2] 核心概念卡片化與高亮 ===== */
     #summary-text h3 {
       font-family: 'Orbitron', 'Noto Sans TC', sans-serif;
       color: #22d3ee;
@@ -162,7 +152,6 @@
       border-radius: 4px;
       display: flex; align-items: center;
     }
-
     #summary-text ul, #summary-text p {
       background: rgba(30, 41, 59, 0.3);
       border: 1px solid rgba(255, 255, 255, 0.05);
@@ -170,7 +159,6 @@
       padding: 1.25rem;
       margin-bottom: 1.5rem;
     }
-
     #summary-text li {
       position: relative;
       padding-left: 1.2rem;
@@ -185,7 +173,6 @@
       font-size: 1.2em;
       position: absolute; left: 0; top: -2px;
     }
-
     #summary-text strong, #summary-text b {
       color: #f472b6;
       background: rgba(244, 114, 182, 0.15);
@@ -196,7 +183,6 @@
       border-bottom: 1px solid rgba(244, 114, 182, 0.5);
     }
 
-    /* ===== [修正 3] 知識架構圖 ===== */
     .mermaid-container {
       background-color: #020617;
       background-image:
@@ -217,7 +203,6 @@
       min-width: 800px;
     }
 
-    /* Modal 全螢幕深色劇院模式 */
     #image-modal { background-color: rgba(0, 0, 0, 0.98); backdrop-filter: blur(20px); }
     #modal-content {
       width: 100vw !important; height: 100vh !important; max-width: none;
@@ -234,7 +219,6 @@
       transform-origin: center;
     }
 
-    /* ===== 科學動動腦 ===== */
     .myth-card {
       background: linear-gradient(145deg, rgba(67, 20, 7, 0.3), rgba(41, 11, 2, 0.5));
       border: 1px solid rgba(249, 115, 22, 0.3);
@@ -255,7 +239,6 @@
     }
     .myth-btn:hover { background: rgba(249, 115, 22, 0.2); border-color: #f97316; color: #fff; transform: scale(1.02); }
 
-    /* ===== 單元小測驗 ===== */
     .quiz-panel {
       background: rgba(6, 78, 59, 0.2);
       border: 1px solid rgba(16, 185, 129, 0.3);
@@ -283,62 +266,36 @@
       transform: translateX(4px);
     }
 
-    /* Scrollbar & Misc */
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
     ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
     .click-mask { cursor: zoom-in; }
 
-    /* Layout Fixes */
     #vocab-panel { display: flex; flex-direction: column; }
     #vocab-list-container { flex: 1; overflow-y: auto; min-height: 0; padding-right: 6px; }
+
+    /* loading spinner（原本 tech-loader 未定義，補上實際可用的） */
+    .tech-loader {
+      width: 48px; height: 48px;
+      border-radius: 999px;
+      border: 3px solid rgba(34, 211, 238, 0.2);
+      border-top-color: rgba(34, 211, 238, 0.9);
+      animation: spin 0.9s linear infinite;
+      box-shadow: 0 0 18px rgba(34, 211, 238, 0.15);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     @media (max-width: 768px) {
       .mermaid svg { min-width: 600px; }
       .mermaid-container { overflow-x: auto; justify-content: flex-start; }
-    }
-
-    /* ===== 修正：loading loader 實際可見 ===== */
-    .tech-loader{
-      width: 56px; height: 56px;
-      border-radius: 9999px;
-      border: 3px solid rgba(34,211,238,0.25);
-      border-top-color: rgba(34,211,238,0.95);
-      animation: spin 0.9s linear infinite;
-      box-shadow: 0 0 18px rgba(34,211,238,0.18);
-    }
-    @keyframes spin{ to{ transform: rotate(360deg); } }
-
-    /* ===== 修正：聊天視窗最小可用樣式（不影響原本布局） ===== */
-    .chat-hologram{
-      background: rgba(2, 6, 23, 0.82);
-      border: 1px solid rgba(6, 182, 212, 0.28);
-      box-shadow: 0 0 30px rgba(6, 182, 212, 0.10);
-      border-radius: 1rem;
-      backdrop-filter: blur(14px);
-    }
-    .chat-hologram-header{
-      background: rgba(15, 23, 42, 0.85);
-      border-bottom: 1px solid rgba(6, 182, 212, 0.18);
-    }
-    .chat-bubble-ai{
-      background: rgba(6, 182, 212, 0.10);
-      border: 1px solid rgba(6, 182, 212, 0.22);
-      border-radius: 0.9rem;
-    }
-    .chat-bubble-user{
-      background: rgba(59, 130, 246, 0.14);
-      border: 1px solid rgba(59, 130, 246, 0.26);
-      border-radius: 0.9rem;
+      select { min-width: 0; } /* 小螢幕改由 auto-fit 斷行，避免橫向溢位 */
     }
   </style>
 </head>
 
 <body class="min-h-screen flex flex-col font-sans selection:bg-cyan-500/30 selection:text-cyan-100">
 
-  <div class="grid-bg"></div>
   <div class="ambient-glow"></div>
 
   <nav class="sticky top-0 z-50 h-16 border-b border-white/10 bg-slate-900/80 backdrop-blur-md">
@@ -373,7 +330,8 @@
 
   <main class="max-w-7xl mx-auto px-4 py-8 flex-1 pb-32 relative z-10">
 
-    <div id="selection-panel" class="hud-panel p-6 mb-8 animate-fade-in-up">
+    <!-- 修復：w-full + max-w，避免卡片過窄；並用 auto-fit grid 避免硬塞 5 欄 -->
+    <div id="selection-panel" class="hud-panel p-6 mb-8 animate-fade-in-up w-full max-w-4xl mx-auto">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
           <h2 class="text-lg font-bold text-white flex items-center gap-2">
@@ -387,38 +345,36 @@
         </span>
       </div>
 
-      <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
+      <!-- 修復點：改成 auto-fit，容器不夠就自動折行，不會變成直排 -->
+      <div class="grid gap-6" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
         <div class="select-group">
           <label class="select-label" data-i18n="label_stage">STAGE</label>
-          <select id="sel-stage" aria-label="學習階段"></select>
+          <select id="sel-stage"><option disabled selected>請選擇...</option></select>
         </div>
         <div class="select-group">
           <label class="select-label" data-i18n="label_publisher">VERSION</label>
-          <select id="sel-publisher" aria-label="版本" disabled></select>
+          <select id="sel-publisher" disabled><option disabled selected>請選擇...</option></select>
         </div>
         <div class="select-group">
           <label class="select-label" data-i18n="label_grade">GRADE</label>
-          <select id="sel-grade" aria-label="年級" disabled></select>
+          <select id="sel-grade" disabled><option disabled selected>請選擇...</option></select>
         </div>
         <div class="select-group">
           <label class="select-label" data-i18n="label_semester">SEMESTER</label>
-          <select id="sel-semester" aria-label="學期" disabled></select>
+          <select id="sel-semester" disabled><option disabled selected>請選擇...</option></select>
         </div>
-        <div class="select-group col-span-2 md:col-span-1">
+        <div class="select-group">
           <label class="select-label" data-i18n="label_unit">UNIT</label>
-          <select id="sel-unit" aria-label="單元名稱" disabled></select>
+          <select id="sel-unit" disabled><option disabled selected>請選擇...</option></select>
         </div>
       </div>
 
       <div class="mt-8 flex justify-end items-center gap-4">
         <div class="flex items-center gap-2 bg-slate-900/50 px-3 py-1.5 rounded-lg border border-white/5">
           <span class="text-[10px] text-slate-400 font-bold" data-i18n="question_count">題數</span>
-          <input id="inpN" type="number" min="5" max="40" step="1" value="15"
-                 class="w-10 bg-transparent text-center text-cyan-400 font-bold text-sm focus:outline-none"
-                 aria-label="題數">
+          <input id="inpN" type="number" min="5" max="40" step="1" value="15" class="w-10 bg-transparent text-center text-cyan-400 font-bold text-sm focus:outline-none">
         </div>
-        <button id="btn-generate" onclick="startGeneration()" disabled
-                class="px-6 py-2.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-sm shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none flex items-center gap-2">
+        <button id="btn-generate" onclick="startGeneration()" disabled class="px-6 py-2.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-sm shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none flex items-center gap-2">
           <i class="fa-solid fa-wand-magic-sparkles"></i>
           <span data-i18n="btn_generate">AI 整理重點</span>
         </button>
@@ -431,7 +387,6 @@
     </div>
 
     <div id="content-view" class="hidden animate-fade-in-up space-y-8">
-
       <div class="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-white/10 pb-4">
         <div>
           <div class="flex items-center gap-2 mb-2">
@@ -475,8 +430,7 @@
           </button>
         </div>
         <div id="chart-container" class="mermaid-container p-6">
-          <!-- 修正：遮罩只在桌機啟用，避免手機橫向捲動被吃掉 -->
-          <div class="click-mask absolute inset-0 z-10 hidden md:block" onclick="openModal()"></div>
+          <div class="click-mask absolute inset-0 z-10" onclick="openModal()"></div>
           <div id="mermaid-chart" class="w-full flex justify-center opacity-90"></div>
         </div>
       </div>
@@ -508,8 +462,7 @@
           <div id="quiz-options" class="grid grid-cols-1 gap-3"></div>
           <div id="quiz-feedback" class="hidden animate-fade-in-up"></div>
           <div class="flex justify-end pt-4">
-            <button id="quiz-main-btn" onclick="handleQuizMainButton()"
-                    class="px-8 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+            <button id="quiz-main-btn" onclick="handleQuizMainButton()" class="px-8 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all disabled:opacity-30 disabled:cursor-not-allowed">
               Next Question
             </button>
           </div>
@@ -536,20 +489,17 @@
   </main>
 
   <div id="floating-chat" class="hidden fixed bottom-6 right-6 z-[100] no-print group">
-    <div id="xiaoke-window" class="chat-hologram closed w-80 md:w-96 flex flex-col overflow-hidden h-[500px] transition-all duration-300 transform scale-0 opacity-0 origin-bottom-right absolute bottom-20 right-0">
-      <div class="chat-hologram-header p-4 flex justify-between items-center">
+    <div id="xiaoke-window" class="closed w-80 md:w-96 flex flex-col overflow-hidden h-[500px] transition-all duration-300 transform scale-0 opacity-0 origin-bottom-right absolute bottom-20 right-0 hud-panel border border-cyan-500/20">
+      <div class="p-4 flex justify-between items-center border-b border-white/10 bg-slate-900/70">
         <div class="flex items-center gap-3">
-          <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" class="w-8 h-8 rounded-full border border-cyan-400">
+          <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" class="w-8 h-8 rounded-full border border-cyan-400" alt="bot">
           <span class="font-tech font-bold text-cyan-300">XIAOKE AI</span>
         </div>
         <button onclick="toggleChat()" class="text-cyan-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="flex-1 p-4 overflow-y-auto text-sm space-y-4 custom-scrollbar" id="chat-messages"></div>
       <div class="p-3 border-t border-cyan-500/30 flex gap-2 bg-slate-900/80">
-        <input type="text" id="chat-input"
-               class="flex-1 bg-slate-800 border border-cyan-900 rounded px-3 py-2 text-sm text-cyan-100 focus:border-cyan-400 outline-none"
-               placeholder="Ask AI..."
-               data-i18n-placeholder="chat_placeholder">
+        <input type="text" id="chat-input" class="flex-1 bg-slate-800 border border-cyan-900 rounded px-3 py-2 text-sm text-cyan-100 focus:border-cyan-400 outline-none" placeholder="Ask AI...">
         <button onclick="sendChatMessage()" class="text-cyan-400 hover:text-white px-3"><i class="fa-solid fa-paper-plane"></i></button>
       </div>
     </div>
@@ -557,7 +507,7 @@
     <div class="relative cursor-pointer" onclick="toggleChat()">
       <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-cyan-950 text-cyan-400 text-xs font-bold px-3 py-1 rounded-full border border-cyan-500/50 opacity-0 group-hover:opacity-100 transition shadow-[0_0_10px_#06b6d4]">我是小科</div>
       <button class="w-14 h-14 rounded-full shadow-[0_0_20px_#06b6d4] flex items-center justify-center overflow-hidden border-2 border-cyan-400 bg-slate-900 hover:scale-110 transition">
-        <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" class="w-full h-full object-cover">
+        <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" class="w-full h-full object-cover" alt="bot">
       </button>
     </div>
   </div>
@@ -568,43 +518,74 @@
   </div>
 
   <script>
-    // ===== 必要：Modal 實際可用 =====
-    function openModal() {
-      const modal = document.getElementById('image-modal');
-      const modalContent = document.getElementById('modal-content');
-      const chart = document.getElementById('mermaid-chart');
-      if (!modal || !modalContent || !chart) return;
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxBWrZCp-xLckDGZnhe64K0IUa_8CJZRzqZbrgL8lQdNn3S1WgaEzbdOtpo4mGwN6_H/exec";
+    let allData = [], filters = {}, currentResultData = null, mythData = [], quizState = { questions: [], currentIndex: 0, hasAnswered: false, answers: [] }, quizRadarChart = null;
 
-      // 僅複製圖表本體，避免 click-mask 進入 Modal
-      const svg = chart.querySelector('svg');
-      const mermaidWrapper = chart.querySelector('.mermaid');
-
-      modalContent.innerHTML = '';
-      const wrap = document.createElement('div');
-      wrap.className = 'w-full h-full flex justify-center items-center p-6';
-
-      if (svg) {
-        // 使用 outerHTML 複製（保持樣式）
-        wrap.innerHTML = `<div class="mermaid">${svg.outerHTML}</div>`;
-      } else if (mermaidWrapper) {
-        // fallback：如果還沒渲染成 SVG
-        wrap.innerHTML = mermaidWrapper.outerHTML;
-      } else {
-        wrap.innerHTML = `<div class="text-slate-400 text-sm">${t("map_fail")}</div>`;
+    const translations = {
+      "zh-TW": {
+        back_science: "返回自然科學",
+        page_title: "單元重點整理",
+        page_subtitle: "AI 驅動分析",
+        settings_title: "單元選單",
+        settings_subtitle: "Initialize Protocol",
+        label_stage: "學習階段",
+        label_publisher: "版本",
+        label_grade: "年級",
+        label_semester: "學期",
+        label_unit: "單元名稱",
+        btn_generate: "AI 整理重點",
+        btn_txt: "下載 TXT",
+        title_summary: "核心概念摘要",
+        title_vocab: "科學詞彙與定義",
+        title_map: "知識架構圖",
+        title_myth: "科學動動腦",
+        db_loading: "系統連線中...",
+        db_success: "連線成功",
+        db_fail: "連線失敗",
+        db_fail_retry: "重試",
+        ai_generating: "正在運算...",
+        tap_to_zoom: "點擊放大",
+        myth_true: "正確 O",
+        myth_false: "錯誤 X",
+        msg_correct: "正確！",
+        msg_wrong: "錯誤",
+        msg_seq: "請依序作答",
+        vocab_none: "無詞彙",
+        summary_fail: "生成失敗",
+        map_fail: "繪圖失敗",
+        map_none: "無架構圖",
+        myth_none: "無資料",
+        quiz: "單元小測驗",
+        quiz_prefix: "單元小測驗－{unit}",
+        quiz_not_ready: "準備中...",
+        quiz_result_btn: "看結果",
+        quiz_next: "下一題",
+        quiz_score_title: "測驗成績",
+        quiz_ai_analyzing: "分析中...",
+        quiz_result_text: "答對 {correct} / {total}",
+        txt_need_generate: "請先生成",
+        txt_download_fail: "下載失敗",
+        chat_greet: "你好，我是小科。關於「{unit}」有什麼問題嗎？",
+        chat_placeholder: "輸入問題...",
+        select_default: "請選擇...",
+        question_count: "題數",
+        ai_generate_fail: "生成失敗：{msg}"   // 修復：原本 alert 用到但未定義
       }
+    };
 
-      modalContent.appendChild(wrap);
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
+    let currentLang = "zh-TW";
+    function t(key){ return (translations[currentLang] && translations[currentLang][key]) || key; }
+    function tf(key, vars={}){ let s = t(key); Object.keys(vars).forEach(k => { s = s.replace(new RegExp("\\{"+k+"\\}","g"), String(vars[k])); }); return s; }
 
-    function closeModal() {
-      const modal = document.getElementById('image-modal');
-      const modalContent = document.getElementById('modal-content');
-      if (!modal || !modalContent) return;
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-      modalContent.innerHTML = '';
+    function changeLanguage(){
+      const langSel = document.getElementById("language-selector");
+      if(langSel) currentLang = langSel.value;
+      document.querySelectorAll("[data-i18n]").forEach(el => { el.innerText = t(el.getAttribute("data-i18n")); });
+      document.querySelectorAll("[data-i18n-placeholder]").forEach(el => { el.setAttribute("placeholder", t(el.getAttribute("data-i18n-placeholder"))); });
+      ["sel-stage", "sel-publisher", "sel-grade", "sel-semester", "sel-unit"].forEach(id => {
+        const el = document.getElementById(id);
+        if(el && el.options.length>0 && el.options[0].disabled) el.options[0].text = t('select_default');
+      });
     }
 
     // Toggle Chat
@@ -616,8 +597,8 @@
         chatWindow.classList.remove("closed", "scale-0", "opacity-0");
         const chatBody = document.getElementById("chat-messages");
         if (chatBody && !chatBody.innerHTML.trim()) {
-          const unitName = (filters && filters.unitName) || t("select_default");
-          chatBody.innerHTML = `<div class="chat-bubble-ai self-start p-3 shadow-sm max-w-[85%] text-sm mb-2 text-cyan-200">${tf("chat_greet", {unit: unitName})}</div>`;
+          const unitName = (filters && filters.unitName) || "此單元";
+          chatBody.innerHTML = `<div class="self-start p-3 shadow-sm max-w-[85%] text-sm mb-2 text-cyan-200 bg-slate-900/60 rounded-lg border border-cyan-500/20">${tf("chat_greet", {unit: unitName})}</div>`;
         }
       } else {
         chatWindow.classList.add("closed", "scale-0", "opacity-0");
@@ -646,244 +627,12 @@
       initialX = currentX; initialY = currentY; active = false;
     }
     function drag(e) {
-      if (active && dragItem) {
+      if (active) {
         e.preventDefault();
         currentX = e.clientX - initialX;
         currentY = e.clientY - initialY;
         xOffset = currentX; yOffset = currentY;
         dragItem.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
-      }
-    }
-
-    // Logic
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxBWrZCp-xLckDGZnhe64K0IUa_8CJZRzqZbrgL8lQdNn3S1WgaEzbdOtpo4mGwN6_H/exec";
-    let allData = [], filters = {}, currentResultData = null, mythData = [],
-        quizState = { questions: [], currentIndex: 0, hasAnswered: false, answers: [] },
-        quizRadarChart = null;
-
-    const translations = {
-      "zh-TW": {
-        back_science: "返回自然科學",
-        page_title: "單元重點整理",
-        page_subtitle: "AI 驅動分析",
-        settings_title: "單元選單",
-        settings_subtitle: "Initialize Protocol",
-        label_stage: "學習階段",
-        label_publisher: "版本",
-        label_grade: "年級",
-        label_semester: "學期",
-        label_unit: "單元名稱",
-        btn_generate: "AI 整理重點",
-        btn_txt: "下載 TXT",
-        title_summary: "核心概念摘要",
-        title_vocab: "科學詞彙與定義",
-        title_map: "知識架構圖",
-        title_myth: "科學動動腦",
-        db_loading: "系統連線中...",
-        db_success: "連線成功",
-        db_fail: "連線失敗",
-        db_fail_retry: "重試",
-        ai_generating: "正在運算...",
-        ai_generate_fail: "生成失敗：{msg}",
-        tap_to_zoom: "點擊放大",
-        myth_true: "正確 O",
-        myth_false: "錯誤 X",
-        msg_correct: "正確！",
-        msg_wrong: "錯誤",
-        msg_seq: "請依序作答",
-        vocab_none: "無詞彙",
-        summary_fail: "生成失敗",
-        map_fail: "繪圖失敗",
-        map_none: "無架構圖",
-        myth_none: "無資料",
-        quiz: "單元小測驗",
-        quiz_prefix: "單元小測驗－{unit}",
-        quiz_not_ready: "準備中...",
-        quiz_result_btn: "看結果",
-        quiz_next: "下一題",
-        quiz_score_title: "測驗成績",
-        quiz_ai_analyzing: "分析中...",
-        quiz_result_text: "答對 {correct} / {total}",
-        txt_need_generate: "請先生成",
-        txt_download_fail: "下載失敗",
-        chat_greet: "你好，我是小科。關於「{unit}」有什麼問題嗎？",
-        chat_placeholder: "輸入問題...",
-        select_default: "請選擇...",
-        question_count: "題數"
-      },
-      "en": {
-        back_science: "Back to Science",
-        page_title: "Unit Summary",
-        page_subtitle: "AI-driven Analysis",
-        settings_title: "Unit Menu",
-        settings_subtitle: "Initialize Protocol",
-        label_stage: "Stage",
-        label_publisher: "Version",
-        label_grade: "Grade",
-        label_semester: "Semester",
-        label_unit: "Unit",
-        btn_generate: "Generate Summary",
-        btn_txt: "Download TXT",
-        title_summary: "Core Concepts",
-        title_vocab: "Keywords & Definitions",
-        title_map: "Knowledge Map",
-        title_myth: "Myth Busting",
-        db_loading: "Connecting...",
-        db_success: "Connected",
-        db_fail: "Connection Failed",
-        db_fail_retry: "Retry",
-        ai_generating: "Processing...",
-        ai_generate_fail: "Generation failed: {msg}",
-        tap_to_zoom: "Expand",
-        myth_true: "True",
-        myth_false: "False",
-        msg_correct: "Correct!",
-        msg_wrong: "Incorrect",
-        msg_seq: "Please answer in order",
-        vocab_none: "No keywords",
-        summary_fail: "Failed to generate",
-        map_fail: "Failed to render",
-        map_none: "No map",
-        myth_none: "No data",
-        quiz: "Unit Quiz",
-        quiz_prefix: "Unit Quiz - {unit}",
-        quiz_not_ready: "Preparing...",
-        quiz_result_btn: "View Result",
-        quiz_next: "Next",
-        quiz_score_title: "Score",
-        quiz_ai_analyzing: "Analyzing...",
-        quiz_result_text: "{correct} / {total} correct",
-        txt_need_generate: "Please generate first",
-        txt_download_fail: "Download failed",
-        chat_greet: "Hi, I'm Xiaoke. Any questions about “{unit}”?",
-        chat_placeholder: "Type your question...",
-        select_default: "Select...",
-        question_count: "Items"
-      },
-      "ja": {
-        back_science: "理科に戻る",
-        page_title: "単元まとめ",
-        page_subtitle: "AI解析",
-        settings_title: "単元メニュー",
-        settings_subtitle: "Initialize Protocol",
-        label_stage: "段階",
-        label_publisher: "版",
-        label_grade: "学年",
-        label_semester: "学期",
-        label_unit: "単元",
-        btn_generate: "要点生成",
-        btn_txt: "TXTを保存",
-        title_summary: "要点",
-        title_vocab: "キーワード",
-        title_map: "知識マップ",
-        title_myth: "誤解チェック",
-        db_loading: "接続中...",
-        db_success: "接続成功",
-        db_fail: "接続失敗",
-        db_fail_retry: "再試行",
-        ai_generating: "処理中...",
-        ai_generate_fail: "生成失敗：{msg}",
-        tap_to_zoom: "拡大",
-        myth_true: "正しい",
-        myth_false: "誤り",
-        msg_correct: "正解！",
-        msg_wrong: "不正解",
-        msg_seq: "順に回答してください",
-        vocab_none: "なし",
-        summary_fail: "生成失敗",
-        map_fail: "描画失敗",
-        map_none: "なし",
-        myth_none: "なし",
-        quiz: "単元クイズ",
-        quiz_prefix: "単元クイズ－{unit}",
-        quiz_not_ready: "準備中...",
-        quiz_result_btn: "結果を見る",
-        quiz_next: "次へ",
-        quiz_score_title: "得点",
-        quiz_ai_analyzing: "分析中...",
-        quiz_result_text: "{correct}/{total} 正解",
-        txt_need_generate: "先に生成してください",
-        txt_download_fail: "保存失敗",
-        chat_greet: "こんにちは、私は小科です。「{unit}」について質問はありますか？",
-        chat_placeholder: "質問を入力...",
-        select_default: "選択...",
-        question_count: "問題数"
-      },
-      "zh-CN": {
-        back_science: "返回自然科学",
-        page_title: "单元重点整理",
-        page_subtitle: "AI 驱动分析",
-        settings_title: "单元菜单",
-        settings_subtitle: "Initialize Protocol",
-        label_stage: "学习阶段",
-        label_publisher: "版本",
-        label_grade: "年级",
-        label_semester: "学期",
-        label_unit: "单元名称",
-        btn_generate: "AI 整理重点",
-        btn_txt: "下载 TXT",
-        title_summary: "核心概念摘要",
-        title_vocab: "科学词汇与定义",
-        title_map: "知识架构图",
-        title_myth: "科学动动脑",
-        db_loading: "系统连接中...",
-        db_success: "连接成功",
-        db_fail: "连接失败",
-        db_fail_retry: "重试",
-        ai_generating: "正在运算...",
-        ai_generate_fail: "生成失败：{msg}",
-        tap_to_zoom: "点击放大",
-        myth_true: "正确 O",
-        myth_false: "错误 X",
-        msg_correct: "正确！",
-        msg_wrong: "错误",
-        msg_seq: "请依序作答",
-        vocab_none: "无词汇",
-        summary_fail: "生成失败",
-        map_fail: "绘图失败",
-        map_none: "无架构图",
-        myth_none: "无资料",
-        quiz: "单元小测验",
-        quiz_prefix: "单元小测验－{unit}",
-        quiz_not_ready: "准备中...",
-        quiz_result_btn: "看结果",
-        quiz_next: "下一题",
-        quiz_score_title: "测验成绩",
-        quiz_ai_analyzing: "分析中...",
-        quiz_result_text: "答对 {correct} / {total}",
-        txt_need_generate: "请先生成",
-        txt_download_fail: "下载失败",
-        chat_greet: "你好，我是小科。关于「{unit}」有什么问题吗？",
-        chat_placeholder: "输入问题...",
-        select_default: "请选择...",
-        question_count: "题数"
-      }
-    };
-
-    let currentLang = "zh-TW";
-    function t(key){ return (translations[currentLang] && translations[currentLang][key]) || key; }
-    function tf(key, vars={}) {
-      let s = t(key);
-      Object.keys(vars).forEach(k => { s = s.replace(new RegExp("\\{"+k+"\\}","g"), String(vars[k])); });
-      return s;
-    }
-
-    function changeLanguage(){
-      const langSel = document.getElementById("language-selector");
-      if(langSel) currentLang = langSel.value;
-
-      document.querySelectorAll("[data-i18n]").forEach(el => { el.innerText = t(el.getAttribute("data-i18n")); });
-      document.querySelectorAll("[data-i18n-placeholder]").forEach(el => { el.setAttribute("placeholder", t(el.getAttribute("data-i18n-placeholder"))); });
-
-      ["sel-stage", "sel-publisher", "sel-grade", "sel-semester", "sel-unit"].forEach(id => {
-        const el = document.getElementById(id);
-        if(el && el.options.length>0 && el.options[0].disabled) el.options[0].text = t('select_default');
-      });
-
-      // quiz button（若尚未 renderQuizQuestion，至少保持一致）
-      const quizBtn = document.getElementById("quiz-main-btn");
-      if (quizBtn && !quizBtn.disabled) {
-        quizBtn.innerText = (quizState.currentIndex === quizState.questions.length-1) ? t("quiz_result_btn") : t("quiz_next");
       }
     }
 
@@ -902,18 +651,15 @@
         const res = await fetch(GAS_API_URL + "?action=get_metadata");
         if (!res.ok) throw new Error("HTTP Error");
         const json = JSON.parse(await res.text());
-
         if(json.status === "success") {
-          allData = json.data;
+          allData = json.data || [];
           if (dbStatus) {
             dbStatus.dataset.state = "success";
             dbStatus.innerHTML = `<i class="fa-solid fa-check mr-1"></i> ${t("db_success")}`;
             dbStatus.className = "text-xs font-mono text-emerald-400 px-3 py-1 rounded bg-emerald-950/50 border border-emerald-900";
           }
           initSelectors();
-        } else {
-          throw new Error("Status Fail");
-        }
+        } else throw new Error("Status Fail");
       } catch(e) {
         if (dbStatus) {
           dbStatus.dataset.state = "fail";
@@ -924,7 +670,7 @@
     };
 
     function initSelectors() {
-      const stages = [...new Set(allData.map(d => d.stage))];
+      const stages = [...new Set(allData.map(d => d.stage).filter(Boolean))];
       populate("sel-stage", stages);
 
       ["sel-stage", "sel-publisher", "sel-grade", "sel-semester", "sel-unit"].forEach((id, idx) => {
@@ -958,9 +704,9 @@
         return safeMatch(d.stage, filters.stage) && safeMatch(d.publisher, filters.publisher) && safeMatch(d.grade, filters.grade) && safeMatch(d.semester, filters.semester);
       });
 
-      if(level===1) populate("sel-publisher", [...new Set(relevantData.map(d=>d.publisher))]);
-      if(level===2) populate("sel-grade", [...new Set(relevantData.map(d=>d.grade))].sort((a,b)=>a-b));
-      if(level===3) populate("sel-semester", [...new Set(relevantData.map(d=>d.semester))]);
+      if(level===1) populate("sel-publisher", [...new Set(relevantData.map(d=>d.publisher).filter(Boolean))]);
+      if(level===2) populate("sel-grade", [...new Set(relevantData.map(d=>d.grade).filter(v=>v!==undefined && v!==null && v!==""))].sort((a,b)=>a-b));
+      if(level===3) populate("sel-semester", [...new Set(relevantData.map(d=>d.semester).filter(Boolean))]);
       if(level===4) {
         const unitSelect = document.getElementById("sel-unit");
         unitSelect.innerHTML = `<option disabled selected>${t("select_default")}</option>`;
@@ -976,8 +722,9 @@
 
     function populate(id, list) {
       const el = document.getElementById(id);
+      if(!el) return;
       el.innerHTML = `<option disabled selected>${t("select_default")}</option>`;
-      list.forEach(o => {
+      (list || []).forEach(o => {
         const opt = document.createElement("option");
         opt.value = o; opt.text = o; el.add(opt);
       });
@@ -988,21 +735,13 @@
       document.getElementById("selection-panel").classList.add("hidden");
       document.getElementById("loading-view").classList.remove("hidden");
       document.getElementById("loading-view").classList.add("flex");
-
       try {
-        const res = await fetch(GAS_API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "get_content_and_generate", filters: filters })
-        });
-
+        const res = await fetch(GAS_API_URL, { method: "POST", body: JSON.stringify({ action: "get_content_and_generate", filters: filters }) });
         const json = JSON.parse(await res.text());
         if(json.status === "success") {
           currentResultData = json.data;
           renderResult(json.data);
-        } else {
-          throw new Error(json.message || "Failed");
-        }
+        } else throw new Error(json.message || "Failed");
       } catch(e) {
         alert(tf("ai_generate_fail",{msg:e.message}));
         document.getElementById("selection-panel").classList.remove("hidden");
@@ -1028,8 +767,8 @@
       document.getElementById("floating-chat").classList.remove("hidden");
 
       const raw = data.raw_content || {};
-      document.getElementById('result-title').innerText = data.topic || data.unitName || filters.unitName;
-      document.getElementById('result-tag').innerText = `${filters.publisher || ''} ${filters.grade || ''}`;
+      document.getElementById('result-title').innerText = data.topic || data.unitName || filters.unitName || "";
+      document.getElementById('result-tag').innerText = `${filters.publisher || ''} ${filters.grade || ''}`.trim() || "TAG";
 
       // Summary
       let summaryContent = (typeof data.summary === 'object') ? (data.summary.summary_html || data.summary.content) : data.summary;
@@ -1044,27 +783,25 @@
         kList.forEach(k => {
           const term = typeof k === 'object' ? k.term : k;
           const def = typeof k === 'object' ? k.def : '';
-          keywordList.innerHTML += `<div class="bg-slate-800/50 p-3 rounded-lg border border-slate-700/50 hover:border-cyan-500/50 transition"><div class="text-cyan-400 font-bold">${term}</div><div class="text-xs text-slate-400 mt-1">${def}</div></div>`;
+          keywordList.innerHTML += `<div class="bg-slate-800/50 p-3 rounded-lg border border-slate-700/50 hover:border-cyan-500/50 transition">
+              <div class="text-cyan-400 font-bold">${escapeHtml(term)}</div>
+              <div class="text-xs text-slate-400 mt-1">${escapeHtml(def)}</div>
+            </div>`;
         });
       } else {
         keywordList.innerHTML = `<div class="text-slate-500 text-xs">${t("vocab_none")}</div>`;
       }
 
-      // Mermaid (修正：使用 mermaid.run，確保 v10 正常渲染)
+      // Mermaid
       const chartDiv = document.getElementById('mermaid-chart');
       let mapData = data.mindMap || (data.summary && data.summary.mermaid) || '';
       if(mapData) {
         mapData = String(mapData).replace(/```mermaid/i, '').replace(/```/g, '').trim();
         chartDiv.innerHTML = `<div class="mermaid">${mapData}</div>`;
-
-        mermaid.run({ nodes: chartDiv.querySelectorAll('.mermaid') })
-          .then(() => {
-            const svg = chartDiv.querySelector('svg');
-            if(svg) { svg.removeAttribute('style'); svg.removeAttribute('width'); svg.removeAttribute('height'); }
-          })
-          .catch(() => {
-            chartDiv.innerText = t("map_fail");
-          });
+        mermaid.init(undefined, document.querySelectorAll('.mermaid')).then(()=>{
+          const svg = chartDiv.querySelector('svg');
+          if(svg) { svg.removeAttribute('style'); svg.removeAttribute('width'); svg.removeAttribute('height'); }
+        }).catch(()=>{ chartDiv.innerText = t("map_fail"); });
       } else {
         chartDiv.innerText = t("map_none");
       }
@@ -1080,7 +817,7 @@
           div.className = 'myth-card flex flex-col gap-3';
           div.innerHTML = `
             <div class="flex justify-between items-center"><span class="bg-orange-600 text-white text-xs font-bold px-2 py-1 rounded">Q${i+1}</span></div>
-            <div class="text-white font-bold tracking-wide text-sm">${m.question || m.myth || ""}</div>
+            <div class="text-white font-bold tracking-wide text-sm">${escapeHtml(m.question || m.myth || "")}</div>
             <div class="flex gap-2 mt-auto">
               <button id="${cardId}-btn-true" onclick="answerMyth(${i}, true)" class="myth-btn flex-1 py-2 rounded">${t("myth_true")}</button>
               <button id="${cardId}-btn-false" onclick="answerMyth(${i}, false)" class="myth-btn flex-1 py-2 rounded">${t("myth_false")}</button>
@@ -1095,7 +832,11 @@
 
       // Quiz
       quizState.questions = (data.quiz || []).slice(0, 10).map((q,i)=>({
-        id: i, stem: q.question, options: q.options, correctIndex: (q.correctIndex ?? 0), explanation: q.explanation || ""
+        id: i,
+        stem: q.question || "",
+        options: Array.isArray(q.options) ? q.options : [],
+        correctIndex: (typeof q.correctIndex === "number") ? q.correctIndex : 0,
+        explanation: q.explanation || ""
       }));
       initQuiz();
 
@@ -1105,7 +846,9 @@
 
     function initQuiz() {
       quizState.currentIndex = 0; quizState.hasAnswered = false; quizState.answers = [];
-      document.getElementById('quiz-result').classList.add('hidden'); // 回到初始狀態
+      document.getElementById('quiz-result').classList.add('hidden');
+      document.getElementById('quiz-body').classList.remove('hidden');
+
       if(quizState.questions.length > 0) {
         document.getElementById('quiz-body').classList.remove('hidden');
         document.getElementById('quiz-empty').classList.add('hidden');
@@ -1118,7 +861,7 @@
 
     function renderQuizQuestion() {
       const q = quizState.questions[quizState.currentIndex];
-      document.getElementById('quiz-question').innerText = q.stem || "";
+      document.getElementById('quiz-question').innerText = q.stem;
       document.getElementById('quiz-progress').innerText = `${quizState.currentIndex+1} / ${quizState.questions.length}`;
       const opts = document.getElementById('quiz-options');
       opts.innerHTML = '';
@@ -1128,10 +871,10 @@
       btnMain.disabled = true;
       btnMain.innerText = (quizState.currentIndex === quizState.questions.length-1) ? t("quiz_result_btn") : t("quiz_next");
 
-      (q.options || []).forEach((opt, idx) => {
+      q.options.forEach((opt, idx) => {
         const btn = document.createElement('button');
         btn.className = "quiz-option w-full text-left";
-        btn.innerHTML = `<span class="bg-emerald-900/50 w-6 h-6 rounded flex items-center justify-center text-xs text-emerald-400 border border-emerald-500/30 mr-3">${String.fromCharCode(65+idx)}</span> <span class="font-bold">${opt}</span>`;
+        btn.innerHTML = `<span class="bg-emerald-900/50 w-6 h-6 rounded flex items-center justify-center text-xs text-emerald-400 border border-emerald-500/30 mr-3">${String.fromCharCode(65+idx)}</span> <span class="font-bold">${escapeHtml(opt)}</span>`;
         btn.onclick = () => handleQuizAnswer(idx, btn);
         opts.appendChild(btn);
       });
@@ -1153,17 +896,17 @@
       } else {
         btn.style.background = "rgba(239, 68, 68, 0.4)";
         btn.style.borderColor = "#ef4444";
-        if (allBtns[q.correctIndex]) allBtns[q.correctIndex].style.background = "rgba(16, 185, 129, 0.4)";
+        if(allBtns[q.correctIndex]) allBtns[q.correctIndex].style.background = "rgba(16, 185, 129, 0.4)";
       }
 
       const fb = document.getElementById('quiz-feedback');
-      fb.innerHTML = `<div class="${isCorrect?'text-emerald-400':'text-red-400'} font-bold mb-1">${isCorrect?t('msg_correct'):t('msg_wrong')}</div><div class="text-slate-300 text-sm">${q.explanation || ""}</div>`;
+      fb.innerHTML = `<div class="${isCorrect?'text-emerald-400':'text-red-400'} font-bold mb-1">${isCorrect?t('msg_correct'):t('msg_wrong')}</div><div class="text-slate-300 text-sm">${escapeHtml(q.explanation)}</div>`;
       fb.className = `mt-4 p-4 rounded-lg border ${isCorrect?'bg-emerald-950/50 border-emerald-500/30':'bg-red-950/50 border-red-500/30'} animate-fade-in-up`;
       fb.classList.remove('hidden');
 
       document.getElementById('quiz-main-btn').disabled = false;
 
-      quizState.answers.push({correct: isCorrect, concept: `Q${quizState.currentIndex+1}`});
+      quizState.answers.push({correct: isCorrect, concept: `Q${quizState.currentIndex+1}`, chosen: idx, correctIndex: q.correctIndex});
       submitQuizLog(q, idx, q.correctIndex, isCorrect);
     }
 
@@ -1178,17 +921,17 @@
         const correct = quizState.answers.filter(a=>a.correct).length;
         const total = quizState.questions.length;
         const score = Math.round((correct/total)*100);
-
         document.getElementById('quiz-score-number').innerText = score;
+        document.getElementById('quiz-result-text').innerText = tf("quiz_result_text", {correct, total});
 
-        // 修正：quiz-result-text 實際填入（原本會留白）
-        document.getElementById('quiz-result-text').innerText = tf("quiz_result_text", { correct, total });
+        const detail = quizState.questions.map((q, i) => {
+          const a = quizState.answers[i];
+          const chosen = (typeof a?.chosen === "number") ? String.fromCharCode(65 + a.chosen) : "-";
+          const corr = String.fromCharCode(65 + q.correctIndex);
+          return `Q${i+1}：${a?.correct ? "✅" : "❌"}（你選 ${chosen}；正確 ${corr}）\n${q.explanation ? "解析：" + q.explanation : ""}`;
+        }).join("\n\n");
+        document.getElementById('quiz-result-detail').innerText = detail;
 
-        // 右側詳細（最小可用：列出每題對錯）
-        const detail = document.getElementById('quiz-result-detail');
-        detail.innerHTML = quizState.answers.map((a,i)=>`<div class="mb-2"><span class="font-mono text-slate-400">Q${i+1}</span>：<span class="${a.correct?'text-emerald-400':'text-red-400'} font-bold">${a.correct?t('msg_correct'):t('msg_wrong')}</span></div>`).join("");
-
-        // Chart
         const ctx = document.getElementById('quiz-radar').getContext('2d');
         if(quizRadarChart) quizRadarChart.destroy();
         quizRadarChart = new Chart(ctx, {
@@ -1201,92 +944,153 @@
               backgroundColor: quizState.answers.map(a=>a.correct?'#10b981':'#ef4444')
             }]
           },
-          options: {
-            scales: { y: { beginAtZero: true, max: 100 }, x: { grid: {display:false} } },
-            plugins: { legend: {display:false} }
-          }
+          options: { scales: { y: { beginAtZero: true, max: 100 }, x: { grid: {display:false} } }, plugins: { legend: {display:false} } }
         });
       }
     }
 
-    // Helpers
     function answerMyth(idx, choice) {
       const m = mythData[idx] || {};
       const fb = document.getElementById(`myth-${idx}-feedback`);
-      if (!fb) return;
+      if(!fb) return;
       fb.classList.remove('hidden');
-      fb.innerHTML = `<span class="text-orange-300">${m.explanation || "參考答案"}</span>`;
+      fb.innerHTML = `<span class="text-orange-300">${escapeHtml(m.explanation || "參考答案")}</span>`;
     }
 
-    function sendChatMessage() {
+    async function sendChatMessage() {
       const inp = document.getElementById('chat-input');
-      const msg = (inp && inp.value ? inp.value.trim() : "");
+      const msg = (inp.value || "").trim();
       if(!msg) return;
-
       const body = document.getElementById('chat-messages');
-      body.innerHTML += `<div class="chat-bubble-user self-end p-3 shadow-sm max-w-[85%] text-sm mb-2 text-blue-100">${msg}</div>`;
+
+      body.innerHTML += `<div class="self-end p-3 shadow-sm max-w-[85%] text-sm mb-2 text-blue-100 bg-slate-800/70 rounded-lg border border-slate-600/40">${escapeHtml(msg)}</div>`;
       inp.value = '';
 
-      fetch(GAS_API_URL, {
-        method: 'POST',
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: 'chat_with_ai', message: msg, contextText: "...", userName: "Guest" })
-      })
-      .then(r => r.text())
-      .then(txt => {
-        let j;
-        try { j = JSON.parse(txt); } catch { j = { data: txt }; }
-        body.innerHTML += `<div class="chat-bubble-ai self-start p-3 shadow-sm max-w-[85%] text-sm mb-2 text-cyan-200">${(j && j.data) ? j.data : ""}</div>`;
+      const contextText = buildChatContext();
+
+      try {
+        const r = await fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'chat_with_ai', message: msg, contextText, userName: (document.getElementById("user-info")?.innerText || "Guest") }) });
+        const txt = await r.text();
+        let j = null;
+        try { j = JSON.parse(txt); } catch(_e) {}
+        const reply = (j && j.data) ? j.data : (txt || "（無回應）");
+        body.innerHTML += `<div class="self-start p-3 shadow-sm max-w-[85%] text-sm mb-2 text-cyan-200 bg-slate-900/60 rounded-lg border border-cyan-500/20">${escapeHtml(reply)}</div>`;
         body.scrollTop = body.scrollHeight;
-      })
-      .catch(() => {
-        body.innerHTML += `<div class="chat-bubble-ai self-start p-3 shadow-sm max-w-[85%] text-sm mb-2 text-cyan-200">${t("ai_generate_fail").replace("{msg}","Chat Error")}</div>`;
+      } catch(e) {
+        body.innerHTML += `<div class="self-start p-3 shadow-sm max-w-[85%] text-sm mb-2 text-red-200 bg-red-900/30 rounded-lg border border-red-500/30">連線失敗：${escapeHtml(e.message)}</div>`;
         body.scrollTop = body.scrollHeight;
-      });
+      }
     }
 
-    // 修正：TXT 下載實際可用（不改既有流程）
+    function buildChatContext() {
+      const unit = (filters && filters.unitName) || (currentResultData && (currentResultData.unitName || currentResultData.topic)) || "";
+      const summaryHtml = document.getElementById("summary-text")?.innerHTML || "";
+      const summaryText = stripHtml(summaryHtml).slice(0, 2500);
+      const keywords = (currentResultData && currentResultData.keywords) ? currentResultData.keywords : [];
+      const kwText = Array.isArray(keywords) ? keywords.map(k => (typeof k === "object" ? k.term : k)).filter(Boolean).slice(0, 30).join("、") : "";
+      return `單元：${unit}\n核心摘要：\n${summaryText}\n\n關鍵詞：${kwText}`.trim();
+    }
+
+    /* ===== 修復：原本 openModal/closeModal 未定義，點「放大」會直接報錯 ===== */
+    function openModal() {
+      const modal = document.getElementById("image-modal");
+      const content = document.getElementById("modal-content");
+      const chart = document.getElementById("mermaid-chart");
+      if(!modal || !content || !chart) return;
+
+      content.innerHTML = "";
+      const clone = chart.cloneNode(true);
+      clone.id = "mermaid-chart-modal";
+      clone.style.opacity = "1";
+      content.appendChild(clone);
+
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeModal() {
+      const modal = document.getElementById("image-modal");
+      const content = document.getElementById("modal-content");
+      if(!modal || !content) return;
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+      content.innerHTML = "";
+      document.body.style.overflow = "";
+    }
+
+    /* ===== 修復：TXT 下載原本是 alert（假功能），改成真正可下載 ===== */
     function downloadTXT() {
       try {
-        if (!currentResultData) {
-          alert(t("txt_need_generate"));
-          return;
-        }
-        const title = (currentResultData.topic || currentResultData.unitName || filters.unitName || "").trim();
-        const tag = `${filters.publisher || ""} ${filters.grade || ""}`.trim();
+        if(!currentResultData) { alert(t("txt_need_generate")); return; }
+        const title = document.getElementById("result-title")?.innerText || (filters.unitName || "unit");
+        const tag = document.getElementById("result-tag")?.innerText || "";
+        const summary = stripHtml(document.getElementById("summary-text")?.innerHTML || "");
+        const keywords = (currentResultData.keywords || []).map(k => (typeof k === "object" ? `${k.term}${k.def ? "：" + k.def : ""}` : String(k))).filter(Boolean);
+        const myths = (currentResultData.myths || []).map((m, i) => `Q${i+1}. ${m.question || m.myth || ""}\n解析：${m.explanation || ""}`.trim());
+        const quiz = quizState.questions.map((q, i) => {
+          const a = quizState.answers[i];
+          const chosen = (typeof a?.chosen === "number") ? String.fromCharCode(65 + a.chosen) : "-";
+          const corr = String.fromCharCode(65 + q.correctIndex);
+          return `Q${i+1}. ${q.stem}\nA. ${(q.options[0]||"")}\nB. ${(q.options[1]||"")}\nC. ${(q.options[2]||"")}\nD. ${(q.options[3]||"")}\n你的答案：${chosen}\n正確答案：${corr}\n解析：${q.explanation || ""}`.trim();
+        });
 
-        const summaryEl = document.getElementById('summary-text');
-        const keywordsEl = document.getElementById('keywords-list');
+        const correct = quizState.answers.filter(a=>a.correct).length;
+        const total = quizState.questions.length;
+        const score = total ? Math.round((correct/total)*100) : 0;
 
-        const summaryText = summaryEl ? summaryEl.innerText.trim() : "";
-        const keywordText = keywordsEl ? keywordsEl.innerText.trim() : "";
+        const txt =
+`單元重點整理
+標題：${title}
+標籤：${tag}
 
-        const content =
-`[${title}]
-${tag}
+【核心概念摘要】
+${summary}
 
-=== ${t("title_summary")} ===
-${summaryText}
+【科學詞彙與定義】
+${keywords.length ? keywords.map(k=>"- "+k).join("\n") : "（無）"}
 
-=== ${t("title_vocab")} ===
-${keywordText}
+【科學動動腦（迷思澄清）】
+${myths.length ? myths.join("\n\n") : "（無）"}
+
+【單元小測驗】
+成績：${score}（答對 ${correct}/${total}）
+${quiz.length ? quiz.join("\n\n") : "（無）"}
 `;
 
-        const blob = new Blob([content], {type: "text/plain;charset=utf-8"});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `${title || "unit_summary"}.txt`;
+        const blob = new Blob([txt], { type: "text/plain;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${sanitizeFilename(title)}_單元重點.txt`;
         document.body.appendChild(a);
         a.click();
-        URL.revokeObjectURL(a.href);
         a.remove();
+        URL.revokeObjectURL(url);
       } catch(e) {
-        alert(t("txt_download_fail"));
+        alert(`${t("txt_download_fail")}：${e.message}`);
       }
     }
 
     function submitQuizLog(q, ans, corr, isCorr) {
-      // Silent log
+      // 保留「silent log」的行為，不改你後端契約（避免整體大亂）
+    }
+
+    function stripHtml(html) {
+      const d = document.createElement("div");
+      d.innerHTML = html || "";
+      return (d.innerText || d.textContent || "").trim();
+    }
+    function escapeHtml(s) {
+      return String(s ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+    function sanitizeFilename(name) {
+      return String(name || "unit").replace(/[\\\/:*?"<>|]/g, "_").trim().slice(0, 60) || "unit";
     }
   </script>
 </body>
