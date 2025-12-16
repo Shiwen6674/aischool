@@ -442,7 +442,7 @@
         const COL_STAGE=0, COL_VERSION=2, COL_GRADE=3, COL_SEMESTER=4, COL_UNIT_NUM=6, COL_UNIT_NAME=7,
               COL_CONTENT=8, COL_CKIP=9, COL_VOCAB=18;
 
-        let rawData=[], processedUnits=[], isSpeaking=false, currentVoice='female', translationCache={}, synth=window.speechSynthesis;
+        let rawData=[], processedUnits=[], isSpeaking=false, isLooping=false, currentVoice='female', translationCache={}, synth=window.speechSynthesis;
         let activeVocabMap = {};
         let currentBlockIndex = 0;
         let currentUnitTitleZh = "";
@@ -1001,7 +1001,58 @@
                 speakNext();
             }
         }
+// [新增功能] 上一句
+        function playPrev() {
+            const blocks = document.querySelectorAll('.content-block, .section-header');
+            if (currentBlockIndex > 0) {
+                currentBlockIndex--;
+                // 如果正在播放，重啟播放；如果沒在播放，只移動索引 (也可以選擇直接播放)
+                if (isSpeaking) {
+                    stopSpeech(); // 先停止當前聲音
+                    isSpeaking = true; // 保持播放狀態
+                    document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-pause"></i>';
+                    setTimeout(playSequence, 100);
+                } else {
+                    // 如果原本是暫停，只移動畫面焦點
+                    clearHighlights();
+                    const block = blocks[currentBlockIndex];
+                    if(block) block.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
 
+        // [新增功能] 下一句
+        function playNext() {
+            const blocks = document.querySelectorAll('.content-block, .section-header');
+            if (currentBlockIndex < blocks.length - 1) {
+                currentBlockIndex++;
+                if (isSpeaking) {
+                    stopSpeech();
+                    isSpeaking = true;
+                    document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-pause"></i>';
+                    setTimeout(playSequence, 100);
+                } else {
+                    clearHighlights();
+                    const block = blocks[currentBlockIndex];
+                    if(block) block.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+
+        // [新增功能] 切換重覆播放
+        function toggleLoop() {
+            isLooping = !isLooping;
+            const btn = document.getElementById('btn-loop');
+            if(isLooping) {
+                btn.classList.remove('text-slate-400');
+                btn.classList.add('text-green-400', 'bg-white/10'); // 亮燈樣式
+                showToast("開啟單句重覆");
+            } else {
+                btn.classList.add('text-slate-400');
+                btn.classList.remove('text-green-400', 'bg-white/10');
+                showToast("關閉單句重覆");
+            }
+        }
         function splitTextForSpeak(text, isEng) {
             const regex = isEng ? /([.?!;]+)/ : /([。！？；]+)/;
             return text.split(regex).reduce((acc, curr, i) => {
