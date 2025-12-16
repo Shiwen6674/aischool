@@ -7,7 +7,6 @@
     
     <script>
         // 檢查 Session 中是否有登入標記，若無則踢回首頁
-        // 請確保 index.html 登入成功時有執行 sessionStorage.setItem('isLoggedIn', 'true');
         if (!sessionStorage.getItem('isLoggedIn')) {
             window.location.href = 'index.html';
         }
@@ -187,16 +186,16 @@
             box-shadow: 0 0 10px #4ade80;
         }
 
-        /* === 學生友善下拉選單 (修正寬度版) === */
+        /* === [UI 修改] 學生友善下拉選單 (優化比例版) === */
         .student-select-wrapper {
             position: relative; display: flex; align-items: center;
             background-color: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 99px; /* 膠囊形狀 */
-            padding: 0 16px;
+            padding: 0 14px; /* [UI 修改] 左右內距稍微縮小 */
+            height: 40px;    /* [UI 修改] 設定固定高度，讓膠囊更工整 */
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
-            /* 關鍵修正：不設固定寬度，設最小寬度，讓內容撐開 */
             min-width: max-content; 
         }
         .student-select-wrapper:hover {
@@ -204,14 +203,26 @@
             transform: translateY(-1px);
             border-color: #4ade80;
         }
-        .student-select-icon { color: #4ade80; font-size: 1rem; margin-right: 8px; pointer-events: none; }
+        /* [UI 修改] Icon 縮小並調整顏色對比 */
+        .student-select-icon { 
+            color: #4ade80; 
+            font-size: 0.875rem; /* [UI 修改] 縮小 Icon (14px) */
+            margin-right: 8px; 
+            pointer-events: none; 
+        }
         .student-select {
             appearance: none; -webkit-appearance: none;
             background: transparent; border: none;
-            color: #fff; font-size: 0.95rem; font-weight: 700;
-            padding: 8px 24px 8px 0; width: 100%; cursor: pointer; outline: none;
+            color: #fff; 
+            /* [UI 修改] 字體與粗細調整區 */
+            font-size: 0.875rem; /* [UI 修改] 縮小字體至 14px (原 0.95rem) */
+            font-weight: 600;    /* [UI 修改] 減輕字重 (原 700)，看起來較不擁擠 */
+            padding: 0 24px 0 0; /* [UI 修改] 調整 Padding，垂直由 flex 控制 */
+            width: 100%; height: 100%;
+            cursor: pointer; outline: none;
+            /* 下拉箭頭 */
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right center; background-repeat: no-repeat; background-size: 1em 1em;
+            background-position: right center; background-repeat: no-repeat; background-size: 0.85em 0.85em; /* [UI 修改] 箭頭也稍微縮小 */
         }
         .student-select option { background-color: #1E293B; color: #fff; padding: 10px; }
 
@@ -818,8 +829,7 @@
           return safe;
         }
 
-        // ====================== TTS ======================
-// ====================== TTS (針對 iOS 優化版) ======================
+        // ====================== TTS (針對 iOS 優化版) ======================
         
         // 偵測是否為 iOS 裝置
         function isIOSDevice(){
