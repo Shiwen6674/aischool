@@ -6,12 +6,17 @@
     <title>AI School | 科學雙語閱讀</title>
     
     <script>
-        // 檢查 Session 中是否有登入標記，若無則踢回首頁
+        // 邏輯說明：
+        // 當使用者在 index.html 點擊登入成功時，您的 index.html 必須執行：
+        // sessionStorage.setItem('isLoggedIn', 'true');
+        // 
+        // 這裡負責檢查：如果找不到這張「通行證」，就代表是偷貼網址的人，強制踢回首頁。
+        
         if (!sessionStorage.getItem('isLoggedIn')) {
+            // alert("請先登入！"); // 若需要提示可打開此行
             window.location.href = 'index.html';
         }
     </script>
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
