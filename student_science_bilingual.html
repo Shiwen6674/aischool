@@ -20,7 +20,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+<script src="https://unpkg.com/pinyin-pro"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -165,16 +165,29 @@
         }
         .en-text:hover { opacity: 0.9; color: #fff; }
 
+        /* ... 原有樣式 ... */
+
+        /* [新增] 注音相關樣式 */
+        ruby { font-family: 'Noto Sans TC', sans-serif; ruby-align: center; }
+        rt { 
+            font-size: 0.6em; 
+            font-weight: 400; 
+            color: #f472b6; /* 注音顏色用粉紅凸顯 */
+            user-select: none; /* 防止複製到注音符號 */
+            letter-spacing: 0px;
+        }
+        
+        /* [修改] 中文文字區塊：增加行高以容納注音 */
         .zh-text { 
-            font-size: 1.25rem; /* [排版] 稍微加大中文 */
-            color: #e2e8f0;     /* [排版] 稍微調亮中文顏色，對比度更好 */
-            line-height: 2.0;   /* [排版] 增加中文行高，閱讀更舒適 */
-            letter-spacing: 0.08em; /* [排版] 增加字距 */
-            padding-left: 0;    /* [排版] 移除不必要的內縮，交給 gap 控制 */
+            font-size: 1.35rem; /* 稍微加大 */
+            color: #e2e8f0;     
+            line-height: 2.2;   /* [重要] 增加行高避免注音擠壓 */
+            letter-spacing: 0.08em; 
+            padding-left: 0;    
             cursor: pointer; 
             font-weight: 400; 
             transition: color 0.3s;
-            text-align: justify; /* [排版] 左右對齊 */
+            text-align: justify; 
         }
         .zh-text:hover { color: #f472b6; }
 
@@ -385,31 +398,26 @@
     </div>
 
 <div id="control-dock" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-[95%] max-w-lg md:max-w-xl transition-all duration-300">
-        <div class="player-dock flex items-center justify-between gap-3 md:gap-6 bg-slate-900/90 md:bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-full px-5 py-3 md:px-6 md:py-2 shadow-2xl">
+        <div class="player-dock flex items-center justify-between gap-3 md:gap-5 bg-slate-900/90 md:bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-full px-5 py-3 md:px-6 md:py-2 shadow-2xl">
             
-            <div class="flex flex-col items-center shrink-0">
-                <span class="text-[9px] md:text-[8px] font-bold text-slate-500 uppercase tracking-wider">SPEED</span>
-                <select id="play-rate" class="appearance-none bg-transparent text-green-400 font-black text-lg md:text-base text-center outline-none cursor-pointer w-10 hover:text-white transition">
-                    <option value="0.5">0.5</option>
-                    <option value="0.75">0.75</option>
-                    <option value="1.0" selected>1.0</option>
-                    <option value="1.25">1.25</option>
-                    <option value="1.5">1.5</option>
-                </select>
+            <div class="flex flex-col items-center shrink-0 w-20 md:w-24 mr-2">
+                <div class="flex justify-between w-full mb-1">
+                    <span class="text-[9px] font-bold text-slate-500 uppercase">SPEED</span>
+                    <span id="rate-display" class="text-[9px] font-bold text-green-400">1.0x</span>
+                </div>
+                <input type="range" id="play-rate" min="0.5" max="2.0" step="0.1" value="1.0" 
+                       class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-green-500"
+                       oninput="updateRateDisplay(this.value)">
             </div>
 
-            <div class="flex items-center gap-2 md:gap-3 justify-center flex-grow">
+            <div class="flex items-center gap-2 md:gap-4 justify-center flex-grow">
                 
-                <div class="flex bg-white/5 rounded-full p-1 md:p-0.5 gap-1 mr-1 md:mr-2">
-                    <button onclick="setVoice('male')" id="btn-male" class="w-9 h-9 md:w-7 md:h-7 rounded-full flex items-center justify-center transition text-slate-400 hover:text-white" title="男聲">
-                        <i class="fa-solid fa-person text-lg md:text-sm"></i>
-                    </button>
-                    <button onclick="setVoice('female')" id="btn-female" class="w-9 h-9 md:w-7 md:h-7 rounded-full flex items-center justify-center transition bg-green-500 text-white shadow-lg" title="女聲">
-                        <i class="fa-solid fa-person-dress text-lg md:text-sm"></i>
-                    </button>
+                <div class="flex bg-white/5 rounded-full p-1 md:p-0.5 gap-1 mr-1">
+                    <button onclick="setVoice('male')" id="btn-male" class="w-9 h-9 md:w-7 md:h-7 rounded-full flex items-center justify-center transition text-slate-400 hover:text-white"><i class="fa-solid fa-person text-lg md:text-sm"></i></button>
+                    <button onclick="setVoice('female')" id="btn-female" class="w-9 h-9 md:w-7 md:h-7 rounded-full flex items-center justify-center transition bg-green-500 text-white shadow-lg"><i class="fa-solid fa-person-dress text-lg md:text-sm"></i></button>
                 </div>
 
-                <button onclick="playPrev()" class="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition" title="上一句">
+                <button onclick="playPrev()" class="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition">
                     <i class="fa-solid fa-backward-step text-lg md:text-sm"></i>
                 </button>
 
@@ -417,15 +425,15 @@
                     <i class="fa-solid fa-play text-2xl md:text-lg ml-1"></i>
                 </button>
 
-                <button onclick="playNext()" class="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition" title="下一句">
+                <button onclick="playNext()" class="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition">
                     <i class="fa-solid fa-forward-step text-lg md:text-sm"></i>
                 </button>
 
-                <button onclick="toggleLoop()" id="btn-loop" class="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition" title="單句重覆">
+                <button onclick="toggleLoop()" id="btn-loop" class="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition">
                     <i class="fa-solid fa-repeat text-lg md:text-sm"></i>
                 </button>
 
-                <button onclick="stopSpeech()" class="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-full border border-slate-600 text-slate-400 hover:border-red-500 hover:text-red-500 transition ml-1 md:ml-2">
+                <button onclick="resetAudio()" class="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-full border border-slate-600 text-slate-400 hover:border-red-500 hover:text-red-500 transition ml-1">
                     <i class="fa-solid fa-stop text-sm md:text-xs"></i>
                 </button>
             </div>
