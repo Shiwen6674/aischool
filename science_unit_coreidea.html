@@ -27,7 +27,7 @@
           },
           colors: {
             deep: { bg: '#050b14', card: '#0f172a' },
-            neon: { blue: '#3b82f6', cyan: '#06b6d4', purple: '#8b5cf6', accent: '#f43f5e' }
+            neon: { blue: '#3b82f6', cyan: '#06b6d4', purple: '#8b5cf6', accent: '#f43f5e', pink: '#f472b6' }
           },
           animation: {
             "fade-in-up": "fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards",
@@ -49,7 +49,7 @@
     mermaid.initialize({
       startOnLoad: false,
       theme: 'base',
-      themeVariables: { primaryColor: '#e0f2fe', edgeLabelBackground: '#ffffff', tertiaryColor: '#fff' },
+      themeVariables: { primaryColor: '#1e293b', edgeLabelBackground: '#ffffff', tertiaryColor: '#fff', lineColor: '#3b82f6', textColor: '#f1f5f9', mainBkg: '#0f172a' },
       securityLevel: 'loose',
       flowchart: { useMaxWidth: false, htmlLabels: true }
     });
@@ -96,6 +96,16 @@
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
     .reading-paper:hover { box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.6); }
+
+    /* ===== [修正點 1] 核心概念高亮樣式 ===== */
+    #summary-text strong, #summary-text b {
+        color: #f472b6; /* Neon Pink */
+        font-weight: 900;
+        background: rgba(244, 114, 182, 0.1);
+        padding: 0 4px;
+        border-radius: 4px;
+        border-bottom: 2px solid #f472b6;
+    }
 
     /* ===== 表單元件 ===== */
     select {
@@ -153,19 +163,24 @@
     .tech-loader::before { content:''; position: absolute; inset: 5px; border-radius: 50%; border: 3px solid transparent; border-top-color: #3b82f6; animation: spin 2s linear infinite reverse; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* ===== 科幻聊天視窗 (Xiaoke AI) ===== */
+    /* ===== [修正點 8] 小科 AI 拖曳與設計 ===== */
     .chat-hologram {
       backdrop-filter: blur(20px);
-      background: rgba(15, 23, 42, 0.85); /* 深色透明 */
-      border: 1px solid rgba(6, 182, 212, 0.5); /* 霓虹邊框 */
-      box-shadow: 0 0 30px rgba(6, 182, 212, 0.15), inset 0 0 20px rgba(6, 182, 212, 0.05);
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(6, 182, 212, 0.5);
+      box-shadow: 0 0 30px rgba(6, 182, 212, 0.2), inset 0 0 20px rgba(6, 182, 212, 0.05);
       border-radius: 1.5rem;
       color: #e0f2fe;
+      /* 確保拖曳時定位 */
+      position: fixed; 
     }
     .chat-hologram-header {
       background: linear-gradient(90deg, rgba(6, 182, 212, 0.2), transparent);
       border-bottom: 1px solid rgba(6, 182, 212, 0.3);
+      cursor: grab;
     }
+    .chat-hologram-header:active { cursor: grabbing; }
+    
     .chat-bubble-ai {
       background: rgba(6, 182, 212, 0.15);
       border: 1px solid rgba(6, 182, 212, 0.3);
@@ -179,6 +194,13 @@
       border-radius: 1rem 1rem 0 1rem;
     }
     
+    /* [修正點 3] Mermaid SVG 樣式 */
+    .mermaid svg {
+        width: 100% !important;
+        height: auto !important;
+        max-width: none !important;
+    }
+
     /* Scrollbar */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
@@ -186,8 +208,25 @@
     ::-webkit-scrollbar-thumb:hover { background: #06b6d4; }
 
     #image-modal { backdrop-filter: blur(10px); }
+    /* [修正點 4] Modal 內容寬度 */
+    #modal-content { 
+        width: 95vw !important; 
+        max-width: none !important; 
+        background-color: #0f172a; /* 深色背景看白字 */
+    }
     .pdf-page-break { page-break-before: always; }
     .click-mask { cursor: zoom-in; }
+
+    /* [修正點 2] 詞彙欄捲軸 */
+    #vocab-panel {
+        display: flex;
+        flex-direction: column;
+    }
+    #vocab-list-container {
+        flex: 1;
+        overflow-y: auto;
+        min-height: 0; /* 關鍵：允許 flex item 縮小產生捲軸 */
+    }
 
     @media (max-width: 640px) { .hud-glass { backdrop-filter: blur(12px); background: rgba(15,23,42,0.85); } }
   </style>
@@ -314,9 +353,9 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
         
-        <div id="summary-panel" class="md:col-span-8 reading-paper p-8">
+        <div id="summary-panel" class="md:col-span-8 reading-paper p-8 h-full">
           <div class="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
             <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
               <i class="fa-solid fa-star text-lg"></i>
@@ -326,88 +365,88 @@
           <div id="summary-text" class="prose prose-slate max-w-none text-slate-700 leading-loose text-base md:text-lg"></div>
         </div>
 
-        <div id="vocab-panel" class="md:col-span-4 reading-paper p-6 bg-slate-50/50 flex flex-col h-full">
-          <div class="flex items-center gap-3 mb-6">
+        <div id="vocab-panel" class="md:col-span-4 reading-paper p-6 bg-slate-50/50 h-full flex flex-col">
+          <div class="flex items-center gap-3 mb-6 flex-shrink-0">
             <div class="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
               <i class="fa-solid fa-spell-check"></i>
             </div>
             <h3 class="font-ui font-bold text-slate-800 text-lg section-title" data-i18n="title_vocab">Keywords</h3>
           </div>
-          <div class="flex-1 overflow-y-auto custom-scrollbar pr-1">
+          <div id="vocab-list-container" class="flex-1 overflow-y-auto custom-scrollbar pr-1">
             <div id="keywords-list" class="space-y-3 pb-2"></div>
           </div>
         </div>
 
-        <div class="md:col-span-12 reading-paper p-1 bg-white pdf-page-break">
-          <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+        <div class="md:col-span-12 reading-paper p-1 bg-slate-800 border-slate-700 pdf-page-break">
+          <div class="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-900/50 rounded-t-xl">
             <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+              <div class="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400">
                 <i class="fa-solid fa-project-diagram"></i>
               </div>
-              <h3 class="font-ui font-bold text-slate-800 text-lg section-title" data-i18n="title_map">Knowledge Graph</h3>
-              <button onclick="openModal()" class="ml-2 text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full hover:bg-indigo-200 transition" data-i18n="tap_to_zoom">Expand</button>
+              <h3 class="font-ui font-bold text-white text-lg section-title" data-i18n="title_map">Knowledge Graph</h3>
+              <button onclick="openModal()" class="ml-2 text-[10px] bg-indigo-900 text-indigo-300 px-2 py-0.5 rounded-full hover:bg-indigo-800 transition" data-i18n="tap_to_zoom">Expand</button>
             </div>
-            <button onclick="openModal()" class="text-slate-400 hover:text-indigo-600 transition"><i class="fa-solid fa-expand"></i></button>
+            <button onclick="openModal()" class="text-slate-400 hover:text-indigo-400 transition"><i class="fa-solid fa-expand"></i></button>
           </div>
           
-          <div class="bg-slate-50/50 p-4 overflow-hidden relative" id="chart-container">
+          <div class="bg-slate-900 p-4 overflow-hidden relative" id="chart-container">
             <div class="click-mask" onclick="openModal()"></div>
             <div id="mermaid-chart" class="w-full flex justify-center"></div>
           </div>
         </div>
 
-        <div class="md:col-span-5 reading-paper p-6 bg-red-50/30 border-red-100 pdf-page-break">
+        <div class="md:col-span-12 reading-paper p-6 bg-slate-800 border-slate-700 pdf-page-break">
           <div class="flex items-center gap-3 mb-6">
-            <div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-red-600">
+            <div class="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center text-red-400">
               <i class="fa-solid fa-lightbulb"></i>
             </div>
-            <h3 class="font-ui font-bold text-slate-800 text-lg section-title" data-i18n="title_myth">Myth Busting</h3>
+            <h3 class="font-ui font-bold text-white text-lg section-title" data-i18n="title_myth">Myth Busting</h3>
           </div>
-          <div id="myth-list" class="flex flex-col gap-4"></div>
+          <div id="myth-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </div>
 
-        <div id="quiz-panel" class="md:col-span-7 reading-paper p-8 border-emerald-100/50">
-          <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
+        <div id="quiz-panel" class="md:col-span-12 reading-paper p-8 border-emerald-900/50 bg-slate-800 border-slate-700 text-white">
+          <div class="flex justify-between items-center mb-6 border-b border-slate-700 pb-4">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+              <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400">
                 <i class="fa-solid fa-brain"></i>
               </div>
-              <h3 class="font-ui font-bold text-slate-800 text-xl section-title">
+              <h3 class="font-ui font-bold text-white text-xl section-title">
                 <span id="quiz-title" data-i18n="quiz">Unit Quiz</span>
               </h3>
             </div>
-            <div id="quiz-progress" class="font-mono text-xs font-bold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">
+            <div id="quiz-progress" class="font-mono text-xs font-bold text-emerald-400 bg-emerald-900/30 px-3 py-1 rounded-full border border-emerald-500/30">
               0 / 0
             </div>
           </div>
 
           <div id="quiz-body" class="space-y-6">
-            <div id="quiz-question" class="font-ui font-bold text-slate-800 text-lg leading-relaxed"></div>
+            <div id="quiz-question" class="font-ui font-bold text-white text-lg leading-relaxed"></div>
             <div id="quiz-options" class="grid grid-cols-1 gap-3"></div>
             <div id="quiz-feedback" class="hidden animate-fade-in-up"></div>
             <div class="flex justify-end pt-4">
-              <button id="quiz-main-btn" onclick="handleQuizMainButton()" class="px-6 py-2 rounded-full bg-slate-800 text-white font-bold text-sm shadow hover:bg-emerald-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              <button id="quiz-main-btn" onclick="handleQuizMainButton()" class="px-6 py-2 rounded-full bg-emerald-600 text-white font-bold text-sm shadow hover:bg-emerald-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                 Next Question
               </button>
             </div>
           </div>
 
-          <div id="quiz-empty" class="text-sm text-slate-500 italic p-4 text-center" data-i18n="quiz_not_ready"></div>
+          <div id="quiz-empty" class="text-sm text-slate-400 italic p-4 text-center" data-i18n="quiz_not_ready"></div>
 
-          <div id="quiz-result" class="hidden mt-6 bg-slate-50 rounded-xl p-6 border border-slate-200">
+          <div id="quiz-result" class="hidden mt-6 bg-slate-900 rounded-xl p-6 border border-slate-700">
             <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-6">
               <div class="text-center md:text-left">
                 <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1" data-i18n="quiz_score_title">Final Score</div>
-                <div id="quiz-score-number" class="text-5xl font-black text-emerald-600 font-tech">0</div>
-                <div id="quiz-score-label" class="text-xs text-emerald-600 font-bold mt-1"></div>
+                <div id="quiz-score-number" class="text-5xl font-black text-emerald-400 font-tech">0</div>
+                <div id="quiz-score-label" class="text-xs text-emerald-500 font-bold mt-1"></div>
               </div>
-              <div id="quiz-result-text" class="text-sm font-bold text-slate-600"></div>
+              <div id="quiz-result-text" class="text-sm font-bold text-slate-300"></div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div class="h-64 relative">
                 <canvas id="quiz-radar"></canvas>
               </div>
-              <div id="quiz-result-detail" class="text-sm text-slate-600 leading-relaxed bg-white p-4 rounded-lg border border-slate-100 shadow-sm overflow-y-auto max-h-64 custom-scrollbar"></div>
+              <div id="quiz-result-detail" class="text-sm text-slate-300 leading-relaxed bg-slate-800 p-4 rounded-lg border border-slate-700 shadow-sm overflow-y-auto max-h-64 custom-scrollbar"></div>
             </div>
           </div>
         </div>
@@ -416,10 +455,10 @@
     </div>
   </main>
 
-  <div id="floating-chat" class="hidden fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-4 no-print">
-    <div id="xiaoke-window" class="chat-hologram closed w-80 md:w-96 flex flex-col overflow-hidden h-[500px] transition-all duration-300 origin-bottom-right transform scale-0 opacity-0">
-      <div class="chat-hologram-header p-4 flex justify-between items-center">
-        <div class="flex items-center gap-3">
+  <div id="floating-chat" class="hidden fixed bottom-6 right-6 z-[100] no-print">
+    <div id="xiaoke-window" class="chat-hologram closed w-80 md:w-96 flex flex-col overflow-hidden h-[500px] transition-all duration-300 transform scale-0 opacity-0 origin-bottom-right absolute bottom-20 right-0">
+      <div id="xiaoke-header" class="chat-hologram-header p-4 flex justify-between items-center">
+        <div class="flex items-center gap-3 select-none">
           <div class="relative">
             <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" alt="小科" class="w-10 h-10 rounded-full border-2 border-cyan-400 bg-slate-900 object-cover shadow-[0_0_10px_#06b6d4]">
             <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-slate-800 animate-pulse"></div>
@@ -432,8 +471,7 @@
         <button onclick="toggleChat()" class="text-cyan-600 hover:text-cyan-300 transition"><i class="fa-solid fa-xmark"></i></button>
       </div>
       
-      <div class="flex-1 p-4 overflow-y-auto text-sm space-y-4 custom-scrollbar" id="chat-messages">
-        </div>
+      <div class="flex-1 p-4 overflow-y-auto text-sm space-y-4 custom-scrollbar" id="chat-messages"></div>
       
       <div class="p-3 border-t border-cyan-500/30 flex gap-2 bg-slate-900/50">
         <input type="text" id="chat-input" data-i18n-placeholder="chat_placeholder" placeholder="Ask AI..." 
@@ -445,15 +483,20 @@
       </div>
     </div>
 
-    <button onclick="toggleChat()" class="group w-16 h-16 rounded-full shadow-[0_0_25px_rgba(6,182,212,0.6)] flex items-center justify-center hover:scale-105 transition-all overflow-hidden border-2 border-cyan-400 relative bg-slate-900">
-      <div class="absolute inset-0 bg-cyan-500/20 animate-ping"></div>
-      <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" alt="小科" class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition z-10">
-    </button>
+    <div class="relative group cursor-pointer" onclick="toggleChat()">
+        <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-cyan-900/80 text-cyan-300 text-xs font-bold px-3 py-1 rounded-full border border-cyan-500/50 opacity-0 group-hover:opacity-100 transition whitespace-nowrap shadow-[0_0_10px_rgba(6,182,212,0.5)]">
+            我是小科
+        </div>
+        <button class="w-16 h-16 rounded-full shadow-[0_0_25px_rgba(6,182,212,0.6)] flex items-center justify-center hover:scale-105 transition-all overflow-hidden border-2 border-cyan-400 relative bg-slate-900">
+          <div class="absolute inset-0 bg-cyan-500/20 animate-ping"></div>
+          <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" alt="小科" class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition z-10">
+        </button>
+    </div>
   </div>
 
   <div id="image-modal" class="fixed inset-0 z-[200] bg-slate-900/90 hidden items-center justify-center p-4 transition-opacity duration-300" onclick="closeModal()">
     <button class="absolute top-6 right-6 text-white/70 hover:text-cyan-400 text-4xl transition" onclick="closeModal()"><i class="fa-solid fa-circle-xmark"></i></button>
-    <div id="modal-content" class="bg-white rounded-xl shadow-2xl overflow-auto max-h-[90vh] max-w-[95vw] p-4" onclick="event.stopPropagation()"></div>
+    <div id="modal-content" class="rounded-xl shadow-2xl overflow-auto max-h-[95vh] p-4" onclick="event.stopPropagation()"></div>
   </div>
 
   <script>
@@ -478,6 +521,47 @@
             chatWindow.classList.add("closed", "scale-0", "opacity-0");
         }
     };
+
+    // [修正點 8] 拖曳功能
+    const dragItem = document.getElementById("floating-chat");
+    let active = false;
+    let currentX;
+    let currentY;
+    let initialX;
+    let initialY;
+    let xOffset = 0;
+    let yOffset = 0;
+
+    dragItem.addEventListener("mousedown", dragStart, false);
+    dragItem.addEventListener("mouseup", dragEnd, false);
+    dragItem.addEventListener("mousemove", drag, false);
+
+    function dragStart(e) {
+      if (e.target.closest("#xiaoke-window")) return; // Don't drag if clicking inside window
+      initialX = e.clientX - xOffset;
+      initialY = e.clientY - yOffset;
+      if (e.target.closest("button") || e.target.closest(".group")) {
+        active = true;
+      }
+    }
+    function dragEnd(e) {
+      initialX = currentX;
+      initialY = currentY;
+      active = false;
+    }
+    function drag(e) {
+      if (active) {
+        e.preventDefault();
+        currentX = e.clientX - initialX;
+        currentY = e.clientY - initialY;
+        xOffset = currentX;
+        yOffset = currentY;
+        setTranslate(currentX, currentY, dragItem);
+      }
+    }
+    function setTranslate(xPos, yPos, el) {
+      el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
+    }
     
     // --- 核心邏輯 ---
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxBWrZCp-xLckDGZnhe64K0IUa_8CJZRzqZbrgL8lQdNn3S1WgaEzbdOtpo4mGwN6_H/exec";
@@ -629,7 +713,7 @@
         quiz_prefix: "单元小测验－{unit}",
         quiz_not_ready: "测验尚未准备好",
         quiz_result_btn: "看结果",
-        quiz_next: "下一题",
+        quiz_next: "下一題",
         quiz_score_title: "测验成绩",
         quiz_ai_analyzing: "AI 分析中...",
         quiz_result_text: "答对 {correct} 题 / 共 {total} 题",
@@ -931,6 +1015,21 @@
       }
     }
 
+    // [修正點 2] 同步高度函式
+    function syncVocabHeight() {
+        const sum = document.getElementById('summary-panel');
+        const voc = document.getElementById('vocab-panel');
+        if(sum && voc) {
+            // 在移動設備上保持自然高度
+            if(window.innerWidth < 768) {
+               voc.style.height = 'auto';
+               return;
+            }
+            const h = sum.offsetHeight;
+            voc.style.height = h + 'px'; 
+        }
+    }
+
     function renderResult(data) {
       const raw = data.raw_content || {};
 
@@ -991,8 +1090,10 @@
             mermaid.init(undefined, document.querySelectorAll('.mermaid')).then(() => {
               const svg = chartDiv.querySelector('svg');
               if (svg) {
-                svg.removeAttribute('style'); svg.removeAttribute('width'); svg.removeAttribute('height');
-                svg.style.height = "auto"; svg.style.display = "block"; svg.style.margin = "0 auto";
+                // [修正點 3] 移除 inline style 讓 CSS 控制
+                svg.removeAttribute('style'); 
+                svg.removeAttribute('width'); 
+                svg.removeAttribute('height');
                 svg.style.fontFamily = '"Inter","Noto Sans TC", sans-serif';
               }
             });
@@ -1018,20 +1119,21 @@
             statement = statement.replace(/^迷思[:：]\s*/,'').replace(/^常見想法[:：]\s*/,'').trim();
             const cardId = `myth-${index}`;
             const div = document.createElement('div');
-            div.className = 'bg-white p-4 rounded-xl border border-red-100/50 shadow-sm flex flex-col gap-3';
+            // [修正點 5] 亮字 (text-white) 與深色背景
+            div.className = 'bg-slate-700/50 p-4 rounded-xl border border-red-500/30 shadow-sm flex flex-col gap-3';
             div.innerHTML = `
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                  <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-red-100 text-red-700 text-[10px] font-bold">Q${index + 1}</span>
-                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Concept Check</span>
+                  <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-red-500 text-white text-[10px] font-bold">Q${index + 1}</span>
+                  <span class="text-[10px] font-bold text-red-200 uppercase tracking-wider">Concept Check</span>
                 </div>
               </div>
-              <div class="text-sm font-medium text-slate-800 leading-relaxed">${statement}</div>
+              <div class="text-sm font-bold text-white leading-relaxed tracking-wide">${statement}</div>
               <div class="flex gap-2 mt-1">
-                <button id="${cardId}-btn-true" onclick="answerMyth(${index}, true)" class="myth-option-btn flex-1 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-white hover:shadow-sm">${t("myth_true")}</button>
-                <button id="${cardId}-btn-false" onclick="answerMyth(${index}, false)" class="myth-option-btn flex-1 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-white hover:shadow-sm">${t("myth_false")}</button>
+                <button id="${cardId}-btn-true" onclick="answerMyth(${index}, true)" class="myth-option-btn flex-1 py-2 text-xs font-bold rounded-lg border border-slate-500 bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition">${t("myth_true")}</button>
+                <button id="${cardId}-btn-false" onclick="answerMyth(${index}, false)" class="myth-option-btn flex-1 py-2 text-xs font-bold rounded-lg border border-slate-500 bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition">${t("myth_false")}</button>
               </div>
-              <div id="${cardId}-feedback" class="mt-2 hidden text-xs leading-relaxed rounded-lg p-2 bg-slate-50"></div>
+              <div id="${cardId}-feedback" class="mt-2 hidden text-xs leading-relaxed rounded-lg p-3 bg-slate-800 border border-slate-600 text-slate-200"></div>
             `;
             mythListEl.appendChild(div);
           });
@@ -1053,7 +1155,11 @@
       const chatBtn = document.getElementById('floating-chat');
       if (chatBtn) chatBtn.classList.remove('hidden');
       
-      changeLanguage(); // Apply language to new content
+      changeLanguage();
+      
+      // [修正點 2] 觸發高度同步
+      setTimeout(syncVocabHeight, 200);
+      window.addEventListener('resize', syncVocabHeight);
     }
 
     function downloadTXT() {
@@ -1140,7 +1246,14 @@
       if (!modal || !content) return;
       content.innerHTML = chartDiv.innerHTML;
       const svg = content.querySelector("svg");
-      if (svg) { svg.removeAttribute("style"); svg.style.width = "100%"; svg.style.height = "auto"; }
+      if (svg) { 
+          // [修正點 4] 確保 Modal 內的 SVG 可見且放大
+          svg.removeAttribute("style"); 
+          svg.style.width = "100%"; 
+          svg.style.height = "auto";
+          svg.style.minWidth = "800px"; // 強制最小寬度
+          svg.style.backgroundColor = "#0f172a"; // 背景色確保文字可見
+      }
       modal.classList.remove("hidden"); modal.classList.add("flex");
     }
     function closeModal() {
@@ -1178,8 +1291,8 @@
       if (chooseTrue) btnTrue.classList.remove("opacity-50"); else btnFalse.classList.remove("opacity-50");
 
       feedback.innerHTML = isCorrectChoice ? 
-        `<div class="font-bold text-emerald-600 mb-1">${t("msg_correct")}</div><div class="text-slate-600">${correct}</div>` : 
-        `<div class="font-bold text-red-500 mb-1">${t("msg_wrong")}</div><div class="text-slate-600">${correct}</div>`;
+        `<div class="font-bold text-emerald-400 mb-1">${t("msg_correct")}</div><div class="text-slate-300">${correct}</div>` : 
+        `<div class="font-bold text-red-400 mb-1">${t("msg_wrong")}</div><div class="text-slate-300">${correct}</div>`;
       feedback.classList.remove("hidden");
     }
 
@@ -1238,10 +1351,10 @@
       q.options.forEach((opt, optIndex) => {
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.className = "quiz-option-btn w-full text-left px-4 py-3 text-sm rounded-lg border border-slate-200 bg-white text-slate-700 font-medium flex items-center";
+        btn.className = "quiz-option-btn w-full text-left px-4 py-3 text-sm rounded-lg border border-slate-600 bg-slate-700/50 text-slate-200 font-medium flex items-center hover:bg-slate-600";
         btn.setAttribute("data-opt-index", optIndex);
         btn.onclick = () => handleQuizAnswer(optIndex);
-        btn.innerHTML = `<span class="w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-xs font-bold flex items-center justify-center mr-3">${letters[optIndex]||""}</span>${opt}`;
+        btn.innerHTML = `<span class="w-6 h-6 rounded-full bg-slate-800 text-slate-400 text-xs font-bold flex items-center justify-center mr-3 border border-slate-600">${letters[optIndex]||""}</span>${opt}`;
         quizOptionsEl.appendChild(btn);
       });
 
@@ -1264,12 +1377,12 @@
 
       if (isCorrect) {
         buttons[selectedIndex].classList.add("selected-correct");
-        quizFeedbackEl.className = "mt-4 text-sm rounded-lg p-3 bg-emerald-50 border border-emerald-200 text-emerald-800";
+        quizFeedbackEl.className = "mt-4 text-sm rounded-lg p-3 bg-emerald-900/50 border border-emerald-500 text-emerald-300";
         quizFeedbackEl.innerHTML = `<div class="font-bold flex items-center gap-2"><i class="fa-solid fa-check-circle"></i> ${t("msg_correct")}</div><div class="mt-1 opacity-90">${q.explanation}</div>`;
       } else {
         buttons[selectedIndex].classList.add("selected-wrong");
         if(correctIndex >= 0 && buttons[correctIndex]) buttons[correctIndex].classList.add("selected-correct");
-        quizFeedbackEl.className = "mt-4 text-sm rounded-lg p-3 bg-red-50 border border-red-200 text-red-800";
+        quizFeedbackEl.className = "mt-4 text-sm rounded-lg p-3 bg-red-900/50 border border-red-500 text-red-300";
         quizFeedbackEl.innerHTML = `<div class="font-bold flex items-center gap-2"><i class="fa-solid fa-circle-xmark"></i> ${t("msg_wrong")}</div><div class="mt-1 opacity-90">${q.explanation}</div>`;
       }
       quizFeedbackEl.classList.remove("hidden");
