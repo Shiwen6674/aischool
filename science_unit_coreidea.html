@@ -43,6 +43,7 @@
       }
     };
 
+    // Mermaid 設定：科技藍圖風格 (配合深色模式)
     mermaid.initialize({
       startOnLoad: false,
       theme: 'base',
@@ -435,7 +436,7 @@
   </div>
 
   <script>
-    // --- Configuration & Global Variables ---
+    // --- Global Config ---
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxBWrZCp-xLckDGZnhe64K0IUa_8CJZRzqZbrgL8lQdNn3S1WgaEzbdOtpo4mGwN6_H/exec";
     let allData = [], filters = {}, currentResultData = null, mythData = [];
     let quizState = { questions: [], currentIndex: 0, hasAnswered: false, answers: [] };
@@ -457,7 +458,6 @@
         const langSel = document.getElementById("language-selector");
         if(langSel) currentLang = langSel.value;
         document.querySelectorAll("[data-i18n]").forEach(el => { el.innerText = t(el.getAttribute("data-i18n")); });
-        // Update placeholders/options if needed
         ["sel-stage", "sel-publisher", "sel-grade", "sel-semester", "sel-unit"].forEach(id => {
              const el = document.getElementById(id);
              if(el && el.options.length>0 && el.options[0].disabled) el.options[0].text = t('select_default');
@@ -584,7 +584,7 @@
       if (!summaryContent && raw.text_summary) summaryContent = raw.text_summary;
       document.getElementById('summary-text').innerHTML = summaryContent || t("summary_fail");
 
-      // [修復 1] Vocab: 支援物件或字串
+      // [修復 1] Vocab
       const keywordList = document.getElementById('keywords-list');
       keywordList.innerHTML = '';
       let kList = data.keywords || [];
@@ -596,7 +596,7 @@
           });
       } else { keywordList.innerHTML = `<div class="text-slate-500 text-xs text-center py-4 border border-dashed border-slate-700 rounded">${t("vocab_none")}</div>`; }
 
-      // [修復 2] Mermaid: 清除與重繪
+      // [修復 2] Mermaid
       const chartDiv = document.getElementById('mermaid-chart');
       let mapData = data.mindMap || (data.summary && data.summary.mermaid) || '';
       chartDiv.removeAttribute('data-processed'); 
@@ -614,7 +614,7 @@
           });
       } else { chartDiv.innerText = t("map_none"); }
 
-      // [修復 3] Myth: 產生按鈕並綁定事件
+      // [修復 3] Myth
       const mythListEl = document.getElementById('myth-list');
       mythListEl.innerHTML = '';
       mythData = (data.myths || []).slice(0, 10);
@@ -636,7 +636,7 @@
          });
       } else { mythListEl.innerText = "No Data"; }
 
-      // [修復 4] Quiz: 初始化
+      // [修復 4] Quiz
       quizState.questions = (data.quiz || []).slice(0, 10).map((q,i)=>({
           id: i, stem: q.question, options: q.options, correctIndex: q.correctIndex||0, explanation: q.explanation||""
       }));
