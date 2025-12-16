@@ -7,9 +7,6 @@
     
     <script>
         // 【開發模式】已暫時將下方檢查註解掉，讓您可以直接進入測試。
-        // 等正式上線且 index.html 有寫入 sessionStorage.setItem('isLoggedIn', 'true') 後
-        // 請將下方的 /* 與 */ 移除，即可恢復防盜功能。
-        
         /*
         if (!sessionStorage.getItem('isLoggedIn')) {
             window.location.href = 'index.html';
@@ -64,15 +61,19 @@
             z-index: -2; pointer-events: none;
         }
 
-        /* 2. 圓潤的玻璃卡片 */
+        /* 2. 圓潤的玻璃卡片 - 基礎類 */
         .glass-panel { 
-            background: rgba(30, 41, 59, 0.7); 
             backdrop-filter: blur(16px); 
             -webkit-backdrop-filter: blur(16px); 
             border: 1px solid rgba(255, 255, 255, 0.08); 
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); 
             border-radius: 1.5rem; 
         }
+
+        /* [Visual] 區塊顏色區分 */
+        .panel-left { background: rgba(15, 23, 42, 0.7); } /* 較深的藍色 (Menu) */
+        .panel-center { background: rgba(30, 41, 59, 0.6); } /* 標準透光 (Content) */
+        .panel-right { background: rgba(30, 27, 75, 0.5); } /* 帶一點紫的深色 (Vocab) */
 
         /* 捲軸美化 */
         .scroll-area::-webkit-scrollbar { width: 6px; }
@@ -122,14 +123,17 @@
             display: inline-block;
         }
 
-        /* 5. 閱讀區塊 */
+        /* 5. 閱讀區塊 (排版優化) */
         .content-block { 
-            margin-bottom: 2.5rem; 
+            margin-bottom: 3rem; /* 增加區塊間距 */
             padding: 1.5rem; 
             border-radius: 1.5rem; 
             background: transparent; 
             border: 1px solid transparent; 
             transition: all 0.3s ease; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 1.25rem; /* [排版] 增加中英文之間的距離 */
         }
         
         /* 🎯 正在朗讀的高亮 (桃紅系) */
@@ -142,62 +146,74 @@
         }
         .reading-active .zh-text,
         .reading-active .en-text,
-        .reading-active .sci-term {
+        .reading-active .sci-term,
+        .reading-active .section-title-text { /* 包含標題文字 */
             color: #f472b6 !important;
             text-shadow: 0 0 10px rgba(244, 114, 182, 0.4);
             border-bottom-color: transparent;
         }
 
-        /* 6. 字體排版 */
+        /* 6. 字體排版 (優化閱讀感) */
         .en-text { 
-            font-size: 1.25rem; 
+            font-size: 1.3rem; /* [排版] 稍微加大英文 */
             color: #4ade80; 
-            line-height: 1.6; 
-            margin-bottom: 0.8rem; 
-            font-weight: 600; 
+            line-height: 1.7; 
+            font-weight: 500; 
             font-family: 'Inter', sans-serif; 
             cursor: pointer; 
             transition: color 0.3s;
         }
-        .en-text:hover { opacity: 0.8; color: #fff; }
+        .en-text:hover { opacity: 0.9; color: #fff; }
 
         .zh-text { 
-            font-size: 1.1rem; 
-            color: #ffffff; 
-            line-height: 1.8; 
-            padding-left: 14px; 
-            border-left: 3px solid rgba(255, 255, 255, 0.1); 
+            font-size: 1.25rem; /* [排版] 稍微加大中文 */
+            color: #e2e8f0;     /* [排版] 稍微調亮中文顏色，對比度更好 */
+            line-height: 2.0;   /* [排版] 增加中文行高，閱讀更舒適 */
+            letter-spacing: 0.08em; /* [排版] 增加字距 */
+            padding-left: 0;    /* [排版] 移除不必要的內縮，交給 gap 控制 */
             cursor: pointer; 
             font-weight: 400; 
-            letter-spacing: 0.05em; 
             transition: color 0.3s;
+            text-align: justify; /* [排版] 左右對齊 */
         }
-        .zh-text:hover { color: #f472b6; border-left-color: #f472b6; }
+        .zh-text:hover { color: #f472b6; }
 
+        /* [排版] 章節標題優化 */
         .section-header { 
-            font-size: 1.6rem; 
-            font-weight: 900; 
-            color: #fff; 
-            margin-top: 3.5rem; 
-            margin-bottom: 2rem; 
-            padding-bottom: 0.5rem; 
-            border-bottom: 2px solid rgba(255, 255, 255, 0.1); 
-            display: flex; align-items: center; gap: 1rem; 
+            margin-top: 4rem; 
+            margin-bottom: 2.5rem; 
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* 改為更輕微的底線 */
+            background: rgba(255,255,255,0.02); /* 極淡的背景凸顯 */
+            display: flex; 
+            align-items: flex-start; 
+            gap: 1rem; 
+            transition: all 0.3s;
         }
+        /* [排版] 標題左側裝飾線加強 */
         .section-header::before { 
-            content: ''; display: block; width: 8px; height: 32px; 
+            content: ''; display: block; width: 6px; height: 100%; min-height: 40px;
             background: #4ade80; border-radius: 99px; 
-            box-shadow: 0 0 10px #4ade80;
+            box-shadow: 0 0 15px rgba(74, 222, 128, 0.4); /* 增加光暈 */
+            margin-top: 4px;
+        }
+        .section-title-text {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #fff;
+            line-height: 1.4;
+            cursor: pointer;
         }
 
-        /* === [UI 修改] 學生友善下拉選單 (優化比例版) === */
+        /* 下拉選單樣式 (保持原樣) */
         .student-select-wrapper {
             position: relative; display: flex; align-items: center;
             background-color: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 99px; /* 膠囊形狀 */
-            padding: 0 14px; /* [UI 修改] 左右內距稍微縮小 */
-            height: 40px;    /* [UI 修改] 設定固定高度，讓膠囊更工整 */
+            border-radius: 99px; 
+            padding: 0 14px; 
+            height: 40px;    
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
             min-width: max-content; 
@@ -207,10 +223,9 @@
             transform: translateY(-1px);
             border-color: #4ade80;
         }
-        /* [UI 修改] Icon 縮小並調整顏色對比 */
         .student-select-icon { 
             color: #4ade80; 
-            font-size: 0.875rem; /* [UI 修改] 縮小 Icon (14px) */
+            font-size: 0.875rem; 
             margin-right: 8px; 
             pointer-events: none; 
         }
@@ -218,38 +233,36 @@
             appearance: none; -webkit-appearance: none;
             background: transparent; border: none;
             color: #fff; 
-            /* [UI 修改] 字體與粗細調整區 */
-            font-size: 0.875rem; /* [UI 修改] 縮小字體至 14px (原 0.95rem) */
-            font-weight: 600;    /* [UI 修改] 減輕字重 (原 700)，看起來較不擁擠 */
-            padding: 0 24px 0 0; /* [UI 修改] 調整 Padding，垂直由 flex 控制 */
+            font-size: 0.875rem; 
+            font-weight: 600;    
+            padding: 0 24px 0 0; 
             width: 100%; height: 100%;
             cursor: pointer; outline: none;
-            /* 下拉箭頭 */
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right center; background-repeat: no-repeat; background-size: 0.85em 0.85em; /* [UI 修改] 箭頭也稍微縮小 */
+            background-position: right center; background-repeat: no-repeat; background-size: 0.85em 0.85em; 
         }
         .student-select option { background-color: #1E293B; color: #fff; padding: 10px; }
 
         /* 底部播放器 */
         .player-dock {
-            background: rgba(15, 23, 42, 0.9);
+            background: rgba(15, 23, 42, 0.95); /* 加深一點防止透底太多 */
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 2rem;
             padding: 0.75rem 1.5rem;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
         }
 
-        #reading-container { padding-bottom: 160px !important; }
+        #reading-container { padding-bottom: 180px !important; }
         #control-dock { padding-bottom: env(safe-area-inset-bottom, 20px); bottom: max(1.5rem, env(safe-area-inset-bottom)); }
 
         .vocab-item { 
-            background: rgba(255, 255, 255, 0.03); 
+            background: rgba(255, 255, 255, 0.05); /* 稍微調亮 */
             border-radius: 12px; margin-bottom: 8px; padding: 12px 16px; 
             display: flex; justify-content: space-between; align-items: center; 
             transition: all 0.2s; border: 1px solid transparent;
         }
-        .vocab-item:hover { background: rgba(255, 255, 255, 0.08); border-color: #4ade80; }
+        .vocab-item:hover { background: rgba(255, 255, 255, 0.1); border-color: #4ade80; transform: translateX(2px); }
         .en-term-label { color: #4ade80 !important; font-size: 1.1rem !important; font-weight: 700; }
 
         .loader { border: 3px solid rgba(74, 222, 128, 0.2); border-top: 3px solid #4ade80; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
@@ -267,7 +280,7 @@
     </div>
 
     <nav class="sticky top-4 z-40 px-4 flex flex-col md:flex-row items-center gap-3 shrink-0 pointer-events-none">
-        <div class="glass-panel px-4 py-2 flex items-center gap-4 pointer-events-auto shadow-lg">
+        <div class="glass-panel panel-left px-4 py-2 flex items-center gap-4 pointer-events-auto shadow-lg">
             <button onclick="goBack()" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-green-400 hover:text-white transition group">
                 <i class="fa-solid fa-arrow-left text-lg group-hover:-translate-x-1 transition-transform"></i>
             </button>
@@ -324,7 +337,7 @@
     </nav>
 
     <div class="flex-grow flex overflow-hidden p-4 gap-4 relative z-10 mt-2">
-        <aside class="w-64 glass-panel flex flex-col overflow-hidden hidden md:flex">
+        <aside class="w-64 glass-panel panel-left flex flex-col overflow-hidden hidden md:flex">
             <div class="p-5 border-b border-white/10 bg-black/20">
                 <h3 class="text-xs font-bold text-green-400 tracking-widest mb-1 uppercase" data-i18n="nav">MENU</h3>
                 <div class="text-white font-bold text-lg truncate" id="nav-title">請選擇單元</div>
@@ -334,7 +347,7 @@
             </div>
         </aside>
 
-        <section class="flex-grow glass-panel flex flex-col relative overflow-hidden">
+        <section class="flex-grow glass-panel panel-center flex flex-col relative overflow-hidden">
             <div class="h-14 border-b border-white/10 bg-black/20 flex items-center justify-between px-6 gap-3 shrink-0">
                 <div class="flex items-center gap-2 min-w-0">
                     <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
@@ -349,17 +362,16 @@
                 </div>
             </div>
 
-            <div class="flex-grow scroll-area overflow-y-auto p-6 md:p-10 relative" id="reading-container">
+            <div class="flex-grow scroll-area overflow-y-auto p-6 md:p-12 relative" id="reading-container">
                 <article class="max-w-4xl mx-auto transition-opacity duration-500" id="article-body">
-                    <h1 class="text-3xl md:text-4xl font-black text-white mb-8 text-center" id="article-title">
+                    <h1 class="text-3xl md:text-4xl font-black text-white mb-10 text-center" id="article-title">
                         <span class="text-slate-500 opacity-30 text-2xl">等待探索...</span>
                     </h1>
-                    <div id="article-content" class="space-y-6"></div>
-                </article>
+                    <div id="article-content" class="space-y-2"></div> </article>
             </div>
         </section>
 
-        <aside class="w-80 glass-panel flex flex-col overflow-hidden hidden lg:flex">
+        <aside class="w-80 glass-panel panel-right flex flex-col overflow-hidden hidden lg:flex">
             <div class="p-5 border-b border-white/10 bg-gradient-to-r from-yellow-500/10 to-transparent">
                 <div class="flex items-center gap-2 mb-1">
                     <i class="fa-solid fa-lightbulb text-yellow-400"></i>
@@ -423,10 +435,8 @@
         let currentBlockIndex = 0;
         let currentUnitTitleZh = "";
         let currentUnitTitleEn = "";
-        // 預設語言讀取 localStorage，若無則預設 zh-TW
         let currentLang = localStorage.getItem('appLang') || 'zh-TW';
 
-        // 擴充四語系設定
         const i18n = {
             'zh-TW': { return: '返回', page_title: 'AI School', nav: '目錄', vocab_title: '科學詞彙庫', select_hint: '👈 請先上方選擇單元', vocab_empty: '詞彙將顯示於此', stage: '階段', grade: '年級', version: '版本', semester: '學期', unit: '選擇單元' },
             'en': { return: 'Back', page_title: 'AI School', nav: 'MENU', vocab_title: 'Science Vocab', select_hint: '👈 Select Unit Above', vocab_empty: 'Vocab will appear here', stage: 'Stage', grade: 'Grade', version: 'Version', semester: 'Semester', unit: 'Select Unit' },
@@ -435,7 +445,7 @@
         };
 
         document.addEventListener('DOMContentLoaded', () => {
-            initLanguage(); // 初始化語言
+            initLanguage();
             fetchData();
             if(synth) synth.onvoiceschanged = () => synth.getVoices();
             setVoice('female'); 
@@ -445,7 +455,6 @@
             }, { once: true, passive: true });
         });
 
-        // 語言切換功能
         function initLanguage() {
             const sel = document.getElementById('sel-lang');
             if(sel) sel.value = currentLang;
@@ -454,9 +463,8 @@
 
         function changeLanguage(lang) {
             currentLang = lang;
-            localStorage.setItem('appLang', lang); // 儲存至全站
+            localStorage.setItem('appLang', lang); 
             applyLanguage(lang);
-            // 重新刷新下拉選單的預設文字
             const ids=['stage','grade','version','semester','unit'];
             ids.forEach(id => {
                const el = document.getElementById(`sel-${id}`);
@@ -466,10 +474,8 @@
                    el.options[0].text = label;
                }
             });
-            // 重新整理標題顯示 (若有單元標題)
             if(processedUnits.length > 0) {
-                 // 重新 populate 觸發翻譯更新 (這裡簡化處理，直接更新文字)
-                 filterUnits('stage'); // 重新觸發過濾器以更新選單文字
+                 filterUnits('stage');
             }
         }
 
@@ -488,7 +494,7 @@
         function fetchData() {
             Papa.parse(TARGET_URL, {
                 download: true, header: false,
-                skipEmptyLines: true, // 防止空行
+                skipEmptyLines: true, 
                 complete: res => { processData(res.data); document.getElementById('loader-overlay').style.display='none'; showToast("準備完成，開始探索吧！"); },
                 error: () => document.getElementById('loader-overlay').innerHTML='<div class="text-red-500">連線錯誤，請重整</div>'
             });
@@ -517,8 +523,6 @@
           });
           return map;
         }
-
-        function ckipLineToPlainAndHtml(ckipLine, vocabMap){ return { plain: "", html: "" }; }
 
         function processData(data) {
             rawData = data.slice(1);
@@ -550,7 +554,6 @@
             else if(lvl==='grade') { update(sels[2],'version','version'); resetSelects(sels.slice(3)); }
             else if(lvl==='version') { update(sels[3],'semester','semester'); resetSelects(sels.slice(4)); }
             else if(lvl==='semester') {
-                // 更新單元選擇的預設文字
                 const label = i18n[currentLang]['unit'] || '選擇單元';
                 sels[4].innerHTML=`<option value="" disabled selected data-i18n="unit">${label}</option>`;
                 filtered.forEach(u=>sels[4].add(new Option(u.title,u.id)));
@@ -560,7 +563,6 @@
 
         function populateSelect(id,items,i18nKey){
             const s=document.getElementById(id);
-            // 修改：使用當前語言
             const label = i18n[currentLang][i18nKey] || i18n['zh-TW'][i18nKey] || '請選擇';
             s.innerHTML=`<option value="" disabled selected>${label}</option>`;
             items.forEach(i=>s.add(new Option(i,i)));
@@ -569,7 +571,6 @@
         function resetSelects(els){
             els.forEach(e=>{
                 const key = e.id.replace('sel-','');
-                // 修改：使用當前語言
                 const label = i18n[currentLang][key] || i18n['zh-TW'][key] || '...';
                 e.innerHTML=`<option value="" disabled selected>${label}</option>`;
                 e.disabled=true;
@@ -683,11 +684,12 @@
                     navItem.innerText = line;
                     navItem.onclick=()=>{ document.getElementById(anchorId).scrollIntoView({behavior:'smooth',block:'center'}); };
                     document.getElementById('unit-list').appendChild(navItem);
+                    // [排版] 更新 section-header 結構，加入 .section-title-text 以便 JS 選擇
                     contentDiv.innerHTML += `
                         <h2 id="${anchorId}" class="section-header">
                             <div class="flex flex-col w-full">
-                                <span class="zh-text text-2xl md:text-3xl font-black cursor-pointer transition" onclick="speakText(this.innerText)">${escapeHtml(line)}</span>
-                                <span class="en-text hidden text-xl md:text-2xl mt-2 font-bold cursor-pointer transition" 
+                                <span class="zh-text section-title-text" onclick="speakText(this.innerText)">${escapeHtml(line)}</span>
+                                <span class="en-text hidden mt-1 font-bold" 
                                       data-source="${encodeURIComponent(line)}"
                                       onclick="speakText(this.innerText)"></span>
                             </div>
@@ -697,7 +699,7 @@
                     contentDiv.innerHTML += `
                         <div class="content-block">
                             <p class="zh-text" onclick="speakText(this.innerText)">${processed}</p>
-                            <p class="en-text hidden mt-3"
+                            <p class="en-text hidden"
                                onclick="speakText(this.innerText)"
                                data-source="${encodeURIComponent(line)}"></p>
                         </div>`;
@@ -833,10 +835,7 @@
           return safe;
         }
 
-        // ====================== TTS (針對 iOS 優化版) ======================
-        
-        // 偵測是否為 iOS 裝置
-       // ====================== TTS 極致優化版 (支援 iOS/Android/PC 高音質) ======================
+        // ====================== TTS 優化版 (自然度+標題朗讀) ======================
         
         function isIOSDevice(){
             return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -850,13 +849,12 @@
             return latin > cjk * 2;
         }
 
-        // 核心修改：智慧型語音選擇器 (百萬級調校)
+        // [核心修改] 語音選擇權重優化 - 針對中文自然度調整
         function pickBestVoice(isEng, gender) {
             if (!window.speechSynthesis) return null;
             const voices = window.speechSynthesis.getVoices();
             if (voices.length === 0) return null;
 
-            // 定義目標語系 (擴大搜尋範圍以確保命中)
             const targetLang = isEng ? ['en-us', 'en-gb', 'en', 'en-au'] : ['zh-tw', 'zh-hk', 'zh-cn', 'zh'];
 
             const getScore = (voice) => {
@@ -865,95 +863,67 @@
                 const uri = (voice.voiceURI || "").toLowerCase();
                 const lang = voice.lang.toLowerCase();
 
-                // 1. 語系匹配 (基礎門檻)
+                // 1. 語系匹配
                 if (targetLang.some(t => lang === t || lang.replace('_', '-').startsWith(t))) { 
                     score += 1000; 
-                    // 中文優先選繁體
                     if (!isEng && (lang === 'zh-tw' || lang.includes('taiwan'))) score += 500;
-                    // 英文優先選美式 (通常最自然)
                     if (isEng && (lang === 'en-us')) score += 200;
                 } else { 
-                    return -100000; // 非目標語系直接淘汰
+                    return -100000;
                 }
                 
-                // 2. 音質優化關鍵字 (跨平台)
-                // iOS: "Enhanced", "Siri"
-                // Android: "Network", "Online" (Google 高音質)
-                // Windows: "Microsoft"
+                // 2. 音質優化關鍵字 (增加 Online/Neural 權重)
                 if (name.includes('enhanced') || uri.includes('enhanced')) score += 5000; 
                 if (name.includes('premium') || uri.includes('premium')) score += 5000;
-                if (name.includes('natural') || name.includes('online') || name.includes('cloud')) score += 4000; 
-                if (name.includes('siri')) score += 4000; // Siri 聲音通常很棒
+                if (name.includes('natural') || name.includes('online') || name.includes('cloud') || name.includes('neural')) score += 6000; // Neural 聲音通常最好
+                if (name.includes('siri')) score += 4000;
                 
-                // 3. 避免地雷 (Compact 是壓縮版，聲音模糊)
                 if (name.includes('compact') || uri.includes('compact')) score -= 8000; 
 
-                // 4. 性別與特定人名優化 (這是變好聽的關鍵)
+                // 3. 性別與特定優質語音 (微軟/Google 高品質語音清單)
                 if (gender === 'female') {
-                    // === 英文女聲 ===
                     if (isEng) {
-                        // iOS/macOS 頂級女聲
                         if (name.includes('samantha')) score += 20000; 
-                        else if (name.includes('ava')) score += 15000;      
+                        else if (name.includes('ava')) score += 15000;       
                         else if (name.includes('siri') && !name.includes('male')) score += 10000;
-                        else if (name.includes('zoe')) score += 8000;
-                        // Google/Android 頂級女聲
                         else if (name.includes('google') && name.includes('female')) score += 10000;
-                        // Windows
                         else if (name.includes('zira') || name.includes('susan')) score += 5000;
-                        
-                        if (name.includes('male') || name.includes('man') || name.includes('fred') || name.includes('daniel')) score -= 10000;
+                        if (name.includes('male') || name.includes('man')) score -= 10000;
                     } 
-                    // === 中文女聲 ===
-                    else {
-                        // iOS/macOS 頂級女聲
-                        if (name.includes('meijia')) score += 20000;    // Meijia (美佳) 是 iOS 台灣標準女聲
-                        else if (name.includes('tingting')) score += 15000; // Tingting 聲音非常清晰
-                        else if (name.includes('sinji')) score += 5000; // 香港女聲
-                        // Google/Android
+                    else { // 中文女聲
+                        if (name.includes('meijia')) score += 20000;    
+                        else if (name.includes('hsiaoyu')) score += 18000; // MS Edge Neural (TW)
+                        else if (name.includes('xiaoxiao')) score += 18000; // MS Edge Neural (CN)
+                        else if (name.includes('tingting')) score += 15000; 
+                        else if (name.includes('sinji')) score += 5000; 
                         else if (name.includes('google') && (lang === 'zh-tw' || lang === 'zh-cn')) score += 10000;
-                        // Windows
                         else if (name.includes('hanhan') || name.includes('yating')) score += 10000;
-
                         if (name.includes('male') || name.includes('man')) score -= 10000;
                     }
                 } else {
-                    // === 英文男聲 ===
                     if (isEng) {
-                        // iOS/macOS
-                        if (name.includes('daniel')) score += 20000; // Daniel 是 iOS 英國男聲，很標準
+                        if (name.includes('daniel')) score += 20000; 
                         else if (name.includes('alex')) score += 15000;
                         else if (name.includes('nathan')) score += 15000;
                         else if (name.includes('siri') && name.includes('male')) score += 10000;
-                        
-                        if (name.includes('female') || name.includes('woman') || name.includes('samantha')) score -= 10000;
+                        if (name.includes('female') || name.includes('woman')) score -= 10000;
                     } 
-                    // === 中文男聲 ===
-                    else {
-                        // iOS (中文男聲較少，通常選 Siri)
-                        if (name.includes('siri') && name.includes('male')) score += 15000;
-                        else if (name.includes('li-mu')) score += 10000; // Li-mu (中國)
-                        // Windows
+                    else { // 中文男聲
+                        if (name.includes('yunxi')) score += 18000; // MS Edge Neural (Male)
+                        else if (name.includes('siri') && name.includes('male')) score += 15000;
+                        else if (name.includes('li-mu')) score += 10000; 
                         else if (name.includes('zhiwei')) score += 15000;
-                        // Android
                         else if (name.includes('google') && name.includes('male')) score += 10000;
-
-                        if (name.includes('female') || name.includes('woman') || name.includes('meijia') || name.includes('tingting')) score -= 10000;
+                        if (name.includes('female') || name.includes('woman') || name.includes('meijia')) score -= 10000;
                     }
                 }
-
                 return score;
             };
 
             const sorted = voices.map(v => ({ v, score: getScore(v) })).filter(item => item.score > -5000).sort((a, b) => b.score - a.score);
-            
-            // Debug: 檢查選到了什麼聲音
-            // if(sorted.length > 0) console.log(`Selected ${isEng?'EN':'ZH'} (${gender}):`, sorted[0].v.name, sorted[0].score);
-            
             return sorted.length > 0 ? sorted[0].v : voices[0];
         }
 
-        // 核心修改：播放邏輯調整
         function speakText(txt, onComplete) {
             if (!synth) return;
             isSpeaking = true;
@@ -974,7 +944,7 @@
             const isEng = isMostlyEnglish(cleanTxt);
             const lang = isEng ? "en-US" : "zh-TW"; 
             
-            // iOS 分段邏輯 (防止長文不讀)
+            // iOS 分段邏輯
             const chunks = (ios && cleanTxt.length > (isEng ? 300 : 100)) ? splitTextForSpeak(cleanTxt, isEng) : [cleanTxt];
             const uiRate = parseFloat(document.getElementById('play-rate')?.value || "1.0");
             let idx = 0;
@@ -990,20 +960,21 @@
                 const u = new SpeechSynthesisUtterance(part);
                 u.lang = lang;
                 
-                // 取得最佳聲音
                 let voice = pickBestVoice(isEng, currentVoice);
                 if (voice) u.voice = voice;
 
-                // 針對 iOS 調整參數，使其更自然
                 if (ios) { 
-                    // iOS 若調 Pitch 容易導致聲音變回機械音，盡量保持 1.0
                     u.pitch = 1.0; 
-                    // 速度微調，中文稍微慢一點點會更像人，避免連音
                     u.rate = isEng ? uiRate : (uiRate * 0.95); 
                 } else { 
                     u.rate = uiRate; 
-                    // 非 iOS 設備可以用 Pitch 輔助性別區分
-                    u.pitch = (currentVoice === 'male') ? 0.9 : 1.1; 
+                    // [調整] 針對非 iOS 中文男聲，稍微降低 Pitch 避免機械音
+                    if (!isEng && currentVoice === 'male') {
+                         u.pitch = 0.95; 
+                         u.rate = uiRate * 0.9; // 中文稍微慢一點比較自然
+                    } else {
+                         u.pitch = (currentVoice === 'male') ? 0.9 : 1.1; 
+                    }
                 }
 
                 u.onend = speakNext;
@@ -1011,7 +982,6 @@
                 synth.speak(u);
             };
             
-            // 確保聲音已加載 (iOS 有時需要觸發一下)
             if(synth.getVoices().length === 0 && synth.onvoiceschanged) {
                 synth.onvoiceschanged();
                 setTimeout(speakNext, 100);
@@ -1020,7 +990,6 @@
             }
         }
 
-        // 簡單的分段功能 (防止 iOS 長文不朗讀)
         function splitTextForSpeak(text, isEng) {
             const regex = isEng ? /([.?!;]+)/ : /([。！？；]+)/;
             return text.split(regex).reduce((acc, curr, i) => {
@@ -1032,7 +1001,8 @@
 
         function playSequence() {
             if (!isSpeaking) return;
-            const blocks = document.querySelectorAll('.content-block');
+            // [核心修正] 選擇器加入 .section-header，讓標題也被選中
+            const blocks = document.querySelectorAll('.content-block, .section-header');
             if (currentBlockIndex >= blocks.length) { stopSpeech(); return; }
 
             clearHighlights();
@@ -1044,33 +1014,27 @@
 
             const enEl = block.querySelector('.en-text');
             const zhEl = block.querySelector('.zh-text');
-            let textToRead = "";
-            // 根據模式決定讀什麼，若隱藏就不讀
+            
             const enVisible = enEl && !enEl.classList.contains('hidden');
             const zhVisible = zhEl && !zhEl.classList.contains('hidden');
-
-            // 雙語模式先讀英文再讀中文，或依設定 (此處邏輯：顯示什麼讀什麼)
-            // 這裡簡單化：如果英文顯示且有字，優先讀英文，再讀中文(如果顯示)
-            // 但 `speakText` 一次只能讀一段字串，為了簡單，我們組合成一段話，中間加停頓
             
             let texts = [];
-            if (enVisible && enEl.innerText) texts.push(enEl.innerText);
+            // [核心修正] 雙語模式下，先 Push 中文，再 Push 英文
             if (zhVisible && zhEl.innerText) texts.push(zhEl.innerText);
+            if (enVisible && enEl.innerText) texts.push(enEl.innerText);
 
             if (texts.length > 0) {
-                // 遞迴播放 (先播第一段，結束 callback 播第二段...)
                 let tIdx = 0;
                 const playNextPart = () => {
                     if(!isSpeaking) return;
                     if(tIdx >= texts.length) {
-                        // 整個 Block 讀完，換下一塊
                         currentBlockIndex++;
                         playSequence();
                         return;
                     }
                     speakText(texts[tIdx], () => {
                         tIdx++;
-                        setTimeout(playNextPart, 300); // 句與句之間的小停頓
+                        setTimeout(playNextPart, 300); 
                     });
                 };
                 playNextPart();
@@ -1091,10 +1055,10 @@
                 if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
                 if (synth && synth.paused) synth.resume();
                 
-                // 確保聲音已加載 (iOS 有時需要觸發一下)
                 if(synth.getVoices().length === 0 && synth.onvoiceschanged) synth.onvoiceschanged();
 
-                const blocks = document.querySelectorAll('.content-block');
+                // [修正] 選取範圍擴大至標題
+                const blocks = document.querySelectorAll('.content-block, .section-header');
                 if (currentBlockIndex >= blocks.length) currentBlockIndex = 0;
                 setTimeout(() => { if (isSpeaking) playSequence(); }, 10);
             }
