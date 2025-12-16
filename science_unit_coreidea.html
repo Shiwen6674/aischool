@@ -26,25 +26,19 @@
             ui: ['Outfit', 'Noto Sans TC', 'sans-serif'],
           },
           colors: {
-            deep: {
-              bg: '#050b14',
-              card: '#0f172a',
-            },
-            neon: {
-              blue: '#3b82f6',
-              cyan: '#06b6d4',
-              purple: '#8b5cf6',
-              accent: '#f43f5e'
-            }
+            deep: { bg: '#050b14', card: '#0f172a' },
+            neon: { blue: '#3b82f6', cyan: '#06b6d4', purple: '#8b5cf6', accent: '#f43f5e' }
           },
           animation: {
             "fade-in-up": "fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards",
             "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
             "float": "float 6s ease-in-out infinite",
+            "hologram": "hologram 2s infinite linear",
           },
           keyframes: {
             fadeInUp: { "0%": { opacity: "0", transform: "translateY(20px)" }, "100%": { opacity: "1", transform: "translateY(0)" } },
-            float: { "0%, 100%": { transform: "translateY(0)" }, "50%": { transform: "translateY(-6px)" } }
+            float: { "0%, 100%": { transform: "translateY(0)" }, "50%": { transform: "translateY(-6px)" } },
+            hologram: { "0%": { opacity: 0.8 }, "50%": { opacity: 1 }, "100%": { opacity: 0.8 } }
           },
           backgroundImage: {
             'grid-pattern': "linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px)",
@@ -55,11 +49,7 @@
     mermaid.initialize({
       startOnLoad: false,
       theme: 'base',
-      themeVariables: {
-        primaryColor: '#e0f2fe',
-        edgeLabelBackground: '#ffffff',
-        tertiaryColor: '#fff'
-      },
+      themeVariables: { primaryColor: '#e0f2fe', edgeLabelBackground: '#ffffff', tertiaryColor: '#fff' },
       securityLevel: 'loose',
       flowchart: { useMaxWidth: false, htmlLabels: true }
     });
@@ -72,11 +62,9 @@
       color: #e2e8f0;
       font-family: 'Inter', 'Noto Sans TC', sans-serif;
       overflow-x: hidden;
-      /* 背景噪點質感 */
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
     }
 
-    /* 背景動態光暈 */
     .ambient-glow {
       position: fixed; top: -20%; left: 50%; transform: translateX(-50%);
       width: 100vw; height: 80vh;
@@ -92,32 +80,24 @@
     }
 
     /* ===== 元件：玻璃態與卡片 ===== */
-    /* 1. HUD 面板 (導航、控制台) - 深色玻璃 */
     .hud-glass {
-      background: rgba(15, 23, 42, 0.7);
+      background: rgba(15, 23, 42, 0.75);
       backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
     }
     
-    /* 2. 閱讀面板 (摘要、測驗) - 類紙質感 (Paper-on-Glass) 
-       這是解決「科技感 vs 易讀性」的關鍵：內容區使用高亮底色 */
     .reading-paper {
-      background: rgba(255, 255, 255, 0.98); /* 極接近純白，確保最高對比 */
+      background: rgba(255, 255, 255, 0.98);
       border-radius: 1rem;
       border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 
-        0 10px 40px -10px rgba(0, 0, 0, 0.5),
-        0 0 0 1px rgba(6, 182, 212, 0.1) inset; /* 內發光微細節 */
-      color: #1e293b; /* 深灰文字，舒適閱讀 */
+      box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(6, 182, 212, 0.1) inset;
+      color: #1e293b;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-    .reading-paper:hover {
-      box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.6);
-    }
+    .reading-paper:hover { box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.6); }
 
-    /* ===== 表單元件：未來感改造 ===== */
-    /* 隱藏原生 Select 下拉箭頭，改用 CSS 繪製 */
+    /* ===== 表單元件 ===== */
     select {
       appearance: none;
       background-color: rgba(30, 41, 59, 0.6);
@@ -130,27 +110,14 @@
       transition: all 0.3s ease;
       font-family: 'Outfit', sans-serif;
     }
-    select:disabled {
-      background-color: rgba(15, 23, 42, 0.4);
-      color: #475569;
-      cursor: not-allowed;
-      border-color: rgba(255,255,255,0.05);
-    }
-    select:not(:disabled):hover {
-      border-color: rgba(6, 182, 212, 0.5);
-      box-shadow: 0 0 15px rgba(6, 182, 212, 0.1);
-    }
-    select:focus {
-      outline: none;
-      border-color: #06b6d4;
-      box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2);
-    }
+    select:disabled { background-color: rgba(15, 23, 42, 0.4); color: #475569; cursor: not-allowed; border-color: rgba(255,255,255,0.05); }
+    select:not(:disabled):hover { border-color: rgba(6, 182, 212, 0.5); box-shadow: 0 0 15px rgba(6, 182, 212, 0.1); }
+    select:focus { outline: none; border-color: #06b6d4; box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2); }
 
-    /* 生成按鈕：全像投影感 */
+    /* ===== 生成按鈕 ===== */
     #btn-generate:not(:disabled) {
       background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
-      position: relative;
-      overflow: hidden;
+      position: relative; overflow: hidden;
       border: 1px solid rgba(255,255,255,0.2);
       box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
     }
@@ -166,108 +133,63 @@
       100% { transform: rotate(45deg) translateY(100%); }
     }
 
-    /* ===== 內容區細節 ===== */
-    /* 標題裝飾線 */
-    .section-title {
-      font-family: 'Outfit', 'Noto Sans TC', sans-serif;
-      position: relative;
-      display: inline-block;
-    }
-    .section-title::after {
-      content: ''; position: absolute; bottom: -4px; left: 0; width: 40%; height: 3px;
-      background: linear-gradient(90deg, #06b6d4, transparent);
-      border-radius: 2px;
-    }
+    /* ===== 細節樣式 ===== */
+    .section-title { font-family: 'Outfit', 'Noto Sans TC', sans-serif; position: relative; display: inline-block; }
+    .section-title::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 40%; height: 3px; background: linear-gradient(90deg, #06b6d4, transparent); border-radius: 2px; }
 
-    /* 摘要文字排版 */
-    #summary-text h3 {
-      font-family: 'Outfit', 'Noto Sans TC', sans-serif;
-      color: #0f172a;
-      font-size: 1.25rem;
-      font-weight: 800;
-      margin-top: 1.5rem;
-      padding-left: 1rem;
-      border-left: 4px solid #06b6d4;
-    }
+    #summary-text h3 { font-family: 'Outfit', 'Noto Sans TC', sans-serif; color: #0f172a; font-size: 1.25rem; font-weight: 800; margin-top: 1.5rem; padding-left: 1rem; border-left: 4px solid #06b6d4; }
     #summary-text li { position: relative; padding-left: 1.5rem; margin-bottom: 0.5rem; color: #334155; }
-    #summary-text li::before { 
-      content: "\f054"; font-family: "Font Awesome 6 Free"; font-weight: 900; 
-      color: #06b6d4; font-size: 0.7rem; position: absolute; left: 0; top: 0.2rem; 
-    }
+    #summary-text li::before { content: "\f054"; font-family: "Font Awesome 6 Free"; font-weight: 900; color: #06b6d4; font-size: 0.7rem; position: absolute; left: 0; top: 0.2rem; }
 
-    /* 詞彙卡片 */
-    .vocab-item {
-      border: 1px solid #e2e8f0;
-      background: #fff;
-      transition: all 0.3s ease;
-    }
-    .vocab-item:hover {
-      border-color: #06b6d4;
-      transform: translateX(5px);
-      box-shadow: 0 4px 12px rgba(6, 182, 212, 0.1);
-    }
+    .vocab-item { border: 1px solid #e2e8f0; background: #fff; transition: all 0.3s ease; }
+    .vocab-item:hover { border-color: #06b6d4; transform: translateX(5px); box-shadow: 0 4px 12px rgba(6, 182, 212, 0.1); }
 
-    /* 測驗選項 */
-    .quiz-option-btn {
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
-    }
-    .quiz-option-btn:hover:not(:disabled) {
-      background: #f0f9ff;
-      border-color: #06b6d4;
-      transform: scale(1.01);
-    }
-    .quiz-option-btn.selected-correct {
-      background: #ecfdf5 !important; border-color: #10b981 !important; color: #064e3b !important;
-    }
-    .quiz-option-btn.selected-wrong {
-      background: #fef2f2 !important; border-color: #ef4444 !important; color: #7f1d1d !important;
-    }
+    .quiz-option-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; }
+    .quiz-option-btn:hover:not(:disabled) { background: #f0f9ff; border-color: #06b6d4; transform: scale(1.01); }
+    .quiz-option-btn.selected-correct { background: #ecfdf5 !important; border-color: #10b981 !important; color: #064e3b !important; }
+    .quiz-option-btn.selected-wrong { background: #fef2f2 !important; border-color: #ef4444 !important; color: #7f1d1d !important; }
 
-    /* Chat Window - 未來通訊器風格 */
-    .chat-window {
-      backdrop-filter: blur(20px);
-      background: rgba(255, 255, 255, 0.95);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      box-shadow: 0 20px 50px rgba(0,0,0,0.4);
-    }
-    .chat-header {
-      background: linear-gradient(90deg, #0f172a, #1e293b);
-    }
-    
-    /* Loader - 數據流動畫 */
-    .tech-loader {
-      width: 60px; height: 60px;
-      border: 3px solid rgba(6, 182, 212, 0.1);
-      border-top-color: #06b6d4;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      position: relative;
-      box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
-    }
-    .tech-loader::before {
-      content:''; position: absolute; inset: 5px; border-radius: 50%;
-      border: 3px solid transparent; border-top-color: #3b82f6;
-      animation: spin 2s linear infinite reverse;
-    }
+    .tech-loader { width: 60px; height: 60px; border: 3px solid rgba(6, 182, 212, 0.1); border-top-color: #06b6d4; border-radius: 50%; animation: spin 1s linear infinite; position: relative; box-shadow: 0 0 20px rgba(6, 182, 212, 0.2); }
+    .tech-loader::before { content:''; position: absolute; inset: 5px; border-radius: 50%; border: 3px solid transparent; border-top-color: #3b82f6; animation: spin 2s linear infinite reverse; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* Scrollbar 客製化 */
+    /* ===== 科幻聊天視窗 (Xiaoke AI) ===== */
+    .chat-hologram {
+      backdrop-filter: blur(20px);
+      background: rgba(15, 23, 42, 0.85); /* 深色透明 */
+      border: 1px solid rgba(6, 182, 212, 0.5); /* 霓虹邊框 */
+      box-shadow: 0 0 30px rgba(6, 182, 212, 0.15), inset 0 0 20px rgba(6, 182, 212, 0.05);
+      border-radius: 1.5rem;
+      color: #e0f2fe;
+    }
+    .chat-hologram-header {
+      background: linear-gradient(90deg, rgba(6, 182, 212, 0.2), transparent);
+      border-bottom: 1px solid rgba(6, 182, 212, 0.3);
+    }
+    .chat-bubble-ai {
+      background: rgba(6, 182, 212, 0.15);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      color: #a5f3fc;
+      border-radius: 1rem 1rem 1rem 0;
+    }
+    .chat-bubble-user {
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #bfdbfe;
+      border-radius: 1rem 1rem 0 1rem;
+    }
+    
+    /* Scrollbar */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
     ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #06b6d4; }
 
-    /* PDF 與 Modal 修正 */
     #image-modal { backdrop-filter: blur(10px); }
     .pdf-page-break { page-break-before: always; }
     .click-mask { cursor: zoom-in; }
 
-    /* RWD 微調 */
-    @media (max-width: 640px) {
-      .hud-glass { backdrop-filter: blur(12px); background: rgba(15,23,42,0.85); }
-    }
+    @media (max-width: 640px) { .hud-glass { backdrop-filter: blur(12px); background: rgba(15,23,42,0.85); } }
   </style>
 </head>
 
@@ -279,11 +201,11 @@
   <nav class="hud-glass sticky top-0 z-50 h-16 sm:h-20 flex items-center border-b border-slate-700/30 no-print">
     <div class="max-w-7xl mx-auto px-4 w-full flex justify-between items-center">
       <div class="flex items-center gap-6">
-        <a href="/aischool/student.html" class="group flex items-center gap-3 text-slate-400 hover:text-cyan-400 transition duration-300">
+        <a href="https://shiwen6674.github.io/aischool/student_science.html" class="group flex items-center gap-3 text-slate-400 hover:text-cyan-400 transition duration-300">
           <div class="w-8 h-8 rounded-lg border border-slate-600 group-hover:border-cyan-400 flex items-center justify-center bg-slate-800/50 transition">
-            <i class="fa-solid fa-arrow-left text-xs"></i>
+            <i class="fa-solid fa-flask text-xs"></i>
           </div>
-          <span class="font-ui font-semibold text-sm hidden md:block uppercase tracking-wider" data-i18n="back_home">Back to Hub</span>
+          <span class="font-ui font-semibold text-sm hidden md:block uppercase tracking-wider" data-i18n="back_science">返回自然科學</span>
         </a>
 
         <div class="h-6 w-px bg-slate-700 hidden sm:block"></div>
@@ -294,26 +216,15 @@
           </div>
           <div>
             <h1 class="font-tech font-bold text-base sm:text-lg text-white tracking-wide leading-none" data-i18n="page_title">UNIT SUMMARY</h1>
-            <p class="text-[10px] text-cyan-500 font-mono tracking-[0.2em] uppercase mt-1">AI-Powered Analytics</p>
+            <p class="text-[10px] text-cyan-500 font-mono tracking-[0.2em] uppercase mt-1" data-i18n="page_subtitle">AI-Powered Analytics</p>
           </div>
         </div>
       </div>
 
       <div class="flex items-center gap-4">
-        <div class="hidden md:flex items-center gap-3">
-          <a href="/aischool/student_science_bilingual.html" class="px-3 py-1.5 rounded-md border border-slate-700 bg-slate-800/50 text-slate-300 text-xs hover:border-purple-500 hover:text-purple-400 transition flex items-center gap-2">
-            <i class="fa-solid fa-book-open-reader"></i>
-            <span data-i18n="btn_bilingual">Bilingual</span>
-          </a>
-          <a href="/aischool/aievaluation.html" class="px-3 py-1.5 rounded-md border border-slate-700 bg-slate-800/50 text-slate-300 text-xs hover:border-emerald-500 hover:text-emerald-400 transition flex items-center gap-2">
-            <i class="fa-solid fa-clipboard-check"></i>
-            <span data-i18n="btn_eval">Evaluation</span>
-          </a>
-        </div>
-
         <div class="relative group">
           <select id="language-selector" onchange="changeLanguage()" class="pl-3 pr-8 py-1.5 text-xs rounded border border-slate-600 bg-slate-800 text-slate-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none cursor-pointer hover:bg-slate-700 transition">
-            <option value="zh-TW">繁體中文</option>
+            <option value="zh-TW" selected>繁體中文</option>
             <option value="en">English</option>
             <option value="ja">日本語</option>
             <option value="zh-CN">简体中文</option>
@@ -341,7 +252,7 @@
             <span class="w-1 h-6 bg-cyan-500 rounded-full"></span>
             <span data-i18n="settings_title">Select Target Unit</span>
           </h2>
-          <p class="text-slate-400 text-xs mt-1 ml-4">Initialize AI Analysis Protocol</p>
+          <p class="text-slate-400 text-xs mt-1 ml-4" data-i18n="settings_subtitle">Initialize AI Analysis Protocol</p>
         </div>
         <span id="db-status" class="text-xs font-mono font-bold text-cyan-500 mt-2 sm:mt-0 bg-cyan-900/20 px-3 py-1 rounded border border-cyan-900/50" data-state="loading">
           <i class="fa-solid fa-circle-notch fa-spin mr-2"></i> <span data-i18n="db_loading">System Check...</span>
@@ -373,8 +284,8 @@
 
       <div class="mt-8 flex justify-end relative z-10">
         <button id="btn-generate" onclick="startGeneration()" disabled class="px-8 py-3 rounded-lg font-bold text-white shadow-lg hover:shadow-cyan-500/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-3 text-sm tracking-wide">
-          <i class="fa-solid fa-microchip"></i> 
-          <span data-i18n="btn_generate">INITIATE ANALYSIS</span>
+          <i class="fa-solid fa-wand-magic-sparkles"></i> 
+          <span data-i18n="btn_generate">AI 整理重點</span>
         </button>
       </div>
     </div>
@@ -382,7 +293,7 @@
     <div id="loading-view" class="hidden flex-col items-center justify-center py-32 animate-pulse-slow">
       <div class="tech-loader mb-6"></div>
       <h3 class="text-2xl font-tech font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-500" data-i18n="ai_generating">PROCESSING DATA...</h3>
-      </div>
+    </div>
 
     <div id="content-view" class="hidden animate-fade-in-up">
       
@@ -506,37 +417,37 @@
   </main>
 
   <div id="floating-chat" class="hidden fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-4 no-print">
-    <div id="xiaoke-window" class="chat-window closed w-80 md:w-96 rounded-2xl flex flex-col overflow-hidden h-[500px] transition-all duration-300 origin-bottom-right transform scale-0 opacity-0">
-      <div class="chat-header p-4 flex justify-between items-center border-b border-white/10">
+    <div id="xiaoke-window" class="chat-hologram closed w-80 md:w-96 flex flex-col overflow-hidden h-[500px] transition-all duration-300 origin-bottom-right transform scale-0 opacity-0">
+      <div class="chat-hologram-header p-4 flex justify-between items-center">
         <div class="flex items-center gap-3">
           <div class="relative">
-            <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" alt="小科" class="w-10 h-10 rounded-full border-2 border-cyan-400 bg-slate-900 object-cover">
-            <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-slate-800"></div>
+            <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" alt="小科" class="w-10 h-10 rounded-full border-2 border-cyan-400 bg-slate-900 object-cover shadow-[0_0_10px_#06b6d4]">
+            <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-slate-800 animate-pulse"></div>
           </div>
           <div>
-            <span class="font-ui font-bold text-white block leading-none">AI TUTOR</span>
-            <span class="text-[10px] text-cyan-400 font-mono">Online</span>
+            <span class="font-tech font-bold text-cyan-300 block leading-none tracking-wide text-lg">XIAOKE AI</span>
+            <span class="text-[10px] text-cyan-600 font-mono uppercase tracking-widest">System Online</span>
           </div>
         </div>
-        <button onclick="toggleChat()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark"></i></button>
+        <button onclick="toggleChat()" class="text-cyan-600 hover:text-cyan-300 transition"><i class="fa-solid fa-xmark"></i></button>
       </div>
       
-      <div class="flex-1 p-4 bg-slate-50/80 overflow-y-auto text-sm space-y-4 custom-scrollbar" id="chat-messages">
+      <div class="flex-1 p-4 overflow-y-auto text-sm space-y-4 custom-scrollbar" id="chat-messages">
         </div>
       
-      <div class="p-3 bg-white border-t border-slate-200 flex gap-2">
+      <div class="p-3 border-t border-cyan-500/30 flex gap-2 bg-slate-900/50">
         <input type="text" id="chat-input" data-i18n-placeholder="chat_placeholder" placeholder="Ask AI..." 
-          class="flex-1 bg-slate-100 border-none rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-cyan-500 outline-none text-slate-700"
+          class="flex-1 bg-slate-800/50 border border-cyan-500/30 rounded-lg px-4 py-2 text-sm focus:border-cyan-400 focus:shadow-[0_0_10px_rgba(6,182,212,0.3)] outline-none text-cyan-100 placeholder-cyan-800 transition"
           onkeypress="if(event.key==='Enter') sendChatMessage()">
-        <button onclick="sendChatMessage()" class="bg-cyan-600 text-white w-10 h-10 rounded-full hover:bg-cyan-500 transition shadow-lg flex items-center justify-center">
+        <button onclick="sendChatMessage()" class="bg-cyan-600/80 hover:bg-cyan-500 text-white w-10 h-10 rounded-lg transition shadow-[0_0_15px_rgba(6,182,212,0.4)] flex items-center justify-center border border-cyan-400/50">
           <i class="fa-solid fa-paper-plane text-xs"></i>
         </button>
       </div>
     </div>
 
-    <button onclick="toggleChat()" class="group w-16 h-16 rounded-full shadow-[0_0_20px_rgba(6,182,212,0.4)] flex items-center justify-center hover:scale-105 transition-all overflow-hidden border-2 border-cyan-400 relative bg-slate-900">
-      <div class="absolute inset-0 bg-cyan-500/20 animate-pulse"></div>
-      <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" alt="小科" class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition">
+    <button onclick="toggleChat()" class="group w-16 h-16 rounded-full shadow-[0_0_25px_rgba(6,182,212,0.6)] flex items-center justify-center hover:scale-105 transition-all overflow-hidden border-2 border-cyan-400 relative bg-slate-900">
+      <div class="absolute inset-0 bg-cyan-500/20 animate-ping"></div>
+      <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" alt="小科" class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition z-10">
     </button>
   </div>
 
@@ -548,23 +459,18 @@
   <script>
     // CSS Toggle Logic for Chat
     const chatWindow = document.getElementById("xiaoke-window");
-    const originalToggleChat = toggleChat; // Backup if exists
     
-    // Override toggleChat to use new classes
     window.toggleChat = function() {
         if (!chatWindow) return;
         const isClosed = chatWindow.classList.contains("closed");
         if (isClosed) {
             chatWindow.classList.remove("closed", "scale-0", "opacity-0");
-            // Check if empty and add greeting (Logic from original script)
             const chatBody = document.getElementById("chat-messages");
             if (chatBody && !chatBody.innerHTML.trim()) {
                 const unitName = (filters && filters.unitName) || "這個單元";
-                // Manually trigger the greeting logic from the original script if needed
-                // Or let the original script handle innerHTML if it was doing so
                 chatBody.innerHTML = `
-                    <div class="self-start bg-white border border-slate-200 p-3 rounded-2xl rounded-tl-none shadow-sm max-w-[85%] text-slate-700">
-                      <span class="font-bold text-cyan-600 block mb-1 text-xs">AI TUTOR</span>
+                    <div class="chat-bubble-ai self-start p-3 shadow-sm max-w-[85%] text-sm mb-2">
+                      <span class="font-bold text-cyan-400 block mb-1 text-xs tracking-wider">SYSTEM MESSAGE</span>
                       ${tf("chat_greet", {unit: unitName})}
                     </div>`;
             }
@@ -573,7 +479,7 @@
         }
     };
     
-    // --- 以下為您原始的 JavaScript 邏輯 (完全保留) ---
+    // --- 核心邏輯 ---
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxBWrZCp-xLckDGZnhe64K0IUa_8CJZRzqZbrgL8lQdNn3S1WgaEzbdOtpo4mGwN6_H/exec";
 
     let allData = [];
@@ -583,297 +489,256 @@
     let quizState = { questions: [], currentIndex: 0, hasAnswered: false, answers: [] };
     let quizRadarChart = null;
 
-    const i18n = {
+    // 完整的翻譯字典
+    const translations = {
       "zh-TW": {
-        back_home:"返回學習中心",
-        btn_bilingual:"科學雙語閱讀",
-        btn_eval:"AI 評分診斷",
-        page_title:"單元重點整理",
-        settings_title:"請挑選你要的學習單元",
-        label_stage:"學習階段",
-        label_publisher:"版本",
-        label_grade:"年級",
-        label_semester:"學期",
-        label_unit:"單元名稱",
-        btn_generate:"AI 分析並生成",
-        btn_txt:"下載 TXT",
-        title_summary:"核心概念摘要",
-        title_vocab:"科學詞彙與定義",
-        title_map:"知識架構圖",
-        title_myth:"科學動動腦",
-        loading:"載入中...",
-        select:"請選擇...",
-        db_loading:"系統連線中...",
-        db_success:"資料庫連線成功",
-        db_fail:"連線失敗",
-        db_fail_retry:"連線失敗，請重試...",
-        ai_generating:"AI 單元重點整理中...",
-        tap_to_zoom:"點擊放大",
-        myth_tip:"先想一想，再作答",
-        myth_true:"正確 O",
-        myth_false:"錯誤 X",
-        msg_correct:"恭喜答對了！你真棒！",
-        msg_wrong:"可惜答錯了，再試試！",
-        msg_seq:"請依照題號順序作答，先完成前一題喔！",
-        vocab_none:"無詞彙資料",
-        summary_fail:"生成摘要失敗...",
-        map_fail:"架構圖繪製失敗，請重試。",
-        map_none:"無架構圖數據",
-        myth_none:"本單元暫無「科學動動腦」小題。",
-        quiz:"單元小測驗",
-        quiz_prefix:"單元小測驗－{unit}",
-        quiz_not_ready:"本單元的小測驗尚未準備好，之後會由老師再補上喔。",
-        quiz_progress:"第 {n} 題／共 {total} 題",
-        quiz_q:"第 {n} 題",
-        quiz_next:"下一題",
-        quiz_result_btn:"看結果",
-        quiz_score_title:"你的測驗成績",
-        quiz_ai_analyzing:"AI 正在分析你的作答結果…",
-        quiz_ai_analyzing_short:"AI 分析中…",
-        quiz_result_text:"你答對 {correct} 題／共 {total} 題。",
-        quiz_axis_wrong:"答錯",
-        quiz_axis_right:"答對",
-        quiz_ai_fallback1:"從左側的長條圖可以看出各概念的答對率，分數較低的概念可以回到課本文字與重點整理區再加強。",
-        quiz_ai_fallback2:"AI 分析暫時無法提供，可以先參考圖表與逐題解析，自己歸納需要加強的地方。",
-        quiz_ai_unstable:"AI 解析目前連線不穩定，稍後可以再試一次。",
-        txt_need_generate:"請先生成內容後再下載！",
-        txt_download_fail:"TXT 下載失敗，請再試一次或換一個瀏覽器。",
-        ai_generate_fail:"AI 生成失敗！請檢查 API 或重試。\n錯誤訊息: {msg}",
-        api_format_error:"API 返回資料格式錯誤 (非完整 JSON)。",
-        chat_greet:"你好，我是小科，有關「{unit}」，你有什麼問題要問我呢？",
-        chat_placeholder:"輸入問題後按 Enter…"
+        back_science: "返回自然科學",
+        page_title: "單元重點整理",
+        page_subtitle: "AI 驅動分析",
+        settings_title: "選擇學習單元",
+        settings_subtitle: "初始化 AI 分析協定",
+        label_stage: "學習階段",
+        label_publisher: "版本",
+        label_grade: "年級",
+        label_semester: "學期",
+        label_unit: "單元名稱",
+        btn_generate: "AI 整理重點",
+        btn_txt: "下載 TXT",
+        title_summary: "核心概念摘要",
+        title_vocab: "科學詞彙與定義",
+        title_map: "知識架構圖",
+        title_myth: "科學動動腦",
+        db_loading: "系統連線中...",
+        db_success: "資料庫連線成功",
+        db_fail: "連線失敗",
+        db_fail_retry: "連線失敗，請重試",
+        ai_generating: "正在處理數據...",
+        tap_to_zoom: "點擊放大",
+        myth_tip: "先想一想，再作答",
+        myth_true: "正確 O",
+        myth_false: "錯誤 X",
+        msg_correct: "恭喜答對了！",
+        msg_wrong: "可惜答錯了！",
+        msg_seq: "請依照題號順序作答！",
+        vocab_none: "無詞彙資料",
+        summary_fail: "生成摘要失敗...",
+        map_fail: "架構圖繪製失敗",
+        map_none: "無架構圖數據",
+        myth_none: "本單元暫無迷思概念題",
+        quiz: "單元小測驗",
+        quiz_prefix: "單元小測驗－{unit}",
+        quiz_not_ready: "測驗尚未準備好",
+        quiz_result_btn: "看結果",
+        quiz_next: "下一題",
+        quiz_score_title: "測驗成績",
+        quiz_ai_analyzing: "AI 分析中...",
+        quiz_result_text: "答對 {correct} 題 / 共 {total} 題",
+        txt_need_generate: "請先生成內容後再下載！",
+        txt_download_fail: "下載失敗",
+        ai_generate_fail: "生成失敗: {msg}",
+        api_format_error: "API 格式錯誤",
+        chat_greet: "你好，我是小科。關於「{unit}」，有什麼我可以幫你的嗎？",
+        chat_placeholder: "輸入問題...",
+        select_default: "請選擇..."
       },
       "en": {
-        back_home:"Back Home",
-        btn_bilingual:"Bilingual Reading",
-        btn_eval:"AI Assessment",
-        page_title:"Unit Summary",
-        settings_title:"Select Learning Unit",
-        label_stage:"Level",
-        label_publisher:"Publisher",
-        label_grade:"Grade",
-        label_semester:"Semester",
-        label_unit:"Unit",
-        btn_generate:"Generate",
-        btn_txt:"Download TXT",
-        title_summary:"Core Concepts",
-        title_vocab:"Vocabulary & Definitions",
-        title_map:"Knowledge Map",
-        title_myth:"Thinking Check",
-        loading:"Loading...",
-        select:"Select...",
-        db_loading:"Connecting...",
-        db_success:"Database connected",
-        db_fail:"Connection failed",
-        db_fail_retry:"Connection failed. Please retry...",
-        ai_generating:"Generating AI notes...",
-        tap_to_zoom:"Tap to zoom",
-        myth_tip:"Think first, then answer",
-        myth_true:"True O",
-        myth_false:"False X",
-        msg_correct:"Correct! Great job!",
-        msg_wrong:"Not quite—try again!",
-        msg_seq:"Please answer in order. Finish the previous question first.",
-        vocab_none:"No vocabulary data",
-        summary_fail:"Failed to generate summary...",
-        map_fail:"Failed to render the map. Please retry.",
-        map_none:"No map data",
-        myth_none:"No Thinking Check items for this unit.",
-        quiz:"Unit Quiz",
-        quiz_prefix:"Unit Quiz — {unit}",
-        quiz_not_ready:"This unit quiz is not ready yet. Your teacher will add it later.",
-        quiz_progress:"Q{n} / {total}",
-        quiz_q:"Question {n}",
-        quiz_next:"Next",
-        quiz_result_btn:"Results",
-        quiz_score_title:"Your Score",
-        quiz_ai_analyzing:"AI is analyzing your answers…",
-        quiz_ai_analyzing_short:"Analyzing…",
-        quiz_result_text:"You got {correct} / {total} correct.",
-        quiz_axis_wrong:"Wrong",
-        quiz_axis_right:"Right",
-        quiz_ai_fallback1:"Use the bar chart to see concept-level accuracy. Review the text and notes for lower-scoring concepts.",
-        quiz_ai_fallback2:"AI feedback is temporarily unavailable. You can still use the chart and per-question feedback to improve.",
-        quiz_ai_unstable:"AI connection is unstable. Please try again later.",
-        txt_need_generate:"Please generate content before downloading.",
-        txt_download_fail:"TXT download failed. Please retry or use another browser.",
-        ai_generate_fail:"Generation failed. Please check the API and retry.\nError: {msg}",
-        api_format_error:"API response format error (not valid JSON).",
-        chat_greet:"Hi, I'm Xiaoke. About “{unit}”, what would you like to ask?",
-        chat_placeholder:"Type your question and press Enter…"
-      },
-      "ja": {
-        back_home:"ホームに戻る",
-        btn_bilingual:"二言語読解",
-        btn_eval:"AI 診断・採点",
-        page_title:"単元のまとめ",
-        settings_title:"学習単元を選択",
-        label_stage:"段階",
-        label_publisher:"出版社",
-        label_grade:"学年",
-        label_semester:"学期",
-        label_unit:"単元",
-        btn_generate:"生成する",
-        btn_txt:"TXTを保存",
-        title_summary:"核心概念",
-        title_vocab:"科学用語",
-        title_map:"知識マップ",
-        title_myth:"考えてみよう",
-        loading:"読み込み中...",
-        select:"選択してください...",
-        db_loading:"接続中...",
-        db_success:"データベース接続成功",
-        db_fail:"接続失敗",
-        db_fail_retry:"接続失敗。再試行してください...",
-        ai_generating:"AIノート生成中...",
-        tap_to_zoom:"クリックで拡大",
-        myth_tip:"まず考えてから回答",
-        myth_true:"正しい O",
-        myth_false:"誤り X",
-        msg_correct:"正解！すごい！",
-        msg_wrong:"残念、もう一度！",
-        msg_seq:"順番に回答してください。前の問題を先に終えてください。",
-        vocab_none:"用語データなし",
-        summary_fail:"要約の生成に失敗...",
-        map_fail:"マップ描画に失敗。再試行してください。",
-        map_none:"マップデータなし",
-        myth_none:"この単元の「考えてみよう」は未設定です。",
-        quiz:"単元ミニテスト",
-        quiz_prefix:"単元ミニテスト－{unit}",
-        quiz_not_ready:"この単元のミニテストはまだ準備中です。先生が後で追加します。",
-        quiz_progress:"第 {n} 問／全 {total} 問",
-        quiz_q:"第 {n} 問",
-        quiz_next:"次へ",
-        quiz_result_btn:"結果",
-        quiz_score_title:"あなたの得点",
-        quiz_ai_analyzing:"AIが分析中…",
-        quiz_ai_analyzing_short:"分析中…",
-        quiz_result_text:"正解 {correct}／全 {total}",
-        quiz_axis_wrong:"不正解",
-        quiz_axis_right:"正解",
-        quiz_ai_fallback1:"棒グラフで概念別の正答率を確認できます。低い概念は本文とノートを復習してください。",
-        quiz_ai_fallback2:"AIのフィードバックは一時的に利用できません。図表と逐題フィードバックを参考にしてください。",
-        quiz_ai_unstable:"接続が不安定です。しばらくして再試行してください。",
-        txt_need_generate:"生成後にダウンロードしてください。",
-        txt_download_fail:"TXTの保存に失敗しました。再試行するか別ブラウザをお試しください。",
-        ai_generate_fail:"生成に失敗しました。APIを確認して再試行してください。\nエラー: {msg}",
-        api_format_error:"APIの形式エラー（JSONではありません）。",
-        chat_greet:"こんにちは、小科です。「{unit}」について何を聞きたいですか？",
-        chat_placeholder:"質問を入力してEnter…"
+        back_science: "Back to Natural Science",
+        page_title: "UNIT SUMMARY",
+        page_subtitle: "AI-Powered Analytics",
+        settings_title: "Select Target Unit",
+        settings_subtitle: "Initialize AI Analysis Protocol",
+        label_stage: "Stage",
+        label_publisher: "Publisher",
+        label_grade: "Grade",
+        label_semester: "Semester",
+        label_unit: "Unit Name",
+        btn_generate: "AI Organize Highlights",
+        btn_txt: "EXPORT .TXT",
+        title_summary: "Core Concepts",
+        title_vocab: "Keywords",
+        title_map: "Knowledge Graph",
+        title_myth: "Myth Busting",
+        db_loading: "System Check...",
+        db_success: "System Online",
+        db_fail: "Connection Failed",
+        db_fail_retry: "Retry Connection",
+        ai_generating: "PROCESSING DATA...",
+        tap_to_zoom: "Tap to Zoom",
+        myth_tip: "Think first",
+        myth_true: "True",
+        myth_false: "False",
+        msg_correct: "Correct!",
+        msg_wrong: "Incorrect",
+        msg_seq: "Answer in order!",
+        vocab_none: "No Data",
+        summary_fail: "Generation Failed",
+        map_fail: "Render Failed",
+        map_none: "No Graph Data",
+        myth_none: "No Myth Data",
+        quiz: "Unit Quiz",
+        quiz_prefix: "Quiz - {unit}",
+        quiz_not_ready: "Quiz Not Ready",
+        quiz_result_btn: "Results",
+        quiz_next: "Next",
+        quiz_score_title: "Final Score",
+        quiz_ai_analyzing: "Analyzing...",
+        quiz_result_text: "{correct} / {total} Correct",
+        txt_need_generate: "Generate content first!",
+        txt_download_fail: "Download Failed",
+        ai_generate_fail: "Error: {msg}",
+        api_format_error: "API Format Error",
+        chat_greet: "Hi, I'm Xiaoke. How can I help with '{unit}'?",
+        chat_placeholder: "Ask AI...",
+        select_default: "Select..."
       },
       "zh-CN": {
-        back_home:"返回学习中心",
-        btn_bilingual:"科学双语阅读",
-        btn_eval:"AI 评分诊断",
-        page_title:"单元重点整理",
-        settings_title:"请选择你要的学习单元",
-        label_stage:"学习阶段",
-        label_publisher:"版本",
-        label_grade:"年级",
-        label_semester:"学期",
-        label_unit:"单元名称",
-        btn_generate:"AI 分析并生成",
-        btn_txt:"下载 TXT",
-        title_summary:"核心概念摘要",
-        title_vocab:"科学词汇与定义",
-        title_map:"知识架构图",
-        title_myth:"科学动动脑",
-        loading:"载入中...",
-        select:"请选择...",
-        db_loading:"连接中...",
-        db_success:"数据库连接成功",
-        db_fail:"连接失败",
-        db_fail_retry:"连接失败，请重试...",
-        ai_generating:"AI 单元重点整理中...",
-        tap_to_zoom:"点击放大",
-        myth_tip:"先想一想，再作答",
-        myth_true:"正确 O",
-        myth_false:"错误 X",
-        msg_correct:"恭喜答对了！你真棒！",
-        msg_wrong:"可惜答错了，再试试！",
-        msg_seq:"请按题号顺序作答，先完成前一题哦！",
-        vocab_none:"无词汇资料",
-        summary_fail:"生成摘要失败...",
-        map_fail:"架构图绘制失败，请重试。",
-        map_none:"无架构图数据",
-        myth_none:"本单元暂无「科学动动脑」小题。",
-        quiz:"单元小测验",
-        quiz_prefix:"单元小测验－{unit}",
-        quiz_not_ready:"本单元的小测验尚未准备好，之后会由老师再补上哦。",
-        quiz_progress:"第 {n} 题／共 {total} 题",
-        quiz_q:"第 {n} 题",
-        quiz_next:"下一题",
-        quiz_result_btn:"看结果",
-        quiz_score_title:"你的测验成绩",
-        quiz_ai_analyzing:"AI 正在分析你的作答结果…",
-        quiz_ai_analyzing_short:"AI 分析中…",
-        quiz_result_text:"你答对 {correct} 题／共 {total} 题。",
-        quiz_axis_wrong:"答错",
-        quiz_axis_right:"答对",
-        quiz_ai_fallback1:"从左侧条形图可看到各概念的答对率，较低的概念可回到课本文字与重点整理区再加强。",
-        quiz_ai_fallback2:"AI 分析暂时无法提供，可先参考图表与逐题回馈自行归纳。",
-        quiz_ai_unstable:"连接不稳定，请稍后再试。",
-        txt_need_generate:"请先生成内容后再下载！",
-        txt_download_fail:"TXT 下载失败，请再试一次或换一个浏览器。",
-        ai_generate_fail:"AI 生成失败！请检查 API 或重试。\n错误讯息: {msg}",
-        api_format_error:"API 返回资料格式错误（非完整 JSON）。",
-        chat_greet:"你好，我是小科，关于「{unit}」，你有什么问题要问我呢？",
-        chat_placeholder:"输入问题后按 Enter…"
+        back_science: "返回自然科学",
+        page_title: "单元重点整理",
+        page_subtitle: "AI 驱动分析",
+        settings_title: "选择学习单元",
+        settings_subtitle: "初始化 AI 分析协定",
+        label_stage: "学习阶段",
+        label_publisher: "版本",
+        label_grade: "年级",
+        label_semester: "学期",
+        label_unit: "单元名称",
+        btn_generate: "AI 整理重点",
+        btn_txt: "下载 TXT",
+        title_summary: "核心概念摘要",
+        title_vocab: "科学词汇与定义",
+        title_map: "知识架构图",
+        title_myth: "科学动动脑",
+        db_loading: "系统连线中...",
+        db_success: "资料库连线成功",
+        db_fail: "连线失败",
+        db_fail_retry: "连线失败，请重试",
+        ai_generating: "正在处理数据...",
+        tap_to_zoom: "点击放大",
+        myth_tip: "先想一想，再作答",
+        myth_true: "正确 O",
+        myth_false: "错误 X",
+        msg_correct: "恭喜答对了！",
+        msg_wrong: "可惜答错了！",
+        msg_seq: "请依照题号顺序作答！",
+        vocab_none: "无词汇资料",
+        summary_fail: "生成摘要失败...",
+        map_fail: "架构图绘制失败",
+        map_none: "无架构图数据",
+        myth_none: "本单元暂无迷思概念题",
+        quiz: "单元小测验",
+        quiz_prefix: "单元小测验－{unit}",
+        quiz_not_ready: "测验尚未准备好",
+        quiz_result_btn: "看结果",
+        quiz_next: "下一题",
+        quiz_score_title: "测验成绩",
+        quiz_ai_analyzing: "AI 分析中...",
+        quiz_result_text: "答对 {correct} 题 / 共 {total} 题",
+        txt_need_generate: "请先生成内容后再下载！",
+        txt_download_fail: "下载失败",
+        ai_generate_fail: "生成失败: {msg}",
+        api_format_error: "API 格式错误",
+        chat_greet: "你好，我是小科。关于“{unit}”，有什么我可以帮你的吗？",
+        chat_placeholder: "输入问题...",
+        select_default: "请选择..."
+      },
+      "ja": {
+        back_science: "自然科学に戻る",
+        page_title: "単元のまとめ",
+        page_subtitle: "AI駆動分析",
+        settings_title: "学習単元を選択",
+        settings_subtitle: "AI分析プロトコル初期化",
+        label_stage: "段階",
+        label_publisher: "出版社",
+        label_grade: "学年",
+        label_semester: "学期",
+        label_unit: "単元名",
+        btn_generate: "AI 要点整理",
+        btn_txt: "TXT出力",
+        title_summary: "核心概念",
+        title_vocab: "科学用語",
+        title_map: "知識マップ",
+        title_myth: "考えてみよう",
+        db_loading: "システムチェック...",
+        db_success: "オンライン",
+        db_fail: "接続失敗",
+        db_fail_retry: "再試行",
+        ai_generating: "データ処理中...",
+        tap_to_zoom: "拡大",
+        myth_tip: "考えてから回答",
+        myth_true: "正解",
+        myth_false: "不正解",
+        msg_correct: "正解です！",
+        msg_wrong: "残念！",
+        msg_seq: "順番に回答してください",
+        vocab_none: "データなし",
+        summary_fail: "生成失敗",
+        map_fail: "描画失敗",
+        map_none: "マップなし",
+        myth_none: "データなし",
+        quiz: "単元テスト",
+        quiz_prefix: "テスト - {unit}",
+        quiz_not_ready: "準備中",
+        quiz_result_btn: "結果",
+        quiz_next: "次へ",
+        quiz_score_title: "スコア",
+        quiz_ai_analyzing: "分析中...",
+        quiz_result_text: "正解 {correct} / 全 {total}",
+        txt_need_generate: "先に生成してください",
+        txt_download_fail: "保存失敗",
+        ai_generate_fail: "エラー: {msg}",
+        api_format_error: "API形式エラー",
+        chat_greet: "こんにちは、小科です。「{unit}」について何か聞きたいですか？",
+        chat_placeholder: "質問を入力...",
+        select_default: "選択..."
       }
     };
 
-    let currentLang = localStorage.getItem("ui_lang") || "zh-TW";
+    let currentLang = "zh-TW";
 
     function t(key){
-      const dict = i18n[currentLang] || i18n["zh-TW"];
-      return (dict && dict[key] != null) ? dict[key] : ((i18n["zh-TW"] && i18n["zh-TW"][key] != null) ? i18n["zh-TW"][key] : key);
+      return (translations[currentLang] && translations[currentLang][key]) ? translations[currentLang][key] : key;
     }
+
     function tf(key, vars={}){
       let s = t(key);
-      Object.keys(vars).forEach(k => {
-        s = s.replace(new RegExp("\\{"+k+"\\}","g"), String(vars[k]));
-      });
+      Object.keys(vars).forEach(k => { s = s.replace(new RegExp("\\{"+k+"\\}","g"), String(vars[k])); });
       return s;
     }
 
-    function applyI18n(lang){
-      currentLang = lang || currentLang || "zh-TW";
-      localStorage.setItem("ui_lang", currentLang);
-      document.documentElement.lang = currentLang;
-
+    function changeLanguage(){
+      const langSel = document.getElementById("language-selector");
+      if (!langSel) return;
+      currentLang = langSel.value;
+      
+      // 更新 HTML 靜態文字
       document.querySelectorAll("[data-i18n]").forEach(el => {
         const key = el.getAttribute("data-i18n");
-        if (key && t(key)) el.innerText = t(key);
+        if(key) el.innerText = t(key);
       });
+      // 更新 placeholder
       document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
         const key = el.getAttribute("data-i18n-placeholder");
-        if (key && t(key)) el.setAttribute("placeholder", t(key));
+        if(key) el.setAttribute("placeholder", t(key));
       });
 
-      // DB status
-      const db = document.getElementById("db-status");
-      if (db){
-        const state = db.dataset.state || "loading";
-        if (state === "success"){
-          db.innerHTML = `<i class="fa-solid fa-check"></i> ${t("db_success")}`;
-        }else if (state === "fail"){
-          db.innerHTML = `${t("db_fail")}`;
-        }else{
-          db.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> ${t("db_loading")}`;
+      // 更新下拉選單預設值
+      const selects = ["sel-stage", "sel-publisher", "sel-grade", "sel-semester", "sel-unit"];
+      selects.forEach(id => {
+        const el = document.getElementById(id);
+        if(el && el.options.length > 0 && el.options[0].disabled) {
+           el.options[0].text = t('select_default'); 
         }
-      }
+      });
 
       refreshQuizUIText();
       refreshMythUIText();
-      if (quizRadarChart) {
-        try { quizRadarChart.update(); } catch(e){}
-      }
     }
 
     function refreshMythUIText(){
-      document.querySelectorAll("[data-i18n='myth_tip']").forEach(el => el.innerText = t("myth_tip"));
-      document.querySelectorAll("[data-i18n='myth_true']").forEach(el => el.innerText = t("myth_true"));
-      document.querySelectorAll("[data-i18n='myth_false']").forEach(el => el.innerText = t("myth_false"));
+      document.querySelectorAll(".myth-option-btn").forEach(btn => {
+         if(btn.id.includes("true")) btn.innerText = t("myth_true");
+         if(btn.id.includes("false")) btn.innerText = t("myth_false");
+      });
     }
 
     function refreshQuizUIText(){
@@ -898,38 +763,36 @@
       if (empty) empty.innerText = t("quiz_not_ready");
     }
 
-    function changeLanguage(){
-      const langSel = document.getElementById("language-selector");
-      if (!langSel) return;
-      applyI18n(langSel.value);
-    }
-
     window.onload = async () => {
+      // 初始化語言 (預設繁中)
+      currentLang = localStorage.getItem("slh_lang") || "zh-TW";
       const langSel = document.getElementById("language-selector");
-      if (langSel) langSel.value = currentLang;
-      applyI18n(currentLang);
+      if(langSel) langSel.value = currentLang;
+      changeLanguage();
 
-      const user = JSON.parse(sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || '{"name":"Visitor"}');
+      // 使用者名稱
+      const user = JSON.parse(sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || '{"name":"Guest"}');
       const userInfo = document.getElementById("user-info");
       if (userInfo) userInfo.innerText = user.name;
 
+      // 資料庫載入流程優化
       const selStage = document.getElementById("sel-stage");
+      const dbStatus = document.getElementById("db-status");
 
       try {
         const res = await fetch(GAS_API_URL + "?action=get_metadata");
-        if (!res.ok) throw new Error(`伺服器 HTTP 錯誤: ${res.status}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const text = await res.text();
         let json;
         try { json = JSON.parse(text); }
         catch (parseError) {
-          console.error("JSON 解析失敗:", text);
-          throw new Error(`API 回應格式錯誤`);
+          console.error("JSON Error:", text);
+          throw new Error("Invalid JSON");
         }
 
         if(json.status === "success") {
           allData = json.data;
-          const dbStatus = document.getElementById("db-status");
           if (dbStatus) {
             dbStatus.dataset.state = "success";
             dbStatus.innerHTML = `<i class="fa-solid fa-check mr-2"></i> ${t("db_success")}`;
@@ -937,22 +800,19 @@
           }
           initSelectors();
         } else {
-          throw new Error(json.message || "API 回應狀態非成功");
+          throw new Error(json.message || "Status Fail");
         }
       } catch(e) {
-        console.error("載入元數據失敗:", e);
-        const dbStatus = document.getElementById("db-status");
+        console.error("DB Load Fail:", e);
         if (dbStatus) {
           dbStatus.dataset.state = "fail";
           dbStatus.innerText = t("db_fail");
           dbStatus.className = "text-xs font-mono font-bold text-red-500 bg-red-900/20 px-3 py-1 rounded";
         }
-        const selStageAgain = document.getElementById("sel-stage");
-        if (selStageAgain) {
-          selStageAgain.innerHTML = `<option value="" disabled selected>${t("db_fail_retry")}</option>`;
-          selStageAgain.disabled = true;
+        if (selStage) {
+          selStage.innerHTML = `<option value="" disabled selected>${t("db_fail_retry")}</option>`;
+          selStage.disabled = true;
         }
-        alert(`無法載入資料庫！\n錯誤類型: ${e.message}`);
       }
     };
 
@@ -960,21 +820,19 @@
       const stages = [...new Set(allData.map(d => d.stage))];
       populate("sel-stage", stages);
 
-      const selStage = document.getElementById("sel-stage");
-      const selPublisher = document.getElementById("sel-publisher");
-      const selGrade = document.getElementById("sel-grade");
-      const selSemester = document.getElementById("sel-semester");
-      const selUnit = document.getElementById("sel-unit");
-
-      if (selStage) selStage.onchange = (e) => updateLevel(1, e.target.value);
-      if (selPublisher) selPublisher.onchange = (e) => updateLevel(2, e.target.value);
-      if (selGrade) selGrade.onchange = (e) => updateLevel(3, e.target.value);
-      if (selSemester) selSemester.onchange = (e) => updateLevel(4, e.target.value);
-      if (selUnit) selUnit.onchange = (e) => {
-        filters.unitName = e.target.value;
-        const btn = document.getElementById("btn-generate");
-        if (btn) btn.disabled = false;
-      };
+      const ids = ["sel-stage", "sel-publisher", "sel-grade", "sel-semester", "sel-unit"];
+      ids.forEach((id, idx) => {
+         const el = document.getElementById(id);
+         if(el) el.onchange = (e) => {
+             if(id === "sel-unit") {
+                 filters.unitName = e.target.value;
+                 const btn = document.getElementById("btn-generate");
+                 if (btn) btn.disabled = false;
+             } else {
+                 updateLevel(idx + 1, e.target.value);
+             }
+         }
+      });
     }
 
     function updateLevel(level, value) {
@@ -984,10 +842,11 @@
       if(level===4){filters.semester=value; delete filters.unitName;}
 
       const ids=["sel-publisher","sel-grade","sel-semester","sel-unit"];
-      for(let i=level;i<4;i++){
+      // Reset subsequent selectors
+      for(let i=level; i<4; i++){
         const el = document.getElementById(ids[i]);
         if (el) {
-          el.innerHTML = `<option disabled selected data-i18n="select">${t("select")}</option>`;
+          el.innerHTML = `<option disabled selected>${t("select_default")}</option>`;
           el.disabled = true;
         }
       }
@@ -1008,7 +867,7 @@
       if(level===4) {
         const unitSelect = document.getElementById("sel-unit");
         if (!unitSelect) return;
-        unitSelect.innerHTML = `<option disabled selected data-i18n="select">${t("select")}</option>`;
+        unitSelect.innerHTML = `<option disabled selected>${t("select_default")}</option>`;
         if(relevantData.length>0) {
           relevantData.forEach(d => {
             const opt = document.createElement("option");
@@ -1024,7 +883,7 @@
     function populate(id, list, type) {
       const el = document.getElementById(id);
       if (!el) return;
-      el.innerHTML = `<option disabled selected data-i18n="select">${t("select")}</option>`;
+      el.innerHTML = `<option disabled selected>${t("select_default")}</option>`;
       list.forEach(o => {
         const opt = document.createElement("option");
         opt.value = o;
@@ -1048,21 +907,18 @@
           body: JSON.stringify({ action: "get_content_and_generate", filters: filters })
         });
 
-        if (!res.ok) throw new Error(`HTTP 錯誤! 狀態碼: ${res.status}`);
+        if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
 
         const text = await res.text();
         let json;
         try { json = JSON.parse(text); }
-        catch(parseError) {
-          console.error("JSON 解析失敗的原始文本:", text);
-          throw new Error(t("api_format_error"));
-        }
+        catch(parseError) { throw new Error(t("api_format_error")); }
 
         if(json.status === "success") {
           currentResultData = json.data;
           renderResult(json.data);
         } else {
-          throw new Error(json.message || "API 返回狀態為失敗");
+          throw new Error(json.message || "Failed");
         }
       } catch(e) {
         alert(tf("ai_generate_fail",{msg:e.message}));
@@ -1080,7 +936,7 @@
 
       const resultTitle = document.getElementById('result-title');
       if (resultTitle) {
-        resultTitle.innerText = data.topic || data.unitName || raw.unitName || filters.unitName || '無標題';
+        resultTitle.innerText = data.topic || data.unitName || raw.unitName || filters.unitName || 'Title';
       }
 
       const resultTag = document.getElementById('result-tag');
@@ -1089,8 +945,7 @@
         const g = data.grade || filters.grade || '';
         const rawS = data.semester || filters.semester || '';
         let s = rawS;
-        if (rawS === '上') s = '上學期';
-        else if (rawS === '下') s = '下學期';
+        if (rawS === '上') s = '上學期'; else if (rawS === '下') s = '下學期';
         resultTag.innerText = `${p} ${g}年級 ${s}`;
       }
 
@@ -1173,8 +1028,8 @@
               </div>
               <div class="text-sm font-medium text-slate-800 leading-relaxed">${statement}</div>
               <div class="flex gap-2 mt-1">
-                <button id="${cardId}-btn-true" onclick="answerMyth(${index}, true)" class="myth-option-btn flex-1 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-white hover:shadow-sm">True</button>
-                <button id="${cardId}-btn-false" onclick="answerMyth(${index}, false)" class="myth-option-btn flex-1 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-white hover:shadow-sm">False</button>
+                <button id="${cardId}-btn-true" onclick="answerMyth(${index}, true)" class="myth-option-btn flex-1 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-white hover:shadow-sm">${t("myth_true")}</button>
+                <button id="${cardId}-btn-false" onclick="answerMyth(${index}, false)" class="myth-option-btn flex-1 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-white hover:shadow-sm">${t("myth_false")}</button>
               </div>
               <div id="${cardId}-feedback" class="mt-2 hidden text-xs leading-relaxed rounded-lg p-2 bg-slate-50"></div>
             `;
@@ -1198,7 +1053,7 @@
       const chatBtn = document.getElementById('floating-chat');
       if (chatBtn) chatBtn.classList.remove('hidden');
       
-      applyI18n(currentLang);
+      changeLanguage(); // Apply language to new content
     }
 
     function downloadTXT() {
@@ -1248,12 +1103,12 @@
       if(!msg) return;
       const chatBody = document.getElementById("chat-messages");
       if (chatBody) {
-        chatBody.innerHTML += `<div class="self-end bg-cyan-600 text-white p-3 rounded-2xl rounded-tr-none shadow-sm max-w-[85%] ml-auto text-sm">${msg}</div>`;
+        chatBody.innerHTML += `<div class="chat-bubble-user self-end p-3 shadow-sm max-w-[85%] ml-auto text-sm mb-2">${msg}</div>`;
         chatBody.scrollTop = chatBody.scrollHeight;
       }
       input.value = "";
       try {
-        const currentUser = JSON.parse(sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || '{"name":"訪客"}');
+        const currentUser = JSON.parse(sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || '{"name":"Visitor"}');
         const contextText = currentResultData ? (currentResultData.raw_content ? currentResultData.raw_content.text : "") : "";
         const contextVocab = currentResultData ? (currentResultData.raw_content ? currentResultData.raw_content.vocab_str : "") : "";
         const res = await fetch(GAS_API_URL, {
@@ -1267,7 +1122,11 @@
         const json = await res.json();
         const cleanReply = (json.data || "").replace(/\*\*/g, "");
         if (chatBody) {
-          chatBody.innerHTML += `<div class="self-start bg-white border border-slate-200 p-3 rounded-2xl rounded-tl-none shadow-sm max-w-[85%] text-slate-700"><span class="font-bold text-cyan-600 block mb-1 text-xs">AI TUTOR</span>${cleanReply}</div>`;
+          chatBody.innerHTML += `
+            <div class="chat-bubble-ai self-start p-3 shadow-sm max-w-[85%] text-sm mb-2">
+              <span class="font-bold text-cyan-400 block mb-1 text-xs tracking-wider">AI TUTOR</span>
+              ${cleanReply}
+            </div>`;
           chatBody.scrollTop = chatBody.scrollHeight;
         }
       } catch(e) { console.error(e); }
@@ -1449,7 +1308,7 @@
       const canvas = document.getElementById("quiz-radar");
       
       document.getElementById("quiz-body").classList.add("hidden");
-      document.getElementById("quiz-progress").parentElement.classList.add("hidden"); // hide header area for clean result
+      document.getElementById("quiz-progress").parentElement.classList.add("hidden"); 
       resultBox.classList.remove("hidden");
 
       const answered = quizState.answers.filter(a => a);
@@ -1457,7 +1316,7 @@
       const score = Math.round((correctCount / totalQ) * 100);
 
       scoreNumberEl.innerText = score;
-      resultTextEl.innerText = `${correctCount} / ${totalQ} Correct`;
+      resultTextEl.innerText = `${correctCount} / ${totalQ}`;
 
       const conceptStats = {};
       quizState.questions.forEach((q, idx) => {
@@ -1481,10 +1340,9 @@
         }
       });
       
-      // Request AI Summary
       const scoreLabel = document.getElementById("quiz-score-label");
-      scoreLabel.innerText = "AI Analyzing...";
-      detailEl.innerText = "Processing performance data...";
+      scoreLabel.innerText = t("quiz_ai_analyzing");
+      detailEl.innerText = t("ai_generating");
       
       const currentUser = JSON.parse(sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || '{"name":"Visitor"}');
       const raw = currentResultData && currentResultData.raw_content ? currentResultData.raw_content : {};
