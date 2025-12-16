@@ -1,1515 +1,1019 @@
 <!DOCTYPE html>
-<html lang="zh-TW" class="dark">
+<html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>單元重點整理 | AI Learning Hub</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Orbitron:wght@400;500;700;900&family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 診斷中心 | Science Learning Hub</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Orbitron:wght@500;700;900&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <script>
     tailwind.config = {
-      darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
             sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
-            tech: ['Orbitron', 'sans-serif'],
-            ui: ['Outfit', 'Noto Sans TC', 'sans-serif'],
+            mono: ['Orbitron', 'monospace'],
+            serif: ['Noto Serif TC', 'serif'],
           },
           colors: {
-            deep: {
-              bg: '#050b14',
-              card: '#0f172a',
+            brand: {
+              50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8',
             },
-            neon: {
-              blue: '#3b82f6',
-              cyan: '#06b6d4',
-              purple: '#8b5cf6',
-              accent: '#f43f5e'
+            tech: {
+              dark: '#0f172a',
+              panel: 'rgba(255, 255, 255, 0.85)',
             }
           },
+          boxShadow: {
+            'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+            'glow': '0 0 15px rgba(59, 130, 246, 0.5)',
+            'float': '0 10px 30px -10px rgba(0,0,0,0.1)'
+          },
           animation: {
-            "fade-in-up": "fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards",
-            "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-            "float": "float 6s ease-in-out infinite",
+            'float': 'float 6s ease-in-out infinite',
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'drive': 'drive 1s ease-in-out forwards',
           },
           keyframes: {
-            fadeInUp: { "0%": { opacity: "0", transform: "translateY(20px)" }, "100%": { opacity: "1", transform: "translateY(0)" } },
-            float: { "0%, 100%": { transform: "translateY(0)" }, "50%": { transform: "translateY(-6px)" } }
-          },
-          backgroundImage: {
-            'grid-pattern': "linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px)",
+            float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-6px)' } }
           }
         }
       }
     };
-    mermaid.initialize({
-      startOnLoad: false,
-      theme: 'base',
-      themeVariables: {
-        primaryColor: '#e0f2fe',
-        edgeLabelBackground: '#ffffff',
-        tertiaryColor: '#fff'
-      },
-      securityLevel: 'loose',
-      flowchart: { useMaxWidth: false, htmlLabels: true }
-    });
   </script>
 
   <style>
-    /* ===== 全局設定：深空科技風 ===== */
     body {
-      background-color: #050b14;
-      color: #e2e8f0;
-      font-family: 'Inter', 'Noto Sans TC', sans-serif;
-      overflow-x: hidden;
-      /* 背景噪點質感 */
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
-    }
-
-    /* 背景動態光暈 */
-    .ambient-glow {
-      position: fixed; top: -20%; left: 50%; transform: translateX(-50%);
-      width: 100vw; height: 80vh;
-      background: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, rgba(59, 130, 246, 0.08) 40%, transparent 70%);
-      filter: blur(80px);
-      z-index: -2; pointer-events: none;
-    }
-    .grid-bg {
-      position: fixed; inset: 0; z-index: -1; pointer-events: none;
-      background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-color: #f1f5f9;
+      background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
       background-size: 40px 40px;
-      mask-image: radial-gradient(circle at center, black 0%, transparent 80%);
+      color: #1e293b;
     }
 
-    /* ===== 元件：玻璃態與卡片 ===== */
-    /* 1. HUD 面板 (導航、控制台) - 深色玻璃 */
-    .hud-glass {
-      background: rgba(15, 23, 42, 0.7);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+    /* Glass Effect Panel */
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      border-radius: 1.5rem;
+      transition: all 0.3s ease;
     }
     
-    /* 2. 閱讀面板 (摘要、測驗) - 類紙質感 (Paper-on-Glass) 
-       這是解決「科技感 vs 易讀性」的關鍵：內容區使用高亮底色 */
-    .reading-paper {
-      background: rgba(255, 255, 255, 0.98); /* 極接近純白，確保最高對比 */
-      border-radius: 1rem;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 
-        0 10px 40px -10px rgba(0, 0, 0, 0.5),
-        0 0 0 1px rgba(6, 182, 212, 0.1) inset; /* 內發光微細節 */
-      color: #1e293b; /* 深灰文字，舒適閱讀 */
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .reading-paper:hover {
-      box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.6);
-    }
-
-    /* ===== 表單元件：未來感改造 ===== */
-    /* 隱藏原生 Select 下拉箭頭，改用 CSS 繪製 */
+    /* Custom Select */
     select {
       appearance: none;
-      background-color: rgba(30, 41, 59, 0.6);
-      border: 1px solid rgba(148, 163, 184, 0.2);
-      color: #f1f5f9;
-      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-      background-position: right 0.75rem center;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+      background-position: right 0.5rem center;
       background-repeat: no-repeat;
-      background-size: 1.2em 1.2em;
-      transition: all 0.3s ease;
-      font-family: 'Outfit', sans-serif;
-    }
-    select:disabled {
-      background-color: rgba(15, 23, 42, 0.4);
-      color: #475569;
-      cursor: not-allowed;
-      border-color: rgba(255,255,255,0.05);
-    }
-    select:not(:disabled):hover {
-      border-color: rgba(6, 182, 212, 0.5);
-      box-shadow: 0 0 15px rgba(6, 182, 212, 0.1);
-    }
-    select:focus {
-      outline: none;
-      border-color: #06b6d4;
-      box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2);
+      background-size: 1.5em 1.5em;
     }
 
-    /* 生成按鈕：全像投影感 */
-    #btn-generate:not(:disabled) {
-      background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+    /* Race Track HUD */
+    .race-track {
       position: relative;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.2);
-      box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
+      height: 12px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+      margin: 20px 0;
     }
-    #btn-generate:not(:disabled)::after {
-      content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-      background: linear-gradient(rgba(255,255,255,0.2), transparent);
-      transform: rotate(45deg) translateY(-100%);
-      animation: shine 3s infinite;
+    .race-progress {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #06b6d4);
+      border-radius: 999px;
+      width: 0%;
+      transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
     }
-    @keyframes shine { 
-      0% { transform: rotate(45deg) translateY(-100%); }
-      20% { transform: rotate(45deg) translateY(100%); }
-      100% { transform: rotate(45deg) translateY(100%); }
+    .race-car {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.5rem;
+      color: #ef4444;
+      transition: left 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 10;
+      filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2));
     }
-
-    /* ===== 內容區細節 ===== */
-    /* 標題裝飾線 */
-    .section-title {
-      font-family: 'Outfit', 'Noto Sans TC', sans-serif;
-      position: relative;
-      display: inline-block;
-    }
-    .section-title::after {
-      content: ''; position: absolute; bottom: -4px; left: 0; width: 40%; height: 3px;
-      background: linear-gradient(90deg, #06b6d4, transparent);
-      border-radius: 2px;
-    }
-
-    /* 摘要文字排版 */
-    #summary-text h3 {
-      font-family: 'Outfit', 'Noto Sans TC', sans-serif;
-      color: #0f172a;
-      font-size: 1.25rem;
-      font-weight: 800;
-      margin-top: 1.5rem;
-      padding-left: 1rem;
-      border-left: 4px solid #06b6d4;
-    }
-    #summary-text li { position: relative; padding-left: 1.5rem; margin-bottom: 0.5rem; color: #334155; }
-    #summary-text li::before { 
-      content: "\f054"; font-family: "Font Awesome 6 Free"; font-weight: 900; 
-      color: #06b6d4; font-size: 0.7rem; position: absolute; left: 0; top: 0.2rem; 
+    .finish-line {
+      position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+      font-size: 1.2rem; color: #1e293b;
     }
 
-    /* 詞彙卡片 */
-    .vocab-item {
+    /* Option Button */
+    .opt-btn {
+      transition: all 0.2s;
       border: 1px solid #e2e8f0;
-      background: #fff;
-      transition: all 0.3s ease;
     }
-    .vocab-item:hover {
-      border-color: #06b6d4;
-      transform: translateX(5px);
-      box-shadow: 0 4px 12px rgba(6, 182, 212, 0.1);
+    .opt-btn:hover:not(:disabled) {
+      border-color: #3b82f6;
+      background: #eff6ff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
     }
+    .opt-btn.selected {
+      background: #3b82f6;
+      color: white;
+      border-color: #3b82f6;
+      box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+    }
+    .opt-btn.selected .badge { background: rgba(255,255,255,0.2); color: white; }
 
-    /* 測驗選項 */
-    .quiz-option-btn {
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
-    }
-    .quiz-option-btn:hover:not(:disabled) {
-      background: #f0f9ff;
-      border-color: #06b6d4;
-      transform: scale(1.01);
-    }
-    .quiz-option-btn.selected-correct {
-      background: #ecfdf5 !important; border-color: #10b981 !important; color: #064e3b !important;
-    }
-    .quiz-option-btn.selected-wrong {
-      background: #fef2f2 !important; border-color: #ef4444 !important; color: #7f1d1d !important;
-    }
-
-    /* Chat Window - 未來通訊器風格 */
-    .chat-window {
-      backdrop-filter: blur(20px);
-      background: rgba(255, 255, 255, 0.95);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      box-shadow: 0 20px 50px rgba(0,0,0,0.4);
-    }
-    .chat-header {
-      background: linear-gradient(90deg, #0f172a, #1e293b);
-    }
-    
-    /* Loader - 數據流動畫 */
-    .tech-loader {
-      width: 60px; height: 60px;
-      border: 3px solid rgba(6, 182, 212, 0.1);
-      border-top-color: #06b6d4;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      position: relative;
-      box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
-    }
-    .tech-loader::before {
-      content:''; position: absolute; inset: 5px; border-radius: 50%;
-      border: 3px solid transparent; border-top-color: #3b82f6;
-      animation: spin 2s linear infinite reverse;
+    /* Loader */
+    .loader {
+      border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%;
+      width: 50px; height: 50px; animation: spin 1s linear infinite;
     }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* Scrollbar 客製化 */
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #06b6d4; }
-
-    /* PDF 與 Modal 修正 */
-    #image-modal { backdrop-filter: blur(10px); }
-    .pdf-page-break { page-break-before: always; }
-    .click-mask { cursor: zoom-in; }
-
-    /* RWD 微調 */
-    @media (max-width: 640px) {
-      .hud-glass { backdrop-filter: blur(12px); background: rgba(15,23,42,0.85); }
+    /* PDF Specific Styles (Hidden from screen) */
+    #pdf-report {
+      width: 210mm; min-height: 297mm; background: white; padding: 20mm;
+      font-family: 'Noto Sans TC', serif; display: none;
     }
+    .pdf-header { text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 20px; margin-bottom: 30px; }
+    .pdf-section { margin-bottom: 30px; page-break-inside: avoid; }
+    .pdf-title { font-size: 18px; font-weight: bold; color: #1e293b; border-left: 5px solid #3b82f6; padding-left: 10px; margin-bottom: 15px; }
+    .pdf-score-box { display: flex; justify-content: center; gap: 40px; margin-bottom: 20px; }
+    .pdf-score-circle { width: 100px; height: 100px; border-radius: 50%; border: 8px solid #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 900; color: #3b82f6; }
+    .pdf-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .pdf-table th { background: #f1f5f9; padding: 8px; text-align: left; border-bottom: 2px solid #cbd5e1; }
+    .pdf-table td { padding: 8px; border-bottom: 1px solid #e2e8f0; }
   </style>
 </head>
 
-<body class="min-h-screen flex flex-col">
-  
-  <div class="grid-bg"></div>
-  <div class="ambient-glow"></div>
+<body class="flex flex-col min-h-screen">
 
-  <nav class="hud-glass sticky top-0 z-50 h-16 sm:h-20 flex items-center border-b border-slate-700/30 no-print">
-    <div class="max-w-7xl mx-auto px-4 w-full flex justify-between items-center">
-      <div class="flex items-center gap-6">
-        <a href="/aischool/student.html" class="group flex items-center gap-3 text-slate-400 hover:text-cyan-400 transition duration-300">
-          <div class="w-8 h-8 rounded-lg border border-slate-600 group-hover:border-cyan-400 flex items-center justify-center bg-slate-800/50 transition">
-            <i class="fa-solid fa-arrow-left text-xs"></i>
-          </div>
-          <span class="font-ui font-semibold text-sm hidden md:block uppercase tracking-wider" data-i18n="back_home">Back to Hub</span>
+  <div id="loading-overlay" class="fixed inset-0 bg-slate-900/90 z-[100] hidden flex-col items-center justify-center text-white backdrop-blur-sm">
+    <div class="loader mb-4"></div>
+    <div id="loading-title" class="text-xl font-bold tracking-widest font-mono">SYSTEM INITIALIZING</div>
+    <div id="loading-desc" class="text-sm text-slate-400 mt-2">Connecting to AI Neural Network...</div>
+  </div>
+
+  <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <a href="./student.html" class="flex items-center gap-2 text-slate-500 hover:text-blue-600 transition">
+          <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-arrow-left"></i></div>
+          <span class="font-bold hidden sm:inline" data-i18n="back">返回</span>
         </a>
-
-        <div class="h-6 w-px bg-slate-700 hidden sm:block"></div>
-
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center border border-cyan-500/30">
-            <i class="fa-solid fa-atom text-cyan-400 text-sm"></i>
-          </div>
+        <div class="h-6 w-px bg-slate-300 hidden sm:block"></div>
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-user-doctor text-blue-600 text-xl"></i>
           <div>
-            <h1 class="font-tech font-bold text-base sm:text-lg text-white tracking-wide leading-none" data-i18n="page_title">UNIT SUMMARY</h1>
-            <p class="text-[10px] text-cyan-500 font-mono tracking-[0.2em] uppercase mt-1">AI-Powered Analytics</p>
+            <h1 class="font-black text-slate-800 leading-none" data-i18n="page_title">AI 適性診斷中心</h1>
+            <p class="text-[10px] text-slate-400 font-mono tracking-wider">ADAPTIVE DIAGNOSIS</p>
           </div>
         </div>
       </div>
 
-      <div class="flex items-center gap-4">
-        <div class="hidden md:flex items-center gap-3">
-          <a href="/aischool/student_science_bilingual.html" class="px-3 py-1.5 rounded-md border border-slate-700 bg-slate-800/50 text-slate-300 text-xs hover:border-purple-500 hover:text-purple-400 transition flex items-center gap-2">
-            <i class="fa-solid fa-book-open-reader"></i>
-            <span data-i18n="btn_bilingual">Bilingual</span>
-          </a>
-          <a href="/aischool/aievaluation.html" class="px-3 py-1.5 rounded-md border border-slate-700 bg-slate-800/50 text-slate-300 text-xs hover:border-emerald-500 hover:text-emerald-400 transition flex items-center gap-2">
-            <i class="fa-solid fa-clipboard-check"></i>
-            <span data-i18n="btn_eval">Evaluation</span>
-          </a>
-        </div>
-
-        <div class="relative group">
-          <select id="language-selector" onchange="changeLanguage()" class="pl-3 pr-8 py-1.5 text-xs rounded border border-slate-600 bg-slate-800 text-slate-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none cursor-pointer hover:bg-slate-700 transition">
+      <div class="flex items-center gap-3">
+        <div class="relative">
+          <i class="fa-solid fa-globe absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+          <select id="language-selector" onchange="changeLanguage()" class="pl-8 pr-8 py-1.5 rounded-full border border-slate-200 text-xs font-bold bg-slate-50 hover:bg-white transition focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer">
             <option value="zh-TW">繁體中文</option>
             <option value="en">English</option>
             <option value="ja">日本語</option>
             <option value="zh-CN">简体中文</option>
           </select>
         </div>
-
-        <div class="flex items-center gap-2 pl-4 border-l border-slate-700">
-          <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></div>
-          <div id="user-info" class="text-xs font-mono text-cyan-400">Visitor</div>
+        
+        <div id="connBadge" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs font-bold text-slate-400">
+          <i class="fa-solid fa-circle-notch fa-spin"></i> <span data-i18n="connecting">連線中...</span>
         </div>
       </div>
     </div>
   </nav>
 
-  <main class="max-w-7xl mx-auto px-4 py-8 flex-1 w-full pb-32 relative z-10">
-    
-    <div id="selection-panel" class="hud-glass rounded-2xl p-6 sm:p-8 mb-10 border-t border-cyan-500/20 relative overflow-hidden animate-fade-in-up no-print">
-      <div class="absolute top-0 right-0 p-4 opacity-20 pointer-events-none">
-        <i class="fa-solid fa-database text-6xl text-cyan-500"></i>
-      </div>
+  <main class="max-w-6xl mx-auto px-4 py-8 flex-1 space-y-8 pb-24">
+
+    <section class="glass-panel p-6 md:p-8 relative overflow-hidden group hover:shadow-lg">
+      <div class="absolute top-0 right-0 w-40 h-40 bg-blue-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
       
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 relative z-10">
-        <div>
-          <h2 class="font-tech text-xl sm:text-2xl text-white flex items-center gap-3">
-            <span class="w-1 h-6 bg-cyan-500 rounded-full"></span>
-            <span data-i18n="settings_title">Select Target Unit</span>
-          </h2>
-          <p class="text-slate-400 text-xs mt-1 ml-4">Initialize AI Analysis Protocol</p>
+      <div class="flex flex-wrap items-center justify-between mb-6 border-b border-slate-100 pb-4 relative z-10">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-lg font-bold shadow-lg shadow-blue-500/20">1</div>
+          <h2 class="text-xl font-bold text-slate-800" data-i18n="step1_title">診斷範圍設定</h2>
         </div>
-        <span id="db-status" class="text-xs font-mono font-bold text-cyan-500 mt-2 sm:mt-0 bg-cyan-900/20 px-3 py-1 rounded border border-cyan-900/50" data-state="loading">
-          <i class="fa-solid fa-circle-notch fa-spin mr-2"></i> <span data-i18n="db_loading">System Check...</span>
-        </span>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5 relative z-10">
-        <div class="group">
-          <label class="block text-[10px] font-mono text-cyan-300/70 mb-1.5 uppercase tracking-wider" data-i18n="label_stage">Stage</label>
-          <select id="sel-stage" class="w-full text-sm p-3 rounded-lg"></select>
-        </div>
-        <div class="group">
-          <label class="block text-[10px] font-mono text-cyan-300/70 mb-1.5 uppercase tracking-wider" data-i18n="label_publisher">Publisher</label>
-          <select id="sel-publisher" disabled class="w-full text-sm p-3 rounded-lg"></select>
-        </div>
-        <div class="group">
-          <label class="block text-[10px] font-mono text-cyan-300/70 mb-1.5 uppercase tracking-wider" data-i18n="label_grade">Grade</label>
-          <select id="sel-grade" disabled class="w-full text-sm p-3 rounded-lg"></select>
-        </div>
-        <div class="group">
-          <label class="block text-[10px] font-mono text-cyan-300/70 mb-1.5 uppercase tracking-wider" data-i18n="label_semester">Semester</label>
-          <select id="sel-semester" disabled class="w-full text-sm p-3 rounded-lg"></select>
-        </div>
-        <div class="group">
-          <label class="block text-[10px] font-mono text-cyan-300/70 mb-1.5 uppercase tracking-wider" data-i18n="label_unit">Unit Name</label>
-          <select id="sel-unit" disabled class="w-full text-sm p-3 rounded-lg"></select>
-        </div>
-      </div>
-
-      <div class="mt-8 flex justify-end relative z-10">
-        <button id="btn-generate" onclick="startGeneration()" disabled class="px-8 py-3 rounded-lg font-bold text-white shadow-lg hover:shadow-cyan-500/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-3 text-sm tracking-wide">
-          <i class="fa-solid fa-microchip"></i> 
-          <span data-i18n="btn_generate">INITIATE ANALYSIS</span>
+        <button id="btnReload" class="text-sm text-blue-500 font-bold hover:bg-blue-50 px-3 py-1.5 rounded-lg transition flex items-center gap-2">
+          <i class="fa-solid fa-rotate"></i> <span data-i18n="btn_reload">重整資料庫</span>
         </button>
       </div>
-    </div>
 
-    <div id="loading-view" class="hidden flex-col items-center justify-center py-32 animate-pulse-slow">
-      <div class="tech-loader mb-6"></div>
-      <h3 class="text-2xl font-tech font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-500" data-i18n="ai_generating">PROCESSING DATA...</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 relative z-10">
+        <div class="space-y-1">
+          <label class="text-xs font-bold text-slate-400 uppercase ml-1" data-i18n="label_stage">學習階段</label>
+          <select id="selStage" class="w-full p-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"></select>
+        </div>
+        <div class="space-y-1">
+          <label class="text-xs font-bold text-slate-400 uppercase ml-1" data-i18n="label_grade">年級</label>
+          <select id="selGrade" class="w-full p-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"></select>
+        </div>
+        <div class="space-y-1">
+          <label class="text-xs font-bold text-slate-400 uppercase ml-1" data-i18n="label_semester">學期</label>
+          <select id="selSemester" class="w-full p-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"></select>
+        </div>
+        <div class="space-y-1">
+          <label class="text-xs font-bold text-slate-400 uppercase ml-1" data-i18n="label_publisher">版本</label>
+          <select id="selPublisher" class="w-full p-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"></select>
+          <div id="publisherHint" class="hidden"></div>
+        </div>
+        <div class="space-y-1 lg:col-span-1">
+          <label class="text-xs font-bold text-slate-400 uppercase ml-1" data-i18n="label_unit">單元</label>
+          <select id="selUnit" class="w-full p-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"></select>
+          <div id="unitHint" class="hidden"></div>
+        </div>
       </div>
 
-    <div id="content-view" class="hidden animate-fade-in-up">
-      
-      <div class="mb-8 flex flex-col md:flex-row justify-between md:items-end gap-6">
-        <div>
-          <div class="flex items-center gap-3 mb-3">
-            <span id="result-tag" class="text-[10px] font-mono font-bold bg-cyan-900/40 text-cyan-300 px-3 py-1 rounded border border-cyan-500/30">TAG</span>
-            <div class="h-px w-10 bg-cyan-500/50"></div>
-          </div>
-          <h1 id="result-title" class="text-4xl md:text-5xl font-ui font-black text-white leading-tight drop-shadow-xl">Title</h1>
+      <div class="mt-8 pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-xl border border-slate-200">
+          <i class="fa-solid fa-list-ol text-slate-400"></i>
+          <span class="text-sm font-bold text-slate-600" data-i18n="question_count">題數</span>
+          <input id="inpN" type="number" min="5" max="40" step="1" value="15" class="w-12 bg-transparent text-center font-mono font-bold text-lg text-blue-600 focus:outline-none">
         </div>
+        <button id="btnStart" class="w-full sm:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-lg shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-rocket"></i> <span data-i18n="btn_start">開始診斷</span>
+        </button>
+      </div>
+    </section>
 
-        <div class="flex gap-3 no-print">
-          <button onclick="downloadTXT()" class="bg-slate-800/80 hover:bg-slate-700 text-cyan-400 border border-slate-600 hover:border-cyan-500 px-5 py-2.5 rounded-lg font-bold text-xs transition flex items-center gap-2 backdrop-blur-sm">
-            <i class="fa-solid fa-file-code"></i>
-            <span data-i18n="btn_txt">EXPORT .TXT</span>
-          </button>
+    <section class="glass-panel p-6 md:p-8 relative overflow-hidden border-l-4 border-orange-400">
+      <div class="absolute top-0 left-0 w-32 h-32 bg-orange-400/5 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
+
+      <div class="flex items-center justify-between mb-4 relative z-10">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-orange-500 text-white flex items-center justify-center text-lg font-bold shadow-lg shadow-orange-500/20">2</div>
+          <div>
+            <h2 class="text-xl font-bold text-slate-800" data-i18n="step2_title">智能作答區</h2>
+            <p class="text-[10px] text-slate-400 font-mono tracking-wider">AI ADAPTIVE TESTING</p>
+          </div>
         </div>
+        <div class="font-mono text-xl font-black text-orange-500" id="progText">0/0</div>
+        <button id="btnFinish" class="hidden" disabled></button>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-        
-        <div id="summary-panel" class="md:col-span-8 reading-paper p-8">
-          <div class="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
-            <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-              <i class="fa-solid fa-star text-lg"></i>
-            </div>
-            <h3 class="font-ui font-bold text-slate-800 text-xl section-title" data-i18n="title_summary">Core Concepts</h3>
+      <div class="race-track">
+        <div id="progBar" class="race-progress"></div>
+        <div id="turtleIcon" class="race-car" style="left: 0%"><i class="fa-solid fa-car-side"></i></div>
+        <div class="finish-line"><i class="fa-solid fa-flag-checkered"></i></div>
+      </div>
+
+      <div id="qArea" class="mt-8 relative z-10 min-h-[300px]">
+        <div id="qEmpty" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
+          <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4 animate-float">
+            <i class="fa-solid fa-gamepad text-3xl"></i>
           </div>
-          <div id="summary-text" class="prose prose-slate max-w-none text-slate-700 leading-loose text-base md:text-lg"></div>
+          <p class="font-bold" data-i18n="waiting_start">等待測驗啟動...</p>
         </div>
 
-        <div id="vocab-panel" class="md:col-span-4 reading-paper p-6 bg-slate-50/50 flex flex-col h-full">
-          <div class="flex items-center gap-3 mb-6">
-            <div class="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
-              <i class="fa-solid fa-spell-check"></i>
-            </div>
-            <h3 class="font-ui font-bold text-slate-800 text-lg section-title" data-i18n="title_vocab">Keywords</h3>
-          </div>
-          <div class="flex-1 overflow-y-auto custom-scrollbar pr-1">
-            <div id="keywords-list" class="space-y-3 pb-2"></div>
-          </div>
-        </div>
-
-        <div class="md:col-span-12 reading-paper p-1 bg-white pdf-page-break">
-          <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
-                <i class="fa-solid fa-project-diagram"></i>
-              </div>
-              <h3 class="font-ui font-bold text-slate-800 text-lg section-title" data-i18n="title_map">Knowledge Graph</h3>
-              <button onclick="openModal()" class="ml-2 text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full hover:bg-indigo-200 transition" data-i18n="tap_to_zoom">Expand</button>
-            </div>
-            <button onclick="openModal()" class="text-slate-400 hover:text-indigo-600 transition"><i class="fa-solid fa-expand"></i></button>
-          </div>
-          
-          <div class="bg-slate-50/50 p-4 overflow-hidden relative" id="chart-container">
-            <div class="click-mask" onclick="openModal()"></div>
-            <div id="mermaid-chart" class="w-full flex justify-center"></div>
-          </div>
-        </div>
-
-        <div class="md:col-span-5 reading-paper p-6 bg-red-50/30 border-red-100 pdf-page-break">
-          <div class="flex items-center gap-3 mb-6">
-            <div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-red-600">
-              <i class="fa-solid fa-lightbulb"></i>
-            </div>
-            <h3 class="font-ui font-bold text-slate-800 text-lg section-title" data-i18n="title_myth">Myth Busting</h3>
-          </div>
-          <div id="myth-list" class="flex flex-col gap-4"></div>
-        </div>
-
-        <div id="quiz-panel" class="md:col-span-7 reading-paper p-8 border-emerald-100/50">
-          <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
-                <i class="fa-solid fa-brain"></i>
-              </div>
-              <h3 class="font-ui font-bold text-slate-800 text-xl section-title">
-                <span id="quiz-title" data-i18n="quiz">Unit Quiz</span>
-              </h3>
-            </div>
-            <div id="quiz-progress" class="font-mono text-xs font-bold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">
-              0 / 0
-            </div>
+        <div id="qWrap" class="hidden">
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6">
+            <span class="inline-block px-3 py-1 rounded bg-orange-100 text-orange-700 text-xs font-bold mb-3">QUESTION</span>
+            <div id="qStem" class="text-xl font-serif font-bold text-slate-800 leading-relaxed"></div>
           </div>
 
-          <div id="quiz-body" class="space-y-6">
-            <div id="quiz-question" class="font-ui font-bold text-slate-800 text-lg leading-relaxed"></div>
-            <div id="quiz-options" class="grid grid-cols-1 gap-3"></div>
-            <div id="quiz-feedback" class="hidden animate-fade-in-up"></div>
-            <div class="flex justify-end pt-4">
-              <button id="quiz-main-btn" onclick="handleQuizMainButton()" class="px-6 py-2 rounded-full bg-slate-800 text-white font-bold text-sm shadow hover:bg-emerald-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                Next Question
+          <div id="optWrap" class="grid grid-cols-1 gap-3 mb-6"></div>
+
+          <div class="flex flex-col md:flex-row items-center gap-4 bg-white/50 p-4 rounded-xl border border-white">
+            <div id="hint" class="flex-1 text-sm font-bold text-slate-500 flex items-center gap-2">
+              <i class="fa-solid fa-circle-info text-blue-400"></i> <span data-i18n="hint_select">請選擇一個選項</span>
+            </div>
+            <div class="flex gap-3 w-full md:w-auto">
+              <button id="btnSubmit" class="flex-1 md:flex-none px-6 py-2.5 rounded-lg bg-slate-800 text-white font-bold hover:bg-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition shadow flex items-center justify-center gap-2">
+                <span data-i18n="btn_submit">送出</span> <i class="fa-solid fa-paper-plane"></i>
+              </button>
+              <button id="btnNext" disabled class="flex-1 md:flex-none px-6 py-2.5 rounded-lg bg-slate-200 text-slate-400 font-bold disabled:cursor-not-allowed transition flex items-center justify-center gap-2">
+                <span data-i18n="btn_next">下一題</span> <i class="fa-solid fa-arrow-right"></i>
               </button>
             </div>
           </div>
-
-          <div id="quiz-empty" class="text-sm text-slate-500 italic p-4 text-center" data-i18n="quiz_not_ready"></div>
-
-          <div id="quiz-result" class="hidden mt-6 bg-slate-50 rounded-xl p-6 border border-slate-200">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-6">
-              <div class="text-center md:text-left">
-                <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1" data-i18n="quiz_score_title">Final Score</div>
-                <div id="quiz-score-number" class="text-5xl font-black text-emerald-600 font-tech">0</div>
-                <div id="quiz-score-label" class="text-xs text-emerald-600 font-bold mt-1"></div>
-              </div>
-              <div id="quiz-result-text" class="text-sm font-bold text-slate-600"></div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div class="h-64 relative">
-                <canvas id="quiz-radar"></canvas>
-              </div>
-              <div id="quiz-result-detail" class="text-sm text-slate-600 leading-relaxed bg-white p-4 rounded-lg border border-slate-100 shadow-sm overflow-y-auto max-h-64 custom-scrollbar"></div>
-            </div>
-          </div>
         </div>
-
       </div>
-    </div>
+    </section>
+
+    <section id="resultSec" class="hidden glass-panel p-6 md:p-8 relative overflow-hidden border-l-4 border-emerald-500">
+      <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+
+      <div class="flex flex-wrap items-center justify-between mb-8 relative z-10">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-lg font-bold shadow-lg shadow-emerald-500/20">3</div>
+          <h2 class="text-xl font-bold text-slate-800" data-i18n="step3_title">診斷報告</h2>
+        </div>
+        <div class="flex gap-2">
+          <button id="btnDownload" class="px-4 py-2 rounded-lg bg-slate-800 text-white text-sm font-bold hover:bg-slate-900 transition shadow flex items-center gap-2">
+            <i class="fa-solid fa-file-pdf"></i> <span data-i18n="btn_pdf">下載報告書</span>
+          </button>
+          <button id="btnRestart" class="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-600 text-sm font-bold hover:bg-slate-50 transition flex items-center gap-2">
+            <i class="fa-solid fa-rotate-left"></i> <span data-i18n="btn_restart">重測</span>
+          </button>
+        </div>
+        <div id="btnCopy" class="hidden"></div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+          <div>
+            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1" data-i18n="accuracy">答對題數</div>
+            <div id="resScore" class="text-4xl font-mono font-black text-slate-800">—</div>
+          </div>
+          <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl"><i class="fa-solid fa-bullseye"></i></div>
+        </div>
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+          <div>
+            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1" data-i18n="score">總分</div>
+            <div id="resScore100" class="text-4xl font-mono font-black text-emerald-600">—</div>
+          </div>
+          <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl"><i class="fa-solid fa-trophy"></i></div>
+        </div>
+        <div id="resTestId" class="hidden"></div>
+      </div>
+
+      <div class="bg-red-50/50 rounded-2xl p-6 border border-red-100 mb-6">
+        <h3 class="text-lg font-bold text-red-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-microscope"></i> <span data-i18n="wrong_analysis">錯題概念分析</span></h3>
+        <div id="resWrong" class="space-y-3"></div>
+      </div>
+
+      <div class="bg-white/60 rounded-2xl p-6 border border-slate-200">
+        <h3 class="text-lg font-bold text-blue-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-user-doctor"></i> <span data-i18n="ai_feedback">AI 學習處方</span></h3>
+        <div id="resFeedback" class="prose prose-slate max-w-none text-slate-600 font-medium whitespace-pre-wrap"></div>
+      </div>
+    </section>
+
   </main>
 
-  <div id="floating-chat" class="hidden fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-4 no-print">
-    <div id="xiaoke-window" class="chat-window closed w-80 md:w-96 rounded-2xl flex flex-col overflow-hidden h-[500px] transition-all duration-300 origin-bottom-right transform scale-0 opacity-0">
-      <div class="chat-header p-4 flex justify-between items-center border-b border-white/10">
-        <div class="flex items-center gap-3">
-          <div class="relative">
-            <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" alt="小科" class="w-10 h-10 rounded-full border-2 border-cyan-400 bg-slate-900 object-cover">
-            <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-slate-800"></div>
-          </div>
-          <div>
-            <span class="font-ui font-bold text-white block leading-none">AI TUTOR</span>
-            <span class="text-[10px] text-cyan-400 font-mono">Online</span>
-          </div>
-        </div>
-        <button onclick="toggleChat()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark"></i></button>
-      </div>
+  <div id="pdf-report">
+    <div style="height: 1100px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 10px solid #f1f5f9; padding: 40px; text-align: center; position: relative;">
+      <div style="font-size: 80px; color: #3b82f6; margin-bottom: 30px;"><i class="fa-solid fa-atom"></i></div>
+      <div style="font-size: 24px; color: #64748b; margin-bottom: 10px; font-weight: bold; letter-spacing: 4px;">AI SCHOOL 自然科學</div>
+      <div style="font-size: 48px; color: #0f172a; font-weight: 900; margin-bottom: 20px;">概念理解診斷報告書</div>
+      <div id="pdf-unit-name" style="font-size: 28px; color: #334155; font-weight: bold; border-bottom: 3px solid #3b82f6; padding-bottom: 15px; margin-bottom: 60px;"></div>
       
-      <div class="flex-1 p-4 bg-slate-50/80 overflow-y-auto text-sm space-y-4 custom-scrollbar" id="chat-messages">
+      <div style="text-align: left; width: 60%; font-size: 18px; line-height: 2.5;">
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0;">
+          <span style="color: #64748b;">學生姓名：</span><span id="pdf-student-name" style="font-weight: bold;"></span>
         </div>
-      
-      <div class="p-3 bg-white border-t border-slate-200 flex gap-2">
-        <input type="text" id="chat-input" data-i18n-placeholder="chat_placeholder" placeholder="Ask AI..." 
-          class="flex-1 bg-slate-100 border-none rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-cyan-500 outline-none text-slate-700"
-          onkeypress="if(event.key==='Enter') sendChatMessage()">
-        <button onclick="sendChatMessage()" class="bg-cyan-600 text-white w-10 h-10 rounded-full hover:bg-cyan-500 transition shadow-lg flex items-center justify-center">
-          <i class="fa-solid fa-paper-plane text-xs"></i>
-        </button>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0;">
+          <span style="color: #64748b;">診斷日期：</span><span style="font-weight: bold;">2025年12月16日</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0;">
+          <span style="color: #64748b;">報告編號：</span><span id="pdf-report-id" style="font-weight: bold; font-family: monospace;"></span>
+        </div>
       </div>
+      <div style="position: absolute; bottom: 40px; font-size: 12px; color: #94a3b8;">Science Learning Hub • Adaptive Diagnosis System</div>
     </div>
 
-    <button onclick="toggleChat()" class="group w-16 h-16 rounded-full shadow-[0_0_20px_rgba(6,182,212,0.4)] flex items-center justify-center hover:scale-105 transition-all overflow-hidden border-2 border-cyan-400 relative bg-slate-900">
-      <div class="absolute inset-0 bg-cyan-500/20 animate-pulse"></div>
-      <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" alt="小科" class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition">
-    </button>
+    <div class="html2pdf__page-break"></div>
+
+    <div style="padding: 40px;">
+      <div class="pdf-header">
+        <h2 style="margin: 0; color: #0f172a; font-size: 28px; font-weight: bold;">診斷分析詳情</h2>
+      </div>
+
+      <div class="pdf-section">
+        <div class="pdf-title">一、測驗分數</div>
+        <div class="pdf-score-box">
+          <div style="text-align: center;">
+            <div id="pdf-score-circle" class="pdf-score-circle">--</div>
+            <div style="font-size: 14px; font-weight: bold; color: #3b82f6; margin-top: 10px;">總分 (100分制)</div>
+          </div>
+          <div style="display: flex; flex-direction: column; justify-content: center; gap: 10px;">
+            <div style="font-size: 16px;">答對題數：<span id="pdf-raw-score" style="font-weight: bold;"></span></div>
+            <div style="font-size: 14px; color: #64748b;">整體評語：<span id="pdf-comment" style="font-weight: bold; color: #0f172a;"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pdf-section">
+        <div class="pdf-title">二、錯題概念分析</div>
+        <div style="font-size: 14px; color: #64748b; margin-bottom: 10px;">以下是本次測驗中偵測到理解較弱的概念點：</div>
+        <div id="pdf-wrong-list"></div>
+      </div>
+
+      <div class="pdf-section">
+        <div class="pdf-title">三、AI 診斷結果</div>
+        <div id="pdf-ai-diagnosis" style="font-size: 14px; line-height: 1.8; color: #334155; text-align: justify;"></div>
+      </div>
+
+      <div class="pdf-section">
+        <div class="pdf-title">四、學習補強建議</div>
+        <div id="pdf-remedial" style="font-size: 14px; line-height: 1.8; color: #334155; text-align: justify; background: #f8fafc; padding: 15px; border-radius: 8px;"></div>
+      </div>
+    </div>
   </div>
 
-  <div id="image-modal" class="fixed inset-0 z-[200] bg-slate-900/90 hidden items-center justify-center p-4 transition-opacity duration-300" onclick="closeModal()">
-    <button class="absolute top-6 right-6 text-white/70 hover:text-cyan-400 text-4xl transition" onclick="closeModal()"><i class="fa-solid fa-circle-xmark"></i></button>
-    <div id="modal-content" class="bg-white rounded-xl shadow-2xl overflow-auto max-h-[90vh] max-w-[95vw] p-4" onclick="event.stopPropagation()"></div>
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 hidden">
+    <div class="bg-slate-800 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-4 border border-slate-700 max-w-sm">
+      <div id="toastIcon" class="text-2xl"></div>
+      <div>
+        <div id="toastTitle" class="font-bold"></div>
+        <div id="toastMsg" class="text-xs text-slate-400 mt-1"></div>
+      </div>
+    </div>
   </div>
 
   <script>
-    // CSS Toggle Logic for Chat
-    const chatWindow = document.getElementById("xiaoke-window");
-    const originalToggleChat = toggleChat; // Backup if exists
-    
-    // Override toggleChat to use new classes
-    window.toggleChat = function() {
-        if (!chatWindow) return;
-        const isClosed = chatWindow.classList.contains("closed");
-        if (isClosed) {
-            chatWindow.classList.remove("closed", "scale-0", "opacity-0");
-            // Check if empty and add greeting (Logic from original script)
-            const chatBody = document.getElementById("chat-messages");
-            if (chatBody && !chatBody.innerHTML.trim()) {
-                const unitName = (filters && filters.unitName) || "這個單元";
-                // Manually trigger the greeting logic from the original script if needed
-                // Or let the original script handle innerHTML if it was doing so
-                chatBody.innerHTML = `
-                    <div class="self-start bg-white border border-slate-200 p-3 rounded-2xl rounded-tl-none shadow-sm max-w-[85%] text-slate-700">
-                      <span class="font-bold text-cyan-600 block mb-1 text-xs">AI TUTOR</span>
-                      ${tf("chat_greet", {unit: unitName})}
-                    </div>`;
-            }
-        } else {
-            chatWindow.classList.add("closed", "scale-0", "opacity-0");
-        }
-    };
-    
-    // --- 以下為您原始的 JavaScript 邏輯 (完全保留) ---
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxBWrZCp-xLckDGZnhe64K0IUa_8CJZRzqZbrgL8lQdNn3S1WgaEzbdOtpo4mGwN6_H/exec";
+    /* ===========================
+       0) GAS URL & CONSTANTS
+    =========================== */
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxvAOgRDBE6T-2R37UeTzo0RSQukgGOlEYyBrTw8zUSOlIKNIzLdJXozjNx4Hn6brc2/exec";
+    const CONTENT_DB_ID = "1cEfMEy3bvDa1tET3xmh7ShGeJy8KLUMa_JuULGBD-mk";
+    const CONTENT_SHEET_NAME = "Sheet1";
+    const USER_DB_ID = "1cDOsaa7E0EwD1R9CeCWoGf8_9ZMcFv8fxQ5d-LWUKu8";
+    const USER_SHEET_NAME = "Users_student";
+    const USER_STUDENTID_COL = "J";
 
-    let allData = [];
-    let filters = {};
-    let currentResultData = null;
-    let mythData = [];
-    let quizState = { questions: [], currentIndex: 0, hasAnswered: false, answers: [] };
-    let quizRadarChart = null;
+    const ACTION = { GET_UNIT_OPTIONS: "getUnitOptions", START_CAT: "startCAT", SUBMIT_NEXT: "submitAndNext", FINISH_CAT: "finishCAT" };
+    const META_ACTION_CANDIDATES = ["get_metadata", "getMaterialTree", "getTextbookMeta", "getContentMeta", "getContentOptions", "getTextbookOptions", "getLessonOptions", ACTION.GET_UNIT_OPTIONS];
+    const STUDENTID_ACTION_CANDIDATES = ["getStudentIdByEmail", "getStudentIDByEmail", "resolveStudentIdByEmail", "resolveStudentIDByEmail", "resolveStudentId", "resolveStudentID", "getStudentId", "get_student_id", "getUserByEmail", "get_user_by_email", "getUser", "get_user", "getProfile", "get_profile"];
 
+    /* ===========================
+       1) I18N SYSTEM (NEW)
+    =========================== */
     const i18n = {
       "zh-TW": {
-        back_home:"返回學習中心",
-        btn_bilingual:"科學雙語閱讀",
-        btn_eval:"AI 評分診斷",
-        page_title:"單元重點整理",
-        settings_title:"請挑選你要的學習單元",
-        label_stage:"學習階段",
-        label_publisher:"版本",
-        label_grade:"年級",
-        label_semester:"學期",
-        label_unit:"單元名稱",
-        btn_generate:"AI 分析並生成",
-        btn_txt:"下載 TXT",
-        title_summary:"核心概念摘要",
-        title_vocab:"科學詞彙與定義",
-        title_map:"知識架構圖",
-        title_myth:"科學動動腦",
-        loading:"載入中...",
-        select:"請選擇...",
-        db_loading:"系統連線中...",
-        db_success:"資料庫連線成功",
-        db_fail:"連線失敗",
-        db_fail_retry:"連線失敗，請重試...",
-        ai_generating:"AI 單元重點整理中...",
-        tap_to_zoom:"點擊放大",
-        myth_tip:"先想一想，再作答",
-        myth_true:"正確 O",
-        myth_false:"錯誤 X",
-        msg_correct:"恭喜答對了！你真棒！",
-        msg_wrong:"可惜答錯了，再試試！",
-        msg_seq:"請依照題號順序作答，先完成前一題喔！",
-        vocab_none:"無詞彙資料",
-        summary_fail:"生成摘要失敗...",
-        map_fail:"架構圖繪製失敗，請重試。",
-        map_none:"無架構圖數據",
-        myth_none:"本單元暫無「科學動動腦」小題。",
-        quiz:"單元小測驗",
-        quiz_prefix:"單元小測驗－{unit}",
-        quiz_not_ready:"本單元的小測驗尚未準備好，之後會由老師再補上喔。",
-        quiz_progress:"第 {n} 題／共 {total} 題",
-        quiz_q:"第 {n} 題",
-        quiz_next:"下一題",
-        quiz_result_btn:"看結果",
-        quiz_score_title:"你的測驗成績",
-        quiz_ai_analyzing:"AI 正在分析你的作答結果…",
-        quiz_ai_analyzing_short:"AI 分析中…",
-        quiz_result_text:"你答對 {correct} 題／共 {total} 題。",
-        quiz_axis_wrong:"答錯",
-        quiz_axis_right:"答對",
-        quiz_ai_fallback1:"從左側的長條圖可以看出各概念的答對率，分數較低的概念可以回到課本文字與重點整理區再加強。",
-        quiz_ai_fallback2:"AI 分析暫時無法提供，可以先參考圖表與逐題解析，自己歸納需要加強的地方。",
-        quiz_ai_unstable:"AI 解析目前連線不穩定，稍後可以再試一次。",
-        txt_need_generate:"請先生成內容後再下載！",
-        txt_download_fail:"TXT 下載失敗，請再試一次或換一個瀏覽器。",
-        ai_generate_fail:"AI 生成失敗！請檢查 API 或重試。\n錯誤訊息: {msg}",
-        api_format_error:"API 返回資料格式錯誤 (非完整 JSON)。",
-        chat_greet:"你好，我是小科，有關「{unit}」，你有什麼問題要問我呢？",
-        chat_placeholder:"輸入問題後按 Enter…"
+        back: "返回",
+        page_title: "AI 適性診斷中心",
+        connecting: "連線中...",
+        connected: "系統連線正常",
+        disconnected: "連線中斷",
+        step1_title: "診斷範圍設定",
+        btn_reload: "重整資料庫",
+        label_stage: "學習階段",
+        label_grade: "年級",
+        label_semester: "學期",
+        label_publisher: "版本",
+        label_unit: "單元",
+        question_count: "測驗題數",
+        btn_start: "開始診斷",
+        step2_title: "智能作答區",
+        waiting_start: "等待測驗啟動...",
+        hint_select: "請選擇一個選項",
+        btn_submit: "送出",
+        btn_next: "下一題",
+        step3_title: "診斷報告",
+        btn_pdf: "下載報告書",
+        btn_restart: "重測",
+        accuracy: "答對題數",
+        score: "總分 (100分制)",
+        wrong_analysis: "錯題概念分析",
+        ai_feedback: "AI 學習處方",
+        msg_ready: "準備就緒",
+        msg_menu_updated: "單元選單已更新",
+        msg_start_success: "測驗開始，請加油！",
+        msg_submit_success: "作答成功！",
+        msg_finish: "診斷完成",
+        msg_generating_pdf: "正在製作您的 PDF 報告...",
+        ph_loading: "載入中...",
+        ph_select_stage: "請先選擇學習階段...",
+        ph_select_grade: "請先選擇年級...",
+        ph_no_data: "無資料",
+        loading_title: "系統初始化中",
+        loading_desc: "正在建立神經網路連接...",
+        loading_q_title: "AI 正在命題中...",
+        loading_q_desc: "第一次建立測驗模型約需 15-20 秒，請耐心候候",
+        loading_a_title: "AI 診斷運算中...",
+        loading_a_desc: "正在分析您的概念理解模型，生成學習處方..."
       },
       "en": {
-        back_home:"Back Home",
-        btn_bilingual:"Bilingual Reading",
-        btn_eval:"AI Assessment",
-        page_title:"Unit Summary",
-        settings_title:"Select Learning Unit",
-        label_stage:"Level",
-        label_publisher:"Publisher",
-        label_grade:"Grade",
-        label_semester:"Semester",
-        label_unit:"Unit",
-        btn_generate:"Generate",
-        btn_txt:"Download TXT",
-        title_summary:"Core Concepts",
-        title_vocab:"Vocabulary & Definitions",
-        title_map:"Knowledge Map",
-        title_myth:"Thinking Check",
-        loading:"Loading...",
-        select:"Select...",
-        db_loading:"Connecting...",
-        db_success:"Database connected",
-        db_fail:"Connection failed",
-        db_fail_retry:"Connection failed. Please retry...",
-        ai_generating:"Generating AI notes...",
-        tap_to_zoom:"Tap to zoom",
-        myth_tip:"Think first, then answer",
-        myth_true:"True O",
-        myth_false:"False X",
-        msg_correct:"Correct! Great job!",
-        msg_wrong:"Not quite—try again!",
-        msg_seq:"Please answer in order. Finish the previous question first.",
-        vocab_none:"No vocabulary data",
-        summary_fail:"Failed to generate summary...",
-        map_fail:"Failed to render the map. Please retry.",
-        map_none:"No map data",
-        myth_none:"No Thinking Check items for this unit.",
-        quiz:"Unit Quiz",
-        quiz_prefix:"Unit Quiz — {unit}",
-        quiz_not_ready:"This unit quiz is not ready yet. Your teacher will add it later.",
-        quiz_progress:"Q{n} / {total}",
-        quiz_q:"Question {n}",
-        quiz_next:"Next",
-        quiz_result_btn:"Results",
-        quiz_score_title:"Your Score",
-        quiz_ai_analyzing:"AI is analyzing your answers…",
-        quiz_ai_analyzing_short:"Analyzing…",
-        quiz_result_text:"You got {correct} / {total} correct.",
-        quiz_axis_wrong:"Wrong",
-        quiz_axis_right:"Right",
-        quiz_ai_fallback1:"Use the bar chart to see concept-level accuracy. Review the text and notes for lower-scoring concepts.",
-        quiz_ai_fallback2:"AI feedback is temporarily unavailable. You can still use the chart and per-question feedback to improve.",
-        quiz_ai_unstable:"AI connection is unstable. Please try again later.",
-        txt_need_generate:"Please generate content before downloading.",
-        txt_download_fail:"TXT download failed. Please retry or use another browser.",
-        ai_generate_fail:"Generation failed. Please check the API and retry.\nError: {msg}",
-        api_format_error:"API response format error (not valid JSON).",
-        chat_greet:"Hi, I'm Xiaoke. About “{unit}”, what would you like to ask?",
-        chat_placeholder:"Type your question and press Enter…"
+        back: "Back",
+        page_title: "AI Adaptive Diagnosis",
+        connecting: "Connecting...",
+        connected: "System Online",
+        disconnected: "Disconnected",
+        step1_title: "Configuration",
+        btn_reload: "Reload DB",
+        label_stage: "Stage",
+        label_grade: "Grade",
+        label_semester: "Semester",
+        label_publisher: "Version",
+        label_unit: "Unit",
+        question_count: "Items",
+        btn_start: "Start Diagnosis",
+        step2_title: "Testing Area",
+        waiting_start: "Waiting to start...",
+        hint_select: "Please select an option",
+        btn_submit: "Submit",
+        btn_next: "Next",
+        step3_title: "Diagnosis Report",
+        btn_pdf: "Download Report",
+        btn_restart: "Restart",
+        accuracy: "Correct Count",
+        score: "Total Score",
+        wrong_analysis: "Concept Analysis",
+        ai_feedback: "AI Prescription",
+        msg_ready: "Ready",
+        msg_menu_updated: "Menu Updated",
+        msg_start_success: "Test Started!",
+        msg_submit_success: "Submitted!",
+        msg_finish: "Diagnosis Complete",
+        msg_generating_pdf: "Generating PDF Report...",
+        ph_loading: "Loading...",
+        ph_select_stage: "Select Stage first...",
+        ph_select_grade: "Select Grade first...",
+        ph_no_data: "No Data",
+        loading_title: "Initializing",
+        loading_desc: "Connecting to Neural Network...",
+        loading_q_title: "AI Generating...",
+        loading_q_desc: "First time setup takes 15-20s, please wait.",
+        loading_a_title: "Analyzing...",
+        loading_a_desc: "Generating learning prescription..."
       },
       "ja": {
-        back_home:"ホームに戻る",
-        btn_bilingual:"二言語読解",
-        btn_eval:"AI 診断・採点",
-        page_title:"単元のまとめ",
-        settings_title:"学習単元を選択",
-        label_stage:"段階",
-        label_publisher:"出版社",
-        label_grade:"学年",
-        label_semester:"学期",
-        label_unit:"単元",
-        btn_generate:"生成する",
-        btn_txt:"TXTを保存",
-        title_summary:"核心概念",
-        title_vocab:"科学用語",
-        title_map:"知識マップ",
-        title_myth:"考えてみよう",
-        loading:"読み込み中...",
-        select:"選択してください...",
-        db_loading:"接続中...",
-        db_success:"データベース接続成功",
-        db_fail:"接続失敗",
-        db_fail_retry:"接続失敗。再試行してください...",
-        ai_generating:"AIノート生成中...",
-        tap_to_zoom:"クリックで拡大",
-        myth_tip:"まず考えてから回答",
-        myth_true:"正しい O",
-        myth_false:"誤り X",
-        msg_correct:"正解！すごい！",
-        msg_wrong:"残念、もう一度！",
-        msg_seq:"順番に回答してください。前の問題を先に終えてください。",
-        vocab_none:"用語データなし",
-        summary_fail:"要約の生成に失敗...",
-        map_fail:"マップ描画に失敗。再試行してください。",
-        map_none:"マップデータなし",
-        myth_none:"この単元の「考えてみよう」は未設定です。",
-        quiz:"単元ミニテスト",
-        quiz_prefix:"単元ミニテスト－{unit}",
-        quiz_not_ready:"この単元のミニテストはまだ準備中です。先生が後で追加します。",
-        quiz_progress:"第 {n} 問／全 {total} 問",
-        quiz_q:"第 {n} 問",
-        quiz_next:"次へ",
-        quiz_result_btn:"結果",
-        quiz_score_title:"あなたの得点",
-        quiz_ai_analyzing:"AIが分析中…",
-        quiz_ai_analyzing_short:"分析中…",
-        quiz_result_text:"正解 {correct}／全 {total}",
-        quiz_axis_wrong:"不正解",
-        quiz_axis_right:"正解",
-        quiz_ai_fallback1:"棒グラフで概念別の正答率を確認できます。低い概念は本文とノートを復習してください。",
-        quiz_ai_fallback2:"AIのフィードバックは一時的に利用できません。図表と逐題フィードバックを参考にしてください。",
-        quiz_ai_unstable:"接続が不安定です。しばらくして再試行してください。",
-        txt_need_generate:"生成後にダウンロードしてください。",
-        txt_download_fail:"TXTの保存に失敗しました。再試行するか別ブラウザをお試しください。",
-        ai_generate_fail:"生成に失敗しました。APIを確認して再試行してください。\nエラー: {msg}",
-        api_format_error:"APIの形式エラー（JSONではありません）。",
-        chat_greet:"こんにちは、小科です。「{unit}」について何を聞きたいですか？",
-        chat_placeholder:"質問を入力してEnter…"
+        back: "戻る",
+        page_title: "AI 適応型診断",
+        connecting: "接続中...",
+        connected: "接続完了",
+        disconnected: "切断されました",
+        step1_title: "診断設定",
+        btn_reload: "DB更新",
+        label_stage: "段階",
+        label_grade: "学年",
+        label_semester: "学期",
+        label_publisher: "出版社",
+        label_unit: "単元",
+        question_count: "問題数",
+        btn_start: "診断開始",
+        step2_title: "テストエリア",
+        waiting_start: "開始を待機中...",
+        hint_select: "選択肢を選んでください",
+        btn_submit: "送信",
+        btn_next: "次へ",
+        step3_title: "診断レポート",
+        btn_pdf: "レポート保存",
+        btn_restart: "再テスト",
+        accuracy: "正解数",
+        score: "総合スコア",
+        wrong_analysis: "誤答分析",
+        ai_feedback: "AI学習処方箋",
+        msg_ready: "準備完了",
+        msg_menu_updated: "メニュー更新完了",
+        msg_start_success: "テスト開始！",
+        msg_submit_success: "送信完了！",
+        msg_finish: "診断完了",
+        msg_generating_pdf: "PDFレポートを作成中...",
+        ph_loading: "読み込み中...",
+        ph_select_stage: "段階を選択...",
+        ph_select_grade: "学年を選択...",
+        ph_no_data: "データなし",
+        loading_title: "初期化中",
+        loading_desc: "ニューラルネットワークに接続中...",
+        loading_q_title: "AI出題中...",
+        loading_q_desc: "初回は15〜20秒かかります。お待ちください。",
+        loading_a_title: "AI分析中...",
+        loading_a_desc: "学習処方箋を作成しています..."
       },
       "zh-CN": {
-        back_home:"返回学习中心",
-        btn_bilingual:"科学双语阅读",
-        btn_eval:"AI 评分诊断",
-        page_title:"单元重点整理",
-        settings_title:"请选择你要的学习单元",
-        label_stage:"学习阶段",
-        label_publisher:"版本",
-        label_grade:"年级",
-        label_semester:"学期",
-        label_unit:"单元名称",
-        btn_generate:"AI 分析并生成",
-        btn_txt:"下载 TXT",
-        title_summary:"核心概念摘要",
-        title_vocab:"科学词汇与定义",
-        title_map:"知识架构图",
-        title_myth:"科学动动脑",
-        loading:"载入中...",
-        select:"请选择...",
-        db_loading:"连接中...",
-        db_success:"数据库连接成功",
-        db_fail:"连接失败",
-        db_fail_retry:"连接失败，请重试...",
-        ai_generating:"AI 单元重点整理中...",
-        tap_to_zoom:"点击放大",
-        myth_tip:"先想一想，再作答",
-        myth_true:"正确 O",
-        myth_false:"错误 X",
-        msg_correct:"恭喜答对了！你真棒！",
-        msg_wrong:"可惜答错了，再试试！",
-        msg_seq:"请按题号顺序作答，先完成前一题哦！",
-        vocab_none:"无词汇资料",
-        summary_fail:"生成摘要失败...",
-        map_fail:"架构图绘制失败，请重试。",
-        map_none:"无架构图数据",
-        myth_none:"本单元暂无「科学动动脑」小题。",
-        quiz:"单元小测验",
-        quiz_prefix:"单元小测验－{unit}",
-        quiz_not_ready:"本单元的小测验尚未准备好，之后会由老师再补上哦。",
-        quiz_progress:"第 {n} 题／共 {total} 题",
-        quiz_q:"第 {n} 题",
-        quiz_next:"下一题",
-        quiz_result_btn:"看结果",
-        quiz_score_title:"你的测验成绩",
-        quiz_ai_analyzing:"AI 正在分析你的作答结果…",
-        quiz_ai_analyzing_short:"AI 分析中…",
-        quiz_result_text:"你答对 {correct} 题／共 {total} 题。",
-        quiz_axis_wrong:"答错",
-        quiz_axis_right:"答对",
-        quiz_ai_fallback1:"从左侧条形图可看到各概念的答对率，较低的概念可回到课本文字与重点整理区再加强。",
-        quiz_ai_fallback2:"AI 分析暂时无法提供，可先参考图表与逐题回馈自行归纳。",
-        quiz_ai_unstable:"连接不稳定，请稍后再试。",
-        txt_need_generate:"请先生成内容后再下载！",
-        txt_download_fail:"TXT 下载失败，请再试一次或换一个浏览器。",
-        ai_generate_fail:"AI 生成失败！请检查 API 或重试。\n错误讯息: {msg}",
-        api_format_error:"API 返回资料格式错误（非完整 JSON）。",
-        chat_greet:"你好，我是小科，关于「{unit}」，你有什么问题要问我呢？",
-        chat_placeholder:"输入问题后按 Enter…"
+        back: "返回",
+        page_title: "AI 适性诊断中心",
+        connecting: "连接中...",
+        connected: "系统连接正常",
+        disconnected: "连接中断",
+        step1_title: "诊断范围设定",
+        btn_reload: "刷新数据库",
+        label_stage: "学习阶段",
+        label_grade: "年级",
+        label_semester: "学期",
+        label_publisher: "版本",
+        label_unit: "单元",
+        question_count: "测验题数",
+        btn_start: "开始诊断",
+        step2_title: "智能作答区",
+        waiting_start: "等待测验启动...",
+        hint_select: "请选择一个选项",
+        btn_submit: "提交",
+        btn_next: "下一题",
+        step3_title: "诊断报告",
+        btn_pdf: "下载报告书",
+        btn_restart: "重测",
+        accuracy: "答对题数",
+        score: "总分 (100分制)",
+        wrong_analysis: "错题概念分析",
+        ai_feedback: "AI 学习处方",
+        msg_ready: "准备就绪",
+        msg_menu_updated: "单元菜单已更新",
+        msg_start_success: "测验开始，请加油！",
+        msg_submit_success: "作答成功！",
+        msg_finish: "诊断完成",
+        msg_generating_pdf: "正在制作您的 PDF 报告...",
+        ph_loading: "载入中...",
+        ph_select_stage: "请先选择学习阶段...",
+        ph_select_grade: "请先选择年级...",
+        ph_no_data: "无资料",
+        loading_title: "系统初始化中",
+        loading_desc: "正在建立神经网络连接...",
+        loading_q_title: "AI 正在命题中...",
+        loading_q_desc: "第一次建立测验模型约需 15-20 秒，请耐心候候",
+        loading_a_title: "AI 诊断运算中...",
+        loading_a_desc: "正在分析您的概念理解模型，生成学习处方..."
       }
     };
 
-    let currentLang = localStorage.getItem("ui_lang") || "zh-TW";
+    let currentLang = "zh-TW";
 
-    function t(key){
-      const dict = i18n[currentLang] || i18n["zh-TW"];
-      return (dict && dict[key] != null) ? dict[key] : ((i18n["zh-TW"] && i18n["zh-TW"][key] != null) ? i18n["zh-TW"][key] : key);
-    }
-    function tf(key, vars={}){
-      let s = t(key);
-      Object.keys(vars).forEach(k => {
-        s = s.replace(new RegExp("\\{"+k+"\\}","g"), String(vars[k]));
-      });
-      return s;
+    function t(key) {
+      return i18n[currentLang][key] || key;
     }
 
-    function applyI18n(lang){
-      currentLang = lang || currentLang || "zh-TW";
-      localStorage.setItem("ui_lang", currentLang);
-      document.documentElement.lang = currentLang;
-
-      document.querySelectorAll("[data-i18n]").forEach(el => {
-        const key = el.getAttribute("data-i18n");
-        if (key && t(key)) el.innerText = t(key);
-      });
-      document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
-        const key = el.getAttribute("data-i18n-placeholder");
-        if (key && t(key)) el.setAttribute("placeholder", t(key));
-      });
-
-      // DB status
-      const db = document.getElementById("db-status");
-      if (db){
-        const state = db.dataset.state || "loading";
-        if (state === "success"){
-          db.innerHTML = `<i class="fa-solid fa-check"></i> ${t("db_success")}`;
-        }else if (state === "fail"){
-          db.innerHTML = `${t("db_fail")}`;
-        }else{
-          db.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> ${t("db_loading")}`;
-        }
-      }
-
-      refreshQuizUIText();
-      refreshMythUIText();
-      if (quizRadarChart) {
-        try { quizRadarChart.update(); } catch(e){}
-      }
-    }
-
-    function refreshMythUIText(){
-      document.querySelectorAll("[data-i18n='myth_tip']").forEach(el => el.innerText = t("myth_tip"));
-      document.querySelectorAll("[data-i18n='myth_true']").forEach(el => el.innerText = t("myth_true"));
-      document.querySelectorAll("[data-i18n='myth_false']").forEach(el => el.innerText = t("myth_false"));
-    }
-
-    function refreshQuizUIText(){
-      const quizTitleEl = document.getElementById("quiz-title");
-      if (quizTitleEl){
-        const unitName = (filters && filters.unitName) || (currentResultData && (currentResultData.unitName || (currentResultData.raw_content && currentResultData.raw_content.unitName))) || "";
-        quizTitleEl.innerText = unitName ? tf("quiz_prefix",{unit:unitName}) : t("quiz");
-      }
-      const progress = document.getElementById("quiz-progress");
-      if (progress){
-        const total = (quizState.questions && quizState.questions.length) ? quizState.questions.length : 0;
-        const n = (total > 0) ? (quizState.currentIndex + 1) : 0;
-        progress.innerText = `${n} / ${total}`;
-      }
-      const btnMain = document.getElementById("quiz-main-btn");
-      if (btnMain && !btnMain.classList.contains("hidden")){
-        const total = (quizState.questions && quizState.questions.length) ? quizState.questions.length : 0;
-        const isLast = (total > 0 && quizState.currentIndex === total - 1);
-        btnMain.innerText = isLast ? t("quiz_result_btn") : t("quiz_next");
-      }
-      const empty = document.getElementById("quiz-empty");
-      if (empty) empty.innerText = t("quiz_not_ready");
-    }
-
-    function changeLanguage(){
-      const langSel = document.getElementById("language-selector");
-      if (!langSel) return;
-      applyI18n(langSel.value);
-    }
-
-    window.onload = async () => {
-      const langSel = document.getElementById("language-selector");
-      if (langSel) langSel.value = currentLang;
-      applyI18n(currentLang);
-
-      const user = JSON.parse(sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || '{"name":"Visitor"}');
-      const userInfo = document.getElementById("user-info");
-      if (userInfo) userInfo.innerText = user.name;
-
-      const selStage = document.getElementById("sel-stage");
-
-      try {
-        const res = await fetch(GAS_API_URL + "?action=get_metadata");
-        if (!res.ok) throw new Error(`伺服器 HTTP 錯誤: ${res.status}`);
-
-        const text = await res.text();
-        let json;
-        try { json = JSON.parse(text); }
-        catch (parseError) {
-          console.error("JSON 解析失敗:", text);
-          throw new Error(`API 回應格式錯誤`);
-        }
-
-        if(json.status === "success") {
-          allData = json.data;
-          const dbStatus = document.getElementById("db-status");
-          if (dbStatus) {
-            dbStatus.dataset.state = "success";
-            dbStatus.innerHTML = `<i class="fa-solid fa-check mr-2"></i> ${t("db_success")}`;
-            dbStatus.className = "text-xs font-mono font-bold text-emerald-400 mt-2 sm:mt-0 bg-emerald-900/20 px-3 py-1 rounded border border-emerald-900/50";
-          }
-          initSelectors();
-        } else {
-          throw new Error(json.message || "API 回應狀態非成功");
-        }
-      } catch(e) {
-        console.error("載入元數據失敗:", e);
-        const dbStatus = document.getElementById("db-status");
-        if (dbStatus) {
-          dbStatus.dataset.state = "fail";
-          dbStatus.innerText = t("db_fail");
-          dbStatus.className = "text-xs font-mono font-bold text-red-500 bg-red-900/20 px-3 py-1 rounded";
-        }
-        const selStageAgain = document.getElementById("sel-stage");
-        if (selStageAgain) {
-          selStageAgain.innerHTML = `<option value="" disabled selected>${t("db_fail_retry")}</option>`;
-          selStageAgain.disabled = true;
-        }
-        alert(`無法載入資料庫！\n錯誤類型: ${e.message}`);
-      }
-    };
-
-    function initSelectors() {
-      const stages = [...new Set(allData.map(d => d.stage))];
-      populate("sel-stage", stages);
-
-      const selStage = document.getElementById("sel-stage");
-      const selPublisher = document.getElementById("sel-publisher");
-      const selGrade = document.getElementById("sel-grade");
-      const selSemester = document.getElementById("sel-semester");
-      const selUnit = document.getElementById("sel-unit");
-
-      if (selStage) selStage.onchange = (e) => updateLevel(1, e.target.value);
-      if (selPublisher) selPublisher.onchange = (e) => updateLevel(2, e.target.value);
-      if (selGrade) selGrade.onchange = (e) => updateLevel(3, e.target.value);
-      if (selSemester) selSemester.onchange = (e) => updateLevel(4, e.target.value);
-      if (selUnit) selUnit.onchange = (e) => {
-        filters.unitName = e.target.value;
-        const btn = document.getElementById("btn-generate");
-        if (btn) btn.disabled = false;
-      };
-    }
-
-    function updateLevel(level, value) {
-      if(level===1) filters={stage:value};
-      if(level===2){filters.publisher=value; delete filters.grade; delete filters.semester; delete filters.unitName;}
-      if(level===3){filters.grade=value; delete filters.semester; delete filters.unitName;}
-      if(level===4){filters.semester=value; delete filters.unitName;}
-
-      const ids=["sel-publisher","sel-grade","sel-semester","sel-unit"];
-      for(let i=level;i<4;i++){
-        const el = document.getElementById(ids[i]);
-        if (el) {
-          el.innerHTML = `<option disabled selected data-i18n="select">${t("select")}</option>`;
-          el.disabled = true;
-        }
-      }
-      const btn = document.getElementById("btn-generate");
-      if (btn) btn.disabled=true;
-
-      const relevantData = allData.filter(d => {
-        const safeMatch = (dVal, fVal) => !fVal || String(dVal).trim() == String(fVal).trim();
-        return safeMatch(d.stage, filters.stage) &&
-               safeMatch(d.publisher, filters.publisher) &&
-               safeMatch(d.grade, filters.grade) &&
-               safeMatch(d.semester, filters.semester);
-      });
-
-      if(level===1) populate("sel-publisher", [...new Set(relevantData.map(d=>d.publisher))]);
-      if(level===2) populate("sel-grade", [...new Set(relevantData.map(d=>d.grade))].sort((a,b)=>a-b), "grade");
-      if(level===3) populate("sel-semester", [...new Set(relevantData.map(d=>d.semester))], "semester");
-      if(level===4) {
-        const unitSelect = document.getElementById("sel-unit");
-        if (!unitSelect) return;
-        unitSelect.innerHTML = `<option disabled selected data-i18n="select">${t("select")}</option>`;
-        if(relevantData.length>0) {
-          relevantData.forEach(d => {
-            const opt = document.createElement("option");
-            opt.value = d.unitName;
-            opt.text = (d.unitType && !isNaN(d.unitType)) ? `第${d.unitType}課 ${d.unitName}` : d.unitName;
-            unitSelect.add(opt);
-          });
-          unitSelect.disabled=false;
-        }
-      }
-    }
-
-    function populate(id, list, type) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.innerHTML = `<option disabled selected data-i18n="select">${t("select")}</option>`;
-      list.forEach(o => {
-        const opt = document.createElement("option");
-        opt.value = o;
-        if(type==="grade") opt.text = o + "年級";
-        else if(type==="semester") opt.text = (o==="上" ? "上學期" : (o==="下" ? "下學期" : o));
-        else opt.text = o;
-        el.add(opt);
-      });
-      el.disabled=false;
-    }
-
-    async function startGeneration() {
-      const selPanel = document.getElementById("selection-panel");
-      const loading = document.getElementById("loading-view");
-      if (selPanel) selPanel.classList.add("hidden");
-      if (loading) { loading.classList.remove("hidden"); loading.classList.add("flex"); }
-
-      try {
-        const res = await fetch(GAS_API_URL, {
-          method: "POST",
-          body: JSON.stringify({ action: "get_content_and_generate", filters: filters })
-        });
-
-        if (!res.ok) throw new Error(`HTTP 錯誤! 狀態碼: ${res.status}`);
-
-        const text = await res.text();
-        let json;
-        try { json = JSON.parse(text); }
-        catch(parseError) {
-          console.error("JSON 解析失敗的原始文本:", text);
-          throw new Error(t("api_format_error"));
-        }
-
-        if(json.status === "success") {
-          currentResultData = json.data;
-          renderResult(json.data);
-        } else {
-          throw new Error(json.message || "API 返回狀態為失敗");
-        }
-      } catch(e) {
-        alert(tf("ai_generate_fail",{msg:e.message}));
-        const selPanelAgain = document.getElementById("selection-panel");
-        if (selPanelAgain) selPanelAgain.classList.remove("hidden");
-        const loadingAgain = document.getElementById("loading-view");
-        if (loadingAgain) { loadingAgain.classList.add("hidden"); loadingAgain.classList.remove("flex"); }
-        const btn = document.getElementById("btn-generate");
-        if (btn) btn.disabled = false;
-      }
-    }
-
-    function renderResult(data) {
-      const raw = data.raw_content || {};
-
-      const resultTitle = document.getElementById('result-title');
-      if (resultTitle) {
-        resultTitle.innerText = data.topic || data.unitName || raw.unitName || filters.unitName || '無標題';
-      }
-
-      const resultTag = document.getElementById('result-tag');
-      if (resultTag) {
-        const p = data.publisher || filters.publisher || '';
-        const g = data.grade || filters.grade || '';
-        const rawS = data.semester || filters.semester || '';
-        let s = rawS;
-        if (rawS === '上') s = '上學期';
-        else if (rawS === '下') s = '下學期';
-        resultTag.innerText = `${p} ${g}年級 ${s}`;
-      }
-
-      const summaryBox = document.getElementById('summary-text');
-      if (summaryBox) {
-        let summaryContent = data.summary;
-        if (summaryContent && typeof summaryContent === 'object') {
-          summaryContent = summaryContent.summary_html || summaryContent.html || summaryContent.content || summaryContent.text || summaryContent.summary || '';
-        }
-        if (!summaryContent && raw.text_summary) summaryContent = raw.text_summary;
-        summaryBox.innerHTML = summaryContent || t("summary_fail");
-      }
-
-      const keywordList = document.getElementById('keywords-list');
-      if (keywordList) {
-        keywordList.innerHTML = '';
-        let kList = data.keywords || (data.summary && (data.summary.keywords || data.summary.vocab_list)) || raw.vocab_list || [];
-        if (Array.isArray(kList) && kList.length > 0) {
-          kList.forEach(k => {
-            const term = typeof k === 'object' ? (k.term || k.word || '') : k;
-            const def  = typeof k === 'object' ? (k.def || k.definition || '') : '';
-            if (!term) return;
-            const div = document.createElement('div');
-            div.className = 'vocab-item p-3 rounded-lg mb-2';
-            div.innerHTML = `<span class="font-bold text-cyan-600 text-base block mb-1">${term}</span><span class="text-xs text-slate-600 leading-relaxed block">${def}</span>`;
-            keywordList.appendChild(div);
-          });
-        } else {
-          keywordList.innerHTML = `<div class="text-slate-400 p-2 text-xs">${t("vocab_none")}</div>`;
-          mythData = [];
-        }
-      }
-
-      const chartDiv = document.getElementById('mermaid-chart');
-      if (chartDiv) {
-        let mapData = data.mindMap || (data.summary && (data.summary.mindMap || data.summary.mermaid)) || '';
-        if (mapData && typeof mapData === 'string') {
-          mapData = mapData.replace(/```mermaid/i, '').replace(/```/g, '').trim();
-        }
-        if (mapData) {
-          chartDiv.innerHTML = `<div class="mermaid">${mapData}</div>`;
-          try {
-            mermaid.init(undefined, document.querySelectorAll('.mermaid')).then(() => {
-              const svg = chartDiv.querySelector('svg');
-              if (svg) {
-                svg.removeAttribute('style'); svg.removeAttribute('width'); svg.removeAttribute('height');
-                svg.style.height = "auto"; svg.style.display = "block"; svg.style.margin = "0 auto";
-                svg.style.fontFamily = '"Inter","Noto Sans TC", sans-serif';
-              }
-            });
-          } catch (e) {
-            console.error('Mermaid Error', e);
-            chartDiv.innerText = t("map_fail");
-          }
-        } else {
-          chartDiv.innerText = t("map_none");
-        }
-      }
-
-      const mythListEl = document.getElementById('myth-list');
-      if (mythListEl) {
-        mythListEl.innerHTML = '';
-        let mList = data.myths || (data.summary && data.summary.myths) || [];
-        if (Array.isArray(mList) && mList.length > 0) {
-          const limitedMyths = mList.slice(0, 10);
-          mythData = limitedMyths;
-          limitedMyths.forEach((m, index) => {
-            const rawMyth = m.myth || m.misconception || '';
-            let statement = m.question || rawMyth || '';
-            statement = statement.replace(/^迷思[:：]\s*/,'').replace(/^常見想法[:：]\s*/,'').trim();
-            const cardId = `myth-${index}`;
-            const div = document.createElement('div');
-            div.className = 'bg-white p-4 rounded-xl border border-red-100/50 shadow-sm flex flex-col gap-3';
-            div.innerHTML = `
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-red-100 text-red-700 text-[10px] font-bold">Q${index + 1}</span>
-                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Concept Check</span>
-                </div>
-              </div>
-              <div class="text-sm font-medium text-slate-800 leading-relaxed">${statement}</div>
-              <div class="flex gap-2 mt-1">
-                <button id="${cardId}-btn-true" onclick="answerMyth(${index}, true)" class="myth-option-btn flex-1 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-white hover:shadow-sm">True</button>
-                <button id="${cardId}-btn-false" onclick="answerMyth(${index}, false)" class="myth-option-btn flex-1 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-white hover:shadow-sm">False</button>
-              </div>
-              <div id="${cardId}-feedback" class="mt-2 hidden text-xs leading-relaxed rounded-lg p-2 bg-slate-50"></div>
-            `;
-            mythListEl.appendChild(div);
-          });
-        } else {
-          mythListEl.innerHTML = `<div class="text-slate-400 p-2 text-xs">${t("myth_none")}</div>`;
-          mythData = [];
-        }
-      }
-
-      const quizRaw = data.quiz || (data.summary && data.summary.quiz) || [];
-      initQuiz(quizRaw);
-
-      const loadingView = document.getElementById('loading-view');
-      const contentView = document.getElementById('content-view');
-      if (loadingView) { loadingView.classList.add('hidden'); loadingView.classList.remove('flex'); }
-      if (contentView) { contentView.classList.remove('hidden'); }
-      const btn = document.getElementById('btn-generate');
-      if (btn) btn.disabled = false;
-      const chatBtn = document.getElementById('floating-chat');
-      if (chatBtn) chatBtn.classList.remove('hidden');
+    function changeLanguage() {
+      const selector = document.getElementById("language-selector");
+      currentLang = selector.value;
       
-      applyI18n(currentLang);
-    }
-
-    function downloadTXT() {
-      if (!currentResultData) { alert(t("txt_need_generate")); return; }
-      const stage = filters.stage || (currentResultData && currentResultData.stage) || "";
-      const publisher= filters.publisher || (currentResultData && currentResultData.publisher) || "";
-      const grade = filters.grade || (currentResultData && currentResultData.grade) || "";
-      const semRaw = filters.semester || (currentResultData && currentResultData.semester) || "";
-      const unitName = (currentResultData.raw_content ? currentResultData.raw_content.unitName : filters.unitName) || "";
-      let semesterLabel = semRaw === "上" ? "上學期" : (semRaw === "下" ? "下學期" : semRaw);
-
-      let content = `【單元來源資訊】\n--------------------\n學習階段：${stage}\n版本：${publisher}\n年級：${grade}年級\n學期：${semesterLabel}\n單元名稱：${unitName}\n\n`;
-      const summaryEl = document.getElementById("summary-text");
-      content += `【一、核心概念摘要】\n--------------------\n${summaryEl ? summaryEl.innerText.replace(/\n\s*\n/g, "\n\n").trim() : ""}\n\n`;
-
-      content += `【二、科學詞彙與定義】\n--------------------\n`;
-      let vList = currentResultData.keywords || (currentResultData.summary ? (currentResultData.summary.keywords || currentResultData.summary.vocab_list) : []) || [];
-      if (Array.isArray(vList) && vList.length > 0) {
-        vList.forEach((v, i) => { content += `${i + 1}. ${v.term || v}\n   說明：${v.def || ""}\n\n`; });
-      } else { content += "無詞彙資料\n\n"; }
-
-      content += `【三、科學動動腦】\n--------------------\n`;
-      let mList = currentResultData.myths || (currentResultData.summary ? currentResultData.summary.myths : []) || [];
-      if (Array.isArray(mList) && mList.length > 0) {
-        mList.forEach((m, i) => {
-           content += `● 題目 ${i + 1}：${(m.question || m.myth || "").replace(/^迷思[:：]\s*/, "")}\n   正確觀念：${m.correct || m.explanation || ""}\n\n`; 
-        });
-      } else { content += "無題目\n"; }
-
-      try {
-        const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `${unitName || "unit"}_重點整理.txt`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      } catch (e) { alert(t("txt_download_fail")); }
-    }
-
-    async function sendChatMessage() {
-      const input = document.getElementById("chat-input");
-      if (!input) return;
-      const msg = input.value.trim();
-      if(!msg) return;
-      const chatBody = document.getElementById("chat-messages");
-      if (chatBody) {
-        chatBody.innerHTML += `<div class="self-end bg-cyan-600 text-white p-3 rounded-2xl rounded-tr-none shadow-sm max-w-[85%] ml-auto text-sm">${msg}</div>`;
-        chatBody.scrollTop = chatBody.scrollHeight;
-      }
-      input.value = "";
-      try {
-        const currentUser = JSON.parse(sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || '{"name":"訪客"}');
-        const contextText = currentResultData ? (currentResultData.raw_content ? currentResultData.raw_content.text : "") : "";
-        const contextVocab = currentResultData ? (currentResultData.raw_content ? currentResultData.raw_content.vocab_str : "") : "";
-        const res = await fetch(GAS_API_URL, {
-          method: 'POST',
-          body: JSON.stringify({
-            action: 'chat_with_ai', message: msg, currentUnit: filters.unitName || "",
-            contextText: contextText, contextVocab: contextVocab, userName: currentUser.name,
-            stage: filters.stage, publisher: filters.publisher, grade: filters.grade, semester: filters.semester
-          })
-        });
-        const json = await res.json();
-        const cleanReply = (json.data || "").replace(/\*\*/g, "");
-        if (chatBody) {
-          chatBody.innerHTML += `<div class="self-start bg-white border border-slate-200 p-3 rounded-2xl rounded-tl-none shadow-sm max-w-[85%] text-slate-700"><span class="font-bold text-cyan-600 block mb-1 text-xs">AI TUTOR</span>${cleanReply}</div>`;
-          chatBody.scrollTop = chatBody.scrollHeight;
-        }
-      } catch(e) { console.error(e); }
-    }
-
-    function openModal() {
-      const chartDiv = document.getElementById("mermaid-chart");
-      if (!chartDiv || !chartDiv.innerHTML.trim() || chartDiv.innerText.includes("錯誤")) return;
-      const modal = document.getElementById("image-modal");
-      const content = document.getElementById("modal-content");
-      if (!modal || !content) return;
-      content.innerHTML = chartDiv.innerHTML;
-      const svg = content.querySelector("svg");
-      if (svg) { svg.removeAttribute("style"); svg.style.width = "100%"; svg.style.height = "auto"; }
-      modal.classList.remove("hidden"); modal.classList.add("flex");
-    }
-    function closeModal() {
-      const modal = document.getElementById("image-modal");
-      if (!modal) return;
-      modal.classList.add("hidden"); modal.classList.remove("flex");
-    }
-
-    function answerMyth(index, chooseTrue) {
-      if (!Array.isArray(mythData) || !mythData[index]) return;
-      try {
-        let firstUnanswered = -1;
-        for (let i = 0; i < mythData.length; i++) {
-          const fb = document.getElementById(`myth-${i}-feedback`);
-          if (fb && fb.dataset.answered !== "1") { firstUnanswered = i; break; }
-        }
-        if (firstUnanswered !== -1 && index !== firstUnanswered) { alert(t("msg_seq")); return; }
-      } catch (e) {}
-
-      const cardId = `myth-${index}`;
-      const btnTrue = document.getElementById(`${cardId}-btn-true`);
-      const btnFalse = document.getElementById(`${cardId}-btn-false`);
-      const feedback = document.getElementById(`${cardId}-feedback`);
-      if (!btnTrue || !btnFalse || !feedback) return;
-      if (feedback.dataset.answered === "1") return;
-      feedback.dataset.answered = "1";
-
-      const correct = mythData[index].correct || mythData[index].explanation || '';
-      const isTrueFlag = (typeof mythData[index].isTrue === "boolean") ? mythData[index].isTrue : null;
-      let isCorrectChoice;
-      if (isTrueFlag === null) isCorrectChoice = !chooseTrue;
-      else isCorrectChoice = (chooseTrue === isTrueFlag);
-
-      [btnTrue, btnFalse].forEach(btn => btn.classList.add("opacity-50"));
-      if (chooseTrue) btnTrue.classList.remove("opacity-50"); else btnFalse.classList.remove("opacity-50");
-
-      feedback.innerHTML = isCorrectChoice ? 
-        `<div class="font-bold text-emerald-600 mb-1">${t("msg_correct")}</div><div class="text-slate-600">${correct}</div>` : 
-        `<div class="font-bold text-red-500 mb-1">${t("msg_wrong")}</div><div class="text-slate-600">${correct}</div>`;
-      feedback.classList.remove("hidden");
-    }
-
-    function initQuiz(quizRaw) {
-      const quizPanel = document.getElementById("quiz-panel");
-      const quizBody = document.getElementById("quiz-body");
-      const quizEmpty = document.getElementById("quiz-empty");
-      const quizTitleEl = document.getElementById("quiz-title");
-
-      if (!quizPanel || !quizBody || !quizEmpty || !quizTitleEl) return;
-      const unitName = (filters && filters.unitName) || (currentResultData && (currentResultData.unitName || (currentResultData.raw_content && currentResultData.raw_content.unitName))) || "";
-      quizTitleEl.innerText = unitName ? tf("quiz_prefix",{unit:unitName}) : t("quiz");
-
-      const sourceArray = Array.isArray(quizRaw) ? quizRaw.slice(0, 10) : [];
-      if (!Array.isArray(sourceArray) || sourceArray.length === 0) {
-        quizState.questions = []; quizState.currentIndex = 0; quizState.hasAnswered = false; quizState.answers = [];
-        quizBody.classList.add("hidden"); quizEmpty.classList.remove("hidden");
-        return;
-      }
-      quizState.questions = sourceArray.map((q, idx) => {
-        let correctIndex = -1;
-        if (typeof q.correctIndex === "number") correctIndex = q.correctIndex;
-        else if (typeof q.answerIndex === "number") correctIndex = q.answerIndex;
-        else if (typeof q.correct === "number") correctIndex = q.correct;
-        else if (typeof q.ans === "number") correctIndex = q.ans;
-        else if (typeof q.answer === "string") {
-          const map = { "A": 0, "B": 1, "C": 2, "D": 3 };
-          const key = q.answer.trim().toUpperCase()[0];
-          if (map[key] !== undefined) correctIndex = map[key];
-        }
-        return { id: q.id || `Q${idx+1}`, stem: q.stem||q.question||q.text||`Q${idx+1}`, options: q.options||q.choices||[], correctIndex, explanation: q.explanation||"", concept: q.concept||`Q${idx+1}` };
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        el.innerText = t(el.getAttribute("data-i18n"));
       });
-      quizState.currentIndex = 0; quizState.hasAnswered = false; quizState.answers = [];
-      quizEmpty.classList.add("hidden"); quizBody.classList.remove("hidden");
-      renderQuizQuestion();
+      
+      // Update placeholders in dropdowns via refreshAllDropdowns if possible, or direct access
+      if (Meta.mode === "tree") refreshAllDropdowns(); // Re-renders options with translated placeholders
     }
 
-    function renderQuizQuestion() {
-      const q = quizState.questions[quizState.currentIndex];
-      const quizQuestionEl = document.getElementById("quiz-question");
-      const quizOptionsEl = document.getElementById("quiz-options");
-      const quizFeedbackEl = document.getElementById("quiz-feedback");
-      const quizProgressEl = document.getElementById("quiz-progress");
-      const btnMain = document.getElementById("quiz-main-btn");
+    /* ===========================
+       2) GLOBAL STATE & UI UTILS
+    =========================== */
+    const Meta = { mode: "tree", tree: {}, unitIndex: {}, publishers: [], unitsByPublisher: {} };
+    const CAT = { started: false, test_id: "", student_id: "", current: null, next: null, selected: "", n: 15, step: 0 };
 
-      if (!q || !quizQuestionEl) return;
-      const total = quizState.questions.length;
-      const index = quizState.currentIndex;
+    const UI = {
+      setConn(ok, msg){
+        const b = document.getElementById("connBadge");
+        if(ok){
+          b.innerHTML = `<i class="fa-solid fa-wifi text-emerald-500"></i> <span data-i18n="connected">${t("connected")}</span>`;
+          b.className = "hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-600";
+        }else{
+          b.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-red-500"></i> <span data-i18n="disconnected">${t("disconnected")}</span>`;
+          b.className = "hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-50 border border-red-200 text-xs font-bold text-red-600";
+          if(msg) UI.toast("Error", msg, "bad");
+        }
+      },
+      toast(title, msg, type="info"){
+        const t = document.getElementById("toast");
+        const ic = document.getElementById("toastIcon");
+        const tt = document.getElementById("toastTitle");
+        const tm = document.getElementById("toastMsg");
+        let iconHTML = '<i class="fa-solid fa-circle-info text-blue-400"></i>';
+        if(type==="good") iconHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
+        if(type==="warn") iconHTML = '<i class="fa-solid fa-triangle-exclamation text-amber-400"></i>';
+        if(type==="bad")  iconHTML = '<i class="fa-solid fa-circle-xmark text-red-400"></i>';
+        ic.innerHTML = iconHTML;
+        tt.textContent = title; tm.textContent = msg;
+        t.classList.remove("hidden"); void t.offsetWidth;
+        t.classList.remove("translate-y-20", "opacity-0");
+        clearTimeout(UI._timer);
+        UI._timer = setTimeout(()=>{
+          t.classList.add("translate-y-20", "opacity-0");
+          setTimeout(()=>t.classList.add("hidden"), 300);
+        }, 4000);
+      },
+      setProgress(step, total){
+        const txt = document.getElementById("progText");
+        const bar = document.getElementById("progBar");
+        const turtle = document.getElementById("turtleIcon");
+        txt.textContent = `${step}/${total}`;
+        const pct = total ? Math.min(100, (step/total)*100) : 0;
+        bar.style.width = pct + "%";
+        turtle.style.left = pct + "%";
+        if(pct > 0) turtle.classList.add("animate-drive"); // Optional visual
+      },
+      showLoading(show, titleKey, descKey){
+        const el = document.getElementById("loading-overlay");
+        if(show){
+          document.getElementById("loading-title").textContent = t(titleKey);
+          document.getElementById("loading-desc").textContent = t(descKey);
+          el.classList.remove("hidden"); el.classList.add("flex");
+        } else {
+          el.classList.add("hidden"); el.classList.remove("flex");
+        }
+      },
+      showQuestion(show){
+        document.getElementById("qEmpty").classList.toggle("hidden", show);
+        document.getElementById("qWrap").classList.toggle("hidden", !show);
+      },
+      showResult(show){
+        document.getElementById("resultSec").classList.toggle("hidden", !show);
+        if(show) setTimeout(() => document.getElementById("resultSec").scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+      }
+    };
 
-      quizQuestionEl.innerHTML = `<span class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Question ${index+1}</span>${q.stem}`;
-      quizOptionsEl.innerHTML = "";
-      quizFeedbackEl.classList.add("hidden"); quizFeedbackEl.innerHTML = "";
-      quizState.hasAnswered = false;
+    /* ===========================
+       3) API & LOGIC (UNCHANGED)
+    =========================== */
+    function buildFormBody(payload){ const p=new URLSearchParams(); const action=payload?.action??""; if(action)p.set("action",action); if(payload?.content_db_id)p.set("content_db_id",String(payload.content_db_id)); if(payload?.sheet_name)p.set("sheet_name",String(payload.sheet_name)); if(payload?.email!=null)p.set("email",String(payload.email)); if(payload?.user_db_id)p.set("user_db_id",String(payload.user_db_id)); if(payload?.user_sheet_name)p.set("user_sheet_name",String(payload.user_sheet_name)); if(payload?.student_id_col)p.set("student_id_col",String(payload.student_id_col)); p.set("payload",JSON.stringify(payload??{})); if(payload?.subject!=null)p.set("subject",String(payload.subject)); if(payload?.stage!=null)p.set("stage",String(payload.stage)); if(payload?.grade!=null)p.set("grade",String(payload.grade)); if(payload?.semester!=null)p.set("semester",String(payload.semester)); const unit=payload?.unit; if(unit){ if(unit.subject!=null)p.set("subject",String(unit.subject)); if(unit.stage!=null)p.set("stage",String(unit.stage)); if(unit.grade!=null)p.set("grade",String(unit.grade)); if(unit.semester!=null)p.set("semester",String(unit.semester)); if(unit.textbook_version!=null)p.set("textbook_version",String(unit.textbook_version)); if(unit.unit_name!=null)p.set("unit_name",String(unit.unit_name)); if(unit.lesson_no!=null)p.set("lesson_no",String(unit.lesson_no)); if(unit.lesson_name!=null)p.set("lesson_name",String(unit.lesson_name)); if(unit.unit_key!=null)p.set("unit_key",String(unit.unit_key)); } const sid=payload?.student_id??payload?.student?.student_id; if(sid!=null)p.set("student_id",String(sid)); const keys=["test_id","item_id","response_option","max_items","min_items","stop_se","grade"]; for(const k of keys){ if(payload?.[k]!=null)p.set(k,String(payload[k])); } const settings=payload?.settings; if(settings){ if(settings.max_items!=null&&!p.has("max_items"))p.set("max_items",String(settings.max_items)); if(settings.min_items!=null&&!p.has("min_items"))p.set("min_items",String(settings.min_items)); if(settings.stop_se!=null&&!p.has("stop_se"))p.set("stop_se",String(settings.stop_se)); } return p; }
+    function safeParseJSON(text){ const t=String(text??"").trim().replace(/^\)\]\}'\s*\n?/,""); try{return JSON.parse(t);}catch{return null;} }
+    function normalizeOk(obj){ if(!obj||typeof obj!=="object")throw new Error("後端未回傳 JSON。"); const st=String(obj.status??"").toLowerCase(); if(st==="error"||st==="fail"||st==="failed")throw new Error(obj.message||obj.error||"後端回傳失敗（status=error）。"); if(st==="success")return{...obj,ok:true}; if(obj.ok===false)throw new Error(obj.error||obj.message||"後端回傳失敗。"); if(obj.success===false)throw new Error(obj.error||obj.message||"後端回傳失敗。"); if(obj.ok===true)return obj; if(obj.success===true)return{...obj,ok:true}; if(obj.error)throw new Error(obj.error); if(obj.message&&st)throw new Error(obj.message); return{...obj,ok:true}; }
+    async function api(payload){ let lastErr=null; try{ const url=new URL(GAS_API_URL); if(payload?.action)url.searchParams.set("action",payload.action); if(payload?.content_db_id)url.searchParams.set("content_db_id",String(payload.content_db_id)); if(payload?.sheet_name)url.searchParams.set("sheet_name",String(payload.sheet_name)); if(payload?.email!=null)url.searchParams.set("email",String(payload.email)); if(payload?.user_db_id)url.searchParams.set("user_db_id",String(payload.user_db_id)); if(payload?.user_sheet_name)url.searchParams.set("user_sheet_name",String(payload.user_sheet_name)); if(payload?.student_id_col)url.searchParams.set("student_id_col",String(payload.student_id_col)); if(payload?.subject!=null)url.searchParams.set("subject",String(payload.subject)); if(payload?.stage!=null)url.searchParams.set("stage",String(payload.stage)); if(payload?.grade!=null)url.searchParams.set("grade",String(payload.grade)); if(payload?.semester!=null)url.searchParams.set("semester",String(payload.semester)); const res=await fetch(url.toString(),{method:"GET",redirect:"follow"}); const text=await res.text(); const json=safeParseJSON(text); if(json)return normalizeOk(json); throw new Error("後端未回傳 JSON（GET）。"); }catch(e){ lastErr=e; } try{ const formBody=buildFormBody(payload); const res=await fetch(GAS_API_URL,{method:"POST",body:formBody,redirect:"follow"}); const text=await res.text(); const json=safeParseJSON(text); if(json)return normalizeOk(json); throw new Error("後端未回傳 JSON（form POST）。"); }catch(e){ lastErr=e; } try{ const res=await fetch(GAS_API_URL,{method:"POST",body:JSON.stringify(payload),redirect:"follow"}); const text=await res.text(); const json=safeParseJSON(text); if(json)return normalizeOk(json); throw new Error("後端未回傳 JSON（JSON POST）。"); }catch(e){ throw new Error(String(e?.message||lastErr?.message||e)); } }
+    async function ping(){ try{ const res=await fetch(GAS_API_URL,{method:"GET",redirect:"follow"}); if(!res.ok)throw new Error("HTTP "+res.status); UI.setConn(true); return true; }catch(e){ UI.setConn(false,String(e?.message||e)); return false; } }
 
-      const letters = ["A","B","C","D","E"];
-      q.options.forEach((opt, optIndex) => {
+    /* ===========================
+       4) DATA & TREE
+    =========================== */
+    function normStage(v){const s=String(v??"").trim();if(s.includes("國小")||s==="小學")return"國小";if(s.includes("國中")||s==="國中部")return"國中";return s;}
+    function normSemester(v){const s=String(v??"").trim();if(s.includes("上"))return"上學期";if(s.includes("下"))return"下學期";return s;}
+    function normVersion(v){return String(v??"").trim();}
+    function normLessonNo(v){return String(v??"").trim();}
+    function normLessonName(v){return String(v??"").trim();}
+    function toIntGrade(v){const n=Number(String(v??"").replace(/[^\d]/g,""));return Number.isFinite(n)?n:NaN;}
+    function buildTreeFromRows(rows){ const tree={}; const unitIndex={}; for(const r of rows){ const stage=normStage(r.stage??r["中小學"]??r["學習階段"]??r.level??r.school_stage); const grade=toIntGrade(r.grade??r["年級"]); const semester=normSemester(r.semester??r["學期"]); const version=normVersion(r.textbook_version??r.publisher??r["版本"]??r["出版社"]); const lessonNo=normLessonNo(r.lesson_no??r["課別"]??r.unit_no??r["課序"]); const lessonName=normLessonName(r.lesson_name??r["課名"]??r.unit_name??r["單元"]??r["單元名稱"]); if(!stage||!Number.isFinite(grade)||!semester||!version||!lessonName)continue; const unitName=(lessonNo?`${lessonNo} ${lessonName}`:lessonName).trim(); const unitKey=`${stage}||${grade}||${semester}||${version}||${lessonNo}||${lessonName}`; if(!tree[stage])tree[stage]={}; if(!tree[stage][grade])tree[stage][grade]={}; if(!tree[stage][grade][semester])tree[stage][grade][semester]={}; if(!tree[stage][grade][semester][version])tree[stage][grade][semester][version]=[]; tree[stage][grade][semester][version].push({unit_key:unitKey,lesson_no:lessonNo,lesson_name:lessonName,unit_name:unitName}); unitIndex[unitKey]={unit_key:unitKey,stage,grade,semester,textbook_version:version,lesson_no:lessonNo,lesson_name:lessonName,unit_name:unitName}; } for(const st of Object.keys(tree)){ for(const g of Object.keys(tree[st])){ for(const sem of Object.keys(tree[st][g])){ for(const ver of Object.keys(tree[st][g][sem])){ const arr=tree[st][g][sem][ver]||[]; const seen=new Set(); const uniq=[]; for(const u of arr){ if(seen.has(u.unit_key))continue; seen.add(u.unit_key); uniq.push(u); } uniq.sort((a,b)=>{ const an=Number(String(a.lesson_no||"").replace(/[^\d]/g,"")); const bn=Number(String(b.lesson_no||"").replace(/[^\d]/g,"")); if(Number.isFinite(an)&&Number.isFinite(bn)&&an!==bn)return an-bn; return String(a.unit_name).localeCompare(String(b.unit_name),"zh-Hant"); }); tree[st][g][sem][ver]=uniq; } } } } return{tree,unitIndex}; }
+    function buildTreeFromLegacy(publishers,unitsByPublisher,grade,semester){ const tree={}; const unitIndex={}; const st=(grade<=6)?"國小":"國中"; const sem=normSemester(semester); tree[st]={}; tree[st][grade]={}; tree[st][grade][sem]={}; for(const ver of(publishers||[])){ const units=(unitsByPublisher&&unitsByPublisher[ver])?unitsByPublisher[ver]:[]; tree[st][grade][sem][ver]=[]; for(const u of units){ const unitName=String(u??"").trim(); if(!unitName)continue; const unitKey=`${st}||${grade}||${sem}||${ver}||||${unitName}`; tree[st][grade][sem][ver].push({unit_key:unitKey,lesson_no:"",lesson_name:unitName,unit_name:unitName}); unitIndex[unitKey]={unit_key:unitKey,stage:st,grade,semester:sem,textbook_version:ver,lesson_no:"",lesson_name:unitName,unit_name:unitName}; } } return{tree,unitIndex}; }
+    async function loadMaterialTree(){ let lastErr=null; for(const act of META_ACTION_CANDIDATES){ try{ const json=await api({action:act,content_db_id:CONTENT_DB_ID,sheet_name:CONTENT_SHEET_NAME,subject:"自然科學"}); if(json.tree&&typeof json.tree==="object"){Meta.tree=json.tree;Meta.unitIndex=json.unitIndex||{};Meta.mode="tree";return true;} const rows=json.rows||json.data||json.items||json.materials; if(Array.isArray(rows)&&rows.length){const built=buildTreeFromRows(rows);Meta.tree=built.tree;Meta.unitIndex=built.unitIndex;Meta.mode="tree";return true;} if(Array.isArray(json.publishers)&&json.unitsByPublisher){Meta.publishers=json.publishers;Meta.unitsByPublisher=json.unitsByPublisher;Meta.mode="legacy";return true;} if(Array.isArray(json)&&json.length){const built=buildTreeFromRows(json);Meta.tree=built.tree;Meta.unitIndex=built.unitIndex;Meta.mode="tree";return true;} throw new Error("回傳格式不含教材選單資料。"); }catch(e){lastErr=e;} } throw new Error(String(lastErr?.message||lastErr||"無法載入教材選單。")); }
+
+    /* ===========================
+       5) DROPDOWNS (With I18N placeholders)
+    =========================== */
+    function setOptions(selectEl, options, placeholderKey){ 
+      selectEl.innerHTML=""; 
+      if(!options||options.length===0){ 
+        const op=document.createElement("option"); op.value=""; op.textContent=t(placeholderKey); selectEl.appendChild(op); return; 
+      } 
+      for(const {value,label} of options){ const op=document.createElement("option"); op.value=String(value); op.textContent=String(label); selectEl.appendChild(op); } 
+    }
+    function getSelStage(){return document.getElementById("selStage").value.trim();}
+    function getSelGrade(){return Number(document.getElementById("selGrade").value);}
+    function getSelSemester(){return document.getElementById("selSemester").value.trim();}
+    function getSelVersion(){return document.getElementById("selPublisher").value.trim();}
+    function getSelUnitKey(){return document.getElementById("selUnit").value.trim();}
+    
+    function refreshAllDropdowns(){ 
+      const selStage=document.getElementById("selStage"); const selGrade=document.getElementById("selGrade"); const selSem=document.getElementById("selSemester"); const selVer=document.getElementById("selPublisher"); const selUnit=document.getElementById("selUnit"); 
+      const stageKeys=Object.keys(Meta.tree||{}).sort((a,b)=>String(a).localeCompare(String(b),"zh-Hant")); 
+      const prevStage=selStage.value; 
+      setOptions(selStage,stageKeys.map(s=>({value:s,label:s})),"ph_no_data"); 
+      if(prevStage&&stageKeys.includes(prevStage))selStage.value=prevStage; 
+      
+      const stage=getSelStage(); 
+      const gradesObj=(Meta.tree&&stage&&Meta.tree[stage])?Meta.tree[stage]:{}; 
+      const gradeKeys=Object.keys(gradesObj).map(x=>Number(x)).filter(n=>Number.isFinite(n)).sort((a,b)=>a-b); 
+      const prevGrade=selGrade.value; 
+      setOptions(selGrade,gradeKeys.map(g=>({value:g,label:`${g}年級`})),"ph_select_stage"); 
+      if(prevGrade&&gradeKeys.map(String).includes(String(prevGrade)))selGrade.value=prevGrade; 
+      
+      const grade=getSelGrade(); 
+      const semObj=(gradesObj&&Number.isFinite(grade)&&gradesObj[grade])?gradesObj[grade]:{}; 
+      const semKeys=Object.keys(semObj); const semOrder=["上學期","下學期"]; semKeys.sort((a,b)=>semOrder.indexOf(a)-semOrder.indexOf(b)); 
+      const prevSem=selSem.value; 
+      setOptions(selSem,semKeys.map(s=>({value:s,label:s})),"ph_select_grade"); 
+      if(prevSem&&semKeys.includes(prevSem))selSem.value=prevSem; 
+      
+      const semester=getSelSemester(); 
+      const verObj=(semObj&&semester&&semObj[semester])?semObj[semester]:{}; 
+      const verKeys=Object.keys(verObj).sort((a,b)=>String(a).localeCompare(String(b),"zh-Hant")); 
+      const prevVer=selVer.value; 
+      setOptions(selVer,verKeys.map(v=>({value:v,label:v})),"ph_no_data"); 
+      if(prevVer&&verKeys.includes(prevVer))selVer.value=prevVer; 
+      
+      const version=getSelVersion(); 
+      const unitsArr=(verObj&&version&&Array.isArray(verObj[version]))?verObj[version]:[]; 
+      const prevUnit=selUnit.value; 
+      setOptions(selUnit,unitsArr.map(u=>({value:u.unit_key,label:u.unit_name})),"ph_no_data"); 
+      if(prevUnit&&unitsArr.some(u=>u.unit_key===prevUnit))selUnit.value=prevUnit; 
+      
+      document.getElementById("publisherHint").textContent=""; document.getElementById("unitHint").textContent=""; 
+    }
+    
+    async function loadLegacyByGradeSemester(){ const selStage=document.getElementById("selStage"); const selGrade=document.getElementById("selGrade"); const selSem=document.getElementById("selSemester"); const selVer=document.getElementById("selPublisher"); const selUnit=document.getElementById("selUnit"); const stageOptions=[{value:"國小",label:"國小"},{value:"國中",label:"國中"}]; setOptions(selStage,stageOptions,"ph_no_data"); const stage=getSelStage()||"國小"; selStage.value=stage; const gradeList=(stage==="國中")?[7,8,9]:[3,4,5,6]; setOptions(selGrade,gradeList.map(g=>({value:g,label:`${g}年級`})),"ph_no_data"); setOptions(selSem,[{value:"上學期",label:"上學期"},{value:"下學期",label:"下學期"}],"ph_no_data"); const grade=getSelGrade()||gradeList[0]; const semester=getSelSemester()||"上學期"; document.getElementById("publisherHint").textContent=""; document.getElementById("unitHint").textContent=""; const json=await api({ action:ACTION.GET_UNIT_OPTIONS, content_db_id:CONTENT_DB_ID, sheet_name:CONTENT_SHEET_NAME, subject:"自然科學", stage, grade, semester }); Meta.publishers=Array.isArray(json.publishers)?json.publishers:[]; Meta.unitsByPublisher=json.unitsByPublisher||{}; const publishers=Meta.publishers||[]; setOptions(selVer,publishers.map(p=>({value:p,label:p})),"ph_no_data"); const built=buildTreeFromLegacy(publishers,Meta.unitsByPublisher,grade,semester); Meta.tree=built.tree; Meta.unitIndex=built.unitIndex; refreshAllDropdowns(); }
+    async function bootstrapMaterials(){ document.getElementById("publisherHint").textContent=""; document.getElementById("unitHint").textContent=""; Meta.mode="tree"; Meta.tree={}; Meta.unitIndex={}; await loadMaterialTree(); if(Meta.mode==="tree"){refreshAllDropdowns();return;} await loadLegacyByGradeSemester(); }
+
+    /* ===========================
+       6) TEST FLOW & RENDERING
+    =========================== */
+    function getUnit(){ const stage=getSelStage(); const grade=getSelGrade(); const semester=getSelSemester(); const textbook_version=getSelVersion(); const unit_key=getSelUnitKey(); const u=Meta.unitIndex[unit_key]||{}; const unit_name=(u.unit_name||"").trim(); return{subject:"自然科學",stage,grade,semester,textbook_version,unit_name,unit_key,lesson_no:u.lesson_no||"",lesson_name:u.lesson_name||""}; }
+    function normalizeItem(raw){ if(!raw)return null; const optObj=raw.options||{}; return{ item_id:String(raw.item_id||"").trim(), stem:String(raw.stem||"").trim(), textbook_source:String(raw.textbook_source||"").trim(), concept_tag:String(raw.concept_tag||"").trim(), options:{ A:String(raw.option_A??optObj.A??""), B:String(raw.option_B??optObj.B??""), C:String(raw.option_C??optObj.C??""), D:String(raw.option_D??optObj.D??"") } }; }
+    function parseAndRenderStimulus(rawStem){ const marker="[STIMULUS_JSON]"; const idx=rawStem.indexOf(marker); if(idx<0){return{text:rawStem,html:""};} const textPart=rawStem.substring(0,idx).trim(); const jsonPart=rawStem.substring(idx+marker.length).trim(); let htmlPart=""; try{ const data=JSON.parse(jsonPart); if(data.kind==="table"&&data.table){ const cols=data.table.columns||[]; const rows=data.table.rows||[]; htmlPart=`<div class="my-4 overflow-x-auto border border-orange-200 rounded-xl shadow-sm bg-white"><table class="min-w-full divide-y divide-orange-100 text-sm"><thead class="bg-orange-50"><tr>${cols.map(c=>`<th class="px-4 py-3 text-left font-bold text-orange-900 whitespace-nowrap">${c}</th>`).join('')}</tr></thead><tbody class="divide-y divide-orange-100 bg-white">${rows.map(r=>`<tr class="hover:bg-orange-50/50">${r.map(cell=>`<td class="px-4 py-3 text-slate-700 whitespace-nowrap">${cell}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`; } }catch(e){console.error("表格解析失敗:",e);} return{text:textPart,html:htmlPart}; }
+    function getStudentIdFromLogin(){ const storages=[sessionStorage,localStorage]; const directKeys=["student_id","StudentID","SLH_student_id","slh_student_id","user_student_id","login_student_id","current_student_id"]; for(const S of storages){ for(const k of directKeys){ const v=S.getItem(k); const s=String(v??"").trim(); if(s)return s; } } return ""; }
+    async function ensureStudentId(){ if(CAT.student_id)return String(CAT.student_id).trim(); let sid=String(getStudentIdFromLogin()||"").trim(); if(sid){ CAT.student_id=sid; return sid; } return "GUEST"; /* Fallback for demo */ }
+    function clampNum(x,lo,hi,def){ const n=Number(x); return Number.isFinite(n)?Math.max(lo,Math.min(hi,n)):def; }
+    function escapeHtml(s){ return String(s??"").replace(/[&<>"']/g,(m)=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])); }
+
+    // Render Question
+    function renderItem(item){
+      UI.showQuestion(true);
+      const content = parseAndRenderStimulus(item.stem || "");
+      const stemDiv = document.getElementById("qStem");
+      stemDiv.innerHTML = "";
+      const textNode = document.createElement("div"); textNode.textContent = content.text; stemDiv.appendChild(textNode);
+      if (content.html) { const wrapper = document.createElement("div"); wrapper.innerHTML = content.html; stemDiv.appendChild(wrapper); }
+
+      const wrap = document.getElementById("optWrap"); wrap.innerHTML = "";
+      CAT.selected = "";
+      const btnSubmit = document.getElementById("btnSubmit"); const btnNext = document.getElementById("btnNext");
+      
+      btnSubmit.disabled = true; btnSubmit.classList.add('opacity-50', 'cursor-not-allowed');
+      btnNext.disabled = true; btnNext.classList.add('opacity-50', 'cursor-not-allowed', 'bg-slate-200', 'text-slate-400');
+      btnNext.classList.remove('bg-emerald-500', 'text-white', 'shadow-lg');
+
+      document.getElementById("hint").innerHTML = `<i class="fa-solid fa-circle-info text-blue-400"></i> ${t("hint_select")}`;
+
+      const letters = ["A","B","C","D"];
+      for(const L of letters){
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.className = "quiz-option-btn w-full text-left px-4 py-3 text-sm rounded-lg border border-slate-200 bg-white text-slate-700 font-medium flex items-center";
-        btn.setAttribute("data-opt-index", optIndex);
-        btn.onclick = () => handleQuizAnswer(optIndex);
-        btn.innerHTML = `<span class="w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-xs font-bold flex items-center justify-center mr-3">${letters[optIndex]||""}</span>${opt}`;
-        quizOptionsEl.appendChild(btn);
-      });
-
-      quizProgressEl.innerText = `${index+1} / ${total}`;
-      btnMain.disabled = true;
-      btnMain.innerText = (index === total - 1) ? t("quiz_result_btn") : t("quiz_next");
-    }
-
-    function handleQuizAnswer(selectedIndex) {
-      if (quizState.hasAnswered) return;
-      const q = quizState.questions[quizState.currentIndex];
-      const quizOptionsEl = document.getElementById("quiz-options");
-      const quizFeedbackEl = document.getElementById("quiz-feedback");
-      const buttons = Array.from(quizOptionsEl.querySelectorAll("button.quiz-option-btn"));
-      const correctIndex = q.correctIndex;
-      let isCorrect = (selectedIndex === correctIndex && correctIndex >= 0);
-
-      quizState.answers[quizState.currentIndex] = { correct: isCorrect, concept: q.concept };
-      buttons.forEach(btn => btn.disabled = true);
-
-      if (isCorrect) {
-        buttons[selectedIndex].classList.add("selected-correct");
-        quizFeedbackEl.className = "mt-4 text-sm rounded-lg p-3 bg-emerald-50 border border-emerald-200 text-emerald-800";
-        quizFeedbackEl.innerHTML = `<div class="font-bold flex items-center gap-2"><i class="fa-solid fa-check-circle"></i> ${t("msg_correct")}</div><div class="mt-1 opacity-90">${q.explanation}</div>`;
-      } else {
-        buttons[selectedIndex].classList.add("selected-wrong");
-        if(correctIndex >= 0 && buttons[correctIndex]) buttons[correctIndex].classList.add("selected-correct");
-        quizFeedbackEl.className = "mt-4 text-sm rounded-lg p-3 bg-red-50 border border-red-200 text-red-800";
-        quizFeedbackEl.innerHTML = `<div class="font-bold flex items-center gap-2"><i class="fa-solid fa-circle-xmark"></i> ${t("msg_wrong")}</div><div class="mt-1 opacity-90">${q.explanation}</div>`;
+        btn.className = "opt-btn text-left w-full px-5 py-4 rounded-xl bg-white transition focus:outline-none flex items-start gap-4";
+        btn.setAttribute("data-letter", L);
+        btn.innerHTML = `<div class="badge w-8 h-8 rounded-lg bg-slate-100 text-slate-500 font-bold flex items-center justify-center shrink-0 transition">${L}</div><div class="flex-1 text-slate-700 font-medium pt-1">${escapeHtml(item.options[L] || "")}</div>`;
+        btn.onclick = () => selectOption(L);
+        wrap.appendChild(btn);
       }
-      quizFeedbackEl.classList.remove("hidden");
-      quizState.hasAnswered = true;
-      document.getElementById("quiz-main-btn").disabled = false;
-      try { submitQuizLog(q, selectedIndex, correctIndex, isCorrect); } catch (e) {}
     }
 
-    function submitQuizLog(question, selectedIndex, correctIndex, isCorrect) {
-      const currentUser = JSON.parse(sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || '{"name":"訪客"}');
-      const payload = {
-        action: "log_quiz_answer", userName: currentUser.name,
-        stage: filters.stage, publisher: filters.publisher, grade: filters.grade, semester: filters.semester,
-        unitName: (filters && filters.unitName) || "",
-        questionId: question.id, questionIndex: quizState.currentIndex + 1, questionText: question.stem,
-        studentAnswer: selectedIndex.toString(), correctAnswer: correctIndex.toString(), isCorrect: isCorrect ? "1" : "0"
-      };
-      const params = new URLSearchParams(payload);
-      fetch(`${GAS_API_URL}?${params.toString()}`).catch(err => {});
-    }
-
-    function handleQuizMainButton() {
-      if (!quizState.questions.length) return;
-      if (!quizState.hasAnswered) return;
-      const isLast = (quizState.currentIndex === quizState.questions.length - 1);
-      if (isLast) renderQuizResult();
-      else { quizState.currentIndex += 1; renderQuizQuestion(); }
-    }
-
-    function renderQuizResult() {
-      const totalQ = quizState.questions.length;
-      const resultBox = document.getElementById("quiz-result");
-      const scoreNumberEl = document.getElementById("quiz-score-number");
-      const resultTextEl = document.getElementById("quiz-result-text");
-      const detailEl = document.getElementById("quiz-result-detail");
-      const canvas = document.getElementById("quiz-radar");
-      
-      document.getElementById("quiz-body").classList.add("hidden");
-      document.getElementById("quiz-progress").parentElement.classList.add("hidden"); // hide header area for clean result
-      resultBox.classList.remove("hidden");
-
-      const answered = quizState.answers.filter(a => a);
-      const correctCount = answered.filter(a => a.correct).length;
-      const score = Math.round((correctCount / totalQ) * 100);
-
-      scoreNumberEl.innerText = score;
-      resultTextEl.innerText = `${correctCount} / ${totalQ} Correct`;
-
-      const conceptStats = {};
-      quizState.questions.forEach((q, idx) => {
-        const concept = q.concept || `Q${idx + 1}`;
-        if (!conceptStats[concept]) conceptStats[concept] = { total: 0, correct: 0 };
-        conceptStats[concept].total += 1;
-        if (quizState.answers[idx] && quizState.answers[idx].correct) conceptStats[concept].correct += 1;
+    function selectOption(letter){
+      CAT.selected = letter;
+      document.querySelectorAll("#optWrap button").forEach(b=>{
+        if(b.getAttribute("data-letter") === letter) b.classList.add("selected");
+        else b.classList.remove("selected");
       });
-      const concepts = Object.keys(conceptStats);
-      const conceptScores = concepts.map(c => Math.round((conceptStats[c].correct / conceptStats[c].total) * 100));
+      const btnSubmit = document.getElementById("btnSubmit");
+      btnSubmit.disabled = false; btnSubmit.classList.remove('opacity-50', 'cursor-not-allowed');
+      document.getElementById("hint").innerHTML = `<i class="fa-solid fa-circle-check text-emerald-500"></i> Selected <b>${letter}</b>`;
+    }
 
-      const ctx = canvas.getContext("2d");
-      if (quizRadarChart) quizRadarChart.destroy();
-      quizRadarChart = new Chart(ctx, {
-        type: "bar",
-        data: { labels: concepts, datasets: [{ label: "Accuracy (%)", data: conceptScores, backgroundColor: '#059669', borderRadius: 4 }] },
-        options: {
-          responsive: true, maintainAspectRatio: false, indexAxis: "y",
-          scales: { x: { min: 0, max: 100 }, y: { ticks: { autoSkip: false } } },
-          plugins: { legend: { display: false } }
+    async function startTest(){
+      const unit = getUnit();
+      if(!unit.stage || !unit.grade || !unit.semester || !unit.textbook_version || !unit.unit_name){
+        UI.toast("Error", "Please select all unit options.", "warn"); return;
+      }
+      const sid = await ensureStudentId();
+      const n = clampNum(Number(document.getElementById("inpN").value), 5, 40, 15);
+      CAT.n = n;
+      document.getElementById("btnStart").disabled = true;
+      UI.showLoading(true, "loading_q_title", "loading_q_desc");
+
+      try{
+        const json = await api({ action: ACTION.START_CAT, student: { student_id: sid }, unit, settings: { max_items: n } });
+        CAT.started = true; CAT.student_id = sid; CAT.test_id = json.test_id || ""; CAT.step = 0;
+        const first = normalizeItem(json.item);
+        if(!first) throw new Error("No items returned.");
+        CAT.current = first; CAT.next = null;
+        UI.setProgress(0, CAT.n);
+        document.getElementById("btnFinish").disabled = false;
+        renderItem(first);
+        UI.toast("Success", t("msg_start_success"), "good");
+        setTimeout(() => document.querySelector(".glass-panel:nth-of-type(2)").scrollIntoView({ behavior: 'smooth', block: 'start' }), 500);
+      }catch(e){
+        UI.toast("Error", String(e?.message || e), "bad");
+      }finally{
+        document.getElementById("btnStart").disabled = false;
+        UI.showLoading(false);
+      }
+    }
+
+    async function submitAnswer(){
+      if(!CAT.started || !CAT.current) return;
+      if(!CAT.selected){ UI.toast("Info", t("hint_select"), "warn"); return; }
+      
+      const btnSubmit = document.getElementById("btnSubmit"); const btnNext = document.getElementById("btnNext");
+      btnSubmit.disabled = true; btnSubmit.classList.add('opacity-50');
+      btnNext.disabled = true;
+      document.getElementById("hint").innerHTML = `<i class="fa-solid fa-spinner fa-spin text-blue-500"></i> ...`;
+      
+      const unit = getUnit();
+      try{
+        const json = await api({
+          action: ACTION.SUBMIT_NEXT, test_id: CAT.test_id, student_id: CAT.student_id,
+          item_id: CAT.current.item_id, response_option: CAT.selected,
+          max_items: CAT.n, min_items: CAT.n, stop_se: 0, grade: String(unit.grade || "")
+        });
+        const prog = json.progress || {};
+        CAT.step = Number(prog.n_admin || (CAT.step + 1));
+        UI.setProgress(CAT.step, CAT.n);
+        if(json.done === true || CAT.step >= CAT.n){ await finishTest(); return; }
+        const next = normalizeItem(json.item);
+        if(!next) throw new Error("No next item.");
+        CAT.next = next;
+        
+        btnNext.disabled = false;
+        btnNext.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-slate-200', 'text-slate-400');
+        btnNext.classList.add('bg-emerald-500', 'text-white', 'shadow-lg');
+        document.getElementById("hint").innerHTML = `<span class="text-emerald-600 font-bold"><i class="fa-solid fa-circle-check"></i> ${t("msg_submit_success")}</span>`;
+      }catch(e){
+        UI.toast("Error", String(e?.message||e), "bad");
+        btnSubmit.disabled = false; btnSubmit.classList.remove('opacity-50');
+      }
+    }
+
+    function goNext(){ if(!CAT.next) return; CAT.current = CAT.next; CAT.next = null; renderItem(CAT.current); }
+
+    async function finishTest(){
+      document.getElementById("btnFinish").disabled = true; document.getElementById("btnSubmit").disabled = true; document.getElementById("btnNext").disabled = true;
+      UI.showLoading(true, "loading_a_title", "loading_a_desc");
+
+      try{
+        const json = await api({ action: ACTION.FINISH_CAT, test_id: CAT.test_id, student_id: CAT.student_id });
+        UI.showResult(true); UI.showLoading(false);
+
+        document.getElementById("resScore").textContent = json.score ?? "—";
+        const scoreStr = json.score || "0/0"; 
+        const [correct, total] = scoreStr.split('/').map(Number);
+        const finalScore = total ? Math.round((correct / total) * 100) : 0;
+        document.getElementById("resScore100").textContent = finalScore;
+        document.getElementById("resTestId").textContent = json.test_id ?? "";
+
+        let fb = json.feedback_student || "No feedback.";
+        fb = fb.replace(/你的能力估計.*?測量精度.*?。/g, "");
+        fb = fb.replace(/相對優勢概念：/g, "👍 **優勢概念**：");
+        fb = fb.replace(/建議優先補強概念：/g, "💪 **補強建議**：");
+        fb = fb.replace(/錯題建議回看：/g, "📖 **複習重點**：");
+        if (finalScore === 100) fb = "🎉 **太完美了！** 你的觀念非常清晰！\n\n" + fb;
+        document.getElementById("resFeedback").textContent = fb.trim();
+
+        const wrongHtml = (json.wrong_items || []).map((w,i)=>`
+          <div class="bg-white p-4 rounded-xl border border-red-100 flex gap-4">
+            <div class="w-8 h-8 rounded-full bg-red-100 text-red-500 flex items-center justify-center font-bold shrink-0">${i+1}</div>
+            <div>
+              <div class="text-slate-700">關於「<span class="font-bold text-red-500">${escapeHtml(w.concept_tag)}</span>」的觀念還不夠熟悉。</div>
+              ${w.textbook_source?`<div class="mt-2 text-sm text-slate-500 bg-slate-50 px-2 py-1 rounded inline-block"><i class="fa-solid fa-book-open text-blue-400"></i> ${escapeHtml(w.textbook_source)}</div>`:''}
+            </div>
+          </div>`).join('');
+        document.getElementById("resWrong").innerHTML = wrongHtml || `<div class="bg-emerald-50 p-4 rounded-xl text-emerald-700">Excellent! No wrong answers.</div>`;
+
+        preparePDFData(json, finalScore, fb, wrongHtml);
+        UI.toast("Info", t("msg_finish"), "good");
+        CAT.started = false;
+      }catch(e){
+        UI.showLoading(false);
+        UI.toast("Error", String(e?.message||e), "bad");
+      }
+    }
+
+    function preparePDFData(json, finalScore, fb, wrongHtml) {
+        const unit = getUnit();
+        document.getElementById('pdf-unit-name').textContent = unit.unit_name || "未命名單元";
+        document.getElementById('pdf-student-name').textContent = CAT.student_id || "Guest";
+        document.getElementById('pdf-report-id').textContent = json.test_id || "N/A";
+        document.getElementById('pdf-score-circle').textContent = finalScore;
+        document.getElementById('pdf-raw-score').textContent = json.score || "0/0";
+        
+        let comment = "尚可";
+        if (finalScore >= 90) comment = "優秀"; else if (finalScore >= 80) comment = "良好"; else if (finalScore >= 60) comment = "及格"; else comment = "需加油";
+        document.getElementById('pdf-comment').textContent = comment;
+        
+        const xs = json.wrong_items || [];
+        if (xs.length === 0) {
+            document.getElementById('pdf-wrong-list').innerHTML = '<div style="color: #10b981; font-weight: bold; padding: 10px; background: #f0fdf4;">恭喜！本次測驗無錯題，概念掌握極佳。</div>';
+        } else {
+            document.getElementById('pdf-wrong-list').innerHTML = xs.map((w, i) => `
+                <div style="margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
+                    <div style="font-weight: bold; color: #b91c1c;">${i+1}. 概念弱點：${escapeHtml(w.concept_tag || "未標示")}</div>
+                    <div style="font-size: 12px; color: #64748b; margin-top: 4px;">建議複習：${escapeHtml(w.textbook_source || "全單元")}</div>
+                </div>`).join('');
         }
-      });
-      
-      // Request AI Summary
-      const scoreLabel = document.getElementById("quiz-score-label");
-      scoreLabel.innerText = "AI Analyzing...";
-      detailEl.innerText = "Processing performance data...";
-      
-      const currentUser = JSON.parse(sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || '{"name":"Visitor"}');
-      const raw = currentResultData && currentResultData.raw_content ? currentResultData.raw_content : {};
-      const payload = {
-         action: "quiz_ai_summary", userName: currentUser.name,
-         stage: filters.stage, publisher: filters.publisher, grade: filters.grade, semester: filters.semester, unitName: filters.unitName,
-         score: score, totalQuestions: totalQ, totalCorrect: correctCount, concepts: concepts, conceptScores: conceptScores,
-         answers: quizState.questions.map((q,i)=>({index:i+1, concept: q.concept, correct: quizState.answers[i]?.correct})),
-         contextText: raw.text||"", contextVocab: raw.vocab_str||""
-      };
-
-      fetch(GAS_API_URL, { method: "POST", body: JSON.stringify(payload) })
-      .then(res => res.text())
-      .then(text => {
-        let json; try { json = JSON.parse(text); } catch(e){ json = {data: text}; }
-        let d = json.data || json.summary || json.text || json;
-        if (typeof d === "object") d = (d.summary || "") + "<br><br>" + (d.detail || "");
-        detailEl.innerHTML = d || t("quiz_ai_fallback1");
-        scoreLabel.innerText = "Analysis Complete";
-      })
-      .catch(() => {
-        detailEl.innerText = t("quiz_ai_fallback2");
-        scoreLabel.innerText = "Offline";
-      });
+        
+        // Split AI Feedback for better presentation
+        const parts = fb.split('\n\n');
+        document.getElementById('pdf-ai-diagnosis').innerText = parts[0] || ""; // Concept Strength/Weakness
+        document.getElementById('pdf-remedial').innerText = parts.slice(1).join('\n\n') || "請參考課本內容進行複習。"; // Remedial
     }
+
+    document.getElementById("btnDownload").addEventListener("click", function() {
+        const element = document.getElementById('pdf-report');
+        element.style.display = 'block'; 
+        UI.toast("Info", t("msg_generating_pdf"), "info");
+        const opt = { margin: 0, filename: `Diagnosis_${getUnit().unit_name}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+        html2pdf().set(opt).from(element).save().then(() => { element.style.display = 'none'; UI.toast("Success", "PDF Saved", "good"); });
+    });
+
+    document.getElementById("btnRestart").addEventListener("click", ()=>{
+      CAT.started = false; CAT.test_id = ""; CAT.current = null; CAT.next = null; CAT.selected = ""; CAT.step = 0;
+      UI.setProgress(0, Number(document.getElementById("inpN").value)||0);
+      UI.showQuestion(false); UI.showResult(false);
+      document.getElementById("btnFinish").disabled = true; document.getElementById("btnSubmit").disabled = true; document.getElementById("btnNext").disabled = true;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    /* ===========================
+       7) INITIALIZATION
+    =========================== */
+    document.addEventListener("DOMContentLoaded", async ()=>{
+      UI.showLoading(true, "loading_title", "loading_desc");
+      UI.setProgress(0, clampNum(Number(document.getElementById("inpN").value),5,40,15));
+      await ping();
+      try{ await bootstrapMaterials(); UI.toast("Success", t("msg_ready"), "good"); }
+      catch(e){ UI.toast("Error", String(e?.message||e), "bad"); }
+      finally{ UI.showLoading(false); }
+
+      document.getElementById("btnReload").addEventListener("click", async ()=>{
+        try{ await bootstrapMaterials(); UI.toast("Success", t("msg_menu_updated"), "good"); }
+        catch(e){ UI.toast("Error", String(e?.message||e), "bad"); }
+      });
+
+      document.getElementById("selStage").addEventListener("change", ()=>{ if(Meta.mode==="tree")refreshAllDropdowns(); else loadLegacyByGradeSemester(); });
+      document.getElementById("selGrade").addEventListener("change", ()=>{ if(Meta.mode==="tree")refreshAllDropdowns(); else loadLegacyByGradeSemester(); });
+      document.getElementById("selSemester").addEventListener("change", ()=>{ if(Meta.mode==="tree")refreshAllDropdowns(); else loadLegacyByGradeSemester(); });
+      document.getElementById("selPublisher").addEventListener("change", ()=>{ if(Meta.mode==="tree")refreshAllDropdowns(); });
+
+      document.getElementById("inpN").addEventListener("change", ()=>{
+        const n = clampNum(Number(document.getElementById("inpN").value),5,40,15);
+        document.getElementById("inpN").value = n;
+        if(!CAT.started) UI.setProgress(0, n);
+      });
+
+      document.getElementById("btnStart").addEventListener("click", startTest);
+      document.getElementById("btnSubmit").addEventListener("click", submitAnswer);
+      document.getElementById("btnNext").addEventListener("click", goNext);
+      document.getElementById("btnFinish").addEventListener("click", finishTest);
+    });
   </script>
 </body>
 </html>
