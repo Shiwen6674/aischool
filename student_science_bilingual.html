@@ -754,74 +754,82 @@
         }
 
         // ====================== TTS ======================
-        function isIOSDevice(){
-          return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-        }
-        function isMostlyEnglish(txt){
-          const t = (txt || "").toString();
-          const latin = (t.match(/[A-Za-z]/g) || []).length;
-          const cjk   = (t.match(/[\u4E00-\u9FFF]/g) || []).length;
-          if (cjk === 0) return latin > 0;
-          return latin > cjk * 2;
-        }
-        function splitTextForSpeak(text, isEng){
-          const t = (text || "").toString().replace(/\s+/g, " ").trim();
-          if(!t) return [];
-          const maxLen = isEng ? 180 : 120;
-          const out = [];
-          let s = t;
-          while(s.length > maxLen){
-            let cut = -1;
-            const punct = isEng ? /[.!?;:]/g : /[。！？；：]/g;
-            let m, last = -1;
-            while((m = punct.exec(s.substring(0, maxLen))) !== null){ last = m.index + 1; }
-            if(last >= Math.floor(maxLen * 0.4)) cut = last;
-            if(cut === -1 && isEng){ const sp = s.lastIndexOf(" ", maxLen); if(sp >= Math.floor(maxLen * 0.5)) cut = sp; }
-            if(cut === -1) cut = maxLen;
-            out.push(s.slice(0, cut).trim());
-            s = s.slice(cut).trim();
-          }
-          if(s) out.push(s);
-          return out;
+       function isIOSDevice(){
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
         }
 
+        function isMostlyEnglish(txt){
+            const t = (txt || "").toString();
+            const latin = (t.match(/[A-Za-z]/g) || []).length;
+            const cjk   = (t.match(/[\u4E00-\u9FFF]/g) || []).length;
+            if (cjk === 0) return latin > 0;
+            return latin > cjk * 2;
+        }
+
+        // 核心修改：更聰明的語音選擇邏輯
         function pickBestVoice(isEng, gender) {
             if (!window.speechSynthesis) return null;
             const voices = window.speechSynthesis.getVoices();
             if (voices.length === 0) return null;
-            const targetLang = isEng ? ['en-us', 'en-gb', 'en'] : ['zh-tw', 'zh-hk', 'zh'];
+
+            // 定義目標語系，iOS 中文有時需放寬到 zh-CN (如 Tingting 聲音很好)
+            const targetLang = isEng ? ['en-us', 'en-gb', 'en', 'en-au'] : ['zh-tw', 'zh-hk', 'zh-cn', 'zh'];
+
             const getScore = (voice) => {
                 let score = 0;
                 const name = voice.name.toLowerCase();
                 const uri = (voice.voiceURI || "").toLowerCase();
                 const lang = voice.lang.toLowerCase();
-                if (targetLang.some(t => lang === t || lang.replace('_', '-').startsWith(t))) { score += 1000; } else { return -1; }
-                
-                if (name.includes('siri') || uri.includes('siri')) score += 20000;
-                if (name.includes('samantha')) score += 15000; 
-                if (name.includes('meijia')) score += 15000;   
-                if (name.includes('enhanced') || uri.includes('enhanced')) score += 5000;
-                if (name.includes('premium') || uri.includes('premium')) score += 5000;
-                if (name.includes('natural')) score += 3000;
-                if (name.includes('compact') || uri.includes('compact')) score -= 50000; 
 
-                const isIphone = isIOSDevice();
-                if (isIphone && !name.includes('siri') && (name.includes('meijia') || name.includes('samantha'))) {
-                    score += 5000; 
-                } else if (!name.includes('siri')) {
-                    if (gender === 'male') {
-                        if (name.includes('male') || name.includes('man')) score += 500;
-                        if (name.includes('female') || name.includes('woman')) score -= 100;
-                    } else {
-                        if (name.includes('female') || name.includes('woman')) score += 500;
-                    }
+                // 1. 語系匹配 (基礎分)
+                if (targetLang.some(t => lang === t || lang.replace('_', '-').startsWith(t))) { 
+                    score += 1000; 
+                    // 如果是中文，zh-TW 優先
+                    if (!isEng && (lang === 'zh-tw' || lang.includes('taiwan'))) score += 500;
+                } else { 
+                    return -100000; // 非目標語系直接淘汰
                 }
+                
+                // 2. 音質優化 (針對問題 2 & 4：解決模糊、機械音)
+                // "Enhanced" 是 iOS 高音質的關鍵字，"Premium" 是 Android/PC
+                if (name.includes('enhanced') || uri.includes('enhanced')) score += 5000; 
+                if (name.includes('premium') || uri.includes('premium')) score += 5000;
+                if (name.includes('natural') || name.includes('google')) score += 4000; // Google 網路神經音
+                
+                // 3. 避免模糊音 (Compact 是壓縮版，音質最差)
+                if (name.includes('compact') || uri.includes('compact')) score -= 8000; 
+
+                // 4. 性別與特定人名優化 (針對問題 1 & 3)
+                if (gender === 'female') {
+                    // iPhone 英文女聲首選
+                    if (isEng && (name.includes('samantha') || name.includes('ava') || name.includes('siri'))) score += 3000;
+                    // iPhone 中文女聲首選 (Meijia 是台灣高音質, Tingting 是大陸高音質但通用)
+                    if (!isEng && (name.includes('meijia') || name.includes('tingting'))) score += 3000;
+                    
+                    if (name.includes('female') || name.includes('woman')) score += 1000;
+                    if (name.includes('male') || name.includes('man') || name.includes('daniel') || name.includes('sinji')) score -= 5000;
+                } else {
+                    // iPhone 英文男聲首選
+                    if (isEng && (name.includes('daniel') || name.includes('rishi') || name.includes('alex'))) score += 3000;
+                    // iPhone 中文男聲首選 (Sinji 是 Siri 男聲)
+                    if (!isEng && (name.includes('sinji') || name.includes('li-mu'))) score += 3000;
+
+                    if (name.includes('male') || name.includes('man')) score += 1000;
+                    if (name.includes('female') || name.includes('woman') || name.includes('samantha') || name.includes('meijia')) score -= 5000;
+                }
+
                 return score;
             };
-            const sorted = voices.map(v => ({ v, score: getScore(v) })).filter(item => item.score > -10000).sort((a, b) => b.score - a.score);
+
+            const sorted = voices.map(v => ({ v, score: getScore(v) })).filter(item => item.score > -5000).sort((a, b) => b.score - a.score);
+            
+            // Debug: 如果需要可以在 console 看到選了哪個聲音
+            // if(sorted.length > 0) console.log(`Selected ${isEng?'EN':'ZH'} (${gender}):`, sorted[0].v.name, sorted[0].score);
+            
             return sorted.length > 0 ? sorted[0].v : voices[0];
         }
 
+        // 核心修改：播放邏輯調整
         function speakText(txt, onComplete) {
             if (!synth) return;
             isSpeaking = true;
@@ -840,8 +848,11 @@
 
             const ios = isIOSDevice();
             const isEng = isMostlyEnglish(cleanTxt);
-            const lang = isEng ? "en-US" : "zh-TW";
-            const chunks = (ios && cleanTxt.length > (isEng ? 220 : 140)) ? splitTextForSpeak(cleanTxt, isEng) : [cleanTxt];
+            // 強制指定語系，避免 iOS 亂猜
+            const lang = isEng ? "en-US" : "zh-TW"; 
+            
+            // iOS 針對長句需要切分，否則有時會不說話，但這裡為了自然度，若非超長句盡量不切
+            const chunks = (ios && cleanTxt.length > (isEng ? 300 : 100)) ? splitTextForSpeak(cleanTxt, isEng) : [cleanTxt];
             const uiRate = parseFloat(document.getElementById('play-rate')?.value || "1.0");
             let idx = 0;
 
@@ -856,11 +867,21 @@
                 const u = new SpeechSynthesisUtterance(part);
                 u.lang = lang;
                 
+                // 取得最佳聲音
                 let voice = pickBestVoice(isEng, currentVoice);
                 if (voice) u.voice = voice;
 
-                if (ios) { u.pitch = 1.0; u.rate = 1.0; } 
-                else { u.rate = uiRate; u.pitch = (currentVoice === 'male') ? 1.0 : 1.05; }
+                // 針對 iOS 調整參數，使其更自然
+                if (ios) { 
+                    // iOS 若調 Pitch 容易導致聲音變回機械音，盡量保持 1.0
+                    u.pitch = 1.0; 
+                    // 速度微調，中文稍微慢一點點會更像人
+                    u.rate = isEng ? uiRate : (uiRate * 0.95); 
+                } else { 
+                    u.rate = uiRate; 
+                    // 非 iOS 設備可以用 Pitch 輔助性別
+                    u.pitch = (currentVoice === 'male') ? 0.9 : 1.1; 
+                }
 
                 u.onend = speakNext;
                 u.onerror = () => { if (isSpeaking) speakNext(); };
