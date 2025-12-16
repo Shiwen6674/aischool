@@ -20,7 +20,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://unpkg.com/pinyin-pro"></script>
+    <script src="https://unpkg.com/pinyin-pro"></script>
+
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -164,8 +165,6 @@
             transition: color 0.3s;
         }
         .en-text:hover { opacity: 0.9; color: #fff; }
-
-        /* ... 原有樣式 ... */
 
         /* [新增] 注音相關樣式 */
         ruby { font-family: 'Noto Sans TC', sans-serif; ruby-align: center; }
@@ -380,7 +379,8 @@
                     <h1 class="text-3xl md:text-4xl font-black text-white mb-10 text-center" id="article-title">
                         <span class="text-slate-500 opacity-30 text-2xl">等待探索...</span>
                     </h1>
-                    <div id="article-content" class="space-y-2"></div> </article>
+                    <div id="article-content" class="space-y-2"></div> 
+                </article>
             </div>
         </section>
 
@@ -397,7 +397,7 @@
         </aside>
     </div>
 
-<div id="control-dock" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-[95%] max-w-lg md:max-w-xl transition-all duration-300">
+    <div id="control-dock" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-[95%] max-w-lg md:max-w-xl transition-all duration-300">
         <div class="player-dock flex items-center justify-between gap-3 md:gap-5 bg-slate-900/90 md:bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-full px-5 py-3 md:px-6 md:py-2 shadow-2xl">
             
             <div class="flex flex-col items-center shrink-0 w-20 md:w-24 mr-2">
@@ -670,6 +670,163 @@
           });
         }
 
+        async function translateVisibleBlocks() {
+            const ens = document.querySelectorAll('.en-text'), load=document.getElementById('trans-loading');
+            let need=false; ens.forEach(e=>{if(!e.innerText)need=true}); if(!need)return;
+            load.classList.remove('hidden');
+            for(let el of ens) {
+                if(el.innerText) continue;
+                let src = decodeURIComponent(el.getAttribute('data-source') || "").replace(/　/g,'');
+                if(translationCache[src]) { el.innerHTML=makeClickable(highlightEnglishVocabInText(translationCache[src])); continue; }
+                try {
+                    const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURIComponent(src)}`);
+                    const json = await res.json();
+                    let txt=""; json[0].forEach(i=>txt+=i[0]);
+                    el.innerHTML = makeClickable(highlightEnglishVocabInText(txt));
+                    translationCache[src]=txt;
+                } catch(e){ el.innerText="Error"; }
+            }
+            load.classList.add('hidden');
+            rehighlightEnglishBlocks();
+        }
+
+        function makeClickable(html) { return `<span class="cursor-pointer hover:text-green-300 transition">${html}</span>`; }
+        function escapeHtml(s){ return (s||"").toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+        function highlightEnglishVocabInText(txt){
+          let safe = escapeHtml(txt);
+          const terms = Object.values(activeVocabMap||{}).map(v => (v||"").trim()).filter(v => v && v !== "Loading..." && /[a-zA-Z]/.test(v));
+          const uniq = [...new Set(terms)].sort((a,b)=>b.length-a.length);
+          if(!uniq.length) return safe;
+          for(const term of uniq){
+            const escaped = term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+            const isSingleWord = /^[A-Za-z]+$/.test(term);
+            const re = isSingleWord ? new RegExp(`\\b(${escaped})\\b`,'gi') : new RegExp(`(${escaped})`,'gi');
+            safe = safe.replace(re, (m) => {
+              const js = m.replace(/'/g,"\\'");
+              return `<span class="sci-term" onclick="event.stopPropagation(); speakText('${js}')" title="${m}">${m}</span>`;
+            });
+          }
+          return safe;
+        }
+
+        // [新增] 更新滑桿顯示數值
+        function updateRateDisplay(val) {
+            document.getElementById('rate-display').innerText = val + 'x';
+        }
+
+        // [核心修正] 停止聲音但不重置索引
+        function stopAudioOnly() {
+            isSpeaking = false;
+            if (synth) synth.cancel();
+            document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-play ml-1"></i>';
+        }
+
+        // [核心修正] 完全停止並重置
+        function resetAudio() {
+            stopAudioOnly();
+            currentBlockIndex = 0;
+            clearHighlights();
+        }
+        
+        function stopSpeech() { resetAudio(); }
+
+        // [核心修正] 上一句
+        function playPrev() {
+            const blocks = document.querySelectorAll('.content-block, .section-header');
+            if (currentBlockIndex > 0) {
+                currentBlockIndex--;
+                if (isSpeaking) {
+                    synth.cancel(); 
+                    setTimeout(playSequence, 50); 
+                } else {
+                    clearHighlights();
+                    highlightBlock(blocks[currentBlockIndex]);
+                }
+            }
+        }
+
+        // [核心修正] 下一句
+        function playNext() {
+            const blocks = document.querySelectorAll('.content-block, .section-header');
+            if (currentBlockIndex < blocks.length - 1) {
+                currentBlockIndex++;
+                if (isSpeaking) {
+                    synth.cancel();
+                    setTimeout(playSequence, 50);
+                } else {
+                    clearHighlights();
+                    highlightBlock(blocks[currentBlockIndex]);
+                }
+            }
+        }
+
+        function highlightBlock(block) {
+            if(!block) return;
+            block.classList.add('reading-active');
+            block.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // [核心修正] 播放序列邏輯
+        function playSequence() {
+            isSpeaking = true; 
+            document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-pause"></i>';
+
+            const blocks = document.querySelectorAll('.content-block, .section-header');
+            if (currentBlockIndex >= blocks.length) { resetAudio(); return; }
+
+            clearHighlights();
+            const block = blocks[currentBlockIndex];
+            highlightBlock(block);
+
+            const enEl = block.querySelector('.en-text');
+            const zhEl = block.querySelector('.zh-text');
+            
+            const enVisible = enEl && !enEl.classList.contains('hidden');
+            const zhVisible = zhEl && !zhEl.classList.contains('hidden');
+            
+            let texts = [];
+            
+            // [注音支援] 讀取 data-speak 屬性 (純文字)
+            if (zhVisible) {
+                const txt = zhEl.getAttribute('data-speak') || zhEl.innerText;
+                if(txt) texts.push(txt);
+            }
+            if (enVisible && enEl.innerText) texts.push(enEl.innerText);
+
+            if (texts.length > 0) {
+                let tIdx = 0;
+                const playNextPart = () => {
+                    if(!isSpeaking) return;
+                    if(tIdx >= texts.length) {
+                        if (!isLooping) {
+                            currentBlockIndex++;
+                        }
+                        setTimeout(playSequence, 300);
+                        return;
+                    }
+                    speakText(texts[tIdx], () => {
+                        tIdx++;
+                        setTimeout(playNextPart, 300); 
+                    });
+                };
+                playNextPart();
+            } else {
+                if (!isLooping) currentBlockIndex++;
+                playSequence();
+            }
+        }
+
+        // [新增] 判斷是否需要注音並轉換
+        function getZhuyinHtml(text) {
+            if (typeof pinyinPro === 'undefined') return escapeHtml(text);
+            const { html } = pinyinPro;
+            return html(text, { 
+                mode: 'zhuyin', 
+                wrapNonChinese: true 
+            });
+        }
+
+        // [修改] renderArticle 支援注音判斷
         async function renderArticle(unit) {
             currentUnitTitleZh = unit.title;
             currentUnitTitleEn = "";
@@ -691,6 +848,9 @@
                 lines = unit.ckip.split('\n').map(x=>x.replace(/　/g,' ').replace(/\([^)]*\)/g,'').trim()).filter(Boolean);
             }
 
+            const selGrade = document.getElementById('sel-grade');
+            const isJunior = (unit.grade === '三年級' || unit.grade === '四年級') || (selGrade && (selGrade.value === '三年級' || selGrade.value === '四年級'));
+            
             const unitCkipSet = unit.ckip ? getCkipTokenSet(unit.ckip) : null;
             const unitCkipTokens = unit.ckip ? getCkipTokenArray(unit.ckip) : [];
             const unitMergeSet = buildCkipMergeSet(unitCkipTokens, getMaxKeyLen(activeVocabMap));
@@ -698,6 +858,8 @@
             for(let i=0; i<lines.length; i++) {
                 let line = lines[i].trim();
                 if(!line) continue;
+                const rawLine = line; 
+
                 if((line.length<40 && !/[。！？.!?]$/.test(line)) || line.includes("活動")) {
                     const anchorId = `sec-${i}`;
                     const navItem = document.createElement('div');
@@ -705,21 +867,29 @@
                     navItem.innerText = line;
                     navItem.onclick=()=>{ document.getElementById(anchorId).scrollIntoView({behavior:'smooth',block:'center'}); };
                     document.getElementById('unit-list').appendChild(navItem);
-                    // [排版] 更新 section-header 結構，加入 .section-title-text 以便 JS 選擇
+                    
+                    let displayHtml = isJunior ? getZhuyinHtml(line) : escapeHtml(line);
+
                     contentDiv.innerHTML += `
                         <h2 id="${anchorId}" class="section-header">
                             <div class="flex flex-col w-full">
-                                <span class="zh-text section-title-text" onclick="speakText(this.innerText)">${escapeHtml(line)}</span>
+                                <span class="zh-text section-title-text" onclick="speakText(this.getAttribute('data-speak'))" data-speak="${escapeHtml(rawLine)}">${displayHtml}</span>
                                 <span class="en-text hidden mt-1 font-bold" 
                                       data-source="${encodeURIComponent(line)}"
                                       onclick="speakText(this.innerText)"></span>
                             </div>
                         </h2>`;
                 } else {
-                    let processed = processXRayWithCKIP(line, activeVocabMap, unitCkipSet, unitMergeSet);
+                    let processed = "";
+                    if (isJunior) {
+                        processed = getZhuyinHtml(line);
+                    } else {
+                        processed = processXRayWithCKIP(line, activeVocabMap, unitCkipSet, unitMergeSet);
+                    }
+
                     contentDiv.innerHTML += `
                         <div class="content-block">
-                            <p class="zh-text" onclick="speakText(this.innerText)">${processed}</p>
+                            <p class="zh-text" onclick="speakText(this.getAttribute('data-speak'))" data-speak="${escapeHtml(rawLine)}">${processed}</p>
                             <p class="en-text hidden"
                                onclick="speakText(this.innerText)"
                                data-source="${encodeURIComponent(line)}"></p>
@@ -817,47 +987,6 @@
           }
         }
 
-        async function translateVisibleBlocks() {
-            const ens = document.querySelectorAll('.en-text'), load=document.getElementById('trans-loading');
-            let need=false; ens.forEach(e=>{if(!e.innerText)need=true}); if(!need)return;
-            load.classList.remove('hidden');
-            for(let el of ens) {
-                if(el.innerText) continue;
-                let src = decodeURIComponent(el.getAttribute('data-source') || "").replace(/　/g,'');
-                if(translationCache[src]) { el.innerHTML=makeClickable(highlightEnglishVocabInText(translationCache[src])); continue; }
-                try {
-                    const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURIComponent(src)}`);
-                    const json = await res.json();
-                    let txt=""; json[0].forEach(i=>txt+=i[0]);
-                    el.innerHTML = makeClickable(highlightEnglishVocabInText(txt));
-                    translationCache[src]=txt;
-                } catch(e){ el.innerText="Error"; }
-            }
-            load.classList.add('hidden');
-            rehighlightEnglishBlocks();
-        }
-
-        function makeClickable(html) { return `<span class="cursor-pointer hover:text-green-300 transition">${html}</span>`; }
-        function escapeHtml(s){ return (s||"").toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
-        function highlightEnglishVocabInText(txt){
-          let safe = escapeHtml(txt);
-          const terms = Object.values(activeVocabMap||{}).map(v => (v||"").trim()).filter(v => v && v !== "Loading..." && /[a-zA-Z]/.test(v));
-          const uniq = [...new Set(terms)].sort((a,b)=>b.length-a.length);
-          if(!uniq.length) return safe;
-          for(const term of uniq){
-            const escaped = term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-            const isSingleWord = /^[A-Za-z]+$/.test(term);
-            const re = isSingleWord ? new RegExp(`\\b(${escaped})\\b`,'gi') : new RegExp(`(${escaped})`,'gi');
-            safe = safe.replace(re, (m) => {
-              const js = m.replace(/'/g,"\\'");
-              return `<span class="sci-term" onclick="event.stopPropagation(); speakText('${js}')" title="${m}">${m}</span>`;
-            });
-          }
-          return safe;
-        }
-
-        // ====================== TTS 優化版 (自然度+標題朗讀) ======================
-        
         function isIOSDevice(){
             return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
         }
@@ -870,7 +999,6 @@
             return latin > cjk * 2;
         }
 
-        // [核心修改] 語音選擇權重優化 - 針對中文自然度調整
         function pickBestVoice(isEng, gender) {
             if (!window.speechSynthesis) return null;
             const voices = window.speechSynthesis.getVoices();
@@ -884,7 +1012,6 @@
                 const uri = (voice.voiceURI || "").toLowerCase();
                 const lang = voice.lang.toLowerCase();
 
-                // 1. 語系匹配
                 if (targetLang.some(t => lang === t || lang.replace('_', '-').startsWith(t))) { 
                     score += 1000; 
                     if (!isEng && (lang === 'zh-tw' || lang.includes('taiwan'))) score += 500;
@@ -893,15 +1020,13 @@
                     return -100000;
                 }
                 
-                // 2. 音質優化關鍵字 (增加 Online/Neural 權重)
                 if (name.includes('enhanced') || uri.includes('enhanced')) score += 5000; 
                 if (name.includes('premium') || uri.includes('premium')) score += 5000;
-                if (name.includes('natural') || name.includes('online') || name.includes('cloud') || name.includes('neural')) score += 6000; // Neural 聲音通常最好
+                if (name.includes('natural') || name.includes('online') || name.includes('cloud') || name.includes('neural')) score += 6000;
                 if (name.includes('siri')) score += 4000;
                 
                 if (name.includes('compact') || uri.includes('compact')) score -= 8000; 
 
-                // 3. 性別與特定優質語音 (微軟/Google 高品質語音清單)
                 if (gender === 'female') {
                     if (isEng) {
                         if (name.includes('samantha')) score += 20000; 
@@ -911,10 +1036,10 @@
                         else if (name.includes('zira') || name.includes('susan')) score += 5000;
                         if (name.includes('male') || name.includes('man')) score -= 10000;
                     } 
-                    else { // 中文女聲
+                    else { 
                         if (name.includes('meijia')) score += 20000;    
-                        else if (name.includes('hsiaoyu')) score += 18000; // MS Edge Neural (TW)
-                        else if (name.includes('xiaoxiao')) score += 18000; // MS Edge Neural (CN)
+                        else if (name.includes('hsiaoyu')) score += 18000; 
+                        else if (name.includes('xiaoxiao')) score += 18000; 
                         else if (name.includes('tingting')) score += 15000; 
                         else if (name.includes('sinji')) score += 5000; 
                         else if (name.includes('google') && (lang === 'zh-tw' || lang === 'zh-cn')) score += 10000;
@@ -929,8 +1054,8 @@
                         else if (name.includes('siri') && name.includes('male')) score += 10000;
                         if (name.includes('female') || name.includes('woman')) score -= 10000;
                     } 
-                    else { // 中文男聲
-                        if (name.includes('yunxi')) score += 18000; // MS Edge Neural (Male)
+                    else { 
+                        if (name.includes('yunxi')) score += 18000; 
                         else if (name.includes('siri') && name.includes('male')) score += 15000;
                         else if (name.includes('li-mu')) score += 10000; 
                         else if (name.includes('zhiwei')) score += 15000;
@@ -965,7 +1090,6 @@
             const isEng = isMostlyEnglish(cleanTxt);
             const lang = isEng ? "en-US" : "zh-TW"; 
             
-            // iOS 分段邏輯
             const chunks = (ios && cleanTxt.length > (isEng ? 300 : 100)) ? splitTextForSpeak(cleanTxt, isEng) : [cleanTxt];
             const uiRate = parseFloat(document.getElementById('play-rate')?.value || "1.0");
             let idx = 0;
@@ -989,10 +1113,9 @@
                     u.rate = isEng ? uiRate : (uiRate * 0.95); 
                 } else { 
                     u.rate = uiRate; 
-                    // [調整] 針對非 iOS 中文男聲，稍微降低 Pitch 避免機械音
                     if (!isEng && currentVoice === 'male') {
                          u.pitch = 0.95; 
-                         u.rate = uiRate * 0.9; // 中文稍微慢一點比較自然
+                         u.rate = uiRate * 0.9; 
                     } else {
                          u.pitch = (currentVoice === 'male') ? 0.9 : 1.1; 
                     }
@@ -1010,58 +1133,7 @@
                 speakNext();
             }
         }
-// [新增功能] 上一句
-        function playPrev() {
-            const blocks = document.querySelectorAll('.content-block, .section-header');
-            if (currentBlockIndex > 0) {
-                currentBlockIndex--;
-                // 如果正在播放，重啟播放；如果沒在播放，只移動索引 (也可以選擇直接播放)
-                if (isSpeaking) {
-                    stopSpeech(); // 先停止當前聲音
-                    isSpeaking = true; // 保持播放狀態
-                    document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-pause"></i>';
-                    setTimeout(playSequence, 100);
-                } else {
-                    // 如果原本是暫停，只移動畫面焦點
-                    clearHighlights();
-                    const block = blocks[currentBlockIndex];
-                    if(block) block.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }
-        }
 
-        // [新增功能] 下一句
-        function playNext() {
-            const blocks = document.querySelectorAll('.content-block, .section-header');
-            if (currentBlockIndex < blocks.length - 1) {
-                currentBlockIndex++;
-                if (isSpeaking) {
-                    stopSpeech();
-                    isSpeaking = true;
-                    document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-pause"></i>';
-                    setTimeout(playSequence, 100);
-                } else {
-                    clearHighlights();
-                    const block = blocks[currentBlockIndex];
-                    if(block) block.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }
-        }
-
-        // [新增功能] 切換重覆播放
-        function toggleLoop() {
-            isLooping = !isLooping;
-            const btn = document.getElementById('btn-loop');
-            if(isLooping) {
-                btn.classList.remove('text-slate-400');
-                btn.classList.add('text-green-400', 'bg-white/10'); // 亮燈樣式
-                showToast("開啟單句重覆");
-            } else {
-                btn.classList.add('text-slate-400');
-                btn.classList.remove('text-green-400', 'bg-white/10');
-                showToast("關閉單句重覆");
-            }
-        }
         function splitTextForSpeak(text, isEng) {
             const regex = isEng ? /([.?!;]+)/ : /([。！？；]+)/;
             return text.split(regex).reduce((acc, curr, i) => {
@@ -1069,51 +1141,6 @@
                 else acc[acc.length - 1] += curr;
                 return acc;
             }, []).filter(s => s.trim().length > 0);
-        }
-
-        function playSequence() {
-            if (!isSpeaking) return;
-            // [核心修正] 選擇器加入 .section-header，讓標題也被選中
-            const blocks = document.querySelectorAll('.content-block, .section-header');
-            if (currentBlockIndex >= blocks.length) { stopSpeech(); return; }
-
-            clearHighlights();
-            const block = blocks[currentBlockIndex];
-            if (block) {
-                block.classList.add('reading-active');
-                block.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-
-            const enEl = block.querySelector('.en-text');
-            const zhEl = block.querySelector('.zh-text');
-            
-            const enVisible = enEl && !enEl.classList.contains('hidden');
-            const zhVisible = zhEl && !zhEl.classList.contains('hidden');
-            
-            let texts = [];
-            // [核心修正] 雙語模式下，先 Push 中文，再 Push 英文
-            if (zhVisible && zhEl.innerText) texts.push(zhEl.innerText);
-            if (enVisible && enEl.innerText) texts.push(enEl.innerText);
-
-            if (texts.length > 0) {
-                let tIdx = 0;
-                const playNextPart = () => {
-                    if(!isSpeaking) return;
-                    if(tIdx >= texts.length) {
-                        currentBlockIndex++;
-                        playSequence();
-                        return;
-                    }
-                    speakText(texts[tIdx], () => {
-                        tIdx++;
-                        setTimeout(playNextPart, 300); 
-                    });
-                };
-                playNextPart();
-            } else {
-                currentBlockIndex++;
-                playSequence();
-            }
         }
 
         function toggleSpeech() {
@@ -1129,20 +1156,24 @@
                 
                 if(synth.getVoices().length === 0 && synth.onvoiceschanged) synth.onvoiceschanged();
 
-                // [修正] 選取範圍擴大至標題
                 const blocks = document.querySelectorAll('.content-block, .section-header');
                 if (currentBlockIndex >= blocks.length) currentBlockIndex = 0;
                 setTimeout(() => { if (isSpeaking) playSequence(); }, 10);
             }
         }
 
-        function stopSpeech() {
-            isSpeaking = false;
-            if (synth) synth.cancel();
-            currentBlockIndex = 0;
-            clearHighlights();
-            const btn = document.getElementById('btn-play');
-            if (btn) btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>';
+        function toggleLoop() {
+            isLooping = !isLooping;
+            const btn = document.getElementById('btn-loop');
+            if(isLooping) {
+                btn.classList.remove('text-slate-400');
+                btn.classList.add('text-green-400', 'bg-white/10'); 
+                showToast("開啟單句重覆");
+            } else {
+                btn.classList.add('text-slate-400');
+                btn.classList.remove('text-green-400', 'bg-white/10');
+                showToast("關閉單句重覆");
+            }
         }
 
         function clearHighlights() {
