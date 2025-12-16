@@ -49,6 +49,7 @@
     mermaid.initialize({
       startOnLoad: false,
       theme: 'base',
+      // 預設為深色主題
       themeVariables: { primaryColor: '#1e293b', edgeLabelBackground: '#ffffff', tertiaryColor: '#fff', lineColor: '#3b82f6', textColor: '#f1f5f9', mainBkg: '#0f172a' },
       securityLevel: 'loose',
       flowchart: { useMaxWidth: false, htmlLabels: true }
@@ -87,6 +88,7 @@
       box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
     }
     
+    /* 亮色閱讀卡片 (用於摘要與詞彙) */
     .reading-paper {
       background: rgba(255, 255, 255, 0.98);
       border-radius: 1rem;
@@ -97,7 +99,24 @@
     }
     .reading-paper:hover { box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.6); }
 
-    /* ===== [修正點 1] 核心概念高亮樣式 ===== */
+    /* [修正點 3] 高質感深色閱讀卡片 (用於測驗與動動腦) */
+    .reading-paper-dark {
+      background: rgba(30, 41, 59, 0.75); /* 更深、更透的藍灰色 */
+      backdrop-filter: blur(16px);        /* 強力毛玻璃 */
+      border-radius: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.08); /* 微妙的亮邊框 */
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
+      color: #f1f5f9; /* 柔和的亮灰白文字，不刺眼 */
+      transition: all 0.3s ease;
+    }
+    .reading-paper-dark:hover {
+      box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
+      border-color: rgba(6, 182, 212, 0.2); /* hover時帶點科技藍光 */
+      background: rgba(30, 41, 59, 0.85);
+    }
+
+
+    /* 核心概念高亮樣式 */
     #summary-text strong, #summary-text b {
         color: #f472b6; /* Neon Pink */
         font-weight: 900;
@@ -107,70 +126,48 @@
         border-bottom: 2px solid #f472b6;
     }
 
-    /* ===== 表單元件 ===== */
     /* ===== 表單元件 (Select 優化版) ===== */
-    /* 容器樣式 */
     select {
       appearance: none;
-      -webkit-appearance: none; /* Safari 支援 */
-      background-color: rgba(15, 23, 42, 0.6); /* 深色半透明底 */
-      backdrop-filter: blur(8px); /* 毛玻璃 */
-      border: 1px solid rgba(6, 182, 212, 0.3); /* 預設淡淡的青色邊框 */
-      color: #e0f2fe; /* 亮藍白文字 */
-      border-radius: 12px; /* 更圓潤的導角 */
-      padding: 12px 40px 12px 16px; /* 增加右側 padding 給箭頭 */
-      font-family: 'Orbitron', 'Noto Sans TC', sans-serif; /* 科技字體 */
+      -webkit-appearance: none;
+      background-color: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      color: #e0f2fe;
+      border-radius: 12px;
+      padding: 12px 40px 12px 16px;
+      font-family: 'Orbitron', 'Noto Sans TC', sans-serif;
       font-size: 0.95rem;
       letter-spacing: 0.05em;
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       width: 100%;
-      
-      /* ★關鍵：強制瀏覽器使用深色原生選單，解決選單打開是白色的問題 */
-      color-scheme: dark; 
-      
-      /* 自定義科技感箭頭 (SVG) */
+      color-scheme: dark;
       background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2322d3ee'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3e%3c/svg%3e");
       background-position: right 1rem center;
       background-repeat: no-repeat;
       background-size: 1.2rem;
-      
-      box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.2); 
+      box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.2);
     }
-
-    /* 懸停效果 (Hover) */
     select:hover:not(:disabled) {
       background-color: rgba(15, 23, 42, 0.9);
-      border-color: #22d3ee; /* 亮青色 */
+      border-color: #22d3ee;
       box-shadow: 0 0 15px rgba(34, 211, 238, 0.3), inset 0 0 0 1px rgba(34, 211, 238, 0.1);
       transform: translateY(-1px);
     }
-
-    /* 聚焦效果 (Focus) - 打開選單時 */
     select:focus {
       outline: none;
       border-color: #22d3ee;
       background-color: #0f172a;
       box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.2), 0 0 25px rgba(34, 211, 238, 0.4);
     }
-
-    /* 選項樣式 (針對 Windows/Chrome 等瀏覽器進一步美化) */
-    select option {
-      background-color: #0f172a; /* 深藍底 */
-      color: #e0f2fe; /* 亮白字 */
-      padding: 12px;
-      font-size: 1rem;
-    }
-
-    /* 禁用狀態 (Disabled) */
     select:disabled {
       background-color: rgba(15, 23, 42, 0.3);
-      color: #64748b; /* 灰暗文字 */
+      color: #64748b;
       border-color: rgba(255, 255, 255, 0.05);
       cursor: not-allowed;
       box-shadow: none;
       transform: none;
-      /* 禁用時箭頭變灰 */
       background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3e%3c/svg%3e");
     }
 
@@ -213,7 +210,7 @@
     .tech-loader::before { content:''; position: absolute; inset: 5px; border-radius: 50%; border: 3px solid transparent; border-top-color: #3b82f6; animation: spin 2s linear infinite reverse; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* ===== [修正點 8] 小科 AI 拖曳與設計 ===== */
+    /* ===== 小科 AI ===== */
     .chat-hologram {
       backdrop-filter: blur(20px);
       background: rgba(15, 23, 42, 0.9);
@@ -221,7 +218,6 @@
       box-shadow: 0 0 30px rgba(6, 182, 212, 0.2), inset 0 0 20px rgba(6, 182, 212, 0.05);
       border-radius: 1.5rem;
       color: #e0f2fe;
-      /* 確保拖曳時定位 */
       position: fixed; 
     }
     .chat-hologram-header {
@@ -244,7 +240,7 @@
       border-radius: 1rem 1rem 0 1rem;
     }
     
-    /* [修正點 3] Mermaid SVG 樣式 */
+    /* Mermaid SVG 樣式 */
     .mermaid svg {
         width: 100% !important;
         height: auto !important;
@@ -253,29 +249,50 @@
 
     /* Scrollbar */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.1); }
+    ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #06b6d4; }
 
-    #image-modal { backdrop-filter: blur(10px); }
-    /* [修正點 4] Modal 內容寬度 */
+    /* [修正點 2] Modal 樣式優化 */
+    #image-modal { backdrop-filter: blur(12px); background-color: rgba(5, 11, 20, 0.85); }
     #modal-content { 
         width: 95vw !important; 
-        max-width: none !important; 
-        background-color: #0f172a; /* 深色背景看白字 */
+        max-width: 1200px !important;
+        background-color: #f8fafc !important; /* 亮白灰色底，高對比 */
+        color: #1e293b;
+        border-radius: 16px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     }
+    /* 強制 Modal 內的 Mermaid 圖表使用深色樣式以配合白底 */
+    #modal-content svg { background-color: transparent !important; }
+    #modal-content .node rect, #modal-content .node circle, #modal-content .node polygon { fill: #e2e8f0 !important; stroke: #64748b !important; stroke-width: 2px; }
+    #modal-content .nodeLabel, #modal-content .edgeLabel { fill: #0f172a !important; color: #0f172a !important; font-weight: 600; }
+    #modal-content .edgePath path { stroke: #64748b !important; stroke-width: 2px; }
+    #modal-content .marker { fill: #64748b !important; stroke: #64748b !important; }
+
+
     .pdf-page-break { page-break-before: always; }
     .click-mask { cursor: zoom-in; }
 
-    /* [修正點 2] 詞彙欄捲軸 */
+    /* [修正點 1] 詞彙欄捲軸設定 */
     #vocab-panel {
         display: flex;
         flex-direction: column;
+        /* 移除固定高度，依靠 Grid stretch */
     }
     #vocab-list-container {
         flex: 1;
         overflow-y: auto;
         min-height: 0; /* 關鍵：允許 flex item 縮小產生捲軸 */
+    }
+
+    /* [修正點 2] 預覽圖容器優化 */
+    #chart-container {
+        min-height: 350px; /* 增加最小高度確保可見性 */
+        background: rgba(15, 23, 42, 0.6); /* 半透明深色底，增加層次 */
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.05);
+        border-radius: 0 0 1rem 1rem;
     }
 
     @media (max-width: 640px) { .hud-glass { backdrop-filter: blur(12px); background: rgba(15,23,42,0.85); } }
@@ -296,9 +313,7 @@
           </div>
           <span class="font-ui font-semibold text-sm hidden md:block uppercase tracking-wider" data-i18n="back_science">返回自然科學</span>
         </a>
-
         <div class="h-6 w-px bg-slate-700 hidden sm:block"></div>
-
         <div class="flex items-center gap-3">
           <div class="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center border border-cyan-500/30">
             <i class="fa-solid fa-atom text-cyan-400 text-sm"></i>
@@ -309,17 +324,15 @@
           </div>
         </div>
       </div>
-
       <div class="flex items-center gap-4">
         <div class="relative group">
-          <select id="language-selector" onchange="changeLanguage()" class="pl-3 pr-8 py-1.5 text-xs rounded border border-slate-600 bg-slate-800 text-slate-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none cursor-pointer hover:bg-slate-700 transition">
+          <select id="language-selector" onchange="changeLanguage()">
             <option value="zh-TW" selected>繁體中文</option>
             <option value="en">English</option>
             <option value="ja">日本語</option>
             <option value="zh-CN">简体中文</option>
           </select>
         </div>
-
         <div class="flex items-center gap-2 pl-4 border-l border-slate-700">
           <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></div>
           <div id="user-info" class="text-xs font-mono text-cyan-400">Visitor</div>
@@ -334,7 +347,6 @@
       <div class="absolute top-0 right-0 p-4 opacity-20 pointer-events-none">
         <i class="fa-solid fa-database text-6xl text-cyan-500"></i>
       </div>
-      
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 relative z-10">
         <div>
           <h2 class="font-tech text-xl sm:text-2xl text-white flex items-center gap-3">
@@ -347,30 +359,28 @@
           <i class="fa-solid fa-circle-notch fa-spin mr-2"></i> <span data-i18n="db_loading">System Check...</span>
         </span>
       </div>
-
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5 relative z-10">
         <div class="group">
           <label class="block text-[10px] font-mono text-cyan-300/70 mb-1.5 uppercase tracking-wider" data-i18n="label_stage">Stage</label>
-          <select id="sel-stage" class="w-full text-sm p-3 rounded-lg"></select>
+          <select id="sel-stage"></select>
         </div>
         <div class="group">
           <label class="block text-[10px] font-mono text-cyan-300/70 mb-1.5 uppercase tracking-wider" data-i18n="label_publisher">Publisher</label>
-          <select id="sel-publisher" disabled class="w-full text-sm p-3 rounded-lg"></select>
+          <select id="sel-publisher" disabled></select>
         </div>
         <div class="group">
           <label class="block text-[10px] font-mono text-cyan-300/70 mb-1.5 uppercase tracking-wider" data-i18n="label_grade">Grade</label>
-          <select id="sel-grade" disabled class="w-full text-sm p-3 rounded-lg"></select>
+          <select id="sel-grade" disabled></select>
         </div>
         <div class="group">
           <label class="block text-[10px] font-mono text-cyan-300/70 mb-1.5 uppercase tracking-wider" data-i18n="label_semester">Semester</label>
-          <select id="sel-semester" disabled class="w-full text-sm p-3 rounded-lg"></select>
+          <select id="sel-semester" disabled></select>
         </div>
         <div class="group">
           <label class="block text-[10px] font-mono text-cyan-300/70 mb-1.5 uppercase tracking-wider" data-i18n="label_unit">Unit Name</label>
-          <select id="sel-unit" disabled class="w-full text-sm p-3 rounded-lg"></select>
+          <select id="sel-unit" disabled></select>
         </div>
       </div>
-
       <div class="mt-8 flex justify-end relative z-10">
         <button id="btn-generate" onclick="startGeneration()" disabled class="px-8 py-3 rounded-lg font-bold text-white shadow-lg hover:shadow-cyan-500/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-3 text-sm tracking-wide">
           <i class="fa-solid fa-wand-magic-sparkles"></i> 
@@ -385,7 +395,6 @@
     </div>
 
     <div id="content-view" class="hidden animate-fade-in-up">
-      
       <div class="mb-8 flex flex-col md:flex-row justify-between md:items-end gap-6">
         <div>
           <div class="flex items-center gap-3 mb-3">
@@ -394,7 +403,6 @@
           </div>
           <h1 id="result-title" class="text-4xl md:text-5xl font-ui font-black text-white leading-tight drop-shadow-xl">Title</h1>
         </div>
-
         <div class="flex gap-3 no-print">
           <button onclick="downloadTXT()" class="bg-slate-800/80 hover:bg-slate-700 text-cyan-400 border border-slate-600 hover:border-cyan-500 px-5 py-2.5 rounded-lg font-bold text-xs transition flex items-center gap-2 backdrop-blur-sm">
             <i class="fa-solid fa-file-code"></i>
@@ -405,7 +413,7 @@
 
       <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
         
-        <div id="summary-panel" class="md:col-span-8 reading-paper p-8 h-full">
+        <div id="summary-panel" class="md:col-span-8 reading-paper p-8">
           <div class="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
             <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
               <i class="fa-solid fa-star text-lg"></i>
@@ -415,48 +423,48 @@
           <div id="summary-text" class="prose prose-slate max-w-none text-slate-700 leading-loose text-base md:text-lg"></div>
         </div>
 
-        <div id="vocab-panel" class="md:col-span-4 reading-paper p-6 bg-slate-50/50 h-full flex flex-col">
+        <div id="vocab-panel" class="md:col-span-4 reading-paper p-6 bg-slate-50/50 h-full">
           <div class="flex items-center gap-3 mb-6 flex-shrink-0">
             <div class="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
               <i class="fa-solid fa-spell-check"></i>
             </div>
             <h3 class="font-ui font-bold text-slate-800 text-lg section-title" data-i18n="title_vocab">Keywords</h3>
           </div>
-          <div id="vocab-list-container" class="flex-1 overflow-y-auto custom-scrollbar pr-1">
+          <div id="vocab-list-container" class="custom-scrollbar pr-1">
             <div id="keywords-list" class="space-y-3 pb-2"></div>
           </div>
         </div>
 
-        <div class="md:col-span-12 reading-paper p-1 bg-slate-800 border-slate-700 pdf-page-break">
-          <div class="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-900/50 rounded-t-xl">
+        <div class="md:col-span-12 reading-paper-dark p-1 bg-slate-800/50 border-slate-700/50 pdf-page-break">
+          <div class="p-6 border-b border-slate-700/50 flex justify-between items-center bg-slate-900/30 rounded-t-xl">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400">
                 <i class="fa-solid fa-project-diagram"></i>
               </div>
               <h3 class="font-ui font-bold text-white text-lg section-title" data-i18n="title_map">Knowledge Graph</h3>
-              <button onclick="openModal()" class="ml-2 text-[10px] bg-indigo-900 text-indigo-300 px-2 py-0.5 rounded-full hover:bg-indigo-800 transition" data-i18n="tap_to_zoom">Expand</button>
+              <button onclick="openModal()" class="ml-2 text-[10px] bg-indigo-900/80 text-indigo-200 px-3 py-1 rounded-full hover:bg-indigo-800 transition border border-indigo-500/30" data-i18n="tap_to_zoom">Expand</button>
             </div>
             <button onclick="openModal()" class="text-slate-400 hover:text-indigo-400 transition"><i class="fa-solid fa-expand"></i></button>
           </div>
           
-          <div class="bg-slate-900 p-4 overflow-hidden relative" id="chart-container">
+          <div class="p-4 overflow-hidden relative" id="chart-container">
             <div class="click-mask" onclick="openModal()"></div>
             <div id="mermaid-chart" class="w-full flex justify-center"></div>
           </div>
         </div>
 
-        <div class="md:col-span-12 reading-paper p-6 bg-slate-800 border-slate-700 pdf-page-break">
+        <div class="md:col-span-12 reading-paper-dark p-8 pdf-page-break">
           <div class="flex items-center gap-3 mb-6">
             <div class="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center text-red-400">
               <i class="fa-solid fa-lightbulb"></i>
             </div>
             <h3 class="font-ui font-bold text-white text-lg section-title" data-i18n="title_myth">Myth Busting</h3>
           </div>
-          <div id="myth-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+          <div id="myth-list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
         </div>
 
-        <div id="quiz-panel" class="md:col-span-12 reading-paper p-8 border-emerald-900/50 bg-slate-800 border-slate-700 text-white">
-          <div class="flex justify-between items-center mb-6 border-b border-slate-700 pb-4">
+        <div id="quiz-panel" class="md:col-span-12 reading-paper-dark p-8 border-t-2 border-emerald-500/20">
+          <div class="flex justify-between items-center mb-6 border-b border-slate-700/50 pb-4">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400">
                 <i class="fa-solid fa-brain"></i>
@@ -470,12 +478,12 @@
             </div>
           </div>
 
-          <div id="quiz-body" class="space-y-6">
-            <div id="quiz-question" class="font-ui font-bold text-white text-lg leading-relaxed"></div>
-            <div id="quiz-options" class="grid grid-cols-1 gap-3"></div>
+          <div id="quiz-body" class="space-y-8">
+            <div id="quiz-question" class="font-ui font-bold text-white text-xl leading-relaxed"></div>
+            <div id="quiz-options" class="grid grid-cols-1 gap-4"></div>
             <div id="quiz-feedback" class="hidden animate-fade-in-up"></div>
             <div class="flex justify-end pt-4">
-              <button id="quiz-main-btn" onclick="handleQuizMainButton()" class="px-6 py-2 rounded-full bg-emerald-600 text-white font-bold text-sm shadow hover:bg-emerald-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              <button id="quiz-main-btn" onclick="handleQuizMainButton()" class="px-8 py-3 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-900/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none">
                 Next Question
               </button>
             </div>
@@ -483,20 +491,20 @@
 
           <div id="quiz-empty" class="text-sm text-slate-400 italic p-4 text-center" data-i18n="quiz_not_ready"></div>
 
-          <div id="quiz-result" class="hidden mt-6 bg-slate-900 rounded-xl p-6 border border-slate-700">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-6">
+          <div id="quiz-result" class="hidden mt-8 bg-slate-900/50 rounded-2xl p-8 border border-slate-700/50 backdrop-blur-sm">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-8 mb-8">
               <div class="text-center md:text-left">
-                <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1" data-i18n="quiz_score_title">Final Score</div>
-                <div id="quiz-score-number" class="text-5xl font-black text-emerald-400 font-tech">0</div>
-                <div id="quiz-score-label" class="text-xs text-emerald-500 font-bold mt-1"></div>
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2" data-i18n="quiz_score_title">Final Score</div>
+                <div id="quiz-score-number" class="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 font-tech">0</div>
+                <div id="quiz-score-label" class="text-sm text-emerald-500 font-bold mt-2 tracking-wide"></div>
               </div>
-              <div id="quiz-result-text" class="text-sm font-bold text-slate-300"></div>
+              <div id="quiz-result-text" class="text-lg font-bold text-white bg-slate-800/50 px-6 py-3 rounded-xl border border-slate-700"></div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div class="h-64 relative">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div class="h-72 relative p-4 bg-slate-800/30 rounded-xl border border-slate-700/30">
                 <canvas id="quiz-radar"></canvas>
               </div>
-              <div id="quiz-result-detail" class="text-sm text-slate-300 leading-relaxed bg-slate-800 p-4 rounded-lg border border-slate-700 shadow-sm overflow-y-auto max-h-64 custom-scrollbar"></div>
+              <div id="quiz-result-detail" class="text-sm text-slate-300 leading-relaxed bg-slate-800/50 p-6 rounded-xl border border-slate-700/50 shadow-inner overflow-y-auto max-h-72 custom-scrollbar"></div>
             </div>
           </div>
         </div>
@@ -544,13 +552,13 @@
     </div>
   </div>
 
-  <div id="image-modal" class="fixed inset-0 z-[200] bg-slate-900/90 hidden items-center justify-center p-4 transition-opacity duration-300" onclick="closeModal()">
-    <button class="absolute top-6 right-6 text-white/70 hover:text-cyan-400 text-4xl transition" onclick="closeModal()"><i class="fa-solid fa-circle-xmark"></i></button>
-    <div id="modal-content" class="rounded-xl shadow-2xl overflow-auto max-h-[95vh] p-4" onclick="event.stopPropagation()"></div>
+  <div id="image-modal" class="fixed inset-0 z-[200] hidden items-center justify-center p-4 transition-opacity duration-300" onclick="closeModal()">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+    <button class="absolute top-6 right-6 text-white/70 hover:text-white text-4xl transition z-10" onclick="closeModal()"><i class="fa-solid fa-circle-xmark"></i></button>
+    <div id="modal-content" class="relative z-10 overflow-auto max-h-[95vh] p-6" onclick="event.stopPropagation()"></div>
   </div>
 
   <script>
-    // CSS Toggle Logic for Chat
     const chatWindow = document.getElementById("xiaoke-window");
     
     window.toggleChat = function() {
@@ -572,7 +580,6 @@
         }
     };
 
-    // [修正點 8] 拖曳功能
     const dragItem = document.getElementById("floating-chat");
     let active = false;
     let currentX;
@@ -587,7 +594,7 @@
     dragItem.addEventListener("mousemove", drag, false);
 
     function dragStart(e) {
-      if (e.target.closest("#xiaoke-window")) return; // Don't drag if clicking inside window
+      if (e.target.closest("#xiaoke-window")) return;
       initialX = e.clientX - xOffset;
       initialY = e.clientY - yOffset;
       if (e.target.closest("button") || e.target.closest(".group")) {
@@ -613,7 +620,6 @@
       el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
     }
     
-    // --- 核心邏輯 ---
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxBWrZCp-xLckDGZnhe64K0IUa_8CJZRzqZbrgL8lQdNn3S1WgaEzbdOtpo4mGwN6_H/exec";
 
     let allData = [];
@@ -623,7 +629,6 @@
     let quizState = { questions: [], currentIndex: 0, hasAnswered: false, answers: [] };
     let quizRadarChart = null;
 
-    // 完整的翻譯字典
     const translations = {
       "zh-TW": {
         back_science: "返回自然科學",
@@ -844,18 +849,15 @@
       if (!langSel) return;
       currentLang = langSel.value;
       
-      // 更新 HTML 靜態文字
       document.querySelectorAll("[data-i18n]").forEach(el => {
         const key = el.getAttribute("data-i18n");
         if(key) el.innerText = t(key);
       });
-      // 更新 placeholder
       document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
         const key = el.getAttribute("data-i18n-placeholder");
         if(key) el.setAttribute("placeholder", t(key));
       });
 
-      // 更新下拉選單預設值
       const selects = ["sel-stage", "sel-publisher", "sel-grade", "sel-semester", "sel-unit"];
       selects.forEach(id => {
         const el = document.getElementById(id);
@@ -898,18 +900,15 @@
     }
 
     window.onload = async () => {
-      // 初始化語言 (預設繁中)
       currentLang = localStorage.getItem("slh_lang") || "zh-TW";
       const langSel = document.getElementById("language-selector");
       if(langSel) langSel.value = currentLang;
       changeLanguage();
 
-      // 使用者名稱
       const user = JSON.parse(sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || '{"name":"Guest"}');
       const userInfo = document.getElementById("user-info");
       if (userInfo) userInfo.innerText = user.name;
 
-      // 資料庫載入流程優化
       const selStage = document.getElementById("sel-stage");
       const dbStatus = document.getElementById("db-status");
 
@@ -976,7 +975,6 @@
       if(level===4){filters.semester=value; delete filters.unitName;}
 
       const ids=["sel-publisher","sel-grade","sel-semester","sel-unit"];
-      // Reset subsequent selectors
       for(let i=level; i<4; i++){
         const el = document.getElementById(ids[i]);
         if (el) {
@@ -1065,21 +1063,6 @@
       }
     }
 
-    // [修正點 2] 同步高度函式
-    function syncVocabHeight() {
-        const sum = document.getElementById('summary-panel');
-        const voc = document.getElementById('vocab-panel');
-        if(sum && voc) {
-            // 在移動設備上保持自然高度
-            if(window.innerWidth < 768) {
-               voc.style.height = 'auto';
-               return;
-            }
-            const h = sum.offsetHeight;
-            voc.style.height = h + 'px'; 
-        }
-    }
-
     function renderResult(data) {
       const raw = data.raw_content || {};
 
@@ -1140,7 +1123,6 @@
             mermaid.init(undefined, document.querySelectorAll('.mermaid')).then(() => {
               const svg = chartDiv.querySelector('svg');
               if (svg) {
-                // [修正點 3] 移除 inline style 讓 CSS 控制
                 svg.removeAttribute('style'); 
                 svg.removeAttribute('width'); 
                 svg.removeAttribute('height');
@@ -1169,21 +1151,21 @@
             statement = statement.replace(/^迷思[:：]\s*/,'').replace(/^常見想法[:：]\s*/,'').trim();
             const cardId = `myth-${index}`;
             const div = document.createElement('div');
-            // [修正點 5] 亮字 (text-white) 與深色背景
-            div.className = 'bg-slate-700/50 p-4 rounded-xl border border-red-500/30 shadow-sm flex flex-col gap-3';
+            // [修正點 3] 優化科學動動腦卡片樣式
+            div.className = 'bg-slate-800/80 p-5 rounded-xl border border-white/10 shadow-lg flex flex-col gap-4 backdrop-blur-sm transition hover:border-red-400/30';
             div.innerHTML = `
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                  <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-red-500 text-white text-[10px] font-bold">Q${index + 1}</span>
-                  <span class="text-[10px] font-bold text-red-200 uppercase tracking-wider">Concept Check</span>
+                  <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-red-500 to-orange-500 text-white text-xs font-bold shadow-sm">Q${index + 1}</span>
+                  <span class="text-[10px] font-bold text-red-300 uppercase tracking-wider">Concept Check</span>
                 </div>
               </div>
-              <div class="text-sm font-bold text-white leading-relaxed tracking-wide">${statement}</div>
-              <div class="flex gap-2 mt-1">
-                <button id="${cardId}-btn-true" onclick="answerMyth(${index}, true)" class="myth-option-btn flex-1 py-2 text-xs font-bold rounded-lg border border-slate-500 bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition">${t("myth_true")}</button>
-                <button id="${cardId}-btn-false" onclick="answerMyth(${index}, false)" class="myth-option-btn flex-1 py-2 text-xs font-bold rounded-lg border border-slate-500 bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition">${t("myth_false")}</button>
+              <div class="text-base font-bold text-white leading-relaxed tracking-wide">${statement}</div>
+              <div class="flex gap-3 mt-2">
+                <button id="${cardId}-btn-true" onclick="answerMyth(${index}, true)" class="myth-option-btn flex-1 py-2.5 text-sm font-bold rounded-lg border border-slate-600 bg-slate-700/50 text-slate-200 hover:bg-slate-600 hover:text-white transition">${t("myth_true")}</button>
+                <button id="${cardId}-btn-false" onclick="answerMyth(${index}, false)" class="myth-option-btn flex-1 py-2.5 text-sm font-bold rounded-lg border border-slate-600 bg-slate-700/50 text-slate-200 hover:bg-slate-600 hover:text-white transition">${t("myth_false")}</button>
               </div>
-              <div id="${cardId}-feedback" class="mt-2 hidden text-xs leading-relaxed rounded-lg p-3 bg-slate-800 border border-slate-600 text-slate-200"></div>
+              <div id="${cardId}-feedback" class="mt-2 hidden text-sm leading-relaxed rounded-lg p-4 bg-slate-900/80 border border-slate-700 text-slate-200 shadow-inner"></div>
             `;
             mythListEl.appendChild(div);
           });
@@ -1206,10 +1188,6 @@
       if (chatBtn) chatBtn.classList.remove('hidden');
       
       changeLanguage();
-      
-      // [修正點 2] 觸發高度同步
-      setTimeout(syncVocabHeight, 200);
-      window.addEventListener('resize', syncVocabHeight);
     }
 
     function downloadTXT() {
@@ -1297,12 +1275,10 @@
       content.innerHTML = chartDiv.innerHTML;
       const svg = content.querySelector("svg");
       if (svg) { 
-          // [修正點 4] 確保 Modal 內的 SVG 可見且放大
           svg.removeAttribute("style"); 
           svg.style.width = "100%"; 
           svg.style.height = "auto";
-          svg.style.minWidth = "800px"; // 強制最小寬度
-          svg.style.backgroundColor = "#0f172a"; // 背景色確保文字可見
+          svg.style.minWidth = "800px";
       }
       modal.classList.remove("hidden"); modal.classList.add("flex");
     }
@@ -1341,8 +1317,8 @@
       if (chooseTrue) btnTrue.classList.remove("opacity-50"); else btnFalse.classList.remove("opacity-50");
 
       feedback.innerHTML = isCorrectChoice ? 
-        `<div class="font-bold text-emerald-400 mb-1">${t("msg_correct")}</div><div class="text-slate-300">${correct}</div>` : 
-        `<div class="font-bold text-red-400 mb-1">${t("msg_wrong")}</div><div class="text-slate-300">${correct}</div>`;
+        `<div class="font-bold text-emerald-400 mb-2 flex items-center gap-2"><i class="fa-solid fa-circle-check"></i> ${t("msg_correct")}</div><div class="text-slate-300 pl-6 border-l-2 border-emerald-500/30">${correct}</div>` : 
+        `<div class="font-bold text-red-400 mb-2 flex items-center gap-2"><i class="fa-solid fa-circle-xmark"></i> ${t("msg_wrong")}</div><div class="text-slate-300 pl-6 border-l-2 border-red-500/30">${correct}</div>`;
       feedback.classList.remove("hidden");
     }
 
@@ -1392,7 +1368,7 @@
       const total = quizState.questions.length;
       const index = quizState.currentIndex;
 
-      quizQuestionEl.innerHTML = `<span class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Question ${index+1}</span>${q.stem}`;
+      quizQuestionEl.innerHTML = `<span class="block text-sm font-bold text-cyan-400 mb-3 uppercase tracking-widest">Question ${index+1}</span>${q.stem}`;
       quizOptionsEl.innerHTML = "";
       quizFeedbackEl.classList.add("hidden"); quizFeedbackEl.innerHTML = "";
       quizState.hasAnswered = false;
@@ -1401,10 +1377,11 @@
       q.options.forEach((opt, optIndex) => {
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.className = "quiz-option-btn w-full text-left px-4 py-3 text-sm rounded-lg border border-slate-600 bg-slate-700/50 text-slate-200 font-medium flex items-center hover:bg-slate-600";
+        // [修正點 3] 優化測驗選項按鈕樣式
+        btn.className = "quiz-option-btn w-full text-left px-5 py-4 text-base rounded-xl border border-slate-600 bg-slate-700/40 text-slate-100 font-medium flex items-center hover:bg-slate-700/60 hover:border-cyan-400/50 transition-all group";
         btn.setAttribute("data-opt-index", optIndex);
         btn.onclick = () => handleQuizAnswer(optIndex);
-        btn.innerHTML = `<span class="w-6 h-6 rounded-full bg-slate-800 text-slate-400 text-xs font-bold flex items-center justify-center mr-3 border border-slate-600">${letters[optIndex]||""}</span>${opt}`;
+        btn.innerHTML = `<span class="w-8 h-8 rounded-full bg-slate-800 text-slate-300 text-sm font-bold flex items-center justify-center mr-4 border border-slate-600 group-hover:border-cyan-400/50 transition-colors">${letters[optIndex]||""}</span>${opt}`;
         quizOptionsEl.appendChild(btn);
       });
 
@@ -1427,13 +1404,14 @@
 
       if (isCorrect) {
         buttons[selectedIndex].classList.add("selected-correct");
-        quizFeedbackEl.className = "mt-4 text-sm rounded-lg p-3 bg-emerald-900/50 border border-emerald-500 text-emerald-300";
-        quizFeedbackEl.innerHTML = `<div class="font-bold flex items-center gap-2"><i class="fa-solid fa-check-circle"></i> ${t("msg_correct")}</div><div class="mt-1 opacity-90">${q.explanation}</div>`;
+        // [修正點 3] 優化測驗回饋樣式
+        quizFeedbackEl.className = "mt-6 text-sm rounded-xl p-5 bg-emerald-900/40 border border-emerald-500/50 text-emerald-100 shadow-lg backdrop-blur-sm";
+        quizFeedbackEl.innerHTML = `<div class="font-bold flex items-center gap-3 text-lg mb-2"><i class="fa-solid fa-circle-check text-emerald-400"></i> ${t("msg_correct")}</div><div class="mt-2 opacity-90 leading-relaxed pl-8 border-l-2 border-emerald-500/30">${q.explanation}</div>`;
       } else {
         buttons[selectedIndex].classList.add("selected-wrong");
         if(correctIndex >= 0 && buttons[correctIndex]) buttons[correctIndex].classList.add("selected-correct");
-        quizFeedbackEl.className = "mt-4 text-sm rounded-lg p-3 bg-red-900/50 border border-red-500 text-red-300";
-        quizFeedbackEl.innerHTML = `<div class="font-bold flex items-center gap-2"><i class="fa-solid fa-circle-xmark"></i> ${t("msg_wrong")}</div><div class="mt-1 opacity-90">${q.explanation}</div>`;
+        quizFeedbackEl.className = "mt-6 text-sm rounded-xl p-5 bg-red-900/40 border border-red-500/50 text-red-100 shadow-lg backdrop-blur-sm";
+        quizFeedbackEl.innerHTML = `<div class="font-bold flex items-center gap-3 text-lg mb-2"><i class="fa-solid fa-circle-xmark text-red-400"></i> ${t("msg_wrong")}</div><div class="mt-2 opacity-90 leading-relaxed pl-8 border-l-2 border-red-500/30">${q.explanation}</div>`;
       }
       quizFeedbackEl.classList.remove("hidden");
       quizState.hasAnswered = true;
@@ -1495,17 +1473,20 @@
       if (quizRadarChart) quizRadarChart.destroy();
       quizRadarChart = new Chart(ctx, {
         type: "bar",
-        data: { labels: concepts, datasets: [{ label: "Accuracy (%)", data: conceptScores, backgroundColor: '#059669', borderRadius: 4 }] },
+        data: { labels: concepts, datasets: [{ label: "Accuracy (%)", data: conceptScores, backgroundColor: '#34d399', borderRadius: 6, barThickness: 24 }] },
         options: {
           responsive: true, maintainAspectRatio: false, indexAxis: "y",
-          scales: { x: { min: 0, max: 100 }, y: { ticks: { autoSkip: false } } },
-          plugins: { legend: { display: false } }
+          scales: { 
+              x: { min: 0, max: 100, grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#94a3b8', font: {family: "'Orbitron', sans-serif"} } }, 
+              y: { grid: { display: false }, ticks: { color: '#e2e8f0', font: {family: "'Noto Sans TC', sans-serif", weight: 'bold'} } } 
+          },
+          plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', titleColor: '#22d3ee', bodyColor: '#e2e8f0', padding: 12, cornerRadius: 8 } }
         }
       });
       
       const scoreLabel = document.getElementById("quiz-score-label");
       scoreLabel.innerText = t("quiz_ai_analyzing");
-      detailEl.innerText = t("ai_generating");
+      detailEl.innerHTML = `<div class="flex items-center gap-3 text-cyan-400"><i class="fa-solid fa-microchip fa-spin"></i> ${t("ai_generating")}</div>`;
       
       const currentUser = JSON.parse(sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || '{"name":"Visitor"}');
       const raw = currentResultData && currentResultData.raw_content ? currentResultData.raw_content : {};
