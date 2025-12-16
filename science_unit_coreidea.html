@@ -23,27 +23,27 @@
           fontFamily: {
             sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
             tech: ['Orbitron', 'sans-serif'],
-            data: ['Rajdhani', 'sans-serif'], // 新增數據感字體
+            data: ['Rajdhani', 'sans-serif'], // 數據專用字體
           },
           colors: {
-            space: '#050b14',
+            space: '#050b14', // 深太空藍
             glass: 'rgba(15, 23, 42, 0.6)',
             cyan: { 400: '#22d3ee', 500: '#06b6d4', glow: 'rgba(34, 211, 238, 0.5)' },
           },
           animation: {
-            "fade-in": "fadeIn 0.8s ease-out forwards",
             "slide-up": "slideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards",
-            "pulse-glow": "pulseGlow 3s infinite alternate",
+            "pulse-slow": "pulse 3s infinite",
+            "scan": "scan 2s linear infinite",
           },
           keyframes: {
-            fadeIn: { "0%": { opacity: "0" }, "100%": { opacity: "1" } },
             slideUp: { "0%": { opacity: "0", transform: "translateY(30px)" }, "100%": { opacity: "1", transform: "translateY(0)" } },
-            pulseGlow: { "0%": { boxShadow: "0 0 10px rgba(6,182,212,0.2)" }, "100%": { boxShadow: "0 0 25px rgba(6,182,212,0.6)" } }
+            scan: { "0%": { backgroundPosition: "0% 0%" }, "100%": { backgroundPosition: "100% 100%" } }
           }
         }
       }
     };
 
+    // Mermaid 設定：科技藍圖風格
     mermaid.initialize({
       startOnLoad: false,
       theme: 'base',
@@ -51,11 +51,11 @@
         primaryColor: '#0f172a',      
         primaryTextColor: '#22d3ee',  
         primaryBorderColor: '#06b6d4',
-        lineColor: '#94a3b8',          
+        lineColor: '#64748b',          
         secondaryColor: '#1e293b', 
         tertiaryColor: '#0f172a',
         fontFamily: '"Rajdhani", "Noto Sans TC", sans-serif',
-        fontSize: '18px'
+        fontSize: '16px'
       },
       securityLevel: 'loose',
       flowchart: { useMaxWidth: false, htmlLabels: true, curve: 'basis' }
@@ -63,77 +63,90 @@
   </script>
 
   <style>
-    /* ===== 核心：百萬級沉浸式背景 ===== */
+    /* ===== 核心環境：百萬級沉浸式背景 ===== */
     body {
       background-color: #02040a;
       background-image: 
-        radial-gradient(circle at 50% 0%, #0c1c38 0%, transparent 60%),
-        radial-gradient(circle at 80% 80%, rgba(6, 182, 212, 0.05) 0%, transparent 40%);
+        radial-gradient(circle at 50% 0%, #0f2e5a 0%, transparent 60%),
+        radial-gradient(circle at 85% 80%, rgba(6, 182, 212, 0.08) 0%, transparent 40%);
       color: #e2e8f0;
       font-family: 'Inter', 'Noto Sans TC', sans-serif;
       overflow-x: hidden;
     }
 
-    /* 網格掃描線效果 (Scanlines) - 增加科幻質感 */
+    /* 掃描線濾鏡 (Scanlines) - 增加科幻質感 */
     body::after {
       content: "";
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
       background-size: 100% 4px;
-      z-index: 9999; pointer-events: none; opacity: 0.3;
+      z-index: 9999; pointer-events: none; opacity: 0.2;
     }
 
-    /* ===== UI 元件：玻璃擬態與霓虹 ===== */
-    /* 1. 全息面板 (Holographic Panel) */
+    /* ===== UI 元件：全息面板 (Holo-Card) ===== */
+    /* 這是整個設計的核心，取代原本平面的 Card */
     .holo-card {
-      background: rgba(13, 18, 30, 0.75);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      background: rgba(13, 18, 30, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-top: 1px solid rgba(255, 255, 255, 0.15); /* 頂部高光 */
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
       border-radius: 16px;
-      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s;
       position: relative;
       overflow: hidden;
+      transition: all 0.3s ease;
     }
     
-    /* 裝飾角落 (Corner Accents) */
+    /* 裝飾角落 (Tech Corners) */
     .holo-card::before {
-      content: ''; position: absolute; top: 0; left: 0; width: 40px; height: 40px;
-      border-top: 2px solid rgba(34, 211, 238, 0.5);
-      border-left: 2px solid rgba(34, 211, 238, 0.5);
-      border-radius: 16px 0 0 0; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+      content: ''; position: absolute; top: 0; left: 0; width: 30px; height: 30px;
+      border-top: 2px solid rgba(34, 211, 238, 0.6);
+      border-left: 2px solid rgba(34, 211, 238, 0.6);
+      border-radius: 16px 0 0 0; opacity: 0.5; pointer-events: none;
     }
-    .holo-card:hover { transform: translateY(-3px); border-color: rgba(34, 211, 238, 0.3); }
-    .holo-card:hover::before { opacity: 1; }
+    .holo-card::after {
+      content: ''; position: absolute; bottom: 0; right: 0; width: 30px; height: 30px;
+      border-bottom: 2px solid rgba(34, 211, 238, 0.6);
+      border-right: 2px solid rgba(34, 211, 238, 0.6);
+      border-radius: 0 0 16px 0; opacity: 0.5; pointer-events: none;
+    }
+    .holo-card:hover { 
+      border-color: rgba(34, 211, 238, 0.3); 
+      box-shadow: 0 10px 40px rgba(6, 182, 212, 0.15);
+    }
 
-    /* 2. 閱讀區優化 (Summary Text) - 這是重點！ */
-    #summary-text { font-size: 1.05rem; letter-spacing: 0.02em; }
+    /* ===== 閱讀區優化 (Summary Text) - 確保舒適度 ===== */
+    #summary-text { 
+      font-size: 1.05rem; 
+      letter-spacing: 0.02em; 
+      color: #cbd5e1;
+    }
     
-    /* 自動生成的 H3 標題優化 */
+    /* 自動生成的 H3 標題優化：數據流風格 */
     #summary-text h3 {
       font-family: 'Rajdhani', 'Noto Sans TC', sans-serif;
-      font-weight: 700; font-size: 1.35rem; color: #fff;
+      font-weight: 700; font-size: 1.4rem; color: #fff;
       margin-top: 2.5rem; margin-bottom: 1.2rem;
       display: flex; align-items: center;
       padding-left: 1rem; border-left: 4px solid #06b6d4;
       background: linear-gradient(90deg, rgba(6,182,212,0.1) 0%, transparent 100%);
       padding-top: 0.5rem; padding-bottom: 0.5rem;
       border-radius: 0 8px 8px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
     
     /* 內文段落 */
     #summary-text p {
-      line-height: 1.8; color: #cbd5e1; margin-bottom: 1.2rem;
-      text-align: justify;
+      line-height: 1.8; margin-bottom: 1.2rem; text-align: justify;
     }
 
     /* 列表優化 */
     #summary-text ul { padding-left: 0; display: grid; gap: 0.8rem; }
     #summary-text li {
       list-style: none; position: relative; padding-left: 1.8rem;
-      line-height: 1.6; color: #cbd5e1;
+      line-height: 1.6;
     }
     #summary-text li::before {
       content: "▹"; color: #22d3ee; position: absolute; left: 0.2rem; top: 0;
@@ -141,78 +154,79 @@
     }
     #summary-text strong, #summary-text b {
       color: #22d3ee; font-weight: 600;
-      text-shadow: 0 0 10px rgba(34,211,238,0.3); /* 螢光文字 */
+      text-shadow: 0 0 8px rgba(34,211,238,0.4); /* 螢光文字效果 */
     }
 
-    /* 3. 選單優化 */
+    /* ===== 選單優化 ===== */
     .tech-select {
-      background-color: rgba(2, 6, 23, 0.8);
+      background-color: rgba(2, 6, 23, 0.6);
       border: 1px solid rgba(51, 65, 85, 0.6);
-      color: #f1f5f9; padding: 10px 14px;
+      color: #f1f5f9; padding: 12px 16px;
       font-size: 0.9rem; border-radius: 8px;
       width: 100%; appearance: none;
       background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2322d3ee'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3e%3c/svg%3e");
-      background-position: right 0.75rem center; background-repeat: no-repeat; background-size: 1em;
+      background-position: right 1rem center; background-repeat: no-repeat; background-size: 1em;
       transition: all 0.2s;
     }
-    .tech-select:hover:not(:disabled) { border-color: #06b6d4; box-shadow: 0 0 15px rgba(6,182,212,0.15); }
+    .tech-select:hover:not(:disabled) { border-color: #06b6d4; box-shadow: 0 0 15px rgba(6,182,212,0.15); background-color: rgba(2, 6, 23, 0.9); }
     .tech-select:disabled { opacity: 0.5; cursor: not-allowed; background-color: rgba(15,23,42,0.5); }
     .tech-select:focus { outline: none; border-color: #22d3ee; box-shadow: 0 0 0 2px rgba(6,182,212,0.2); }
 
-    /* 4. 關鍵字 (Vocabulary) */
+    /* ===== 關鍵字卡片 ===== */
     .vocab-item {
       background: linear-gradient(145deg, rgba(30,41,59,0.4), rgba(15,23,42,0.6));
       border: 1px solid rgba(255,255,255,0.05);
-      border-radius: 10px; padding: 12px;
+      border-radius: 8px; padding: 12px;
       transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
     }
-    .vocab-item:hover { border-color: #8b5cf6; transform: translateX(5px); background: rgba(139, 92, 246, 0.1); }
+    .vocab-item:hover { 
+      border-color: #8b5cf6; 
+      transform: translateX(4px); 
+      background: rgba(139, 92, 246, 0.1); 
+    }
+    .vocab-item::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; 
+      background: #8b5cf6; opacity: 0.5;
+    }
 
-    /* 5. 知識地圖與 Mermaid */
+    /* ===== 藍圖網格背景 (Blueprint Grid) ===== */
     .blueprint-grid {
       background-image: 
-        linear-gradient(rgba(6,182,212,0.07) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(6,182,212,0.07) 1px, transparent 1px);
-      background-size: 40px 40px;
+        linear-gradient(rgba(6,182,212,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(6,182,212,0.05) 1px, transparent 1px);
+      background-size: 30px 30px;
       background-color: #050b14;
       border-radius: 12px;
       border: 1px solid rgba(6,182,212,0.2);
-      box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
+      box-shadow: inset 0 0 50px rgba(0,0,0,0.8); /* 內部陰影 */
     }
 
-    /* 6. 動動腦 (Myth) & 測驗 (Quiz) */
-    .interactive-card {
-      background: rgba(15, 23, 42, 0.4);
-      border: 1px solid rgba(255,255,255,0.05);
-      border-radius: 12px; padding: 1.5rem;
-      transition: all 0.3s;
-    }
-    .interactive-card:hover { background: rgba(30, 41, 59, 0.6); }
-
+    /* ===== 測驗選項按鈕 ===== */
     .quiz-opt-btn {
       background: rgba(255,255,255,0.03);
       border: 1px solid rgba(255,255,255,0.1);
-      color: #94a3b8; font-weight: 500;
+      color: #cbd5e1; font-weight: 500;
       transition: all 0.2s;
       position: relative; overflow: hidden;
     }
     .quiz-opt-btn:hover:not(:disabled) {
       background: rgba(6,182,212,0.1);
       border-color: #22d3ee; color: #fff;
-      box-shadow: 0 0 15px rgba(6,182,212,0.2);
+      box-shadow: 0 0 15px rgba(6,182,212,0.15);
     }
-    /* 選中/正確/錯誤樣式由 JS 控制 style, 但這裡定義基礎 */
 
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 8px; }
+    /* 自訂捲軸 */
+    ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: #02040a; }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; border: 2px solid #02040a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-    /* Loader */
+    /* 掃描 Loader */
     .scanner-loader {
-      width: 100%; height: 4px; background: #1e293b;
-      position: relative; overflow: hidden; border-radius: 2px;
+      width: 100%; height: 2px; background: #1e293b;
+      position: relative; overflow: hidden;
     }
     .scanner-loader::after {
       content: ''; position: absolute; top: 0; left: 0; height: 100%; width: 50%;
@@ -221,7 +235,7 @@
     }
     @keyframes scan-x { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
 
-    /* Modal Fix */
+    /* Modal 修正 */
     #modal-content { max-width: 100vw; max-height: 100vh; background: #000; display:flex; justify-content:center; align-items:center;}
   </style>
 </head>
@@ -235,22 +249,22 @@
           <div class="w-9 h-9 rounded-lg bg-cyan-900/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 group-hover:bg-cyan-500 group-hover:text-white group-hover:shadow-[0_0_15px_#06b6d4] transition duration-300">
             <i class="fa-solid fa-atom"></i>
           </div>
-          <span class="font-bold text-sm tracking-widest text-slate-400 group-hover:text-cyan-400 transition" data-i18n="back_science">RETURN</span>
+          <span class="font-bold text-xs tracking-[0.15em] text-slate-400 group-hover:text-cyan-400 transition" data-i18n="back_science">RETURN</span>
         </a>
         <div class="h-6 w-px bg-white/10 hidden sm:block"></div>
         <h1 class="font-tech font-bold text-xl text-transparent bg-clip-text bg-gradient-to-r from-white to-cyan-400 tracking-[0.2em]" data-i18n="page_title">UNIT SUMMARY</h1>
       </div>
       
       <div class="flex items-center gap-4">
-        <select id="language-selector" onchange="changeLanguage()" class="bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded px-2 py-1 outline-none hover:border-cyan-500 transition">
+        <select id="language-selector" onchange="changeLanguage()" class="bg-slate-900/80 border border-slate-700 text-slate-300 text-xs rounded px-2 py-1 outline-none hover:border-cyan-500 transition font-mono">
           <option value="zh-TW">繁體中文</option>
           <option value="en">English</option>
           <option value="ja">日本語</option>
           <option value="zh-CN">简体中文</option>
         </select>
-        <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-700">
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-700">
           <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981] animate-pulse"></div>
-          <span id="user-info" class="text-xs font-mono text-cyan-500/80">Guest</span>
+          <span id="user-info" class="text-xs font-data font-bold text-cyan-500/80 tracking-wide">Guest</span>
         </div>
       </div>
     </div>
@@ -262,55 +276,59 @@
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 border-b border-white/5 pb-6">
         <div>
           <h2 class="text-2xl font-tech text-white flex items-center gap-3">
-            <i class="fa-solid fa-sliders text-cyan-500"></i>
+            <i class="fa-solid fa-sliders text-cyan-500 text-lg"></i>
             <span data-i18n="settings_title">CONFIGURATION</span>
           </h2>
-          <p class="text-slate-500 text-xs font-mono mt-1 tracking-wider pl-8" data-i18n="settings_subtitle">Select your learning module</p>
+          <p class="text-slate-500 text-[10px] font-mono mt-1 tracking-widest pl-8 uppercase" data-i18n="settings_subtitle">Initialize Protocol</p>
         </div>
-        <span id="db-status" class="font-mono text-xs px-3 py-1 rounded bg-slate-900 border border-slate-700 text-slate-400" data-state="loading">
-          <i class="fa-solid fa-satellite-dish mr-2"></i><span data-i18n="db_loading">CONNECTING...</span>
+        <span id="db-status" class="font-mono text-[10px] px-3 py-1 rounded bg-slate-950 border border-slate-800 text-slate-400 flex items-center gap-2" data-state="loading">
+          <i class="fa-solid fa-circle-notch fa-spin text-cyan-500"></i><span data-i18n="db_loading">SYSTEM CHECK...</span>
         </span>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-5 gap-6 w-full">
         <div class="w-full">
-          <label class="block text-[10px] text-cyan-400 font-bold mb-2 tracking-widest font-tech" data-i18n="label_stage">01 STAGE</label>
+          <label class="block text-[10px] text-cyan-400/80 font-bold mb-2 tracking-widest font-data">01 // STAGE</label>
           <select id="sel-stage" class="tech-select"><option disabled selected>Loading...</option></select>
         </div>
         <div class="w-full">
-          <label class="block text-[10px] text-cyan-400 font-bold mb-2 tracking-widest font-tech" data-i18n="label_publisher">02 VERSION</label>
+          <label class="block text-[10px] text-cyan-400/80 font-bold mb-2 tracking-widest font-data">02 // VERSION</label>
           <select id="sel-publisher" disabled class="tech-select"><option disabled selected>--</option></select>
         </div>
         <div class="w-full">
-          <label class="block text-[10px] text-cyan-400 font-bold mb-2 tracking-widest font-tech" data-i18n="label_grade">03 GRADE</label>
+          <label class="block text-[10px] text-cyan-400/80 font-bold mb-2 tracking-widest font-data">03 // GRADE</label>
           <select id="sel-grade" disabled class="tech-select"><option disabled selected>--</option></select>
         </div>
         <div class="w-full">
-          <label class="block text-[10px] text-cyan-400 font-bold mb-2 tracking-widest font-tech" data-i18n="label_semester">04 SEMESTER</label>
+          <label class="block text-[10px] text-cyan-400/80 font-bold mb-2 tracking-widest font-data">04 // SEMESTER</label>
           <select id="sel-semester" disabled class="tech-select"><option disabled selected>--</option></select>
         </div>
         <div class="w-full">
-          <label class="block text-[10px] text-cyan-400 font-bold mb-2 tracking-widest font-tech" data-i18n="label_unit">05 UNIT</label>
+          <label class="block text-[10px] text-cyan-400/80 font-bold mb-2 tracking-widest font-data">05 // UNIT</label>
           <select id="sel-unit" disabled class="tech-select"><option disabled selected>--</option></select>
         </div>
       </div>
 
       <div class="mt-8 flex justify-end items-center border-t border-white/5 pt-6">
         <input id="inpN" type="hidden" value="15">
-        <button id="btn-generate" onclick="startGeneration()" disabled class="group relative px-8 py-3 rounded-lg overflow-hidden bg-cyan-600 disabled:bg-slate-800 disabled:cursor-not-allowed transition-all duration-300">
-          <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-cyan-400 to-blue-500 opacity-0 group-hover:opacity-100 transition duration-300"></div>
-          <span class="relative flex items-center gap-2 font-bold text-white text-sm tracking-wide">
-            <i class="fa-solid fa-bolt"></i> <span data-i18n="btn_generate">INITIATE ANALYSIS</span>
+        <button id="btn-generate" onclick="startGeneration()" disabled class="group relative px-8 py-3 rounded overflow-hidden bg-cyan-700 disabled:bg-slate-800 disabled:cursor-not-allowed transition-all duration-300">
+          <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-cyan-400 to-blue-500 opacity-0 group-hover:opacity-20 transition duration-300"></div>
+          <span class="relative flex items-center gap-2 font-bold text-white text-sm tracking-widest font-tech">
+            <i class="fa-solid fa-microchip"></i> <span data-i18n="btn_generate">INITIATE ANALYSIS</span>
           </span>
+          <div class="absolute bottom-0 left-0 w-full h-[2px] bg-cyan-400 shadow-[0_0_10px_#22d3ee]"></div>
         </button>
       </div>
     </div>
 
-    <div id="loading-view" class="hidden flex-col items-center justify-center py-32 space-y-4">
-      <div class="w-64">
+    <div id="loading-view" class="hidden flex-col items-center justify-center py-32 space-y-6">
+      <div class="w-64 relative">
         <div class="scanner-loader"></div>
+        <div class="text-[10px] font-mono text-cyan-500/50 flex justify-between mt-1">
+            <span>DATA</span><span>UPLINK</span>
+        </div>
       </div>
-      <h3 class="text-xl font-tech text-cyan-400 tracking-[0.3em] animate-pulse" data-i18n="ai_generating">PROCESSING DATA...</h3>
+      <h3 class="text-xl font-tech text-cyan-400 tracking-[0.3em] animate-pulse" data-i18n="ai_generating">PROCESSING...</h3>
     </div>
 
     <div id="content-view" class="hidden animate-slide-up space-y-8">
@@ -318,33 +336,35 @@
       <div class="flex flex-col md:flex-row justify-between items-end gap-6 pb-2">
         <div>
           <div class="flex items-center gap-3 mb-3">
-            <span id="result-tag" class="text-[10px] font-mono font-bold bg-cyan-900/30 text-cyan-300 px-3 py-1 rounded border border-cyan-500/30">TAG</span>
-            <div class="h-px w-20 bg-cyan-500/30"></div>
+            <span id="result-tag" class="text-[10px] font-data font-bold bg-cyan-950 text-cyan-300 px-2 py-1 rounded border border-cyan-500/30 tracking-wider">TAG ID</span>
+            <div class="h-px w-20 bg-gradient-to-r from-cyan-500/50 to-transparent"></div>
           </div>
-          <h1 id="result-title" class="text-4xl md:text-5xl font-black text-white tracking-tight drop-shadow-[0_0_15px_rgba(6,182,212,0.3)] leading-tight">Title</h1>
+          <h1 id="result-title" class="text-4xl md:text-5xl font-black text-white tracking-tight drop-shadow-[0_0_20px_rgba(6,182,212,0.2)]">Title</h1>
         </div>
-        <button onclick="downloadTXT()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white rounded border border-slate-700 text-xs font-bold transition flex items-center gap-2">
-          <i class="fa-regular fa-file-code"></i> <span data-i18n="btn_txt">EXPORT DATA</span>
+        <button onclick="downloadTXT()" class="px-4 py-2 bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-white rounded border border-slate-700 text-xs font-bold transition flex items-center gap-2 group">
+          <i class="fa-regular fa-file-code group-hover:text-cyan-400"></i> <span data-i18n="btn_txt">EXPORT DATA</span>
         </button>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
         
         <div id="summary-panel" class="md:col-span-8 holo-card p-8 min-h-[500px]">
-          <div class="flex items-center gap-3 mb-8 border-b border-white/5 pb-4">
-            <i class="fa-solid fa-layer-group text-2xl text-cyan-400 drop-shadow-[0_0_10px_#22d3ee]"></i>
+          <div class="flex items-center gap-4 mb-8 border-b border-white/5 pb-4">
+            <div class="w-10 h-10 rounded bg-cyan-500/10 flex items-center justify-center text-cyan-400 border border-cyan-500/20 shadow-[0_0_15px_rgba(6,182,212,0.1)]">
+                <i class="fa-solid fa-layer-group text-lg"></i>
+            </div>
             <div>
               <h3 class="font-tech text-xl text-white tracking-widest" data-i18n="title_summary">CORE CONCEPTS</h3>
-              <p class="text-[10px] text-slate-500 font-mono">Synthesized Knowledge Base</p>
+              <p class="text-[10px] text-slate-500 font-mono tracking-wider">SYNTHESIZED KNOWLEDGE BASE</p>
             </div>
           </div>
-          <div id="summary-text" class="text-slate-300"></div>
+          <div id="summary-text"></div>
         </div>
 
         <div id="vocab-panel" class="md:col-span-4 flex flex-col h-full gap-4">
-          <div class="holo-card p-6 flex-1 flex flex-col bg-slate-900/40 border-slate-800">
+          <div class="holo-card p-6 flex-1 flex flex-col border-t-2 border-t-purple-500/50">
              <div class="flex items-center gap-3 mb-6 flex-shrink-0">
-               <i class="fa-solid fa-cube text-purple-400 text-xl"></i>
+               <i class="fa-solid fa-cube text-purple-400 text-lg"></i>
                <h3 class="font-tech text-lg text-white tracking-widest" data-i18n="title_vocab">KEYWORDS</h3>
              </div>
              <div id="vocab-list-container" class="custom-scrollbar pr-1 flex-1 overflow-y-auto">
@@ -355,18 +375,18 @@
       </div>
 
       <div class="holo-card p-1 overflow-hidden">
-        <div class="px-6 py-4 flex justify-between items-center bg-[#050b14] border-b border-white/5">
+        <div class="px-6 py-4 flex justify-between items-center bg-[#050b14]/80 border-b border-white/5">
           <div class="flex items-center gap-3">
             <i class="fa-solid fa-project-diagram text-blue-500"></i>
             <h3 class="font-tech text-lg text-white tracking-widest" data-i18n="title_map">KNOWLEDGE MAP</h3>
           </div>
-          <button onclick="openModal()" class="text-[10px] flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 text-cyan-400 border border-cyan-900 hover:border-cyan-500 transition uppercase tracking-wider">
-            <i class="fa-solid fa-maximize"></i> <span data-i18n="tap_to_zoom">Expand View</span>
+          <button onclick="openModal()" class="text-[10px] flex items-center gap-2 px-3 py-1 rounded bg-slate-900 text-cyan-400 border border-cyan-900 hover:border-cyan-500 transition uppercase tracking-wider">
+            <i class="fa-solid fa-maximize"></i> <span data-i18n="tap_to_zoom">Expand</span>
           </button>
         </div>
         <div id="chart-container" class="blueprint-grid p-8 min-h-[450px] flex justify-center items-center relative group cursor-zoom-in" onclick="openModal()">
-           <div class="absolute inset-0 bg-gradient-to-t from-[#050b14] to-transparent opacity-20 pointer-events-none"></div>
-           <div id="mermaid-chart" class="w-full flex justify-center drop-shadow-[0_0_10px_rgba(6,182,212,0.1)]"></div>
+           <div class="absolute inset-0 bg-gradient-to-t from-[#050b14] to-transparent opacity-40 pointer-events-none"></div>
+           <div id="mermaid-chart" class="w-full flex justify-center drop-shadow-[0_0_8px_rgba(6,182,212,0.2)]"></div>
         </div>
       </div>
 
@@ -374,7 +394,7 @@
         
         <div class="holo-card p-8 border-t-2 border-t-orange-500/50">
           <div class="flex items-center gap-4 mb-6">
-            <div class="w-10 h-10 rounded bg-orange-900/20 border border-orange-500/30 flex items-center justify-center text-orange-500">
+            <div class="w-10 h-10 rounded bg-orange-900/20 border border-orange-500/30 flex items-center justify-center text-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.1)]">
               <i class="fa-solid fa-lightbulb"></i>
             </div>
             <div>
@@ -388,7 +408,7 @@
         <div id="quiz-panel" class="holo-card p-8 border-t-2 border-t-emerald-500/50">
           <div class="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
              <div class="flex items-center gap-4">
-               <div class="w-10 h-10 rounded bg-emerald-900/20 border border-emerald-500/30 flex items-center justify-center text-emerald-500">
+               <div class="w-10 h-10 rounded bg-emerald-900/20 border border-emerald-500/30 flex items-center justify-center text-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
                  <i class="fa-solid fa-brain"></i>
                </div>
                <div>
@@ -396,27 +416,28 @@
                  <p class="text-[10px] text-emerald-400/80 font-mono tracking-wider">PERFORMANCE CHECK</p>
                </div>
              </div>
-             <div id="quiz-progress" class="font-data text-2xl font-bold text-emerald-400">0/0</div>
+             <div id="quiz-progress" class="font-data text-3xl font-bold text-emerald-400">0/0</div>
           </div>
 
           <div id="quiz-body" class="space-y-6">
-            <div id="quiz-question" class="text-lg font-bold text-white leading-relaxed min-h-[60px]"></div>
+            <div id="quiz-question" class="text-lg font-bold text-white leading-relaxed min-h-[60px] flex items-center"></div>
             <div id="quiz-options" class="grid grid-cols-1 gap-3"></div>
-            <div id="quiz-feedback" class="hidden animate-fade-in"></div>
+            <div id="quiz-feedback" class="hidden animate-slide-up"></div>
             <div class="flex justify-end pt-4">
-              <button id="quiz-main-btn" onclick="handleQuizMainButton()" class="px-6 py-2 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all disabled:opacity-30 disabled:shadow-none">
+              <button id="quiz-main-btn" onclick="handleQuizMainButton()" class="px-6 py-2 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all disabled:opacity-30 disabled:shadow-none font-tech tracking-wide">
                 Next Question
               </button>
             </div>
           </div>
 
-          <div id="quiz-empty" class="text-center py-12 text-slate-600 font-mono text-sm" data-i18n="quiz_not_ready">AWAITING DATA...</div>
+          <div id="quiz-empty" class="text-center py-12 text-slate-600 font-mono text-sm" data-i18n="quiz_not_ready">AWAITING DATA STREAM...</div>
 
           <div id="quiz-result" class="hidden mt-4">
-            <div class="bg-slate-900/60 rounded-xl p-6 border border-emerald-500/20 text-center mb-6">
-               <div class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2" data-i18n="quiz_score_title">FINAL SCORE</div>
-               <div id="quiz-score-number" class="text-6xl font-data font-black text-transparent bg-clip-text bg-gradient-to-b from-emerald-300 to-emerald-600">0</div>
-               <div id="quiz-result-text" class="mt-2 text-emerald-400 font-bold"></div>
+            <div class="bg-slate-900/60 rounded-xl p-6 border border-emerald-500/20 text-center mb-6 relative overflow-hidden">
+               <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent"></div>
+               <div class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 font-data" data-i18n="quiz_score_title">FINAL SCORE</div>
+               <div id="quiz-score-number" class="text-7xl font-data font-black text-transparent bg-clip-text bg-gradient-to-b from-emerald-300 to-emerald-700 drop-shadow-lg">0</div>
+               <div id="quiz-result-text" class="mt-2 text-emerald-400 font-bold tracking-wide"></div>
             </div>
             <div class="h-48 w-full"><canvas id="quiz-radar"></canvas></div>
           </div>
@@ -458,11 +479,8 @@
   </div>
 
   <script>
-    // ... (這裡保留你原本所有的 JavaScript，完全不用動) ...
-    // 請將你原本的 <script> 內容完整貼回這裡
-    // 為了版面簡潔，我這裡省略 JS 代碼，但你必須保留它才能運作。
+    // --- JS Logic (功能完全保留) ---
     
-    // --- JS Placeholder Start ---
     const chatWindow = document.getElementById("xiaoke-window");
     window.toggleChat = function() {
         if (!chatWindow) return;
@@ -542,11 +560,11 @@
         const json = JSON.parse(await res.text());
         if(json.status === "success") {
           allData = json.data;
-          if (dbStatus) { dbStatus.dataset.state = "success"; dbStatus.innerHTML = `<i class="fa-solid fa-check mr-1"></i> ${t("db_success")}`; dbStatus.className = "text-xs font-mono text-emerald-400 px-3 py-1 rounded bg-emerald-950/50 border border-emerald-900"; }
+          if (dbStatus) { dbStatus.dataset.state = "success"; dbStatus.innerHTML = `<i class="fa-solid fa-check mr-1"></i> ${t("db_success")}`; dbStatus.className = "text-[10px] font-mono text-emerald-400 px-3 py-1 rounded bg-emerald-950/50 border border-emerald-900"; }
           initSelectors();
         } else throw new Error("Status Fail");
       } catch(e) {
-        if (dbStatus) { dbStatus.dataset.state = "fail"; dbStatus.innerText = t("db_fail"); dbStatus.className = "text-xs font-mono text-red-500 bg-red-950/50 px-3 py-1 rounded"; }
+        if (dbStatus) { dbStatus.dataset.state = "fail"; dbStatus.innerText = t("db_fail"); dbStatus.className = "text-[10px] font-mono text-red-500 bg-red-950/50 px-3 py-1 rounded"; }
       }
     };
 
@@ -635,8 +653,6 @@
         if (summaryPanel && vocabPanel) {
             vocabPanel.style.height = 'auto';
             if (window.innerWidth < 768) return;
-            // Removed strict height sync to allow flex grow, but can enable if needed
-            // vocabPanel.style.height = `${summaryPanel.offsetHeight}px`;
         }
     }
 
@@ -663,7 +679,7 @@
           kList.forEach(k => {
              const term = typeof k === 'object' ? k.term : k;
              const def = typeof k === 'object' ? k.def : '';
-             keywordList.innerHTML += `<div class="vocab-item"><div class="text-cyan-400 font-bold font-tech mb-1">${term}</div><div class="text-xs text-slate-300 leading-relaxed">${def}</div></div>`;
+             keywordList.innerHTML += `<div class="vocab-item"><div class="text-cyan-400 font-bold font-tech mb-1 tracking-wide">${term}</div><div class="text-xs text-slate-300 leading-relaxed">${def}</div></div>`;
           });
       } else { keywordList.innerHTML = `<div class="text-slate-500 text-xs text-center py-4 border border-dashed border-slate-700 rounded">${t("vocab_none")}</div>`; }
 
@@ -687,7 +703,7 @@
          mythData.forEach((m, i) => {
              const cardId = `myth-${i}`;
              const div = document.createElement('div');
-             div.className = 'interactive-card flex flex-col gap-3 group';
+             div.className = 'flex flex-col gap-3 group bg-black/20 p-4 rounded-lg border border-white/5 hover:border-orange-500/30 transition';
              div.innerHTML = `
                  <div class="flex justify-between items-center"><span class="bg-orange-500/20 text-orange-400 border border-orange-500/30 text-[10px] font-bold px-2 py-0.5 rounded font-mono">Q${i+1}</span></div>
                  <div class="text-white font-bold text-sm leading-relaxed">${m.question || m.myth}</div>
@@ -757,7 +773,7 @@
         if(isCorrect) {
             btn.style.background = "rgba(16, 185, 129, 0.2)";
             btn.style.borderColor = "#10b981";
-            btn.style.boxShadow = "0 0 15px rgba(16,185,129,0.3)";
+            btn.style.boxShadow = "0 0 15px rgba(16,185,129,0.2)";
             btn.querySelector('span:first-child').style.borderColor="#10b981";
             btn.querySelector('span:first-child').style.color="#10b981";
         } else {
@@ -765,11 +781,11 @@
             btn.style.borderColor = "#ef4444";
             allBtns[q.correctIndex].style.background = "rgba(16, 185, 129, 0.2)";
             allBtns[q.correctIndex].style.borderColor = "#10b981";
-            allBtns[q.correctIndex].style.boxShadow = "0 0 15px rgba(16,185,129,0.3)";
+            allBtns[q.correctIndex].style.boxShadow = "0 0 15px rgba(16,185,129,0.2)";
         }
         
         const fb = document.getElementById('quiz-feedback');
-        fb.innerHTML = `<div class="flex items-center gap-2 ${isCorrect?'text-emerald-400':'text-red-400'} font-bold mb-2 text-lg"><i class="fa-solid ${isCorrect?'fa-check-circle':'fa-circle-xmark'}"></i> ${isCorrect?t('msg_correct'):t('msg_wrong')}</div><div class="text-slate-300 text-sm leading-relaxed pl-7">${q.explanation}</div>`;
+        fb.innerHTML = `<div class="flex items-center gap-2 ${isCorrect?'text-emerald-400':'text-red-400'} font-bold mb-2 text-lg"><i class="fa-solid ${isCorrect?'fa-check-circle':'fa-circle-xmark'}"></i> ${isCorrect?t('msg_correct'):t('msg_wrong')}</div><div class="text-slate-300 text-sm leading-relaxed pl-7 border-l border-white/10 ml-2">${q.explanation}</div>`;
         fb.className = `mt-4 p-4 rounded-lg border ${isCorrect?'bg-emerald-950/40 border-emerald-500/30':'bg-red-950/40 border-red-500/30'} animate-fade-in`;
         fb.classList.remove('hidden');
 
@@ -812,12 +828,12 @@
                         label: 'Result',
                         data: quizState.answers.map(a=>a.correct?100:20),
                         backgroundColor: quizState.answers.map(a=>a.correct?'#10b981':'#ef4444'),
-                        borderRadius: 4
+                        borderRadius: 2
                     }]
                 },
                 options: { 
                   responsive: true, maintainAspectRatio: false,
-                  scales: { y: { beginAtZero: true, max: 100, grid:{color:'rgba(255,255,255,0.1)'} }, x: { grid: {display:false} } }, 
+                  scales: { y: { beginAtZero: true, max: 100, grid:{color:'rgba(255,255,255,0.05)'} }, x: { grid: {display:false} } }, 
                   plugins: { legend: {display:false} } 
                 }
             });
@@ -852,7 +868,6 @@
     function submitQuizLog(q, ans, corr, isCorr) {
        // Silent log
     }
-    // --- JS Placeholder End ---
   </script>
 </body>
 </html>
