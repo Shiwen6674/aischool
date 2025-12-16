@@ -6,16 +6,15 @@
     <title>AI School | 科學雙語閱讀</title>
     
     <script>
-        // 邏輯說明：
-        // 當使用者在 index.html 點擊登入成功時，您的 index.html 必須執行：
-        // sessionStorage.setItem('isLoggedIn', 'true');
-        // 
-        // 這裡負責檢查：如果找不到這張「通行證」，就代表是偷貼網址的人，強制踢回首頁。
+        // 【開發模式】已暫時將下方檢查註解掉，讓您可以直接進入測試。
+        // 等正式上線且 index.html 有寫入 sessionStorage.setItem('isLoggedIn', 'true') 後
+        // 請將下方的 /* 與 */ 移除，即可恢復防盜功能。
         
+        /*
         if (!sessionStorage.getItem('isLoggedIn')) {
-            // alert("請先登入！"); // 若需要提示可打開此行
             window.location.href = 'index.html';
         }
+        */
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
