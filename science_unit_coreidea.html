@@ -29,12 +29,15 @@
     </script>
     
     <style>
-        /* 1. 全域深色科幻背景 */
+        /* =========================================
+           1. 全域設定 & 科幻背景
+           ========================================= */
         body {
             background-color: #0B1121;
             color: #f1f5f9;
             font-family: 'Inter', 'Noto Sans TC', "Microsoft JhengHei", sans-serif;
             overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent; /* 手機點擊移除藍色高亮 */
         }
         /* 極光背景特效 */
         body::before {
@@ -43,7 +46,9 @@
             z-index: -2; pointer-events: none;
         }
 
-        /* 2. 玻璃擬態面板 (通用) */
+        /* =========================================
+           2. 玻璃擬態面板 (深色模式基底)
+           ========================================= */
         .glass-panel, .glass-card {
             background: rgba(30, 41, 59, 0.7) !important;
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
@@ -53,7 +58,26 @@
             color: #e2e8f0 !important;
         }
 
-        /* 3. 輸入選單優化 (HUD 風格) */
+        /* =========================================
+           3. [修正] 白底區塊強制深色文字 (解決測驗看不到字的問題)
+           ========================================= */
+        /* 針對白色背景的卡片，強制把文字顏色改回深灰，不然會被全域設定變成白色 */
+        .glass-panel.bg-white, .bg-white {
+            color: #1e293b !important; 
+        }
+        /* 針對測驗區塊的題目、選項、結果文字 */
+        #quiz-body .text-slate-800, 
+        #quiz-question, 
+        #quiz-result-text,
+        .quiz-option-btn,
+        #myth-list .text-slate-800 {
+            color: #0f172a !important; /* 深藍黑，確保清楚 */
+        }
+        
+        /* =========================================
+           4. 元件樣式 (按鈕、選單、載入圈)
+           ========================================= */
+        /* 輸入選單 (HUD 風格) */
         select, .tech-select {
             background-color: rgba(15, 23, 42, 0.8) !important;
             border: 1px solid rgba(255, 255, 255, 0.15) !important;
@@ -61,16 +85,14 @@
             border-radius: 0.75rem !important;
             transition: all 0.3s ease;
         }
-        select:focus, .tech-select:focus {
+        select:focus {
             border-color: #38bdf8 !important;
             box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
             outline: none;
         }
-        select:disabled {
-            opacity: 0.5; cursor: not-allowed;
-        }
+        select:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* 4. 按鈕優化 (發光按鈕) */
+        /* 發光按鈕 */
         #btn-generate, .tech-btn-primary {
             background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%) !important;
             border: none !important;
@@ -84,138 +106,122 @@
         }
         #btn-generate:disabled { filter: grayscale(1); opacity: 0.5; }
 
-        /* 5. 標題與導航 */
+        /* 導航列 */
         nav {
-            background: rgba(15, 23, 42, 0.9) !important;
+            background: rgba(15, 23, 42, 0.95) !important;
             border-bottom: 1px solid rgba(255,255,255,0.1) !important;
             backdrop-filter: blur(12px);
         }
-        .icon-static { opacity: 0.7; cursor: default; }
         
-        /* 調整結果區文字顏色以適應深色模式 */
-        .vocab-item { background: rgba(255,255,255,0.05) !important; border-color: rgba(255,255,255,0.1) !important; }
-        .text-slate-500, .text-slate-600, .text-slate-700 { color: #94a3b8 !important; }
-        .text-slate-800 { color: #f1f5f9 !important; }
-        
+        /* 測驗選項按鈕 */
+        .quiz-option-btn {
+            background-color: #f8fafc !important;
+            border: 1px solid #cbd5e1 !important;
+        }
+        .quiz-option-btn:hover {
+            background-color: #eff6ff !important;
+            border-color: #60a5fa !important;
+        }
+
+        /* 詞彙卡片 (修正為深色文字) */
+        .vocab-item { 
+            background: rgba(255,255,255,0.9) !important; 
+            border-color: rgba(255,255,255,0.1) !important; 
+            color: #1e293b !important;
+        }
+        .vocab-item .text-slate-600 { color: #475569 !important; }
+
         /* Loader */
         .loader { border-color: rgba(255,255,255,0.1); border-top-color: #38bdf8; }
         
-        /* PDF 下載時隱藏的元素 */
+        /* PDF 下載隱藏 */
         .no-print { display: block; }
         @media print { .no-print { display: none !important; } }
 
-        /* === [需求 1] 文字區塊：精美教科書排版 === */
+        /* =========================================
+           5. 核心概念排版 (教科書風格)
+           ========================================= */
         #summary-text {
             font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
-            color: #1e293b !important; /* 強制深色字，避免看不清楚 */
+            color: #1e293b !important;
         }
-        
-        /* 大標題 */
         #summary-text h3 {
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: #0f172a !important;
-            margin-top: 1.5rem;
-            margin-bottom: 1rem;
-            padding-left: 1rem;
-            border-left: 6px solid #3b82f6; /* 藍色側邊條 */
-            background: linear-gradient(90deg, #eff6ff 0%, transparent 100%); /* 淺藍漸層背景 */
-            line-height: 1.5;
-            border-radius: 4px;
+            font-size: 1.4rem; font-weight: 800; color: #0f172a !important;
+            margin-top: 1.5rem; margin-bottom: 1rem; padding-left: 1rem;
+            border-left: 6px solid #3b82f6; 
+            background: linear-gradient(90deg, #eff6ff 0%, transparent 100%);
+            line-height: 1.5; border-radius: 4px;
         }
-
-        /* 重點黃底標示 (類似螢光筆效果) */
         #summary-text strong, #summary-text b {
             background: linear-gradient(120deg, rgba(253, 224, 71, 0.4) 0%, rgba(253, 224, 71, 0.7) 100%);
-            padding: 0 4px;
-            border-radius: 4px;
-            color: #0f172a !important; 
-            font-weight: 800;
+            padding: 0 4px; border-radius: 4px; color: #0f172a !important; font-weight: 800;
         }
-
-        /* 列表層次感 */
         #summary-text ul { list-style: none; padding-left: 0; }
         #summary-text li { 
-            position: relative; 
-            padding-left: 1.8rem; 
-            margin-bottom: 0.8rem; 
-            line-height: 1.8;
-            font-size: 1.05rem;
-            color: #334155 !important;
+            position: relative; padding-left: 1.8rem; margin-bottom: 0.8rem; 
+            line-height: 1.8; font-size: 1.05rem; color: #334155 !important;
         }
-        /* 第一層項目符號 */
-        #summary-text > ul > li::before {
-            content: "●"; color: #3b82f6; font-weight: bold; position: absolute; left: 0.2rem; top: 0;
-        }
-        /* 第二層項目縮排 */
+        #summary-text > ul > li::before { content: "●"; color: #3b82f6; font-weight: bold; position: absolute; left: 0.2rem; top: 0; }
         #summary-text ul ul { margin-top: 0.5rem; padding-left: 1rem; }
-        #summary-text ul ul li::before {
-            content: "○"; color: #64748b; font-weight: normal; position: absolute; left: 0.2rem; top: 0;
-        }
+        #summary-text ul ul li::before { content: "○"; color: #64748b; font-weight: normal; position: absolute; left: 0.2rem; top: 0; }
 
-        /* === [需求 3 & 4] 科學動動腦 & 區塊辨識度 === */
-        /* 摘要面板：藍色系 */
+        /* =========================================
+           6. 區塊顏色識別
+           ========================================= */
         #summary-panel { border-left: 5px solid #3b82f6 !important; background: #ffffff !important; }
-        
-        /* 詞彙面板：紫色系 */
         #vocab-panel { border-left: 5px solid #a855f7 !important; background: #faf5ff !important; }
         #vocab-panel h3 { color: #6b21a8 !important; }
-
-        /* 架構圖面板：青色系 */
         .glass-panel:has(#chart-container) { border-top: 5px solid #06b6d4 !important; background: #ecfeff !important; }
-
-        /* 動動腦面板：橙色系 (取代原本刺眼的紅) */
         .glass-panel:has(#myth-list) { border-left: 5px solid #f97316 !important; background: #fff7ed !important; }
-        /* 動動腦題目卡片優化 */
-        #myth-list .bg-white {
-            background-color: #ffffff !important; 
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        /* 題目文字：深藍色，清楚易讀 */
-        #myth-list .text-slate-800 {
-            color: #1e3a8a !important; /* 深藍色 */
-            font-weight: 700;
-            font-size: 1.1rem;
-        }
-        /* 選項按鈕：增加對比 */
-        .myth-option-btn {
-            background-color: #f8fafc !important;
-            border: 1px solid #cbd5e1 !important;
-            color: #334155 !important;
-            font-weight: 600;
-        }
-        .myth-option-btn:hover {
-            background-color: #eff6ff !important;
-            border-color: #60a5fa !important;
-            color: #1d4ed8 !important;
-        }
-
-        /* 測驗面板：綠色系 */
         #quiz-panel { border-left: 5px solid #10b981 !important; background: #f0fdf4 !important; }
 
-        /* === 小科 AI 專屬特效 === */
+        /* =========================================
+           7. 小科 AI 特效與對話框
+           ========================================= */
         .xiaoke-glow {
-            position: relative;
-            z-index: 10;
+            position: relative; z-index: 10;
             border: 2px solid rgba(56, 189, 248, 0.6);
             box-shadow: 0 0 15px rgba(56, 189, 248, 0.4), 0 0 30px rgba(59, 130, 246, 0.2);
             animation: float-pulse 3s infinite ease-in-out;
-            cursor: grab;
-            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: grab; transition: transform 0.2s, box-shadow 0.2s;
         }
-        .xiaoke-glow:active {
-            cursor: grabbing;
-            transform: scale(0.95);
-            box-shadow: 0 0 25px rgba(56, 189, 248, 0.8);
-        }
+        .xiaoke-glow:active { cursor: grabbing; transform: scale(0.95); box-shadow: 0 0 25px rgba(56, 189, 248, 0.8); }
         @keyframes float-pulse {
             0%, 100% { transform: translateY(0); filter: brightness(1); }
             50% { transform: translateY(-6px); filter: brightness(1.2) drop-shadow(0 0 8px rgba(56, 189, 248, 0.6)); }
         }
-        #floating-chat {
-            touch-action: none; 
-            user-select: none;
+        
+        /* 氣泡對話框 (修正1) */
+        .xiaoke-tooltip {
+            position: absolute; bottom: 80px; right: 10px;
+            background: white; color: #0f172a;
+            padding: 8px 16px; border-radius: 16px; border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            font-size: 0.9rem; font-weight: 700; white-space: nowrap;
+            pointer-events: none; opacity: 0;
+            transform: translateY(10px) scale(0.9);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 9998;
+        }
+        .xiaoke-tooltip.show { opacity: 1; transform: translateY(0) scale(1); }
+
+        /* =========================================
+           8. 手機版面優化 (修正3)
+           ========================================= */
+        @media (max-width: 640px) {
+            nav { height: 3.5rem; padding: 0 1rem; }
+            nav h1 { font-size: 1.1rem; }
+            main { padding-top: 5rem !important; padding-bottom: 7rem !important; }
+            
+            /* 小科在手機上固定位置，不讓隨意拖曳以免跑版 */
+            #floating-chat { bottom: 1.5rem; right: 1.5rem; }
+            
+            /* 聊天視窗在手機上改為佔滿下方 */
+            #xiaoke-window {
+                width: 92vw !important; right: 4vw !important; bottom: 5rem !important;
+                height: 60vh !important;
+            }
+            .xiaoke-glow { cursor: default; } /* 手機不顯示抓取游標 */
         }
     </style>
 </head>
@@ -227,7 +233,7 @@
                 <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition">
                     <i class="fa-solid fa-arrow-left text-sm text-white"></i>
                 </div>
-                <span class="font-bold tracking-wide text-white" data-i18n="back_home">返回 AI Science</span>
+                <span class="font-bold tracking-wide text-white hidden md:block" data-i18n="back_home">返回 AI Science</span>
             </a>
         </div>
 
@@ -235,7 +241,7 @@
             <h1 class="text-xl font-black text-white tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-400" data-i18n="page_title">
                 單元重點精熟
             </h1>
-            <span class="text-[10px] text-slate-400 tracking-[0.2em] uppercase" data-i18n="page_subtitle">AI Intelligent Note Generation</span>
+            <span class="text-[10px] text-slate-400 tracking-[0.2em] uppercase hidden sm:block" data-i18n="page_subtitle">AI Intelligent Note Generation</span>
         </div>
 
         <div class="flex items-center gap-4">
@@ -403,15 +409,20 @@
     </main>
 
     <div id="floating-chat" class="hidden fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-3 no-print" style="touch-action: none;">
-        <div id="xiaoke-window" class="chat-window closed w-80 md:w-96 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-blue-200 flex flex-col overflow-hidden h-[450px] transition-all origin-bottom-right">
-            <div class="bg-gradient-to-r from-blue-600 to-cyan-500 p-3 text-white flex justify-between items-center shadow-md cursor-grab active:cursor-grabbing" onmousedown="startDrag(event)">
+        
+        <div id="xiaoke-tooltip" class="xiaoke-tooltip">
+            嗨！我是小科 👋
+        </div>
+
+        <div id="xiaoke-window" class="chat-window closed w-80 md:w-96 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-blue-200 flex flex-col overflow-hidden h-[450px] transition-all origin-bottom-right hidden">
+            <div class="bg-gradient-to-r from-blue-600 to-cyan-500 p-3 text-white flex justify-between items-center shadow-md cursor-grab active:cursor-grabbing" onmousedown="startDrag(event)" ontouchstart="startDrag(event)">
                 <div class="flex items-center gap-2 pointer-events-none">
                     <div class="w-8 h-8 rounded-full bg-white p-0.5 shadow-sm">
                         <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" alt="小科" class="w-full h-full object-cover rounded-full">
                     </div>
                     <span class="font-bold text-sm tracking-wide">小科 AI 助手</span>
                 </div>
-                <button onclick="toggleChat()" onmousedown="event.stopPropagation()" class="text-white/80 hover:text-white w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition cursor-pointer">
+                <button onclick="toggleChat()" onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()" class="text-white/80 hover:text-white w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition cursor-pointer">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
@@ -420,15 +431,15 @@
             </div>
            
             <div class="p-3 bg-white border-t border-slate-100 flex gap-2">
-                <input type="text" id="chat-input" placeholder="問問小科..." class="flex-1 bg-slate-100 border-none rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-cyan-400 outline-none transition" onkeypress="if(event.key==='Enter') sendChatMessage()">
+                <input type="text" id="chat-input" placeholder="問問小科..." class="flex-1 bg-slate-100 border-none rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-cyan-400 outline-none transition text-slate-800" onkeypress="if(event.key==='Enter') sendChatMessage()">
                 <button onclick="sendChatMessage()" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white w-10 h-10 rounded-full hover:shadow-lg hover:scale-105 transition flex items-center justify-center shadow-md">
                     <i class="fa-solid fa-paper-plane text-xs"></i>
                 </button>
             </div>
         </div>
 
-        <div id="xiaoke-avatar-btn" class="xiaoke-glow w-16 h-16 rounded-full bg-white p-1 cursor-grab active:cursor-grabbing" 
-             onmousedown="startDrag(event)" onclick="if(!isDragging) toggleChat()">
+        <div id="xiaoke-avatar-btn" class="xiaoke-glow w-16 h-16 rounded-full bg-white p-1 cursor-pointer active:scale-95 transition-transform shadow-xl z-[10000]" 
+             onmousedown="startDrag(event)" onclick="if(!isDragging) toggleChat()" ontouchstart="startDrag(event)">
             <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" alt="小科" class="w-full h-full object-cover rounded-full pointer-events-none">
         </div>
     </div>
@@ -756,7 +767,6 @@
             resultTag.innerText = `${p} ${g}年級 ${s}`;
         }
 
-        // === [需求 1] 核心概念摘要：精美排版 ===
         const summaryBox = document.getElementById('summary-text');
         if (summaryBox) {
             let content = data.summary;
@@ -766,7 +776,6 @@
                 content = raw.text_summary;
             }
 
-            // 強制優化排版：將簡單的文字轉為層級分明的 HTML
             if (content) {
                 if (!content.includes('<') && content.includes('\n')) {
                     content = content.split('\n').map(line => {
@@ -781,7 +790,6 @@
                         return `<p>${line}</p>`;
                     }).join('');
                 }
-                // 重點黃底標示
                 content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             }
             summaryBox.innerHTML = content || '生成摘要失敗...';
@@ -817,7 +825,6 @@
             }
         }
 
-        // === [需求 2] 知識架構圖：由上而下 (TD) ===
         const chartDiv = document.getElementById('mermaid-chart');
         if (chartDiv) {
             let mapData =
@@ -828,7 +835,6 @@
             if (mapData && typeof mapData === 'string') {
                 mapData = mapData.replace(/```mermaid/i, '').replace(/```/g, '').trim();
                 
-                // 強制方向為 TD (Top-Down)
                 if (!mapData.startsWith('graph TD') && !mapData.startsWith('graph TB')) {
                     mapData = mapData.replace(/^graph [LR][LR]/, 'graph TD');
                     if (!mapData.startsWith('graph')) {
@@ -863,7 +869,6 @@
             }
         }
 
-        // === [需求 3] 科學動動腦配色與字體 ===
         const mythListEl = document.getElementById('myth-list');
         if (mythListEl) {
             mythListEl.innerHTML = '';
@@ -932,12 +937,21 @@
         const btn = document.getElementById('btn-generate');
         if (btn) btn.disabled = false;
         
-        // ★ 修正重點：只顯示「懸浮按鈕」，視窗保持關閉
+        // [修正] 只顯示懸浮按鈕，不主動打開視窗
         const chatBtn = document.getElementById('floating-chat');
         if (chatBtn) chatBtn.classList.remove('hidden'); 
+        
         const chatWin = document.getElementById("xiaoke-window");
-        if(chatWin && !chatWin.classList.contains("closed")) {
+        if(chatWin) {
             chatWin.classList.add("closed");
+            chatWin.classList.add("hidden");
+        }
+        
+        // [修正] 顯示小科氣泡提示
+        const tooltip = document.getElementById("xiaoke-tooltip");
+        if (tooltip) {
+            tooltip.classList.add("show");
+            setTimeout(() => { tooltip.classList.remove("show"); }, 5000);
         }
 
         setTimeout(syncVocabHeight, 100);
@@ -1101,22 +1115,23 @@
 
     function toggleChat() {
         const win = document.getElementById("xiaoke-window");
+        const tooltip = document.getElementById("xiaoke-tooltip");
         if (!win) return;
+        
+        if (tooltip) tooltip.classList.remove("show");
 
         const wasClosed = win.classList.contains("closed");
-        win.classList.toggle("closed");
-
+        
         if (wasClosed) {
+            win.classList.remove("hidden");
+            setTimeout(() => win.classList.remove("closed"), 10);
+            
             const chatBody = document.getElementById("chat-messages");
             if (chatBody && chatBody.innerHTML.trim() === "") {
-                let currentUnitName = "這個單元";
-                if (filters && filters.unitName) {
-                    currentUnitName = filters.unitName;
-                } else {
-                    const sel = document.getElementById("sel-unit");
-                    if (sel && sel.selectedIndex > -1 && !sel.disabled) {
-                        currentUnitName = sel.options[sel.selectedIndex].text;
-                    }
+                let currentUnitName = filters.unitName || "這個單元";
+                const sel = document.getElementById("sel-unit");
+                if (sel && sel.selectedIndex > -1 && !sel.disabled) {
+                    currentUnitName = sel.options[sel.selectedIndex].text;
                 }
 
                 const greetMsg = `Hi，你好！我是小科，關於「${currentUnitName}」，你有什麼問題要問我？`;
@@ -1132,6 +1147,9 @@
                         </div>
                     </div>`;
             }
+        } else {
+            win.classList.add("closed");
+            setTimeout(() => win.classList.add("hidden"), 300);
         }
     }
 
@@ -1140,14 +1158,20 @@
     let initialLeft, initialTop;
 
     function startDrag(e) {
-        if (e.button !== 0) return;
+        if (e.type === 'mousedown' && e.button !== 0) return;
         
         const container = document.getElementById("floating-chat");
         if (!container) return;
 
         isDragging = false;
-        dragStartX = e.clientX;
-        dragStartY = e.clientY;
+        
+        if(e.type === 'touchstart') {
+            dragStartX = e.touches[0].clientX;
+            dragStartY = e.touches[0].clientY;
+        } else {
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+        }
 
         const rect = container.getBoundingClientRect();
         initialLeft = rect.left;
@@ -1158,13 +1182,28 @@
         container.style.left = `${initialLeft}px`;
         container.style.top = `${initialTop}px`;
 
-        document.addEventListener("mousemove", onDrag);
-        document.addEventListener("mouseup", stopDrag);
+        if(e.type === 'touchstart') {
+            document.addEventListener("touchmove", onDrag, { passive: false });
+            document.addEventListener("touchend", stopDrag);
+        } else {
+            document.addEventListener("mousemove", onDrag);
+            document.addEventListener("mouseup", stopDrag);
+        }
     }
 
     function onDrag(e) {
-        const dx = e.clientX - dragStartX;
-        const dy = e.clientY - dragStartY;
+        let clientX, clientY;
+        if(e.type === 'touchmove') {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+            e.preventDefault(); 
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+
+        const dx = clientX - dragStartX;
+        const dy = clientY - dragStartY;
 
         if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
             isDragging = true;
@@ -1177,9 +1216,11 @@
         }
     }
 
-    function stopDrag() {
+    function stopDrag(e) {
         document.removeEventListener("mousemove", onDrag);
         document.removeEventListener("mouseup", stopDrag);
+        document.removeEventListener("touchmove", onDrag);
+        document.removeEventListener("touchend", stopDrag);
         setTimeout(() => { isDragging = false; }, 100);
     }
 
