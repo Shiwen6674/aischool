@@ -433,10 +433,6 @@
        0) CONFIG & I18N
        =========================== */
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxBWrZCp-xLckDGZnhe64K0IUa_8CJZRzqZbrgL8lQdNn3S1WgaEzbdOtpo4mGwN6_H/exec";
-    // [修正] 追加 googleusercontent fallback（同 deployment id，避免部分環境下 script.google.com CORS/redirect 問題）
-    const GAS_API_URL_ALT = GAS_API_URL.replace("https://script.google.com/macros/s/", "https://script.googleusercontent.com/macros/s/");
-    let GAS_API_ACTIVE = GAS_API_URL;
-
     const CONTENT_DB_ID = "1cEfMEy3bvDa1tET3xmh7ShGeJy8KLUMa_JuULGBD-mk";
     const CONTENT_SHEET_NAME = "Sheet1";
     const USER_DB_ID = "1cDOsaa7E0EwD1R9CeCWoGf8_9ZMcFv8fxQ5d-LWUKu8";
@@ -565,18 +561,10 @@
     // Identity
     function getStudentIdFromLogin(){ const u=window.currentUser||JSON.parse(sessionStorage.getItem("currentUser")||"{}"); return u.student_id||""; }
     function __loadCurrentUser(){ return JSON.parse(sessionStorage.getItem("currentUser")||localStorage.getItem("currentUser")||'{"name":"訪客"}'); }
-
-    // [修正] 訪客也能跑流程：給一個 session 級的 guest id（不影響已登入使用者）
     async function ensureStudentId(){
         let sid = getStudentIdFromLogin();
         if(sid) { CAT.student_id = sid; return sid; }
-        sid = sessionStorage.getItem("_guest_student_id") || "";
-        if(!sid){
-            sid = "guest_" + Date.now().toString(36);
-            sessionStorage.setItem("_guest_student_id", sid);
-        }
-        CAT.student_id = sid;
-        return sid;
+        return "";
     }
 
     // I18N
@@ -622,53 +610,52 @@
         }
     };
 
-    // [修正] 安全解析 JSON + 自動 fallback 至 googleusercontent
-    async function _fetchJSONOnce(url, init){
-        const res = await fetch(url, init);
-        const txt = await res.text();
-
-        let json;
-        try { json = JSON.parse(txt); }
-        catch(e){
-            throw new Error("後端回傳非 JSON（可能是未授權或部署網址錯誤）");
-        }
-
-        if(json && json.status === "error") throw new Error(json.message || "後端回傳錯誤");
-        if(!res.ok) throw new Error(`HTTP ${res.status}`);
-        return json;
+    function setConnBadgeOnline(){
+        const b = document.getElementById("connBadge");
+        b.className = "hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold";
+        b.innerHTML = '<i class="fa-solid fa-wifi"></i> <span>Online</span>';
+    }
+    function setConnBadgeOffline(){
+        const b = document.getElementById("connBadge");
+        b.className = "hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold";
+        b.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> <span>Offline</span>';
     }
 
-    async function fetchJSON(url, init){
-        try {
-            return await _fetchJSONOnce(url, init);
-        } catch(e1){
-            // 只在 primary 失敗時才換 alt 試一次
-            if(url.startsWith(GAS_API_URL) && GAS_API_URL_ALT !== GAS_API_URL){
-                const altUrl = url.replace(GAS_API_URL, GAS_API_URL_ALT);
-                try{
-                    const j = await _fetchJSONOnce(altUrl, init);
-                    GAS_API_ACTIVE = GAS_API_URL_ALT; // 後續都走 alt，避免反覆失敗
-                    return j;
-                } catch(e2){
-                    throw e1; // 保留原始錯誤（最貼近真因）
-                }
-            }
-            throw e1;
-        }
-    }
-
-    // API Wrapper
+    /* ===========================
+       2.5) API Wrapper  (FIX)
+       =========================== */
     async function api(payload){
         if(!payload.content_db_id) payload.content_db_id = CONTENT_DB_ID;
         if(!payload.sheet_name) payload.sheet_name = CONTENT_SHEET_NAME;
 
-        // [修正] 用 text/plain 送 JSON 字串，避免不必要的 CORS preflight
-        const json = await fetchJSON(GAS_API_ACTIVE, {
-            method: "POST",
-            redirect: "follow",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify(payload)
-        });
+        let res, raw;
+        try{
+            res = await fetch(GAS_API_URL, {
+                method: "POST",
+                redirect: "follow",
+                // 重要：text/plain 避免觸發 preflight (Apps Script 常見坑)
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(payload)
+            });
+        }catch(err){
+            throw new Error("Network error: " + (err && err.message ? err.message : err));
+        }
+
+        try{
+            raw = await res.text();
+        }catch(_){
+            raw = "";
+        }
+
+        let json;
+        try{
+            json = raw ? JSON.parse(raw) : {};
+        }catch(_){
+            const snippet = (raw || "").slice(0, 300);
+            throw new Error("Non-JSON response: " + snippet);
+        }
+
+        if(json && json.status === "error") throw new Error(json.message || "API error");
         return json;
     }
 
@@ -685,120 +672,149 @@
         }
     }
 
-    // 初始化教材樹 (相容您的舊版資料結構)
+    function _pickRowValue(r, keys){
+        for(const k of keys){
+            if(r && r[k] !== undefined && r[k] !== null && String(r[k]).trim() !== "") return r[k];
+        }
+        return "";
+    }
+
+    function _extractRows(metaJson){
+        if(!metaJson) return [];
+        if(Array.isArray(metaJson.data)) return metaJson.data;
+        if(Array.isArray(metaJson.rows)) return metaJson.rows;
+        if(metaJson.data && Array.isArray(metaJson.data.rows)) return metaJson.data.rows;
+        if(metaJson.data && Array.isArray(metaJson.data.data)) return metaJson.data.data;
+        return [];
+    }
+
+    // 初始化教材樹 (FIX: 優先用 POST，保留 GET 後備)
     async function bootstrapMaterials(){
         try {
-            // [修正] 直接用 GAS_API_ACTIVE + fallback：GET metadata
-            const json = await fetchJSON(GAS_API_ACTIVE + "?action=get_metadata", {
-                method: "GET",
-                redirect: "follow"
+            let json = null;
+            let rows = [];
+
+            // 1) 優先走 POST（避免 GET 302/CORS）
+            for(const act of META_ACTION_CANDIDATES){
+                try{
+                    const j = await api({ action: act });
+                    const r = _extractRows(j);
+                    if(r && r.length){
+                        json = j;
+                        rows = r;
+                        break;
+                    }
+                }catch(_){
+                    // 下一個候選 action
+                }
+            }
+
+            // 2) 後備：若後端只支援 GET action=get_metadata
+            if(!rows.length){
+                const res = await fetch(GAS_API_URL + "?action=get_metadata", { redirect: "follow" });
+                const j = await res.json();
+                const r = _extractRows(j);
+                if(r && r.length){
+                    json = j;
+                    rows = r;
+                }
+            }
+
+            if(!rows.length) throw new Error("教材資料為空或 metadata action 不存在");
+
+            // 建立選單樹
+            const tree = {};
+            const unitIndex = {};
+
+            rows.forEach(r => {
+                const s = _pickRowValue(r, ["stage","learningStage","learning_stage","學習階段","阶段"]);
+                const g = _pickRowValue(r, ["grade","年級","年级"]);
+                const sem = _pickRowValue(r, ["semester","學期","学期"]);
+                const v = _pickRowValue(r, ["publisher","textbook_version","version","版本"]);
+
+                const unitName = _pickRowValue(r, ["unitName","unit_name","unit","單元","单元"]);
+                if(!s || !g || !sem || !v || !unitName) return;
+
+                if(!tree[s]) tree[s]={};
+                if(!tree[s][g]) tree[s][g]={};
+                if(!tree[s][g][sem]) tree[s][g][sem]={};
+                if(!tree[s][g][sem][v]) tree[s][g][sem][v]=[];
+
+                const uObj = { unit_key: unitName, unit_name: unitName };
+                tree[s][g][sem][v].push(uObj);
+
+                unitIndex[unitName] = r;
             });
 
-            if(json.status === "success") {
-                 const rows = json.data || [];
-                 const tree = {};
-                 Meta.unitIndex = {};
+            Meta.tree = tree;
+            Meta.unitIndex = unitIndex;
 
-                 rows.forEach(r => {
-                     // [修正] 欄位名稱相容（避免後端 key 命名不同造成全空）
-                     const s = r.stage ?? r.learningStage ?? r.learning_stage ?? r.Stage ?? r["學習階段"];
-                     const g = r.grade ?? r.Grade ?? r["年級"];
-                     const sem = r.semester ?? r.Semester ?? r["學期"];
-                     const v = r.publisher ?? r.textbook_version ?? r.version ?? r.Publisher ?? r["出版社"] ?? r["版本"];
+            refreshDropdowns();
+            UI.toast("連線成功", "教材資料已載入", "good");
+            setConnBadgeOnline();
 
-                     const course = r.course ?? r.lesson ?? r["課別"] ?? "";
-                     const courseName = r.courseName ?? r.unitTitle ?? r["課名"] ?? "";
-                     const uName = r.unitName ?? r.unit_name ?? r.unit ?? r["單元"] ?? (course && courseName ? `${course}${courseName}` : (courseName || course || ""));
-
-                     if(!s || !g || !sem || !v || !uName) return;
-
-                     if(!tree[s]) tree[s]={};
-                     if(!tree[s][g]) tree[s][g]={};
-                     if(!tree[s][g][sem]) tree[s][g][sem]={};
-                     if(!tree[s][g][sem][v]) tree[s][g][sem][v]=[];
-
-                     const uObj = { unit_key: uName, unit_name: uName };
-                     tree[s][g][sem][v].push(uObj);
-                     Meta.unitIndex[uName] = r;
-                 });
-
-                 Meta.tree = tree;
-
-                 const stageKeys = Object.keys(Meta.tree || {});
-                 if(stageKeys.length === 0){
-                     throw new Error("教材樹為空（請確認 get_metadata 回傳欄位名稱與內容）");
-                 }
-
-                 refreshDropdowns();
-                 UI.toast("連線成功", "教材資料已載入", "good");
-                 document.getElementById("connBadge").className = "hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold";
-                 document.getElementById("connBadge").innerHTML = '<i class="fa-solid fa-wifi"></i> <span>Online</span>';
-            } else {
-                 throw new Error("API 回傳狀態非 success");
-            }
         } catch(e) {
             console.error(e);
             UI.toast("連線失敗", "無法載入教材資料，請稍後重試。", "bad");
-            document.getElementById("connBadge").className = "hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold";
-            document.getElementById("connBadge").innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> <span>Offline</span>';
+            setConnBadgeOffline();
         }
     }
 
-   function refreshDropdowns() {
-      const sEl = document.getElementById("selStage");
-      const stageKeys = Object.keys(Meta.tree || {});
-      setOptions(sEl, stageKeys.map(x=>({value:x,label:x})), "Select...");
+    function refreshDropdowns() {
+        const sEl = document.getElementById("selStage");
+        const stageKeys = Object.keys(Meta.tree || {});
+        setOptions(sEl, stageKeys.map(x=>({value:x,label:x})), "Select...");
 
-      sEl.onchange = () => {
-        const gEl = document.getElementById("selGrade");
-        const st = sEl.value;
-        const grades = Meta.tree[st] ? Object.keys(Meta.tree[st]) : [];
-        grades.sort((a,b) => Number(a) - Number(b));
-        setOptions(gEl, grades.map(x=>({value:x,label:x+"年級"})), "Select...");
-        gEl.dispatchEvent(new Event("change"));
-      };
+        sEl.onchange = () => {
+            const gEl = document.getElementById("selGrade");
+            const st = sEl.value;
+            const grades = Meta.tree[st] ? Object.keys(Meta.tree[st]) : [];
+            grades.sort((a,b) => Number(a) - Number(b));
+            setOptions(gEl, grades.map(x=>({value:x,label:x+"年級"})), "Select...");
+            gEl.dispatchEvent(new Event("change"));
+        };
 
-      document.getElementById("selGrade").onchange = () => {
-        const semEl = document.getElementById("selSemester");
-        const st = sEl.value;
-        const gr = document.getElementById("selGrade").value;
-        const sems = (Meta.tree[st] && Meta.tree[st][gr]) ? Object.keys(Meta.tree[st][gr]) : [];
-        setOptions(semEl, sems.map(x=>({value:x,label:x})), "Select...");
-        semEl.dispatchEvent(new Event("change"));
-      };
+        document.getElementById("selGrade").onchange = () => {
+            const semEl = document.getElementById("selSemester");
+            const st = sEl.value;
+            const gr = document.getElementById("selGrade").value;
+            const sems = (Meta.tree[st] && Meta.tree[st][gr]) ? Object.keys(Meta.tree[st][gr]) : [];
+            setOptions(semEl, sems.map(x=>({value:x,label:x})), "Select...");
+            semEl.dispatchEvent(new Event("change"));
+        };
 
-      document.getElementById("selSemester").onchange = () => {
-        const pEl = document.getElementById("selPublisher");
-        const st = sEl.value;
-        const gr = document.getElementById("selGrade").value;
-        const sem = document.getElementById("selSemester").value;
+        document.getElementById("selSemester").onchange = () => {
+            const pEl = document.getElementById("selPublisher");
+            const st = sEl.value;
+            const gr = document.getElementById("selGrade").value;
+            const sem = document.getElementById("selSemester").value;
 
-        const pubs = (Meta.tree[st] && Meta.tree[st][gr] && Meta.tree[st][gr][sem])
-          ? Object.keys(Meta.tree[st][gr][sem])
-          : [];
+            const pubs = (Meta.tree[st] && Meta.tree[st][gr] && Meta.tree[st][gr][sem])
+              ? Object.keys(Meta.tree[st][gr][sem])
+              : [];
 
-        setOptions(pEl, pubs.map(x=>({value:x,label:x})), "Select...");
-        pEl.dispatchEvent(new Event("change"));
-      };
+            setOptions(pEl, pubs.map(x=>({value:x,label:x})), "Select...");
+            pEl.dispatchEvent(new Event("change"));
+        };
 
-      document.getElementById("selPublisher").onchange = () => {
-        const uEl = document.getElementById("selUnit");
-        const st = sEl.value;
-        const gr = document.getElementById("selGrade").value;
-        const sem = document.getElementById("selSemester").value;
-        const pub = document.getElementById("selPublisher").value;
+        document.getElementById("selPublisher").onchange = () => {
+            const uEl = document.getElementById("selUnit");
+            const st = sEl.value;
+            const gr = document.getElementById("selGrade").value;
+            const sem = document.getElementById("selSemester").value;
+            const pub = document.getElementById("selPublisher").value;
 
-        const units = (Meta.tree[st] && Meta.tree[st][gr] && Meta.tree[st][gr][sem] && Meta.tree[st][gr][sem][pub])
-          ? Meta.tree[st][gr][sem][pub]
-          : [];
+            const units = (Meta.tree[st] && Meta.tree[st][gr] && Meta.tree[st][gr][sem] && Meta.tree[st][gr][sem][pub])
+              ? Meta.tree[st][gr][sem][pub]
+              : [];
 
-        setOptions(uEl, units.map(x=>({value:x.unit_key, label:x.unit_name})), "Select...");
-      };
+            setOptions(uEl, units.map(x=>({value:x.unit_key, label:x.unit_name})), "Select...");
+        };
 
-      setTimeout(() => {
-        const s = document.getElementById("selStage");
-        if (s && s.value) s.dispatchEvent(new Event("change"));
-      }, 0);
+        setTimeout(() => {
+            const s = document.getElementById("selStage");
+            if (s && s.value) s.dispatchEvent(new Event("change"));
+        }, 0);
     }
 
     function getUnitInfoString() {
@@ -831,7 +847,7 @@
         if(!uVal) { UI.toast("提示", hintMsg, "warn"); return; }
 
         const sid = await ensureStudentId();
-        const n = Number(document.getElementById("inpN").value || 15);
+        const n = parseInt(document.getElementById("inpN").value, 10) || 15;
 
         document.getElementById("loading-overlay").style.display = "flex";
 
@@ -846,7 +862,7 @@
             const json = await api(payload);
 
             CAT.started = true;
-            CAT.test_id = json.test_id || (json.data && json.data.test_id) || "";
+            CAT.test_id = json.test_id || "";
             CAT.student_id = sid;
             CAT.n = n;
             CAT.step = 0;
@@ -856,10 +872,7 @@
 
             document.getElementById("quizHeaderInfo").textContent = getUnitInfoString();
 
-            const firstItem = json.item || (json.data && json.data.item);
-            if(!firstItem) throw new Error("後端未回傳題目 item");
-
-            renderQuestion(firstItem);
+            renderQuestion(json.item);
             UI.setProgress(0, n);
 
         } catch(e) {
@@ -874,19 +887,18 @@
         CAT.selected = "";
 
         document.getElementById("qWrap").classList.remove("hidden");
-        document.getElementById("qStem").textContent = item.stem || "";
+        document.getElementById("qStem").textContent = item.stem;
 
         const optWrap = document.getElementById("optWrap");
         optWrap.innerHTML = "";
 
-        const opts = item.options || item.option_map || {};
         ["A","B","C","D"].forEach(key => {
             const btn = document.createElement("button");
             btn.className = "option-btn text-left w-full px-5 py-4 rounded-xl flex items-center gap-4 group";
             btn.onclick = () => selectOption(key, btn);
             btn.innerHTML = `
                 <div class="opt-badge w-8 h-8 rounded-lg bg-white/10 text-slate-300 font-bold flex items-center justify-center shrink-0">${key}</div>
-                <div class="flex-1 text-slate-200 font-medium">${opts[key] || ""}</div>
+                <div class="flex-1 text-slate-200 font-medium">${(item.options && item.options[key]) ? item.options[key] : ""}</div>
             `;
             optWrap.appendChild(btn);
         });
@@ -906,9 +918,6 @@
     }
 
     async function submitAnswer() {
-        if(!CAT.current || !CAT.current.item_id) { UI.toast("錯誤", "題目資料不完整", "bad"); return; }
-        if(!CAT.selected) { UI.toast("提示", "請先選擇選項", "warn"); return; }
-
         document.getElementById("btnSubmit").disabled = true;
 
         try {
@@ -924,13 +933,10 @@
             CAT.step++;
             UI.setProgress(CAT.step, CAT.n);
 
-            const done = Boolean(json.done || (json.data && json.data.done));
-            const nextItem = json.item || (json.data && json.data.item);
-
-            if(done || CAT.step >= CAT.n) {
+            if(json.done || CAT.step >= CAT.n) {
                 await finishTest();
             } else {
-                CAT.next = nextItem;
+                CAT.next = json.item;
                 document.getElementById("btnNext").disabled = false;
                 document.getElementById("btnNext").classList.remove("opacity-50");
                 document.getElementById("hint").innerHTML = "答案已送出，請按下一題";
@@ -941,10 +947,6 @@
         }
     }
 
-    document.getElementById("btnNext").onclick = () => {
-        if(CAT.next) renderQuestion(CAT.next);
-    };
-
     async function finishTest() {
         document.getElementById("loading-overlay").style.display = "flex";
         try {
@@ -954,23 +956,29 @@
                 student_id: CAT.student_id
             });
 
-            const payload = json.data || json;
-
             document.getElementById("secQuiz").classList.add("hidden");
             document.getElementById("secResult").classList.remove("hidden");
 
-            const total = Number(CAT.step || 0);
-            const scoreStr = payload.score || "0/0";
-            const scoreParts = String(scoreStr).split("/");
-            const correct = Number(scoreParts[0] || 0);
+            // 分數計算（FIX：更穩健）
+            let correct = 0;
+            let total = CAT.step || 0;
 
-            const accuracy = total > 0 ? Math.round((correct/total)*100) : 0;
+            if(typeof json.score === "string" && json.score.includes("/")){
+                const parts = json.score.split("/");
+                const c = parseInt(parts[0], 10);
+                const t = parseInt(parts[1], 10);
+                if(!isNaN(c)) correct = c;
+                if(!isNaN(t) && t > 0) total = t;
+            } else if (typeof json.correct === "number") {
+                correct = json.correct;
+            }
+
+            const accuracy = (total > 0) ? Math.round((correct / total) * 100) : 0;
 
             document.getElementById("resScore").textContent = `${accuracy}%`;
             document.getElementById("resScore100").textContent = `${correct * 4} 分`;
 
-            const wrongItems = payload.wrong_items || [];
-            const wrongHtml = (wrongItems||[]).map((w,i) => `
+            const wrongHtml = (json.wrong_items||[]).map((w,i) => `
                 <div class="bg-red-500/10 p-4 rounded-xl border border-red-500/20">
                     <div class="flex items-start gap-3">
                         <div class="bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mt-0.5">${i+1}</div>
@@ -983,9 +991,9 @@
             `).join("");
             document.getElementById("resWrong").innerHTML = wrongHtml || "<div class='text-emerald-400'>恭喜！沒有錯題。</div>";
 
-            document.getElementById("resFeedback").textContent = payload.feedback_student || "暫無建議";
+            document.getElementById("resFeedback").textContent = json.feedback_student || "暫無建議";
 
-            preparePDF(payload, accuracy, correct);
+            preparePDF(json, accuracy, correct);
 
         } catch(e) {
             UI.toast("錯誤", "結算失敗: " + e.message, "bad");
@@ -1008,15 +1016,15 @@
         if(json.wrong_items && json.wrong_items.length > 0) {
              wrongList.innerHTML = json.wrong_items.map((w,i) => `
                 <div style="margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
-                   <strong>${i+1}. ${w.concept_tag}</strong><br>
-                   <span style="color: #666;">複習建議：${w.textbook_source}</span>
+                   <strong>${i+1}. ${w.concept_tag || "未標示"}</strong><br>
+                   <span style="color: #666;">複習建議：${w.textbook_source || "全單元"}</span>
                 </div>
              `).join("");
         } else {
              wrongList.innerHTML = "無錯題，表現優異！";
         }
 
-        document.getElementById("pdf-feedback").textContent = json.feedback_student || "";
+        document.getElementById("pdf-feedback").textContent = json.feedback_student || "暫無建議";
     }
 
     document.getElementById("btnDownloadPDF").onclick = () => {
@@ -1037,20 +1045,19 @@
     };
 
     /* ===========================
-       INIT
+       INIT  (FIX: 綁定按鈕事件)
        =========================== */
     document.addEventListener("DOMContentLoaded", () => {
         const user = __loadCurrentUser();
         document.getElementById("user-info").textContent = user.name || "訪客";
 
-        // [修正] 補齊按鈕事件綁定（原本沒有綁，按了不會動）
+        // FIX：原本缺少事件綁定 → 按鈕沒反應
         document.getElementById("btnStart").addEventListener("click", startTest);
         document.getElementById("btnSubmit").addEventListener("click", submitAnswer);
-        document.getElementById("btnReload").addEventListener("click", () => bootstrapMaterials());
+        document.getElementById("btnNext").addEventListener("click", () => { if(CAT.next) renderQuestion(CAT.next); });
+        document.getElementById("btnReload").addEventListener("click", bootstrapMaterials);
 
-        // [修正] 套用一次當前語言（避免首次載入未同步）
         changeLanguage();
-
         bootstrapMaterials();
     });
   </script>
