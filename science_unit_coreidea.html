@@ -37,9 +37,8 @@
             color: #f1f5f9;
             font-family: 'Inter', 'Noto Sans TC', "Microsoft JhengHei", sans-serif;
             overflow-x: hidden;
-            -webkit-tap-highlight-color: transparent; /* 手機點擊移除藍色高亮 */
+            -webkit-tap-highlight-color: transparent;
         }
-        /* 極光背景特效 */
         body::before {
             content: ''; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
             background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.1), transparent 60%);
@@ -47,7 +46,7 @@
         }
 
         /* =========================================
-           2. 玻璃擬態面板 (深色模式基底)
+           2. 玻璃擬態面板
            ========================================= */
         .glass-panel, .glass-card {
             background: rgba(30, 41, 59, 0.7) !important;
@@ -59,25 +58,22 @@
         }
 
         /* =========================================
-           3. [修正] 白底區塊強制深色文字 (解決測驗看不到字的問題)
+           3. [修正] 白底區塊強制深色文字 (解決測驗看不到字)
            ========================================= */
-        /* 針對白色背景的卡片，強制把文字顏色改回深灰，不然會被全域設定變成白色 */
         .glass-panel.bg-white, .bg-white {
             color: #1e293b !important; 
         }
-        /* 針對測驗區塊的題目、選項、結果文字 */
         #quiz-body .text-slate-800, 
         #quiz-question, 
         #quiz-result-text,
         .quiz-option-btn,
         #myth-list .text-slate-800 {
-            color: #0f172a !important; /* 深藍黑，確保清楚 */
+            color: #0f172a !important; /* 強制深色字 */
         }
-        
+
         /* =========================================
-           4. 元件樣式 (按鈕、選單、載入圈)
+           4. 元件樣式
            ========================================= */
-        /* 輸入選單 (HUD 風格) */
         select, .tech-select {
             background-color: rgba(15, 23, 42, 0.8) !important;
             border: 1px solid rgba(255, 255, 255, 0.15) !important;
@@ -92,7 +88,6 @@
         }
         select:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* 發光按鈕 */
         #btn-generate, .tech-btn-primary {
             background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%) !important;
             border: none !important;
@@ -106,14 +101,12 @@
         }
         #btn-generate:disabled { filter: grayscale(1); opacity: 0.5; }
 
-        /* 導航列 */
         nav {
             background: rgba(15, 23, 42, 0.95) !important;
             border-bottom: 1px solid rgba(255,255,255,0.1) !important;
             backdrop-filter: blur(12px);
         }
-        
-        /* 測驗選項按鈕 */
+
         .quiz-option-btn {
             background-color: #f8fafc !important;
             border: 1px solid #cbd5e1 !important;
@@ -123,52 +116,63 @@
             border-color: #60a5fa !important;
         }
 
-        /* 詞彙卡片 (修正為深色文字) */
         .vocab-item { 
             background: rgba(255,255,255,0.9) !important; 
             border-color: rgba(255,255,255,0.1) !important; 
             color: #1e293b !important;
         }
         .vocab-item .text-slate-600 { color: #475569 !important; }
-
-        /* Loader */
-        .loader { border-color: rgba(255,255,255,0.1); border-top-color: #38bdf8; }
         
-        /* PDF 下載隱藏 */
+        .loader { border-color: rgba(255,255,255,0.1); border-top-color: #38bdf8; }
         .no-print { display: block; }
         @media print { .no-print { display: none !important; } }
 
         /* =========================================
-           5. 核心概念排版 (教科書風格)
+           5. 核心概念排版 (卡片式)
            ========================================= */
-        #summary-text {
-            font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+        #summary-panel { border-left: 5px solid #3b82f6 !important; background: #f8fafc !important; }
+        
+        .summary-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+            transition: all 0.2s ease;
             color: #1e293b !important;
         }
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.08);
+            border-color: #bfdbfe;
+        }
+        
+        #summary-text { font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif; }
+        
         #summary-text h3 {
-            font-size: 1.4rem; font-weight: 800; color: #0f172a !important;
-            margin-top: 1.5rem; margin-bottom: 1rem; padding-left: 1rem;
-            border-left: 6px solid #3b82f6; 
+            font-size: 1.35rem; font-weight: 800; color: #1e3a8a !important;
+            margin-top: 0 !important; margin-bottom: 1rem; padding-left: 0.8rem;
+            border-left: 5px solid #3b82f6; 
             background: linear-gradient(90deg, #eff6ff 0%, transparent 100%);
-            line-height: 1.5; border-radius: 4px;
+            line-height: 1.6; border-radius: 0 4px 4px 0;
         }
         #summary-text strong, #summary-text b {
-            background: linear-gradient(120deg, rgba(253, 224, 71, 0.4) 0%, rgba(253, 224, 71, 0.7) 100%);
-            padding: 0 4px; border-radius: 4px; color: #0f172a !important; font-weight: 800;
+            background: linear-gradient(120deg, rgba(253, 224, 71, 0.3) 0%, rgba(253, 224, 71, 0.6) 100%);
+            padding: 0 4px; border-radius: 2px; color: #0f172a !important; font-weight: 800;
         }
-        #summary-text ul { list-style: none; padding-left: 0; }
+        #summary-text ul { list-style: none; padding-left: 0; margin: 0; }
         #summary-text li { 
-            position: relative; padding-left: 1.8rem; margin-bottom: 0.8rem; 
-            line-height: 1.8; font-size: 1.05rem; color: #334155 !important;
+            position: relative; padding-left: 1.5rem; margin-bottom: 0.6rem; 
+            line-height: 1.7; font-size: 1.05rem; color: #475569 !important;
         }
-        #summary-text > ul > li::before { content: "●"; color: #3b82f6; font-weight: bold; position: absolute; left: 0.2rem; top: 0; }
-        #summary-text ul ul { margin-top: 0.5rem; padding-left: 1rem; }
-        #summary-text ul ul li::before { content: "○"; color: #64748b; font-weight: normal; position: absolute; left: 0.2rem; top: 0; }
+        #summary-text > .summary-card > ul > li::before { content: "●"; color: #3b82f6; font-weight: bold; position: absolute; left: 0.2rem; top: 0; }
+        #summary-text ul ul { margin-top: 0.4rem; padding-left: 0.5rem; }
+        #summary-text ul ul li::before { content: "○"; color: #94a3b8; font-weight: normal; position: absolute; left: 0.2rem; top: 0; }
 
         /* =========================================
            6. 區塊顏色識別
            ========================================= */
-        #summary-panel { border-left: 5px solid #3b82f6 !important; background: #ffffff !important; }
         #vocab-panel { border-left: 5px solid #a855f7 !important; background: #faf5ff !important; }
         #vocab-panel h3 { color: #6b21a8 !important; }
         .glass-panel:has(#chart-container) { border-top: 5px solid #06b6d4 !important; background: #ecfeff !important; }
@@ -176,8 +180,28 @@
         #quiz-panel { border-left: 5px solid #10b981 !important; background: #f0fdf4 !important; }
 
         /* =========================================
-           7. 小科 AI 特效與對話框
+           7. [關鍵修正] 小科定位與特效
            ========================================= */
+        #floating-chat {
+            position: fixed; 
+            bottom: 1.5rem; right: 1.5rem;
+            display: flex; flex-direction: column; align-items: end;
+            z-index: 9999;
+            touch-action: none; 
+            user-select: none;
+        }
+        
+        /* 桌面版：小科視窗強制定位在「圖示上方」 */
+        @media (min-width: 641px) {
+            #xiaoke-window {
+                position: absolute;
+                bottom: 80px; /* 位於圖示上方 */
+                right: 0;
+                margin-bottom: 0;
+                transform-origin: bottom right;
+            }
+        }
+
         .xiaoke-glow {
             position: relative; z-index: 10;
             border: 2px solid rgba(56, 189, 248, 0.6);
@@ -191,9 +215,8 @@
             50% { transform: translateY(-6px); filter: brightness(1.2) drop-shadow(0 0 8px rgba(56, 189, 248, 0.6)); }
         }
         
-        /* 氣泡對話框 (修正1) */
         .xiaoke-tooltip {
-            position: absolute; bottom: 80px; right: 10px;
+            position: absolute; bottom: 85px; right: 10px;
             background: white; color: #0f172a;
             padding: 8px 16px; border-radius: 16px; border-bottom-right-radius: 4px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
@@ -206,22 +229,23 @@
         .xiaoke-tooltip.show { opacity: 1; transform: translateY(0) scale(1); }
 
         /* =========================================
-           8. 手機版面優化 (修正3)
+           8. 手機版面優化 (RWD)
            ========================================= */
         @media (max-width: 640px) {
             nav { height: 3.5rem; padding: 0 1rem; }
             nav h1 { font-size: 1.1rem; }
             main { padding-top: 5rem !important; padding-bottom: 7rem !important; }
             
-            /* 小科在手機上固定位置，不讓隨意拖曳以免跑版 */
-            #floating-chat { bottom: 1.5rem; right: 1.5rem; }
+            #floating-chat { bottom: 1rem; right: 1rem; }
             
-            /* 聊天視窗在手機上改為佔滿下方 */
+            /* 手機版視窗佔滿底部 */
             #xiaoke-window {
-                width: 92vw !important; right: 4vw !important; bottom: 5rem !important;
+                position: fixed;
+                width: 92vw !important; left: 4vw !important; bottom: 5.5rem !important; right: auto !important;
                 height: 60vh !important;
+                transform-origin: bottom center;
             }
-            .xiaoke-glow { cursor: default; } /* 手機不顯示抓取游標 */
+            .xiaoke-glow { cursor: default; } 
         }
     </style>
 </head>
@@ -307,7 +331,7 @@
             <h3 class="text-xl font-bold text-slate-700">AI 單元重點整理中...</h3>
         </div>
 
-<div id="content-view" class="hidden animate-fade-in-up">
+        <div id="content-view" class="hidden animate-fade-in-up">
             <div class="mb-6 flex flex-col md:flex-row justify-between md:items-end gap-4 relative z-20">
                 <div>
                     <span id="result-tag" class="text-xs font-bold bg-blue-100 text-blue-600 px-3 py-1 rounded-full">TAG</span>
@@ -321,7 +345,6 @@
                     </button>
                    </div>
             </div>
-            ```
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start"> 
                 
@@ -447,7 +470,7 @@
 
     <div id="image-modal" class="fixed inset-0 z-[200] bg-black/95 hidden flex-col items-center justify-center p-2 transition-opacity duration-300" onclick="closeModal()">
         <button class="absolute top-4 right-4 text-white/90 hover:text-white text-5xl font-bold p-2 z-[201]" onclick="closeModal()">&times;</button>
-        <div id="modal-content" class="bg-white rounded-lg shadow-2xl" onclick="event.stopPropagation()"></div>
+        <div id="modal-content" class="bg-white rounded-lg shadow-2xl w-[98vw] h-[95vh] overflow-auto p-4 relative" onclick="event.stopPropagation()"></div>
     </div>
 
     <script>
@@ -791,6 +814,18 @@
                         return `<p>${line}</p>`;
                     }).join('');
                 }
+                
+                // 卡片化處理
+                if (!content.includes('<div class="summary-card">')) {
+                   // 如果還沒被包成卡片
+                   const parts = content.split(/(?=<h3>)/); // 依照標題切分
+                   if (parts.length > 1) {
+                      content = parts.map(part => `<div class="summary-card">${part}</div>`).join('');
+                   } else {
+                      content = `<div class="summary-card">${content}</div>`;
+                   }
+                }
+                
                 content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             }
             summaryBox.innerHTML = content || '生成摘要失敗...';
@@ -938,17 +973,15 @@
         const btn = document.getElementById('btn-generate');
         if (btn) btn.disabled = false;
         
-        // [修正] 只顯示懸浮按鈕，不主動打開視窗
+        // ★ 修正：顯示懸浮按鈕，但視窗預設為關閉
         const chatBtn = document.getElementById('floating-chat');
         if (chatBtn) chatBtn.classList.remove('hidden'); 
-        
         const chatWin = document.getElementById("xiaoke-window");
         if(chatWin) {
             chatWin.classList.add("closed");
             chatWin.classList.add("hidden");
         }
-        
-        // [修正] 顯示小科氣泡提示
+        // ★ 修正：顯示氣泡提示
         const tooltip = document.getElementById("xiaoke-tooltip");
         if (tooltip) {
             tooltip.classList.add("show");
@@ -1268,7 +1301,7 @@
         }
     }
 
-function openModal() {
+    function openModal() {
         const chartDiv = document.getElementById("mermaid-chart");
         if (!chartDiv || !chartDiv.innerHTML.trim() || chartDiv.innerText.includes("錯誤")) {
             return;
@@ -1278,29 +1311,23 @@ function openModal() {
         const content = document.getElementById("modal-content");
         if (!modal || !content) return;
 
-        // 複製內容
         content.innerHTML = chartDiv.innerHTML;
-
-        // ★ 修改點 1：透過 className 強制設定容器為「左右滿版 (98vw)」與「高度最大化 (95vh)」
-        // overflow-auto 確保圖表過大時可以捲動，p-4 保留一點內邊距
         content.className = "bg-white rounded-lg shadow-2xl w-[98vw] h-[95vh] overflow-auto p-4 relative";
 
         const wrapper = content.querySelector(".mermaid");
         if (wrapper) {
             wrapper.style.width = "100%";
+            wrapper.style.overflow = "auto";
         }
 
         const svg = content.querySelector("svg");
         if (svg) {
-            // 移除原本 Mermaid 可能寫死的寬高
             svg.removeAttribute("style");
             svg.removeAttribute("width");
             svg.removeAttribute("height");
 
             svg.style.display = "block";
             svg.style.margin  = "0 auto";
-
-            // ★ 修改點 2：將 SVG 寬度設為 100%，讓它填滿剛剛變大的容器
             svg.style.width  = "100%";   
             svg.style.height = "auto";
         }
