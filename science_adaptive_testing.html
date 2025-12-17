@@ -136,9 +136,9 @@
       font-family: 'Noto Sans TC', sans-serif; color: #1e293b; display: none;
     }
     .report-section { margin-bottom: 30px; page-break-inside: avoid; }
-    .report-title { 
-        font-size: 18px; font-weight: 900; color: #1e3a8a; 
-        border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-bottom: 15px; 
+    .report-title {
+        font-size: 18px; font-weight: 900; color: #1e3a8a;
+        border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-bottom: 15px;
     }
     .no-print { display: block; }
     @media print { .no-print { display: none !important; } }
@@ -166,7 +166,7 @@
           <h1 class="text-lg font-black text-white tracking-wide" data-i18n="page_title">AI 適性診斷中心</h1>
         </div>
       </div>
-      
+
       <div class="flex items-center gap-4">
         <select id="language-selector" onchange="changeLanguage()" class="bg-white/10 border-0 text-xs rounded-lg px-2 py-1 text-slate-300 focus:ring-1 focus:ring-blue-400 cursor-pointer">
             <option value="zh-TW">繁體中文</option>
@@ -191,7 +191,7 @@
 
     <section id="secConfig" class="glass-card p-6 md:p-8 relative overflow-hidden animate-fade-in">
       <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px] pointer-events-none"></div>
-      
+
       <div class="flex flex-wrap items-center justify-between mb-6 border-b border-white/10 pb-4 relative z-10">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white flex items-center justify-center text-lg font-bold shadow-lg shadow-blue-500/30">1</div>
@@ -244,7 +244,7 @@
         <div class="flex items-center gap-4 bg-white/5 px-4 py-2 rounded-xl border border-white/10">
           <span class="text-sm font-bold text-slate-300" data-i18n="label_q_count">測驗題數</span>
           <div class="h-4 w-px bg-white/20"></div>
-          <input id="inpN" type="number" min="5" max="40" step="1" value="15" 
+          <input id="inpN" type="number" min="5" max="40" step="1" value="15"
             class="w-16 bg-transparent text-center font-mono font-bold text-lg text-cyan-400 focus:outline-none">
           <span class="text-xs font-bold text-slate-400" data-i18n="label_q_unit">題</span>
         </div>
@@ -385,7 +385,7 @@
       <div style="font-size: 24px; color: #64748b; margin-bottom: 10px; font-weight: bold; letter-spacing: 2px;">AI SCHOOL 自然科學</div>
       <div style="font-size: 42px; color: #1e293b; font-weight: 900; margin-bottom: 20px;">單元試題診斷報告書</div>
       <div id="pdf-cover-unit" style="font-size: 28px; color: #0f172a; margin-bottom: 60px; font-weight: bold; border-bottom: 2px solid #3b82f6; padding-bottom: 10px;"></div>
-      
+
       <div style="text-align: left; width: 60%; margin: 0 auto; font-size: 18px; line-height: 2;">
         <div style="border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between;">
           <span style="color: #64748b;">學生姓名：</span>
@@ -397,7 +397,7 @@
         </div>
       </div>
     </div>
-    
+
     <div class="html2pdf__page-break"></div>
 
     <div style="padding: 40px;">
@@ -433,6 +433,10 @@
        0) CONFIG & I18N
        =========================== */
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxBWrZCp-xLckDGZnhe64K0IUa_8CJZRzqZbrgL8lQdNn3S1WgaEzbdOtpo4mGwN6_H/exec";
+    // [修正] 追加 googleusercontent fallback（同 deployment id，避免部分環境下 script.google.com CORS/redirect 問題）
+    const GAS_API_URL_ALT = GAS_API_URL.replace("https://script.google.com/macros/s/", "https://script.googleusercontent.com/macros/s/");
+    let GAS_API_ACTIVE = GAS_API_URL;
+
     const CONTENT_DB_ID = "1cEfMEy3bvDa1tET3xmh7ShGeJy8KLUMa_JuULGBD-mk";
     const CONTENT_SHEET_NAME = "Sheet1";
     const USER_DB_ID = "1cDOsaa7E0EwD1R9CeCWoGf8_9ZMcFv8fxQ5d-LWUKu8";
@@ -561,18 +565,26 @@
     // Identity
     function getStudentIdFromLogin(){ const u=window.currentUser||JSON.parse(sessionStorage.getItem("currentUser")||"{}"); return u.student_id||""; }
     function __loadCurrentUser(){ return JSON.parse(sessionStorage.getItem("currentUser")||localStorage.getItem("currentUser")||'{"name":"訪客"}'); }
-    async function ensureStudentId(){ 
-        let sid = getStudentIdFromLogin(); 
+
+    // [修正] 訪客也能跑流程：給一個 session 級的 guest id（不影響已登入使用者）
+    async function ensureStudentId(){
+        let sid = getStudentIdFromLogin();
         if(sid) { CAT.student_id = sid; return sid; }
-        return ""; 
+        sid = sessionStorage.getItem("_guest_student_id") || "";
+        if(!sid){
+            sid = "guest_" + Date.now().toString(36);
+            sessionStorage.setItem("_guest_student_id", sid);
+        }
+        CAT.student_id = sid;
+        return sid;
     }
-    
+
     // I18N
     function changeLanguage() {
         const lang = document.getElementById("language-selector").value;
         document.querySelectorAll("[data-i18n]").forEach(el => {
             const key = el.getAttribute("data-i18n");
-            if (i18n[lang][key]) el.textContent = i18n[lang][key];
+            if (i18n[lang] && i18n[lang][key]) el.textContent = i18n[lang][key];
         });
     }
 
@@ -583,12 +595,12 @@
             const ic = document.getElementById("toastIcon");
             const tt = document.getElementById("toastTitle");
             const tm = document.getElementById("toastMsg");
-            
+
             let iconHTML = '<i class="fa-solid fa-circle-info text-blue-400"></i>';
             if(type==="good") iconHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
             if(type==="warn") iconHTML = '<i class="fa-solid fa-triangle-exclamation text-amber-400"></i>';
             if(type==="bad")  iconHTML = '<i class="fa-solid fa-circle-xmark text-red-400"></i>';
-            
+
             ic.innerHTML = iconHTML;
             tt.textContent = title;
             tm.textContent = msg;
@@ -610,66 +622,113 @@
         }
     };
 
-    // API Wrapper
-    async function api(payload){
-        // 自動帶入 DB ID 參數，確保後端能收到
-        if(!payload.content_db_id) payload.content_db_id = CONTENT_DB_ID;
-        if(!payload.sheet_name) payload.sheet_name = CONTENT_SHEET_NAME;
-        
-        const res = await fetch(GAS_API_URL, {
-            method: "POST",
-            body: JSON.stringify(payload) 
-        });
-        const json = await res.json();
-        if(json.status === "error") throw new Error(json.message);
+    // [修正] 安全解析 JSON + 自動 fallback 至 googleusercontent
+    async function _fetchJSONOnce(url, init){
+        const res = await fetch(url, init);
+        const txt = await res.text();
+
+        let json;
+        try { json = JSON.parse(txt); }
+        catch(e){
+            throw new Error("後端回傳非 JSON（可能是未授權或部署網址錯誤）");
+        }
+
+        if(json && json.status === "error") throw new Error(json.message || "後端回傳錯誤");
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
         return json;
     }
-    
+
+    async function fetchJSON(url, init){
+        try {
+            return await _fetchJSONOnce(url, init);
+        } catch(e1){
+            // 只在 primary 失敗時才換 alt 試一次
+            if(url.startsWith(GAS_API_URL) && GAS_API_URL_ALT !== GAS_API_URL){
+                const altUrl = url.replace(GAS_API_URL, GAS_API_URL_ALT);
+                try{
+                    const j = await _fetchJSONOnce(altUrl, init);
+                    GAS_API_ACTIVE = GAS_API_URL_ALT; // 後續都走 alt，避免反覆失敗
+                    return j;
+                } catch(e2){
+                    throw e1; // 保留原始錯誤（最貼近真因）
+                }
+            }
+            throw e1;
+        }
+    }
+
+    // API Wrapper
+    async function api(payload){
+        if(!payload.content_db_id) payload.content_db_id = CONTENT_DB_ID;
+        if(!payload.sheet_name) payload.sheet_name = CONTENT_SHEET_NAME;
+
+        // [修正] 用 text/plain 送 JSON 字串，避免不必要的 CORS preflight
+        const json = await fetchJSON(GAS_API_ACTIVE, {
+            method: "POST",
+            redirect: "follow",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(payload)
+        });
+        return json;
+    }
+
     /* ===========================
        3) CORE LOGIC (Tree, Dropdowns)
        =========================== */
-    function setOptions(selectEl, options, placeholder){ 
-        selectEl.innerHTML=""; 
-        if(!options||options.length===0){ 
-            const op=document.createElement("option"); op.value=""; op.textContent=placeholder; selectEl.appendChild(op); return; 
-        } 
-        for(const {value,label} of options){ 
-            const op=document.createElement("option"); op.value=String(value); op.textContent=String(label); selectEl.appendChild(op); 
-        } 
+    function setOptions(selectEl, options, placeholder){
+        selectEl.innerHTML="";
+        if(!options||options.length===0){
+            const op=document.createElement("option"); op.value=""; op.textContent=placeholder; selectEl.appendChild(op); return;
+        }
+        for(const {value,label} of options){
+            const op=document.createElement("option"); op.value=String(value); op.textContent=String(label); selectEl.appendChild(op);
+        }
     }
-    
+
     // 初始化教材樹 (相容您的舊版資料結構)
     async function bootstrapMaterials(){
         try {
-            // [修正] 改用 fetch 加上 redirect: 'follow' 解決 CORS 302 問題
-            const res = await fetch(GAS_API_URL + "?action=get_metadata", { redirect: "follow" });
-            const json = await res.json();
-            
+            // [修正] 直接用 GAS_API_ACTIVE + fallback：GET metadata
+            const json = await fetchJSON(GAS_API_ACTIVE + "?action=get_metadata", {
+                method: "GET",
+                redirect: "follow"
+            });
+
             if(json.status === "success") {
-                 // 建立選單樹
-                 const rows = json.data;
+                 const rows = json.data || [];
                  const tree = {};
-                 const unitIndex = {};
-                 
+                 Meta.unitIndex = {};
+
                  rows.forEach(r => {
-                     // 處理資料欄位可能的不同命名
-                     const s = r.stage || r.learningStage;
-                     const g = r.grade;
-                     const sem = r.semester;
-                     const v = r.publisher;
-                     
-                     if(!s || !g || !sem || !v) return;
+                     // [修正] 欄位名稱相容（避免後端 key 命名不同造成全空）
+                     const s = r.stage ?? r.learningStage ?? r.learning_stage ?? r.Stage ?? r["學習階段"];
+                     const g = r.grade ?? r.Grade ?? r["年級"];
+                     const sem = r.semester ?? r.Semester ?? r["學期"];
+                     const v = r.publisher ?? r.textbook_version ?? r.version ?? r.Publisher ?? r["出版社"] ?? r["版本"];
+
+                     const course = r.course ?? r.lesson ?? r["課別"] ?? "";
+                     const courseName = r.courseName ?? r.unitTitle ?? r["課名"] ?? "";
+                     const uName = r.unitName ?? r.unit_name ?? r.unit ?? r["單元"] ?? (course && courseName ? `${course}${courseName}` : (courseName || course || ""));
+
+                     if(!s || !g || !sem || !v || !uName) return;
 
                      if(!tree[s]) tree[s]={};
                      if(!tree[s][g]) tree[s][g]={};
                      if(!tree[s][g][sem]) tree[s][g][sem]={};
                      if(!tree[s][g][sem][v]) tree[s][g][sem][v]=[];
-                     
-                     const uObj = { unit_key: r.unitName, unit_name: r.unitName }; 
+
+                     const uObj = { unit_key: uName, unit_name: uName };
                      tree[s][g][sem][v].push(uObj);
-                     Meta.unitIndex[r.unitName] = r;
+                     Meta.unitIndex[uName] = r;
                  });
+
                  Meta.tree = tree;
+
+                 const stageKeys = Object.keys(Meta.tree || {});
+                 if(stageKeys.length === 0){
+                     throw new Error("教材樹為空（請確認 get_metadata 回傳欄位名稱與內容）");
+                 }
+
                  refreshDropdowns();
                  UI.toast("連線成功", "教材資料已載入", "good");
                  document.getElementById("connBadge").className = "hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold";
@@ -685,54 +744,72 @@
         }
     }
 
-    function refreshDropdowns() {
-        const sEl = document.getElementById("selStage");
-        const stageKeys = Object.keys(Meta.tree || {});
-        setOptions(sEl, stageKeys.map(x=>({value:x,label:x})), "Select...");
-        
-        sEl.onchange = () => {
-            const gEl = document.getElementById("selGrade");
-            const st = sEl.value;
-            const grades = Meta.tree[st] ? Object.keys(Meta.tree[st]) : [];
-            // 數字排序
-            grades.sort((a,b) => Number(a) - Number(b));
-            setOptions(gEl, grades.map(x=>({value:x,label:x+"年級"})), "Select...");
-            gEl.dispatchEvent(new Event('change'));
-        };
+   function refreshDropdowns() {
+      const sEl = document.getElementById("selStage");
+      const stageKeys = Object.keys(Meta.tree || {});
+      setOptions(sEl, stageKeys.map(x=>({value:x,label:x})), "Select...");
 
-        document.getElementById("selGrade").onchange = () => {
-            const semEl = document.getElementById("selSemester");
-            const st = sEl.value; const gr = document.getElementById("selGrade").value;
-            const sems = (Meta.tree[st] && Meta.tree[st][gr]) ? Object.keys(Meta.tree[st][gr]) : [];
-            setOptions(semEl, sems.map(x=>({value:x,label:x})), "Select...");
-            semEl.dispatchEvent(new Event('change'));
-        };
-        
-        document.getElementById("selSemester").onchange = () => {
-            const pEl = document.getElementById("selPublisher");
-            const st = sEl.value; const gr = document.getElementById("selGrade").value; const sem = document.getElementById("selSemester").value;
-            const pubs = (Meta.tree[st][gr][sem]) ? Object.keys(Meta.tree[st][gr][sem]) : [];
-            setOptions(pEl, pubs.map(x=>({value:x,label:x})), "Select...");
-            pEl.dispatchEvent(new Event('change'));
-        };
+      sEl.onchange = () => {
+        const gEl = document.getElementById("selGrade");
+        const st = sEl.value;
+        const grades = Meta.tree[st] ? Object.keys(Meta.tree[st]) : [];
+        grades.sort((a,b) => Number(a) - Number(b));
+        setOptions(gEl, grades.map(x=>({value:x,label:x+"年級"})), "Select...");
+        gEl.dispatchEvent(new Event("change"));
+      };
 
-        document.getElementById("selPublisher").onchange = () => {
-             const uEl = document.getElementById("selUnit");
-             const st = sEl.value; const gr = document.getElementById("selGrade").value; const sem = document.getElementById("selSemester").value; const pub = document.getElementById("selPublisher").value;
-             const units = Meta.tree[st][gr][sem][pub] || [];
-             setOptions(uEl, units.map(x=>({value:x.unit_key, label:x.unit_name})), "Select...");
-        };
+      document.getElementById("selGrade").onchange = () => {
+        const semEl = document.getElementById("selSemester");
+        const st = sEl.value;
+        const gr = document.getElementById("selGrade").value;
+        const sems = (Meta.tree[st] && Meta.tree[st][gr]) ? Object.keys(Meta.tree[st][gr]) : [];
+        setOptions(semEl, sems.map(x=>({value:x,label:x})), "Select...");
+        semEl.dispatchEvent(new Event("change"));
+      };
+
+      document.getElementById("selSemester").onchange = () => {
+        const pEl = document.getElementById("selPublisher");
+        const st = sEl.value;
+        const gr = document.getElementById("selGrade").value;
+        const sem = document.getElementById("selSemester").value;
+
+        const pubs = (Meta.tree[st] && Meta.tree[st][gr] && Meta.tree[st][gr][sem])
+          ? Object.keys(Meta.tree[st][gr][sem])
+          : [];
+
+        setOptions(pEl, pubs.map(x=>({value:x,label:x})), "Select...");
+        pEl.dispatchEvent(new Event("change"));
+      };
+
+      document.getElementById("selPublisher").onchange = () => {
+        const uEl = document.getElementById("selUnit");
+        const st = sEl.value;
+        const gr = document.getElementById("selGrade").value;
+        const sem = document.getElementById("selSemester").value;
+        const pub = document.getElementById("selPublisher").value;
+
+        const units = (Meta.tree[st] && Meta.tree[st][gr] && Meta.tree[st][gr][sem] && Meta.tree[st][gr][sem][pub])
+          ? Meta.tree[st][gr][sem][pub]
+          : [];
+
+        setOptions(uEl, units.map(x=>({value:x.unit_key, label:x.unit_name})), "Select...");
+      };
+
+      setTimeout(() => {
+        const s = document.getElementById("selStage");
+        if (s && s.value) s.dispatchEvent(new Event("change"));
+      }, 0);
     }
-    
+
     function getUnitInfoString() {
         const s = document.getElementById("selStage").value;
         const g = document.getElementById("selGrade").value;
         const sem = document.getElementById("selSemester").value;
         const p = document.getElementById("selPublisher").value;
-        const u = document.getElementById("selUnit").value; 
+        const u = document.getElementById("selUnit").value;
         return `${s}${g}年級 ${sem} ${p} 「${u}」`;
     }
-    
+
     function getUnitPayload() {
          return {
              stage: document.getElementById("selStage").value,
@@ -748,18 +825,16 @@
        =========================== */
     async function startTest() {
         const uVal = document.getElementById("selUnit").value;
-        // 修正多語系讀取錯誤
         const langVal = document.getElementById("language-selector").value;
         const hintMsg = i18n[langVal] ? i18n[langVal].msg_select_unit : "請先完成單元選擇";
 
         if(!uVal) { UI.toast("提示", hintMsg, "warn"); return; }
-        
+
         const sid = await ensureStudentId();
-        const n = document.getElementById("inpN").value;
-        
-        // Show Loading
+        const n = Number(document.getElementById("inpN").value || 15);
+
         document.getElementById("loading-overlay").style.display = "flex";
-        
+
         try {
             const payload = {
                 action: ACTION.START_CAT,
@@ -767,27 +842,26 @@
                 unit: getUnitPayload(),
                 settings: { max_items: n }
             };
-            
+
             const json = await api(payload);
-            
-            // Setup Quiz State
+
             CAT.started = true;
-            CAT.test_id = json.test_id;
+            CAT.test_id = json.test_id || (json.data && json.data.test_id) || "";
             CAT.student_id = sid;
             CAT.n = n;
             CAT.step = 0;
-            
-            // [修正 4] Update UI Flow
+
             document.getElementById("secConfig").classList.add("hidden");
             document.getElementById("secQuiz").classList.remove("hidden");
-            
-            // Set Header Info
+
             document.getElementById("quizHeaderInfo").textContent = getUnitInfoString();
-            
-            // Render First Question
-            renderQuestion(json.item);
+
+            const firstItem = json.item || (json.data && json.data.item);
+            if(!firstItem) throw new Error("後端未回傳題目 item");
+
+            renderQuestion(firstItem);
             UI.setProgress(0, n);
-            
+
         } catch(e) {
             UI.toast("錯誤", "命題失敗: " + e.message, "bad");
         } finally {
@@ -798,24 +872,25 @@
     function renderQuestion(item) {
         CAT.current = item;
         CAT.selected = "";
-        
+
         document.getElementById("qWrap").classList.remove("hidden");
-        document.getElementById("qStem").textContent = item.stem;
-        
+        document.getElementById("qStem").textContent = item.stem || "";
+
         const optWrap = document.getElementById("optWrap");
         optWrap.innerHTML = "";
-        
+
+        const opts = item.options || item.option_map || {};
         ["A","B","C","D"].forEach(key => {
             const btn = document.createElement("button");
             btn.className = "option-btn text-left w-full px-5 py-4 rounded-xl flex items-center gap-4 group";
             btn.onclick = () => selectOption(key, btn);
             btn.innerHTML = `
                 <div class="opt-badge w-8 h-8 rounded-lg bg-white/10 text-slate-300 font-bold flex items-center justify-center shrink-0">${key}</div>
-                <div class="flex-1 text-slate-200 font-medium">${item.options[key] || ""}</div>
+                <div class="flex-1 text-slate-200 font-medium">${opts[key] || ""}</div>
             `;
             optWrap.appendChild(btn);
         });
-        
+
         document.getElementById("btnSubmit").disabled = true;
         document.getElementById("btnNext").disabled = true;
         document.getElementById("btnNext").classList.add("opacity-50");
@@ -831,8 +906,11 @@
     }
 
     async function submitAnswer() {
+        if(!CAT.current || !CAT.current.item_id) { UI.toast("錯誤", "題目資料不完整", "bad"); return; }
+        if(!CAT.selected) { UI.toast("提示", "請先選擇選項", "warn"); return; }
+
         document.getElementById("btnSubmit").disabled = true;
-        
+
         try {
             const json = await api({
                 action: ACTION.SUBMIT_NEXT,
@@ -842,21 +920,23 @@
                 response_option: CAT.selected,
                 max_items: CAT.n
             });
-            
+
             CAT.step++;
             UI.setProgress(CAT.step, CAT.n);
-            
-            if(json.done || CAT.step >= CAT.n) {
-                // Finish
+
+            const done = Boolean(json.done || (json.data && json.data.done));
+            const nextItem = json.item || (json.data && json.data.item);
+
+            if(done || CAT.step >= CAT.n) {
                 await finishTest();
             } else {
-                CAT.next = json.item;
+                CAT.next = nextItem;
                 document.getElementById("btnNext").disabled = false;
                 document.getElementById("btnNext").classList.remove("opacity-50");
                 document.getElementById("hint").innerHTML = "答案已送出，請按下一題";
             }
         } catch(e) {
-            UI.toast("錯誤", "送出失敗", "bad");
+            UI.toast("錯誤", "送出失敗: " + e.message, "bad");
             document.getElementById("btnSubmit").disabled = false;
         }
     }
@@ -873,23 +953,24 @@
                 test_id: CAT.test_id,
                 student_id: CAT.student_id
             });
-            
-            // [修正 4] Switch to Result Section
+
+            const payload = json.data || json;
+
             document.getElementById("secQuiz").classList.add("hidden");
             document.getElementById("secResult").classList.remove("hidden");
-            
-            // Populate Results
-            const total = CAT.step;
-            // Assuming json.score string format "correct/total"
-            const scoreParts = (json.score || "0/0").split("/");
-            const correct = scoreParts[0];
-            const accuracy = Math.round((correct/total)*100);
-            
+
+            const total = Number(CAT.step || 0);
+            const scoreStr = payload.score || "0/0";
+            const scoreParts = String(scoreStr).split("/");
+            const correct = Number(scoreParts[0] || 0);
+
+            const accuracy = total > 0 ? Math.round((correct/total)*100) : 0;
+
             document.getElementById("resScore").textContent = `${accuracy}%`;
-            document.getElementById("resScore100").textContent = `${correct * 4} 分`; 
-            
-            // Wrong Items & Feedback
-            const wrongHtml = (json.wrong_items||[]).map((w,i) => `
+            document.getElementById("resScore100").textContent = `${correct * 4} 分`;
+
+            const wrongItems = payload.wrong_items || [];
+            const wrongHtml = (wrongItems||[]).map((w,i) => `
                 <div class="bg-red-500/10 p-4 rounded-xl border border-red-500/20">
                     <div class="flex items-start gap-3">
                         <div class="bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mt-0.5">${i+1}</div>
@@ -901,14 +982,13 @@
                 </div>
             `).join("");
             document.getElementById("resWrong").innerHTML = wrongHtml || "<div class='text-emerald-400'>恭喜！沒有錯題。</div>";
-            
-            document.getElementById("resFeedback").textContent = json.feedback_student || "暫無建議";
 
-            // Prepare PDF Data
-            preparePDF(json, accuracy, correct);
-            
+            document.getElementById("resFeedback").textContent = payload.feedback_student || "暫無建議";
+
+            preparePDF(payload, accuracy, correct);
+
         } catch(e) {
-            UI.toast("錯誤", "結算失敗", "bad");
+            UI.toast("錯誤", "結算失敗: " + e.message, "bad");
         } finally {
             document.getElementById("loading-overlay").style.display = "none";
         }
@@ -919,11 +999,11 @@
         document.getElementById("pdf-cover-name").textContent = document.getElementById("user-info").textContent;
         const date = new Date();
         document.getElementById("pdf-cover-date").textContent = `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}`;
-        
-        document.getElementById("pdf-score-circle").textContent = `${correct * 4}`; 
+
+        document.getElementById("pdf-score-circle").textContent = `${correct * 4}`;
         document.getElementById("pdf-score-raw").textContent = `${correct} / ${CAT.step}`;
         document.getElementById("pdf-score-comment").textContent = acc >= 80 ? "優秀" : (acc >= 60 ? "及格" : "加油");
-        
+
         const wrongList = document.getElementById("pdf-wrong-list");
         if(json.wrong_items && json.wrong_items.length > 0) {
              wrongList.innerHTML = json.wrong_items.map((w,i) => `
@@ -935,8 +1015,8 @@
         } else {
              wrongList.innerHTML = "無錯題，表現優異！";
         }
-        
-        document.getElementById("pdf-feedback").textContent = json.feedback_student;
+
+        document.getElementById("pdf-feedback").textContent = json.feedback_student || "";
     }
 
     document.getElementById("btnDownloadPDF").onclick = () => {
@@ -960,10 +1040,17 @@
        INIT
        =========================== */
     document.addEventListener("DOMContentLoaded", () => {
-        // [修正 2] 載入使用者
         const user = __loadCurrentUser();
         document.getElementById("user-info").textContent = user.name || "訪客";
-        
+
+        // [修正] 補齊按鈕事件綁定（原本沒有綁，按了不會動）
+        document.getElementById("btnStart").addEventListener("click", startTest);
+        document.getElementById("btnSubmit").addEventListener("click", submitAnswer);
+        document.getElementById("btnReload").addEventListener("click", () => bootstrapMaterials());
+
+        // [修正] 套用一次當前語言（避免首次載入未同步）
+        changeLanguage();
+
         bootstrapMaterials();
     });
   </script>
