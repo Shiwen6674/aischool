@@ -767,14 +767,34 @@
         }
     }
 
-    function renderQuestion(item) {
+function renderQuestion(item) {
         CAT.current = item;
         CAT.selected = "";
+
         document.getElementById("qWrap").classList.remove("hidden");
-        document.getElementById("qStem").textContent = item.stem;
         
+        // --- 👇 修改開始：過濾掉後端的 JSON 標記 👇 ---
+        let displayStem = item.stem;
+        
+        // 1. 檢查是否有 [STIMULUS_JSON]
+        if (displayStem.includes("[STIMULUS_JSON]")) {
+            // 只保留標記之前的部分
+            displayStem = displayStem.split("[STIMULUS_JSON]")[0].trim();
+        }
+
+        // 2. (選用) 簡單美化一下題目中的表格文字標記
+        // 把 【材料】、【題目】 這些標籤加粗或變色
+        displayStem = displayStem.replace(/【(.*?)】/g, "<span class='text-cyan-400 font-bold'>【$1】</span>");
+        
+        // 3. 處理換行符號，讓排版更好看
+        displayStem = displayStem.replace(/\n/g, "<br>");
+
+        document.getElementById("qStem").innerHTML = displayStem;
+        // --- 👆 修改結束 👆 ---
+
         const optWrap = document.getElementById("optWrap");
         optWrap.innerHTML = "";
+
         ["A","B","C","D"].forEach(key => {
             const btn = document.createElement("button");
             btn.className = "option-btn text-left w-full px-5 py-4 rounded-xl flex items-center gap-4 group";
@@ -787,11 +807,12 @@
         });
 
         document.getElementById("btnSubmit").disabled = true;
+        
         const btnNext = document.getElementById("btnNext");
         btnNext.disabled = true;
-        // 重置 Next 按鈕樣式
         btnNext.classList.add("opacity-50", "bg-slate-700", "text-slate-500");
         btnNext.classList.remove("bg-emerald-500", "hover:bg-emerald-400", "text-white", "animate-bounce", "shadow-lg", "shadow-emerald-500/50");
+
         document.getElementById("hint").innerHTML = '<i class="fa-solid fa-circle-info text-blue-400"></i> 請選擇一個選項';
     }
 
