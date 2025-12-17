@@ -123,21 +123,12 @@
 
         <div class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
             <h1 class="text-xl font-black text-white tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-400" data-i18n="page_title">
-                單元重點整理
+                單元重點精熟
             </h1>
             <span class="text-[10px] text-slate-400 tracking-[0.2em] uppercase" data-i18n="page_subtitle">AI Intelligent Note Generation</span>
         </div>
 
         <div class="flex items-center gap-4">
-            <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 icon-static">
-                <i class="fa-solid fa-book-open text-blue-400"></i>
-                <span class="text-xs text-slate-400" data-i18n="btn_bilingual">科學雙語閱讀</span>
-            </div>
-            <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 icon-static">
-                <i class="fa-solid fa-clipboard-check text-green-400"></i>
-                <span class="text-xs text-slate-400" data-i18n="btn_eval">AI 評分診斷</span>
-            </div>
-            
             <div class="relative ml-2">
                 <select id="language-selector" onchange="changeLanguage()" class="bg-slate-800 text-xs text-slate-300 border border-slate-600 rounded px-2 py-1 focus:outline-none">
                     <option value="zh-TW">繁體中文</option>
@@ -356,10 +347,9 @@ let quizRadarChart = null; // 雷達圖實例
 
 const i18n = {
         "zh-TW": { 
-            back_home:"返回 AI Science", // 修改
-            btn_bilingual:"科學雙語閱讀", 
-            btn_eval:"AI 評分診斷", 
-            page_title:"單元重點整理", 
+            back_home:"返回 AI Science", 
+            // [修改 1] 標題文字
+            page_title:"單元重點精熟", 
             page_subtitle:"AI 智能筆記生成", 
             settings_title:"請挑選你要的學習單元", 
             label_stage:"學習階段", 
@@ -367,20 +357,19 @@ const i18n = {
             label_grade:"年級", 
             label_semester:"學期", 
             label_unit:"單元名稱", 
-            btn_generate:"AI 重點整理", // 修改
+            btn_generate:"AI 重點整理", 
             btn_txt:"下載 TXT", 
             btn_pdf:"下載 PDF", 
             title_summary:"核心概念摘要", 
             title_vocab:"科學詞彙與定義", 
             title_map:"知識架構圖", 
             title_myth:"科學動動腦",
-            select_default: "請選擇..." // 新增
+            // [修改 2] 下拉選單預設字
+            select_default: "請選擇" 
         },
         "en": { 
-            back_home:"Back to AI Science", // 修改
-            btn_bilingual:"Bilingual Reading", 
-            btn_eval:"AI Assessment", 
-            page_title:"Unit Summary", 
+            back_home:"Back to AI Science", 
+            page_title:"Unit Mastery", 
             page_subtitle:"AI Intelligent Note Generation", 
             settings_title:"Select Learning Unit", 
             label_stage:"Level", 
@@ -388,29 +377,52 @@ const i18n = {
             label_grade:"Grade", 
             label_semester:"Semester", 
             label_unit:"Unit", 
-            btn_generate:"AI Summary", // 修改
+            btn_generate:"AI Summary", 
             btn_txt:"Download TXT", 
             btn_pdf:"Download PDF", 
             title_summary:"Core Concepts", 
             title_vocab:"Vocabulary", 
             title_map:"Mind Map", 
             title_myth:"Thinking Check",
-            select_default: "Select..." // 新增
+            select_default: "Select..." 
         },
-        // ... (日文與簡中請依照上面邏輯修改 back_home, btn_generate 並新增 select_default) ...
-        "ja": {
-            // ...前略...
-            back_home:"AI Scienceに戻る",
-            btn_generate:"AI まとめ整理",
-            select_default: "選択してください...",
-            // ...後略...
+        "ja": { 
+            back_home:"AI Scienceに戻る", 
+            page_title:"単元マスター", 
+            page_subtitle:"AIノート生成", 
+            settings_title:"学習単元を選択", 
+            label_stage:"段階", 
+            label_publisher:"出版社", 
+            label_grade:"学年", 
+            label_semester:"学期", 
+            label_unit:"単元", 
+            btn_generate:"生成する", 
+            btn_txt:"TXTを保存", 
+            btn_pdf:"PDFを保存", 
+            title_summary:"核心概念", 
+            title_vocab:"科学用語", 
+            title_map:"知識マップ", 
+            title_myth:"考えてみよう",
+            select_default: "選択してください" 
         },
-        "zh-CN": {
-             // ...前略...
-            back_home:"返回 AI Science",
-            btn_generate:"AI 重点整理",
-            select_default: "请选择...",
-             // ...後略...
+        "zh-CN": { 
+            back_home:"返回 AI Science", 
+            page_title:"单元重点精熟", 
+            page_subtitle:"AI 智能笔记生成", 
+            settings_title:"请挑选你要的学习单元", 
+            label_stage:"学习阶段", 
+            label_publisher:"版本", 
+            label_grade:"年级", 
+            label_semester:"学期", 
+            label_unit:"单元名称", 
+            btn_generate:"AI 重点整理", 
+            btn_txt:"下载 TXT", 
+            btn_pdf:"下载 PDF", 
+            title_summary:"核心概念摘要", 
+            title_vocab:"科学词汇与定义", 
+            title_map:"知识架构图", 
+            title_myth:"科学动动脑",
+            select_default: "请选择" 
         }
     };
 
@@ -498,7 +510,7 @@ const i18n = {
         };
     }
 
-    function updateLevel(level, value) {
+function updateLevel(level, value) {
         if(level===1) filters={stage:value};
         if(level===2){filters.publisher=value; delete filters.grade; delete filters.semester; delete filters.unitName;}
         if(level===3){filters.grade=value; delete filters.semester; delete filters.unitName;}
@@ -508,6 +520,7 @@ const i18n = {
         for(let i=level;i<4;i++){
             const el = document.getElementById(ids[i]);
             if (el) {
+                // [修改] 預設選項加上 data-i18n 標籤，並給予一個臨時文字
                 el.innerHTML='<option disabled selected data-i18n="select_default">Select...</option>';
                 el.disabled=true;
             }
@@ -529,6 +542,7 @@ const i18n = {
         if(level===4) {
             const unitSelect = document.getElementById("sel-unit");
             if (!unitSelect) return;
+            // [修改] 預設選項加上 data-i18n
             unitSelect.innerHTML='<option disabled selected data-i18n="select_default">Select...</option>';
             if(relevantData.length>0) {
                 relevantData.forEach(d => {
@@ -540,12 +554,15 @@ const i18n = {
                 unitSelect.disabled=false;
             }
         }
+        
+        // [關鍵] 更新完選項後，立刻執行一次翻譯替換，確保「Select...」變成「請選擇」
         changeLanguage();
     }
 
     function populate(id, list, type) {
         const el = document.getElementById(id);
         if (!el) return;
+        // [修改] 預設選項加上 data-i18n
         el.innerHTML='<option disabled selected data-i18n="select_default">Select...</option>';
         list.forEach(o => {
             const opt = document.createElement("option");
