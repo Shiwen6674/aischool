@@ -41,81 +41,113 @@
 
   <style>
     /* =========================================
-       1. 全域設定 & 科幻背景
+       1. 全域與網頁版樣式 (Web UI)
        ========================================= */
-    body {
-        background-color: #0B1121;
-        color: #f1f5f9;
-        font-family: 'Inter', 'Noto Sans TC', "Microsoft JhengHei", sans-serif;
-        overflow-x: hidden;
+    body { background-color: #0f172a; color: #f8fafc; font-family: 'Noto Sans TC', sans-serif; -webkit-font-smoothing: antialiased; }
+    
+    /* 玻璃擬態卡片 */
+    .glass-panel {
+        background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border-radius: 1rem;
     }
-    body::before {
-        content: ''; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
-        background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.1), transparent 60%);
-        z-index: -2; pointer-events: none;
-    }
-
-    /* 玻璃擬態面板 */
-    .glass-card {
-        background: rgba(30, 41, 59, 0.75);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-        border-radius: 1.5rem;
-        color: #e2e8f0;
-    }
-
-    /* 輸入選單 */
-    select {
-        background-color: rgba(15, 23, 42, 0.8) !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important;
-        color: #fff !important;
-    }
+    
+    /* 輸入元件 */
+    select { background-color: rgba(15, 23, 42, 0.8) !important; border: 1px solid rgba(255, 255, 255, 0.15) !important; color: #fff !important; }
     select:focus { border-color: #38bdf8 !important; outline: none; }
-    select option { background-color: #0f172a; color: white; }
-
-    /* Loading Overlay */
-    #loading-overlay { background: rgba(11, 17, 33, 0.98); backdrop-filter: blur(8px); }
-    .tech-spinner {
-      width: 60px; height: 60px;
-      border: 4px solid rgba(59, 130, 246, 0.3);
-      border-top: 4px solid #3b82f6;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
-    }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-    /* 賽車進度條 */
-    .track-container { background: rgba(255,255,255,0.1); border-radius: 999px; height: 12px; position: relative; }
-    .track-fill { background: linear-gradient(90deg, #3b82f6, #06b6d4); height: 100%; border-radius: 999px; transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 0 10px rgba(59, 130, 246, 0.8); }
-    .car-wrapper { position: absolute; top: 50%; transform: translate(-50%, -50%); transition: left 0.6s ease; z-index: 10; filter: drop-shadow(0 0 8px rgba(255,255,255,0.3)); }
-
-    /* 選項按鈕 */
-    .option-btn { transition: all 0.2s ease; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; }
-    .option-btn:hover:not(:disabled) { background: rgba(255,255,255,0.1); transform: translateY(-2px); border-color: #38bdf8; }
+    
+    /* 按鈕群 */
+    .option-btn { transition: all 0.2s; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; }
+    .option-btn:hover:not(:disabled) { background: rgba(255,255,255,0.1); border-color: #38bdf8; transform: translateY(-2px); }
     .option-btn.selected { background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%); border-color: transparent; color: white; box-shadow: 0 0 20px rgba(6, 182, 212, 0.4); }
-    .option-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-
-    /* 送出按鈕 (橘色) */
-    .btn-submit-orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); box-shadow: 0 4px 14px 0 rgba(234, 88, 12, 0.39); color: white; transition: all 0.2s ease; }
-    .btn-submit-orange:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(234, 88, 12, 0.23); background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%); }
+    
+    .btn-submit-orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); box-shadow: 0 4px 14px rgba(234, 88, 12, 0.4); color: white; transition: all 0.2s; }
+    .btn-submit-orange:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); }
     .btn-submit-orange:disabled { opacity: 0.6; cursor: not-allowed; background: #475569; box-shadow: none; }
 
-    /* PDF Report Styles (隱藏，僅供生成使用) */
-    #pdf-report-content { width: 210mm; min-height: 297mm; background: white; padding: 0; font-family: 'Noto Sans TC', sans-serif; color: #1e293b; display: none; }
-    .pdf-page { width: 210mm; height: 296mm; padding: 20mm; box-sizing: border-box; position: relative; page-break-after: always; display: flex; flex-direction: column; }
-    .pdf-cover { justify-content: center; align-items: center; text-align: center; border: 12px solid #f1f5f9; }
-    .pdf-header { border-bottom: 2px solid #3b82f6; margin-bottom: 20px; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-end; }
-    .pdf-footer { margin-top: auto; text-align: center; font-size: 10px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+    /* Loading */
+    #loading-overlay { background: rgba(11, 17, 33, 0.98); backdrop-filter: blur(8px); }
+    .tech-spinner { width: 50px; height: 50px; border: 4px solid rgba(56, 189, 248, 0.3); border-top-color: #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* 賽車進度條 */
+    .track-container { background: rgba(255,255,255,0.1); border-radius: 999px; height: 8px; position: relative; }
+    .track-fill { background: linear-gradient(90deg, #f97316, #eab308); height: 100%; border-radius: 999px; transition: width 0.5s ease; }
+    .car-wrapper { position: absolute; top: 50%; transform: translate(-50%, -50%); transition: left 0.5s ease; z-index: 10; font-size: 1.2rem; filter: drop-shadow(0 0 5px rgba(255,165,0,0.5)); }
+
+    /* =========================================
+       2. 百萬級 PDF 報告書專用樣式 (隱藏於網頁)
+       ========================================= */
+    #pdf-report-content {
+        display: none; /* 網頁上不顯示 */
+        width: 210mm; background: #fff; color: #334155;
+        font-family: 'Noto Sans TC', sans-serif;
+    }
+    .pdf-page {
+        width: 210mm; height: 296mm; /* A4 */
+        padding: 15mm 20mm;
+        box-sizing: border-box;
+        position: relative;
+        page-break-after: always;
+        overflow: hidden;
+        background: white;
+    }
+
+    /* PDF 封面設計 */
+    .cover-bg {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background: radial-gradient(circle at 100% 0%, #eff6ff 10%, transparent 40%),
+                    radial-gradient(circle at 0% 100%, #f0fdf4 10%, transparent 40%);
+        z-index: 0;
+    }
+    .cover-content { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+    .cover-title-en { font-family: 'Orbitron', sans-serif; font-size: 72px; font-weight: 900; color: #1e3a8a; letter-spacing: -2px; margin-bottom: 10px; }
+    .cover-title-zh { font-size: 28px; font-weight: 700; color: #64748b; letter-spacing: 8px; margin-bottom: 50px; text-transform: uppercase; }
+    .cover-card { background: white; padding: 40px 60px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); width: 80%; border: 1px solid #e2e8f0; }
+    .cover-row { display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding: 15px 0; font-size: 16px; }
+    .cover-row:last-child { border-bottom: none; }
+    .cover-label { color: #94a3b8; font-weight: 500; }
+    .cover-val { color: #0f172a; font-weight: 700; font-size: 18px; }
+    .score-badge { display: inline-block; padding: 5px 15px; background: #fff7ed; color: #ea580c; border-radius: 99px; font-weight: 800; font-family: 'Orbitron', sans-serif; }
+
+    /* PDF 內頁通用 */
+    .pdf-header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 25px; }
+    .header-title { font-size: 24px; font-weight: 900; color: #1e293b; }
+    .header-sub { font-size: 12px; color: #94a3b8; font-family: 'Orbitron', sans-serif; }
+    .pdf-footer { position: absolute; bottom: 15mm; left: 0; width: 100%; text-align: center; font-size: 10px; color: #cbd5e1; font-family: 'Orbitron', sans-serif; }
+
+    /* 儀表板區塊 */
+    .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+    .stat-card { background: #f8fafc; border-radius: 12px; padding: 20px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #e2e8f0; }
+    .stat-label { font-size: 12px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+    .stat-value { font-size: 36px; font-weight: 900; font-family: 'Orbitron', sans-serif; }
+    .text-blue { color: #2563eb; } .text-orange { color: #ea580c; }
+    
+    /* 錯題卡片 (極簡風格) */
+    .wrong-item { margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; page-break-inside: avoid; }
+    .wi-header { background: #f1f5f9; padding: 8px 15px; display: flex; gap: 10px; align-items: baseline; border-bottom: 1px solid #e2e8f0; }
+    .wi-index { background: #ef4444; color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+    .wi-stem { font-size: 13px; color: #334155; font-weight: 700; flex: 1; }
+    .wi-body { padding: 12px 15px; display: flex; flex-direction: column; gap: 8px; }
+    .wi-ans-row { display: flex; gap: 20px; font-size: 12px; }
+    .ans-box { padding: 4px 10px; border-radius: 4px; font-weight: bold; }
+    .ans-student { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; }
+    .ans-correct { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+    .wi-footer { font-size: 11px; color: #64748b; background: #fff; padding-top: 5px; border-top: 1px dashed #e2e8f0; line-height: 1.5; }
+    
+    /* 處方籤卡片 (雜誌風格) */
+    .advice-card { margin-bottom: 15px; border-radius: 12px; padding: 15px 20px; border-left: 5px solid; page-break-inside: avoid; }
+    .advice-blue { background: #eff6ff; border-color: #3b82f6; }
+    .advice-yellow { background: #fffbeb; border-color: #f59e0b; }
+    .advice-green { background: #f0fdf4; border-color: #10b981; }
+    .advice-title { font-size: 14px; font-weight: 900; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .advice-content { font-size: 13px; line-height: 1.6; color: #334155; text-align: justify; }
+    .advice-blue .advice-title { color: #1e40af; }
+    .advice-yellow .advice-title { color: #92400e; }
+    .advice-green .advice-title { color: #166534; }
+
     .html2pdf__page-break { page-break-before: always; height: 0; display: block; }
-
-    /* AI 回饋中的 Markdown 樣式修正 */
-    .markdown-body strong { color: #60a5fa; font-weight: 700; } /* 藍色粗體 */
-    .markdown-body ul { list-style-type: disc; padding-left: 1.5em; margin: 0.5em 0; }
-    .markdown-body ol { list-style-type: decimal; padding-left: 1.5em; margin: 0.5em 0; }
-    .markdown-body p { margin-bottom: 0.8em; }
-
     .no-print { display: block; }
     @media print { .no-print { display: none !important; } }
   </style>
@@ -313,64 +345,76 @@
     </div>
   </div>
 
-  <div id="pdf-report-content">
-    <div class="pdf-page pdf-cover">
-      <div style="font-size: 80px; font-weight: 900; color: #3b82f6; margin-bottom: 10px;">AI SCIENCE</div>
-      <div style="font-size: 24px; color: #64748b; letter-spacing: 4px; font-weight: bold;">自然科學適性診斷報告書</div>
-      <div style="width: 60px; height: 6px; background: #f97316; margin: 40px auto;"></div>
-      
-      <div style="margin-top: 60px; text-align: left; display: inline-block; width: 60%; background: #f8fafc; padding: 40px; border-radius: 20px;">
-        <div style="margin-bottom: 20px; font-size: 18px; color: #475569; display: flex; justify-content: space-between; border-bottom: 1px dashed #cbd5e1; padding-bottom: 10px;">
-          <span>姓名</span><span style="font-weight:bold; color:#0f172a;" id="pdf-name"></span>
+<div id="pdf-report-content">
+    <div class="pdf-page">
+      <div class="cover-bg"></div>
+      <div class="cover-content">
+        <div style="margin-bottom: 60px;">
+           <div class="cover-title-en">AI SCIENCE</div>
+           <div class="cover-title-zh">自然科學適性診斷報告書</div>
         </div>
-        <div style="margin-bottom: 20px; font-size: 18px; color: #475569; display: flex; justify-content: space-between; border-bottom: 1px dashed #cbd5e1; padding-bottom: 10px;">
-          <span>日期</span><span style="font-weight:bold; color:#0f172a;" id="pdf-date"></span>
-        </div>
-        <div style="font-size: 18px; color: #475569; display: flex; justify-content: space-between; border-bottom: 1px dashed #cbd5e1; padding-bottom: 10px;">
-          <span>單元</span><span style="font-weight:bold; color:#0f172a;" id="pdf-unit"></span>
+        <div class="cover-card">
+           <div style="font-size: 20px; font-weight: 900; color: #0f172a; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #3b82f6;" id="pdf-unit-title">--</div>
+           <div class="cover-row">
+             <span class="cover-label">學生姓名</span>
+             <span class="cover-val" id="pdf-name">--</span>
+           </div>
+           <div class="cover-row">
+             <span class="cover-label">診斷日期</span>
+             <span class="cover-val" id="pdf-date">--</span>
+           </div>
+           <div class="cover-row">
+             <span class="cover-label">測驗得分</span>
+             <span class="score-badge" id="pdf-score-badge">--</span>
+           </div>
         </div>
       </div>
     </div>
 
-    <div class="pdf-page" style="display:flex; align-items:center; justify-content:center; color:#e2e8f0;">
-      (此頁留白，供列印背面使用)
+    <div class="html2pdf__page-break"></div>
+    <div class="pdf-page" style="display:flex; justify-content:center; align-items:center; color:#cbd5e1; font-size:12px;">
+      (此頁刻意留白，以利雙面列印)
     </div>
+    <div class="html2pdf__page-break"></div>
 
     <div class="pdf-page" style="counter-reset: page 1;">
       <div class="pdf-header">
-        <span style="font-weight:bold; color:#334155;">診斷結果詳析</span>
-        <span style="font-size:12px; color:#94a3b8;">AI Science Diagnosis</span>
+         <div class="header-title">診斷結果詳析</div>
+         <div class="header-sub">DIAGNOSTIC REPORT</div>
       </div>
 
-      <div style="display:flex; gap:20px; margin-bottom:30px;">
-        <div style="flex:1; background:#f0f9ff; border-left:5px solid #3b82f6; padding:15px;">
-          <div style="font-size:12px; color:#64748b;">總分 (100分制)</div>
-          <div style="font-size:36px; font-weight:900; color:#3b82f6;" id="pdf-score"></div>
-        </div>
-        <div style="flex:1; background:#fff7ed; border-left:5px solid #f97316; padding:15px;">
-          <div style="font-size:12px; color:#64748b;">答對題數</div>
-          <div style="font-size:36px; font-weight:900; color:#ea580c;" id="pdf-count"></div>
-        </div>
+      <div class="dashboard-grid">
+         <div class="stat-card">
+            <div>
+               <div class="stat-label">總分 Score</div>
+               <div class="stat-value text-blue" id="pdf-inner-score">--</div>
+            </div>
+            <i class="fa-solid fa-chart-line text-blue-200 text-4xl"></i>
+         </div>
+         <div class="stat-card">
+            <div>
+               <div class="stat-label">答對題數 Correct</div>
+               <div class="stat-value text-orange" id="pdf-inner-count">--</div>
+            </div>
+            <i class="fa-solid fa-check-circle text-orange-200 text-4xl"></i>
+         </div>
       </div>
 
-      <div style="margin-bottom:20px; font-size:16px; font-weight:bold; color:#1e293b; border-bottom:2px solid #e2e8f0; padding-bottom:5px;">錯題概念與課文回顧</div>
+      <div style="font-size:14px; font-weight:800; color:#1e293b; margin-bottom:15px; border-left:4px solid #ef4444; padding-left:10px;">
+        錯題概念分析
+      </div>
       <div id="pdf-wrong-container"></div>
-
+      
       <div class="pdf-footer">Page 1</div>
     </div>
 
     <div class="pdf-page">
       <div class="pdf-header">
-        <span style="font-weight:bold; color:#334155;">學習建議</span>
-        <span style="font-size:12px; color:#94a3b8;">AI Science Diagnosis</span>
+         <div class="header-title">AI 學習處方籤</div>
+         <div class="header-sub">LEARNING PRESCRIPTION</div>
       </div>
 
-      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:20px;">
-        <h3 style="color:#0f172a; font-size:18px; margin-top:0; border-bottom:1px solid #e2e8f0; padding-bottom:10px; margin-bottom:15px;">
-          AI 學習處方籤
-        </h3>
-        <div id="pdf-feedback-text" class="markdown-body" style="font-size:14px; line-height:1.8; color:#334155;"></div>
-      </div>
+      <div id="pdf-advice-container"></div>
 
       <div class="pdf-footer">Page 2</div>
     </div>
@@ -792,18 +836,23 @@
     }
 
     async function finishTest() {
-        showLoading("ANALYZING", "AI 正在分析學習弱點...");
+        showLoading("ANALYZING", "AI 正在進行深度診斷...");
         try {
-            const json = await api({
-                action: ACTION.FINISH_CAT,
-                test_id: CAT.test_id,
-                student_id: CAT.student_id,
-                ai_feedback: true
+            const res = await fetch(GAS_API_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                    action: "finishCAT",
+                    test_id: CAT.test_id,
+                    student_id: CAT.student_id,
+                    ai_feedback: true
+                })
             });
-
+            const json = await res.json();
+            
             document.getElementById("secQuiz").classList.add("hidden");
             document.getElementById("secResult").classList.remove("hidden");
 
+            // 1. 填寫分數數據
             const correct = json.correct_count || 0;
             const total = json.total_count || 0;
             const score100 = json.score_100 || 0;
@@ -813,79 +862,141 @@
             document.getElementById("resCount").textContent = `(${correct}/${total})`;
             document.getElementById("resScore100").textContent = score100;
 
-            // 錯題列表 (UI)
-            const wList = document.getElementById("resWrongList");
-            const pdfWList = document.getElementById("pdf-wrong-container");
-            wList.innerHTML = "";
-            pdfWList.innerHTML = "";
+            // 2. 處理錯題列表 (Web & PDF 同步生成)
+            const webList = document.getElementById("resWrongList");
+            const pdfList = document.getElementById("pdf-wrong-container");
+            webList.innerHTML = "";
+            pdfList.innerHTML = "";
 
             if (!json.wrong_items || json.wrong_items.length === 0) {
-                wList.innerHTML = "<div class='text-emerald-400 text-center font-bold text-xl py-4'>🎉 恭喜！全對，沒有錯題。</div>";
-                pdfWList.innerHTML = "<div style='color:#10b981; font-weight:bold; text-align:center;'>恭喜！全對。</div>";
+                const msg = "<div class='text-emerald-400 text-center font-bold py-4'>🎉 太棒了！全對！</div>";
+                webList.innerHTML = msg;
+                pdfList.innerHTML = "<div style='padding:20px; text-align:center; color:#10b981; font-weight:bold;'>表現優異，本單元無錯題。</div>";
             } else {
                 json.wrong_items.forEach((w, i) => {
-                    // 網頁版卡片
-                    const html = `
+                    // Web 版卡片
+                    webList.insertAdjacentHTML("beforeend", `
                         <div class="bg-slate-900/50 p-5 rounded-xl border border-red-500/20">
-                            <div class="font-bold text-slate-200 mb-2 text-lg">Q: ${w.stem}</div>
+                            <div class="font-bold text-slate-200 mb-2">Q: ${w.stem}</div>
                             <div class="flex gap-4 text-sm mb-3">
-                                <span class="text-red-400 font-bold bg-red-900/30 px-2 py-1 rounded">誤選: ${w.student_answer}</span>
-                                <span class="text-emerald-400 font-bold bg-emerald-900/30 px-2 py-1 rounded">正解: ${w.correct_answer}</span>
+                                <span class="text-red-400">❌ ${w.student_answer}</span>
+                                <span class="text-emerald-400">⭕ ${w.correct_answer}</span>
                             </div>
-                            <div class="text-sm text-slate-300 bg-slate-800 p-4 rounded-lg border border-slate-700 leading-relaxed text-justify">
-                                <strong class="text-blue-400 block mb-1"><i class="fa-solid fa-book-open"></i> 課文重點回顧：</strong>
-                                ${w.remedial_text}
+                            <div class="text-sm text-slate-400 bg-slate-800 p-3 rounded">
+                                <i class="fa-solid fa-lightbulb text-yellow-500"></i> <strong class="text-slate-200">診斷：</strong>${w.remedial_text}
                             </div>
                         </div>
-                    `;
-                    wList.insertAdjacentHTML("beforeend", html);
+                    `);
 
-                    // PDF 版區塊
-                    const pdfHtml = `
-                        <div style="margin-bottom:20px; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden;">
-                            <div style="background:#f1f5f9; padding:10px; font-weight:bold; color:#1e293b; border-bottom:1px solid #cbd5e1;">
-                                ${i+1}. ${w.stem}
+                    // PDF 版卡片 (極簡風格)
+                    pdfList.insertAdjacentHTML("beforeend", `
+                        <div class="wrong-item">
+                            <div class="wi-header">
+                                <div class="wi-index">${i+1}</div>
+                                <div class="wi-stem">${w.stem.substring(0, 50) + (w.stem.length>50?"...":"")}</div>
                             </div>
-                            <div style="padding:15px; background:#fff;">
-                                <div style="margin-bottom:10px; font-size:12px;">
-                                    <span style="color:#ef4444; margin-right:15px; font-weight:bold;">您的答案：${w.student_answer}</span>
-                                    <span style="color:#10b981; font-weight:bold;">正確答案：${w.correct_answer}</span>
+                            <div class="wi-body">
+                                <div class="wi-ans-row">
+                                    <span class="ans-box ans-student">誤選：${w.student_answer}</span>
+                                    <span class="ans-box ans-correct">正解：${w.correct_answer}</span>
                                 </div>
-                                <div style="font-size:12px; color:#475569; line-height:1.6; text-align:justify;">
-                                    <strong style="color:#3b82f6;">課文重點：</strong>${w.remedial_text}
+                                <div class="wi-footer">
+                                    <strong>弱點與解析：</strong>${w.remedial_text}
                                 </div>
                             </div>
                         </div>
-                    `;
-                    pdfWList.insertAdjacentHTML("beforeend", pdfHtml);
+                    `);
                 });
             }
 
-            // AI 建議 (Markdown 渲染)
-            const feedbackHtml = marked.parse(json.feedback_student || "無建議");
-            document.getElementById("resAiFeedback").innerHTML = feedbackHtml;
-            document.getElementById("pdf-feedback-text").innerHTML = feedbackHtml;
+            // 3. 處理 AI 處方籤 (Web & PDF)
+            const aiData = json.feedback_student;
+            const webAiBox = document.getElementById("resAiFeedback");
+            const pdfAiBox = document.getElementById("pdf-advice-container");
+            
+            // 判斷是否為結構化 JSON (由後端 generateDiagnosticJson_ 產生)
+            // 為了相容性，這裡做個判斷
+            let summary = "", analysis = "", actions = [];
+            if (typeof aiData === 'object' && aiData.overall_advice) {
+                 // 這是新版後端回傳的結構 (假設)
+                 // 如果後端回傳的是字串，嘗試 parse
+            } 
+            
+            // 假設後端回傳的是 JSON 物件 (根據上一輪 GAS 修改)
+            if (typeof aiData === 'object' && aiData.summary) {
+                 summary = aiData.summary;
+                 analysis = aiData.weakness_analysis;
+                 actions = aiData.action_plan || [];
+            } else if (typeof aiData === 'string') {
+                 // Fallback: 如果是字串，直接顯示
+                 webAiBox.innerHTML = marked.parse(aiData);
+                 pdfAiBox.innerHTML = `<div class="advice-card advice-blue"><div class="advice-content">${marked.parse(aiData)}</div></div>`;
+                 updatePdfInfo(score100, correct, total);
+                 hideLoading();
+                 return;
+            }
 
-            // 準備 PDF 資料
-            preparePDFdata(json, correct, total);
+            // 渲染 Web 版處方籤
+            webAiBox.innerHTML = `
+                <div class="grid gap-4">
+                    <div class="bg-blue-500/10 border border-blue-500/30 p-4 rounded-xl">
+                        <h4 class="text-blue-400 font-bold mb-2">🎓 總體評估</h4>
+                        <p class="text-slate-300 text-sm">${summary}</p>
+                    </div>
+                    <div class="bg-yellow-500/10 border border-yellow-500/30 p-4 rounded-xl">
+                        <h4 class="text-yellow-400 font-bold mb-2">🔍 弱點診斷</h4>
+                        <p class="text-slate-300 text-sm">${analysis}</p>
+                    </div>
+                    <div class="bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-xl">
+                        <h4 class="text-emerald-400 font-bold mb-2">🚀 行動建議</h4>
+                        <ul class="list-disc list-inside text-slate-300 text-sm space-y-1">
+                            ${actions.map(a => `<li>${a}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
 
-        } catch (e) {
-            UI.toast("錯誤", "結算失敗: " + e.message, "bad");
-        } finally {
+            // 渲染 PDF 版處方籤 (雜誌卡片)
+            pdfAiBox.innerHTML = `
+                <div class="advice-card advice-blue">
+                    <div class="advice-title"><i class="fa-solid fa-user-graduate"></i> 總體評估</div>
+                    <div class="advice-content">${summary}</div>
+                </div>
+                <div class="advice-card advice-yellow">
+                    <div class="advice-title"><i class="fa-solid fa-magnifying-glass-chart"></i> 弱點與迷思分析</div>
+                    <div class="advice-content">${analysis}</div>
+                </div>
+                <div class="advice-card advice-green">
+                    <div class="advice-title"><i class="fa-solid fa-list-check"></i> 具體行動建議</div>
+                    <div class="advice-content">
+                        <ul style="padding-left:15px; margin:0;">
+                            ${actions.map(a => `<li style="margin-bottom:5px;">${a}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+
+            updatePdfInfo(score100, correct, total);
+            hideLoading();
+
+        } catch(e) {
+            console.error(e);
+            alert("結算發生錯誤，請檢查網路或稍後重試。");
             hideLoading();
         }
     }
 
-    function preparePDFdata(json, correct, total) {
-        document.getElementById("pdf-cover-unit").textContent = getUnitInfoString();
-        document.getElementById("pdf-cover-name").textContent = document.getElementById("user-info").textContent;
+    function updatePdfInfo(score, correct, total) {
+        document.getElementById("pdf-unit-title").textContent = getUnitInfoString();
+        document.getElementById("pdf-name").textContent = document.getElementById("user-info").textContent;
+        
         const d = new Date();
-        document.getElementById("pdf-cover-date").textContent = `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
-        document.getElementById("pdf-cover-score").textContent = `${json.score_100} 分`;
-        document.getElementById("pdf-inner-score").textContent = json.score_100;
-        document.getElementById("pdf-inner-count").textContent = `${correct} / ${total}`;
+        document.getElementById("pdf-date").textContent = `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
+        document.getElementById("pdf-score-badge").textContent = `${score} 分`;
+        
+        document.getElementById("pdf-inner-score").textContent = score;
+        document.getElementById("pdf-inner-count").textContent = `${correct}/${total}`;
     }
-
     function downloadPDF() {
         const el = document.getElementById("pdf-report-content");
         el.style.display = "block";
