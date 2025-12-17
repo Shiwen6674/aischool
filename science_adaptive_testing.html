@@ -439,6 +439,9 @@
     const USER_SHEET_NAME = "Users_student";
     const USER_STUDENTID_COL = "J";
 
+    // ✅ 只新增：教材公開 CSV 後備（當後端 metadata action 不支援時）
+    const MATERIALS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRbgkNiMflfeLQd3KN8F4yjjIr6G2flnCAy-nUPMiC7_xDfdg_0hJ2Qzbsr92u8htlPLFR8GwwQPK_g/pub?gid=0&single=true&output=csv";
+
     const i18n = {
         "zh-TW": {
             page_title: "AI 適性診斷中心",
@@ -553,7 +556,7 @@
     const CAT = { started: false, test_id: "", student_id: "", current: null, next: null, selected: "", n: 15, step: 0 };
     const ACTION = { GET_UNIT_OPTIONS: "getUnitOptions", START_CAT: "startCAT", SUBMIT_NEXT: "submitAndNext", FINISH_CAT: "finishCAT" };
 
-    // ✅ FIX(1): 後端不存在 getMaterialTree，改成常見支援的 metadata action
+    // ✅ 後端 metadata action 候選
     const META_ACTION_CANDIDATES = ["get_metadata", "getMetadata", "action_get_metadata"];
 
     const STUDENTID_ACTION_CANDIDATES = ["getStudentIdByEmail", "getStudentId"];
@@ -624,8 +627,20 @@
         b.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> <span>Offline</span>';
     }
 
+    // Loading overlay helpers（不改 UI，只是更穩定）
+    function showLoading(){
+        const o = document.getElementById("loading-overlay");
+        o.classList.remove("hidden");
+        o.style.display = "flex";
+    }
+    function hideLoading(){
+        const o = document.getElementById("loading-overlay");
+        o.style.display = "none";
+        o.classList.add("hidden");
+    }
+
     /* ===========================
-       2.5) API Wrapper  (FIX)
+       2.5) API Wrapper
        =========================== */
     async function api(payload){
         if(!payload.content_db_id) payload.content_db_id = CONTENT_DB_ID;
@@ -636,7 +651,7 @@
             res = await fetch(GAS_API_URL, {
                 method: "POST",
                 redirect: "follow",
-                // 重要：text/plain 避免觸發 preflight (Apps Script 常見坑)
+                // 重要：text/plain 避免觸發 preflight
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
                 body: JSON.stringify(payload)
             });
@@ -644,11 +659,7 @@
             throw new Error("Network error: " + (err && err.message ? err.message : err));
         }
 
-        try{
-            raw = await res.text();
-        }catch(_){
-            raw = "";
-        }
+        try{ raw = await res.text(); }catch(_){ raw = ""; }
 
         let json;
         try{
@@ -660,6 +671,72 @@
 
         if(json && json.status === "error") throw new Error(json.message || "API error");
         return json;
+    }
+
+    /* ===========================
+       2.6) CSV FALLBACK (只新增，平時不影響)
+       =========================== */
+    function _parseCSV(text){
+        const rows = [];
+        let row = [];
+        let cur = "";
+        let inQuotes = false;
+
+        for(let i=0;i<text.length;i++){
+            const ch = text[i];
+
+            if(inQuotes){
+                if(ch === '"'){
+                    const next = text[i+1];
+                    if(next === '"'){ cur += '"'; i++; }
+                    else { inQuotes = false; }
+                }else{
+                    cur += ch;
+                }
+                continue;
+            }
+
+            if(ch === '"'){ inQuotes = true; continue; }
+            if(ch === ','){ row.push(cur); cur = ""; continue; }
+            if(ch === '\n'){
+                row.push(cur); cur = "";
+                // 避免空尾行
+                if(row.some(c => String(c).trim() !== "")) rows.push(row);
+                row = [];
+                continue;
+            }
+            if(ch === '\r'){ continue; }
+            cur += ch;
+        }
+
+        // last cell
+        row.push(cur);
+        if(row.some(c => String(c).trim() !== "")) rows.push(row);
+
+        return rows;
+    }
+
+    async function _loadRowsFromPublicCSV(){
+        const res = await fetch(MATERIALS_CSV_URL, { cache: "no-store" });
+        const text = await res.text();
+        const matrix = _parseCSV(text);
+
+        if(!matrix || matrix.length < 2) return [];
+
+        const headers = matrix[0].map(h => String(h || "").trim());
+        const rows = [];
+
+        for(let i=1;i<matrix.length;i++){
+            const r = matrix[i];
+            const obj = {};
+            for(let c=0;c<headers.length;c++){
+                const key = headers[c];
+                if(!key) continue;
+                obj[key] = (r[c] === undefined || r[c] === null) ? "" : String(r[c]).trim();
+            }
+            if(Object.values(obj).some(v => String(v).trim() !== "")) rows.push(obj);
+        }
+        return rows;
     }
 
     /* ===========================
@@ -691,10 +768,9 @@
         return [];
     }
 
-    // 初始化教材樹 (FIX: 優先用 POST，保留 GET 後備)
+    // 初始化教材樹（先走 GAS metadata，失敗才走公開 CSV）
     async function bootstrapMaterials(){
         try {
-            let json = null;
             let rows = [];
 
             // 1) 優先走 POST（避免 GET 302/CORS）
@@ -703,7 +779,6 @@
                     const j = await api({ action: act });
                     const r = _extractRows(j);
                     if(r && r.length){
-                        json = j;
                         rows = r;
                         break;
                     }
@@ -714,13 +789,19 @@
 
             // 2) 後備：若後端只支援 GET action=get_metadata
             if(!rows.length){
-                const res = await fetch(GAS_API_URL + "?action=get_metadata", { redirect: "follow" });
-                const j = await res.json();
-                const r = _extractRows(j);
-                if(r && r.length){
-                    json = j;
-                    rows = r;
+                try{
+                    const res = await fetch(GAS_API_URL + "?action=get_metadata", { redirect: "follow" });
+                    const j = await res.json();
+                    const r = _extractRows(j);
+                    if(r && r.length) rows = r;
+                }catch(_){
+                    // ignore
                 }
+            }
+
+            // 3) ✅ 最後後備：公開 CSV
+            if(!rows.length){
+                rows = await _loadRowsFromPublicCSV();
             }
 
             if(!rows.length) throw new Error("教材資料為空或 metadata action 不存在");
@@ -730,12 +811,10 @@
             const unitIndex = {};
 
             rows.forEach(r => {
-                // ✅ FIX(2): 支援你試算表常見欄位（中小學/出版社/課別/課名），避免樹為空
                 const s = _pickRowValue(r, ["stage","learningStage","learning_stage","學習階段","中小學","阶段","学習阶段"]);
                 const g = _pickRowValue(r, ["grade","年級","年级"]);
                 const sem = _pickRowValue(r, ["semester","學期","学期"]);
-
-                const v = _pickRowValue(r, ["publisher","textbook_version","textbookVersion","version","版本","出版社","出版社"]);
+                const v = _pickRowValue(r, ["publisher","textbook_version","textbookVersion","version","版本","出版社"]);
 
                 let unitName = _pickRowValue(r, ["unitName","unit_name","unit","單元","单元","課名","课名"]);
                 if(!unitName){
@@ -861,19 +940,14 @@
         const sid = await ensureStudentId();
         const n = parseInt(document.getElementById("inpN").value, 10) || 15;
 
-        document.getElementById("loading-overlay").style.display = "flex";
+        showLoading();
 
         try {
             const payload = {
                 action: ACTION.START_CAT,
-
-                // ✅ FIX(3): 同時送 root 與原本 student 結構（不移除原本欄位，只補齊）
                 student_id: sid,
                 student: { student_id: sid },
-
                 unit: getUnitPayload(),
-
-                // 同時送 settings + root max_items（提高相容性）
                 settings: { max_items: n },
                 max_items: n
             };
@@ -897,7 +971,7 @@
         } catch(e) {
             UI.toast("錯誤", "命題失敗: " + e.message, "bad");
         } finally {
-            document.getElementById("loading-overlay").style.display = "none";
+            hideLoading();
         }
     }
 
@@ -967,7 +1041,7 @@
     }
 
     async function finishTest() {
-        document.getElementById("loading-overlay").style.display = "flex";
+        showLoading();
         try {
             const json = await api({
                 action: ACTION.FINISH_CAT,
@@ -978,7 +1052,6 @@
             document.getElementById("secQuiz").classList.add("hidden");
             document.getElementById("secResult").classList.remove("hidden");
 
-            // 分數計算（FIX：更穩健）
             let correct = 0;
             let total = CAT.step || 0;
 
@@ -1017,7 +1090,7 @@
         } catch(e) {
             UI.toast("錯誤", "結算失敗: " + e.message, "bad");
         } finally {
-            document.getElementById("loading-overlay").style.display = "none";
+            hideLoading();
         }
     }
 
@@ -1046,35 +1119,35 @@
         document.getElementById("pdf-feedback").textContent = json.feedback_student || "暫無建議";
     }
 
-    document.getElementById("btnDownloadPDF").onclick = () => {
-         const el = document.getElementById("pdf-report-content");
-         el.style.display = "block";
-         const opt = {
-             margin: 0,
-             filename: 'AI_Diagnosis_Report.pdf',
-             image: { type: 'jpeg', quality: 0.98 },
-             html2canvas: { scale: 2 },
-             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-         };
-         html2pdf().set(opt).from(el).save().then(() => el.style.display = "none");
-    };
-
-    document.getElementById("btnRestart").onclick = () => {
-         location.reload();
-    };
-
     /* ===========================
-       INIT  (FIX: 綁定按鈕事件)
+       INIT  (所有事件綁定集中在此，避免任何情況 null 造成整支中斷)
        =========================== */
     document.addEventListener("DOMContentLoaded", () => {
         const user = __loadCurrentUser();
         document.getElementById("user-info").textContent = user.name || "訪客";
 
-        // FIX：原本缺少事件綁定 → 按鈕沒反應
         document.getElementById("btnStart").addEventListener("click", startTest);
         document.getElementById("btnSubmit").addEventListener("click", submitAnswer);
         document.getElementById("btnNext").addEventListener("click", () => { if(CAT.next) renderQuestion(CAT.next); });
         document.getElementById("btnReload").addEventListener("click", bootstrapMaterials);
+
+        // ✅ 修正：原本在外面綁定，某些情況會 null → script 直接中斷
+        document.getElementById("btnDownloadPDF").addEventListener("click", () => {
+             const el = document.getElementById("pdf-report-content");
+             el.style.display = "block";
+             const opt = {
+                 margin: 0,
+                 filename: 'AI_Diagnosis_Report.pdf',
+                 image: { type: 'jpeg', quality: 0.98 },
+                 html2canvas: { scale: 2 },
+                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+             };
+             html2pdf().set(opt).from(el).save().then(() => el.style.display = "none");
+        });
+
+        document.getElementById("btnRestart").addEventListener("click", () => {
+             location.reload();
+        });
 
         changeLanguage();
         bootstrapMaterials();
