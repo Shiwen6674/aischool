@@ -561,9 +561,17 @@
 
         function initFilters() { populateSelect('sel-stage', [...new Set(processedUnits.map(u=>u.stage).filter(Boolean))], 'stage'); }
 
-        function filterUnits(lvl) {
-            const ids=['stage','grade','version','semester','unit'], sels=ids.map(id=>document.getElementById(`sel-${id}`));
+function filterUnits(lvl) {
+            const ids=['stage','grade','version','semester','unit'];
+            const sels=ids.map(id=>document.getElementById(`sel-${id}`));
+
+            // [修正重點 1]：切換上層時，強制將下層選單的 value 設為空字串，避免舊的篩選條件殘留
+            if(lvl === 'stage') { sels[1].value = ''; sels[2].value = ''; sels[3].value = ''; }
+            if(lvl === 'grade') { sels[2].value = ''; sels[3].value = ''; }
+            if(lvl === 'version') { sels[3].value = ''; }
+
             let filtered = processedUnits.filter(u => {
+                // 因為上面已經清空了下層 value，這裡就不會發生「國小」撞到「七年級」的狀況
                 if(sels[0].value && u.stage!==sels[0].value) return false;
                 if(sels[1].value && !sels[1].disabled && u.grade!==sels[1].value) return false;
                 if(sels[2].value && !sels[2].disabled && u.version!==sels[2].value) return false;
@@ -572,6 +580,7 @@
             });
             
             const update=(sel,p,key)=> populateSelect(sel.id, [...new Set(filtered.map(u=>u[p]).filter(Boolean))], key);
+            
             if(lvl==='stage') { update(sels[1],'grade','grade'); resetSelects(sels.slice(2)); }
             else if(lvl==='grade') { update(sels[2],'version','version'); resetSelects(sels.slice(3)); }
             else if(lvl==='version') { update(sels[3],'semester','semester'); resetSelects(sels.slice(4)); }
@@ -863,7 +872,14 @@
             });
         }
 
-        // [修改] renderArticle 支援注音判斷
+       // [新增輔助函式] 判斷是否需要注音並轉換
+        function getZhuyinHtml(text) {
+            if (typeof pinyinPro === 'undefined') return escapeHtml(text);
+            const { html } = pinyinPro;
+            // wrapNonChinese: true 確保英文或數字不會被怪異分割
+            return html(text, { mode: 'zhuyin', wrapNonChinese: true });
+        }
+
         async function renderArticle(unit) {
             currentUnitTitleZh = unit.title;
             currentUnitTitleEn = "";
@@ -885,8 +901,11 @@
                 lines = unit.ckip.split('\n').map(x=>x.replace(/　/g,' ').replace(/\([^)]*\)/g,'').trim()).filter(Boolean);
             }
 
+            // [修正重點 2]：判斷是否為中年級 (國小三年級、四年級)
             const selGrade = document.getElementById('sel-grade');
-            const isJunior = (unit.grade === '三年級' || unit.grade === '四年級') || (selGrade && (selGrade.value === '三年級' || selGrade.value === '四年級'));
+            // 判斷邏輯：如果單元資料本身寫三年級/四年級，或者使用者下拉選單選了三年級/四年級
+            const isJunior = (unit.grade === '三年級' || unit.grade === '四年級') || 
+                             (selGrade && (selGrade.value === '三年級' || selGrade.value === '四年級'));
             
             const unitCkipSet = unit.ckip ? getCkipTokenSet(unit.ckip) : null;
             const unitCkipTokens = unit.ckip ? getCkipTokenArray(unit.ckip) : [];
@@ -897,14 +916,16 @@
                 if(!line) continue;
                 const rawLine = line; 
 
+                // 標題或活動區塊
                 if((line.length<40 && !/[。！？.!?]$/.test(line)) || line.includes("活動")) {
                     const anchorId = `sec-${i}`;
                     const navItem = document.createElement('div');
                     navItem.className='nav-item';
-                    navItem.innerText = line;
+                    navItem.innerText = line; // 目錄保持純文字，比較乾淨
                     navItem.onclick=()=>{ document.getElementById(anchorId).scrollIntoView({behavior:'smooth',block:'center'}); };
                     document.getElementById('unit-list').appendChild(navItem);
                     
+                    // [注音邏輯] 標題若是中年級，也加上注音
                     let displayHtml = isJunior ? getZhuyinHtml(line) : escapeHtml(line);
 
                     contentDiv.innerHTML += `
@@ -917,10 +938,13 @@
                             </div>
                         </h2>`;
                 } else {
+                    // 內文區塊
                     let processed = "";
                     if (isJunior) {
+                        // [注音邏輯] 如果是中年級，直接轉注音，不進行 CKIP 斷詞標示 (因為 ruby 和 span 嵌套會很亂)
                         processed = getZhuyinHtml(line);
                     } else {
+                        // 高年級或國中，維持原本的科學名詞 highlight 功能
                         processed = processXRayWithCKIP(line, activeVocabMap, unitCkipSet, unitMergeSet);
                     }
 
@@ -935,7 +959,6 @@
             }
             setMode('dual');
         }
-
         function getCkipTokenSet(ckipLine){
           const raw = (ckipLine || "").toString().trim();
           if(!raw) return new Set();
