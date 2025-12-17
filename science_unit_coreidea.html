@@ -1267,7 +1267,7 @@
         }
     }
 
-    function openModal() {
+function openModal() {
         const chartDiv = document.getElementById("mermaid-chart");
         if (!chartDiv || !chartDiv.innerHTML.trim() || chartDiv.innerText.includes("錯誤")) {
             return;
@@ -1277,23 +1277,30 @@
         const content = document.getElementById("modal-content");
         if (!modal || !content) return;
 
+        // 複製內容
         content.innerHTML = chartDiv.innerHTML;
+
+        // ★ 修改點 1：透過 className 強制設定容器為「左右滿版 (98vw)」與「高度最大化 (95vh)」
+        // overflow-auto 確保圖表過大時可以捲動，p-4 保留一點內邊距
+        content.className = "bg-white rounded-lg shadow-2xl w-[98vw] h-[95vh] overflow-auto p-4 relative";
 
         const wrapper = content.querySelector(".mermaid");
         if (wrapper) {
             wrapper.style.width = "100%";
-            wrapper.style.overflow = "auto";
         }
 
         const svg = content.querySelector("svg");
         if (svg) {
+            // 移除原本 Mermaid 可能寫死的寬高
             svg.removeAttribute("style");
             svg.removeAttribute("width");
             svg.removeAttribute("height");
 
             svg.style.display = "block";
             svg.style.margin  = "0 auto";
-            svg.style.width  = "1600px";   
+
+            // ★ 修改點 2：將 SVG 寬度設為 100%，讓它填滿剛剛變大的容器
+            svg.style.width  = "100%";   
             svg.style.height = "auto";
         }
 
