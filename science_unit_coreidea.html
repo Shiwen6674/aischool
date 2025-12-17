@@ -370,15 +370,13 @@
         questions: [],
         currentIndex: 0,
         hasAnswered: false,
-        answers: []   // 每題是否答對與概念
+        answers: []   
     };
-    let quizRadarChart = null; // 雷達圖實例
-
+    let quizRadarChart = null; 
 
     const i18n = {
         "zh-TW": { 
             back_home:"返回 AI Science", 
-            // [修改 1] 標題文字
             page_title:"單元重點精熟", 
             page_subtitle:"AI 智能筆記生成", 
             settings_title:"請挑選你要的學習單元", 
@@ -394,7 +392,6 @@
             title_vocab:"科學詞彙與定義", 
             title_map:"知識架構圖", 
             title_myth:"科學動動腦",
-            // [修改 3] 下拉選單預設字 (繁中為 請選擇)
             select_default: "請選擇" 
         },
         "en": { 
@@ -457,7 +454,6 @@
     };
 
     window.onload = async () => {
-        // ★ 修改：同時支援 sessionStorage 與 localStorage，避免顯示成「訪客」
         const user = JSON.parse(sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || '{"name":"訪客"}');
         const userInfo = document.getElementById("user-info");
         if (userInfo) userInfo.innerText = user.name;
@@ -539,7 +535,6 @@
             if (btn) btn.disabled = false; 
         };
         
-        // [修改 3] 初始化時也觸發翻譯，確保第一層選單顯示正確語言的「請選擇」
         changeLanguage();
     }
 
@@ -553,7 +548,6 @@
         for(let i=level;i<4;i++){
             const el = document.getElementById(ids[i]);
             if (el) {
-                // [修改 3] 加上 data-i18n 屬性
                 el.innerHTML='<option disabled selected data-i18n="select_default">Select...</option>';
                 el.disabled=true;
             }
@@ -575,7 +569,6 @@
         if(level===4) {
             const unitSelect = document.getElementById("sel-unit");
             if (!unitSelect) return;
-            // [修改 3] 加上 data-i18n 屬性
             unitSelect.innerHTML='<option disabled selected data-i18n="select_default">Select...</option>';
             if(relevantData.length>0) {
                 relevantData.forEach(d => {
@@ -588,14 +581,12 @@
             }
         }
         
-        // [修改 3] 更新選單後立即觸發翻譯，將 Select... 換成對應語言
         changeLanguage();
     }
 
     function populate(id, list, type) {
         const el = document.getElementById(id);
         if (!el) return;
-        // [修改 3] 加上 data-i18n 屬性
         el.innerHTML='<option disabled selected data-i18n="select_default">Select...</option>';
         list.forEach(o => {
             const opt = document.createElement("option");
@@ -737,7 +728,6 @@
             }
         }
 
-        // Mermaid 架構圖
         const chartDiv = document.getElementById('mermaid-chart');
         if (chartDiv) {
             let mapData =
@@ -778,14 +768,12 @@
             }
         }
 
-        // 科學動動腦：互動版迷思題
         const mythListEl = document.getElementById('myth-list');
         if (mythListEl) {
             mythListEl.innerHTML = '';
 
             let mList = data.myths || (data.summary && data.summary.myths) || [];
             if (Array.isArray(mList) && mList.length > 0) {
-                // ★ 最多只出 10 題
                 const limitedMyths = mList.slice(0, 10);
                 mythData = limitedMyths;
 
@@ -795,7 +783,6 @@
 
                     if (!rawMyth && !correctExp) return;
 
-                    // 優先使用後端的 question（含問句），沒有再用 myth，並用粗體呈現
                     let statement = m.question || rawMyth || '';
                     statement = statement
                         .replace(/^迷思[:：]\s*/,'')
@@ -833,7 +820,6 @@
             }
         }
 
-        // 單元小測驗初始化（預留 quiz 資料：data.quiz 或 data.summary.quiz）
         const quizRaw = data.quiz || (data.summary && data.summary.quiz) || [];
         initQuiz(quizRaw);
 
@@ -1011,7 +997,6 @@
         }
     }
 
-    // === 小科聊天室開關邏輯 ===
     function toggleChat() {
         const win = document.getElementById("xiaoke-window");
         if (!win) return;
@@ -1040,7 +1025,7 @@
                             <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" class="w-full h-full rounded-full object-cover">
                         </div>
                         <div class="bg-white border border-slate-100 p-3 rounded-2xl rounded-tl-none shadow-sm text-sm text-slate-700 leading-relaxed">
-                            <span class="font-bold text-blue-500 block mb-1 text-xs">小科 AI</span>
+                            <span class="font-bold text-blue-500 block mb-1 text-xs">小科 AI 助手</span>
                             ${greetMsg}
                         </div>
                     </div>`;
@@ -1048,7 +1033,6 @@
         }
     }
 
-    // === 小科拖曳功能 (Desktop) ===
     let isDragging = false;
     let dragStartX, dragStartY;
     let initialLeft, initialTop;
@@ -1132,7 +1116,7 @@
             const json = await res.json();
             const cleanReply = (json.data || "").replace(/\*\*/g, "");
             if (chatBody) {
-                chatBody.innerHTML += `<div class="self-start bg白 border border-slate-100 p-3 rounded-lg rounded-tr-none shadow-sm max-w-[85%] text-sm"><span class="font-bold text-blue-600 block mb-1 text-xs">小科 AI</span>${cleanReply}</div>`;
+                chatBody.innerHTML += `<div class="self-start bg白 border border-slate-100 p-3 rounded-lg rounded-tr-none shadow-sm max-w-[85%] text-sm"><span class="font-bold text-blue-600 block mb-1 text-xs">小科 AI 助手</span>${cleanReply}</div>`;
                 chatBody.scrollTop = chatBody.scrollHeight;
             }
         } catch(e) { 
