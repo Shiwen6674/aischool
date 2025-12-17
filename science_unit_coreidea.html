@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -11,28 +11,28 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
     <script>
-        tailwind.config = { 
-            theme: { 
-                extend: { 
-                    colors: { student: '#3b82f6' }, 
-                    animation: { "fade-in-up": "fadeInUp 0.5s ease-out forwards" }, 
-                    keyframes: { fadeInUp: { "0%": { opacity: "0", transform: "translateY(20px)" }, "100%": { opacity: "1", transform: "translateY(0)" } } } 
-                } 
-            } 
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { student: '#3b82f6' },
+                    animation: { "fade-in-up": "fadeInUp 0.5s ease-out forwards" },
+                    keyframes: { fadeInUp: { "0%": { opacity: "0", transform: "translateY(20px)" }, "100%": { opacity: "1", transform: "translateY(0)" } } }
+                }
+            }
         }
-        mermaid.initialize({ 
-            startOnLoad: false, 
-            theme: 'neutral', 
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'neutral',
             securityLevel: 'loose',
-            flowchart: { useMaxWidth: false, htmlLabels: true } 
+            flowchart: { useMaxWidth: false, htmlLabels: true }
         });
     </script>
     
-<style>
+    <style>
         /* 1. 全域深色科幻背景 */
-        body { 
-            background-color: #0B1121; 
-            color: #f1f5f9; 
+        body {
+            background-color: #0B1121;
+            color: #f1f5f9;
             font-family: 'Inter', 'Noto Sans TC', "Microsoft JhengHei", sans-serif;
             overflow-x: hidden;
         }
@@ -45,11 +45,11 @@
 
         /* 2. 玻璃擬態面板 (通用) */
         .glass-panel, .glass-card {
-            background: rgba(30, 41, 59, 0.7) !important; 
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); 
-            border: 1px solid rgba(255, 255, 255, 0.1) !important; 
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important; 
-            border-radius: 1.5rem !important; 
+            background: rgba(30, 41, 59, 0.7) !important;
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+            border-radius: 1.5rem !important;
             color: #e2e8f0 !important;
         }
 
@@ -106,12 +106,40 @@
         /* PDF 下載時隱藏的元素 */
         .no-print { display: block; }
         @media print { .no-print { display: none !important; } }
-    </style>
 
+        /* === 小科 AI 專屬特效 === */
+        .xiaoke-glow {
+            position: relative;
+            z-index: 10;
+            border: 2px solid rgba(56, 189, 248, 0.6); /* 亮藍邊框 */
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4), 0 0 30px rgba(59, 130, 246, 0.2);
+            animation: float-pulse 3s infinite ease-in-out;
+            cursor: grab; /* 顯示手掌游標，提示可拖曳 */
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        /* 按住時的效果 */
+        .xiaoke-glow:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.8);
+        }
+        
+        /* 呼吸與漂浮動畫 */
+        @keyframes float-pulse {
+            0%, 100% { transform: translateY(0); filter: brightness(1); }
+            50% { transform: translateY(-6px); filter: brightness(1.2) drop-shadow(0 0 8px rgba(56, 189, 248, 0.6)); }
+        }
+
+        /* 確保拖曳時位置正確 */
+        #floating-chat {
+            touch-action: none; /* 防止手機上拖曳時觸發捲動 */
+            user-select: none;
+        }
+    </style>
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col">
 
-<nav class="fixed top-0 left-0 right-0 h-16 flex items-center justify-between px-6 z-50 no-print">
+    <nav class="fixed top-0 left-0 right-0 h-16 flex items-center justify-between px-6 z-50 no-print">
         <div class="flex items-center">
             <a href="student_science.html" class="flex items-center gap-2 text-slate-300 hover:text-white transition group decoration-0">
                 <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition">
@@ -143,7 +171,7 @@
         </div>
     </nav>
 
-<main class="max-w-7xl mx-auto px-4 pt-24 pb-24 flex-1 w-full">
+    <main class="max-w-7xl mx-auto px-4 pt-24 pb-24 flex-1 w-full">
         <div id="selection-panel" class="glass-panel p-8 relative overflow-hidden no-print">
             <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 blur-[80px] rounded-full pointer-events-none"></div>
 
@@ -247,7 +275,6 @@
                     <div id="myth-list" class="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch"></div>
                 </div>
 
-                <!-- 單元小測驗區塊：單題逐題呈現、NotebookLM 風格 -->
                 <div id="quiz-panel" class="md:col-span-3 glass-panel p-6 rounded-2xl bg-white border border-emerald-100 shadow-sm">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="font-bold text-emerald-700 text-xl flex items-center gap-2">
@@ -263,65 +290,68 @@
                         <div id="quiz-options" class="space-y-2"></div>
                         <div id="quiz-feedback" class="mt-4 text-sm rounded-xl px-3 py-2 hidden"></div>
                         <div class="mt-4 flex justify-center items-center relative z-[200]">
-    <button id="quiz-main-btn" type="button" onclick="handleQuizMainButton()"
-        class="text-xs px-4 py-2 rounded-full bg-emerald-600 text-white font-semibold shadow border border-emerald-700/60 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed">
-        下一題
-    </button>
-</div>
-</div>
+                            <button id="quiz-main-btn" type="button" onclick="handleQuizMainButton()"
+                                class="text-xs px-4 py-2 rounded-full bg-emerald-600 text-white font-semibold shadow border border-emerald-700/60 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed">
+                                下一題
+                            </button>
+                        </div>
+                    </div>
 
-<div id="quiz-empty" class="text-sm text-slate-500">
-    本單元的小測驗尚未準備好，之後會由老師再補上喔。
-</div>
+                    <div id="quiz-empty" class="text-sm text-slate-500">
+                        本單元的小測驗尚未準備好，之後會由老師再補上喔。
+                    </div>
 
-<!-- 測驗結果區（預設隱藏） -->
-<!-- 測驗結果區（預設隱藏） -->
-<div id="quiz-result" class="mt-6 hidden rounded-2xl border border-emerald-300 bg-white shadow-sm p-4">
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-        <div>
-            <div class="text-xs font-semibold text-slate-500">你的測驗成績</div>
-            <div id="quiz-score-number" class="text-3xl font-black text-emerald-700">0 分</div>
-            <div id="quiz-score-label" class="text-xs font-semibold text-emerald-600 mt-1"></div>
-        </div>
-        <div id="quiz-result-text" class="text-sm text-slate-700 md:text-right"></div>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-        <!-- 注意：canvas id 一樣叫 quiz-radar，只是內部畫圖改成橫向長條圖 -->
-        <div class="w-full max-w-md h-56 mx-auto">
-            <canvas id="quiz-radar" class="w-full h-full"></canvas>
-        </div>
-        <div id="quiz-result-detail" class="text-sm text-slate-700 leading-relaxed whitespace-pre-line"></div>
-    </div>
-</div>
-
-
+                    <div id="quiz-result" class="mt-6 hidden rounded-2xl border border-emerald-300 bg-white shadow-sm p-4">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+                            <div>
+                                <div class="text-xs font-semibold text-slate-500">你的測驗成績</div>
+                                <div id="quiz-score-number" class="text-3xl font-black text-emerald-700">0 分</div>
+                                <div id="quiz-score-label" class="text-xs font-semibold text-emerald-600 mt-1"></div>
+                            </div>
+                            <div id="quiz-result-text" class="text-sm text-slate-700 md:text-right"></div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                            <div class="w-full max-w-md h-56 mx-auto">
+                                <canvas id="quiz-radar" class="w-full h-full"></canvas>
+                            </div>
+                            <div id="quiz-result-detail" class="text-sm text-slate-700 leading-relaxed whitespace-pre-line"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <div id="floating-chat" class="hidden fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-4 no-print">
-        <div id="xiaoke-window" class="chat-window closed w-80 md:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden h-[500px]">
-            <div class="bg-blue-600 p-4 text-white flex justify-between items-center">
+    <div id="floating-chat" class="hidden fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-3 no-print">
+       
+        <div id="xiaoke-window" class="chat-window closed w-80 md:w-96 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-blue-200 flex flex-col overflow-hidden h-[450px] transition-all origin-bottom-right">
+            <div class="bg-gradient-to-r from-blue-600 to-cyan-500 p-3 text-white flex justify-between items-center shadow-md">
                 <div class="flex items-center gap-2">
-                    <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" alt="小科" class="w-8 h-8 rounded-full object-cover bg-white">
-                    <span class="font-bold">小科 AI</span>
+                    <div class="w-8 h-8 rounded-full bg-white p-0.5 shadow-sm">
+                        <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" alt="小科" class="w-full h-full object-cover rounded-full">
+                    </div>
+                    <span class="font-bold text-sm tracking-wide">小科 AI 助手</span>
                 </div>
-                <button onclick="toggleChat()" class="w-20 h-20 bg-transparent rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition overflow-hidden">
-    <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" alt="小科" class="w-full h-full object-cover rounded-full">
-</button>
-
+                <button onclick="toggleChat()" class="text-white/80 hover:text-white w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
-            <div class="flex-1 p-4 bg-slate-50 overflow-y-auto text-sm space-y-3" id="chat-messages"></div>
+           
+            <div class="flex-1 p-4 bg-slate-50/50 overflow-y-auto text-sm space-y-3 custom-scrollbar" id="chat-messages">
+            </div>
+           
             <div class="p-3 bg-white border-t border-slate-100 flex gap-2">
-                <input type="text" id="chat-input" placeholder="..." class="flex-1 bg-slate-100 border-none rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" onkeypress="if(event.key==='Enter') sendChatMessage()">
-                <button onclick="sendChatMessage()" class="bg-blue-600 text-white w-10 h-10 rounded-full hover:bg-blue-700 transition flex items-center justify-center"><i class="fa-solid fa-paper-plane text-xs"></i></button>
+                <input type="text" id="chat-input" placeholder="問問小科..." class="flex-1 bg-slate-100 border-none rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-cyan-400 outline-none transition" onkeypress="if(event.key==='Enter') sendChatMessage()">
+                <button onclick="sendChatMessage()" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white w-10 h-10 rounded-full hover:shadow-lg hover:scale-105 transition flex items-center justify-center shadow-md">
+                    <i class="fa-solid fa-paper-plane text-xs"></i>
+                </button>
             </div>
         </div>
-        <!-- ★ 修改：放大 icon，移除外圈邊框與白色圈 -->
-        <button onclick="toggleChat()" class="w-16 h-16 bg-transparent rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition overflow-hidden">
-            <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" alt="小科" class="w-full h-full object-cover rounded-full">
-        </button>
+
+        <div id="xiaoke-avatar-btn" class="xiaoke-glow w-16 h-16 rounded-full bg-white p-1 cursor-grab active:cursor-grabbing" 
+             onmousedown="startDrag(event)" onclick="if(!isDragging) toggleChat()">
+            <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" alt="小科" class="w-full h-full object-cover rounded-full pointer-events-none">
+        </div>
     </div>
 
     <div id="image-modal" class="fixed inset-0 z-[200] bg-black/95 hidden flex-col items-center justify-center p-2 transition-opacity duration-300" onclick="closeModal()">
@@ -337,15 +367,15 @@
     let currentResultData = null;
     let mythData = [];
     let quizState = {
-    questions: [],
-    currentIndex: 0,
-    hasAnswered: false,
-    answers: []   // 每題是否答對與概念
-};
-let quizRadarChart = null; // 雷達圖實例
+        questions: [],
+        currentIndex: 0,
+        hasAnswered: false,
+        answers: []   // 每題是否答對與概念
+    };
+    let quizRadarChart = null; // 雷達圖實例
 
 
-const i18n = {
+    const i18n = {
         "zh-TW": { 
             back_home:"返回 AI Science", 
             // [修改 1] 標題文字
@@ -364,7 +394,7 @@ const i18n = {
             title_vocab:"科學詞彙與定義", 
             title_map:"知識架構圖", 
             title_myth:"科學動動腦",
-            // [修改 2] 下拉選單預設字
+            // [修改 3] 下拉選單預設字 (繁中為 請選擇)
             select_default: "請選擇" 
         },
         "en": { 
@@ -508,9 +538,12 @@ const i18n = {
             const btn = document.getElementById("btn-generate");
             if (btn) btn.disabled = false; 
         };
+        
+        // [修改 3] 初始化時也觸發翻譯，確保第一層選單顯示正確語言的「請選擇」
+        changeLanguage();
     }
 
-function updateLevel(level, value) {
+    function updateLevel(level, value) {
         if(level===1) filters={stage:value};
         if(level===2){filters.publisher=value; delete filters.grade; delete filters.semester; delete filters.unitName;}
         if(level===3){filters.grade=value; delete filters.semester; delete filters.unitName;}
@@ -520,7 +553,7 @@ function updateLevel(level, value) {
         for(let i=level;i<4;i++){
             const el = document.getElementById(ids[i]);
             if (el) {
-                // [修改] 預設選項加上 data-i18n 標籤，並給予一個臨時文字
+                // [修改 3] 加上 data-i18n 屬性
                 el.innerHTML='<option disabled selected data-i18n="select_default">Select...</option>';
                 el.disabled=true;
             }
@@ -542,7 +575,7 @@ function updateLevel(level, value) {
         if(level===4) {
             const unitSelect = document.getElementById("sel-unit");
             if (!unitSelect) return;
-            // [修改] 預設選項加上 data-i18n
+            // [修改 3] 加上 data-i18n 屬性
             unitSelect.innerHTML='<option disabled selected data-i18n="select_default">Select...</option>';
             if(relevantData.length>0) {
                 relevantData.forEach(d => {
@@ -555,14 +588,14 @@ function updateLevel(level, value) {
             }
         }
         
-        // [關鍵] 更新完選項後，立刻執行一次翻譯替換，確保「Select...」變成「請選擇」
+        // [修改 3] 更新選單後立即觸發翻譯，將 Select... 換成對應語言
         changeLanguage();
     }
 
     function populate(id, list, type) {
         const el = document.getElementById(id);
         if (!el) return;
-        // [修改] 預設選項加上 data-i18n
+        // [修改 3] 加上 data-i18n 屬性
         el.innerHTML='<option disabled selected data-i18n="select_default">Select...</option>';
         list.forEach(o => {
             const opt = document.createElement("option");
@@ -822,107 +855,97 @@ function updateLevel(level, value) {
         setTimeout(syncVocabHeight, 100);
     }
 
-function downloadTXT() {
-    if (!currentResultData) { 
-        alert("請先生成內容後再下載！"); 
-        return; 
+    function downloadTXT() {
+        if (!currentResultData) { 
+            alert("請先生成內容後再下載！"); 
+            return; 
+        }
+
+        const stage    = filters.stage    || (currentResultData && currentResultData.stage)    || "";
+        const publisher = filters.publisher || (currentResultData && currentResultData.publisher) || "";
+        const grade    = filters.grade    || (currentResultData && currentResultData.grade)    || "";
+        const semRaw   = filters.semester || (currentResultData && currentResultData.semester) || "";
+        const unitName = (currentResultData.raw_content ? currentResultData.raw_content.unitName : filters.unitName) || "";
+
+        let semesterLabel = semRaw;
+        if (semRaw === "上") semesterLabel = "上學期";
+        else if (semRaw === "下") semesterLabel = "下學期";
+
+        let content = "";
+
+        content += "【單元來源資訊】\n";
+        content += "----------------------------------------\n";
+        content += `學習階段：${stage || "-"}\n`;
+        content += `版本：${publisher || "-"}\n`;
+        content += `年級：${grade ? grade + "年級" : "-"}\n`;
+        content += `學期：${semesterLabel || "-"}\n`;
+        content += `單元名稱：${unitName || "-"}\n\n`;
+
+        content += "========================================\n";
+        content += "  單元重點整理\n";
+        content += "========================================\n\n";
+
+        const summaryEl = document.getElementById("summary-text");
+        let summary = summaryEl ? summaryEl.innerText.replace(/\n\s*\n/g, "\n\n").trim() : "";
+
+        content += "【一、核心概念摘要】\n";
+        content += "----------------------------------------\n";
+        content += (summary || "本單元的核心概念摘要尚未提供。") + "\n\n\n";
+
+        content += "【二、科學詞彙與定義】\n";
+        content += "----------------------------------------\n";
+
+        let vList = currentResultData.keywords 
+            || (currentResultData.summary ? (currentResultData.summary.keywords || currentResultData.summary.vocab_list) : []) 
+            || [];
+
+        if (Array.isArray(vList) && vList.length > 0) {
+            vList.forEach((v, i) => {
+                const term = v.term || v;
+                const def  = v.def || "";
+                content += `${i + 1}. ${term}\n`;
+                content += `   說明：${def || "（尚未提供解釋）"}\n\n`;
+            });
+        } else {
+            content += "目前尚未整理出本單元的科學詞彙與定義。\n\n";
+        }
+
+        content += "\n【三、科學動動腦】\n";
+        content += "----------------------------------------\n";
+
+        let mList = currentResultData.myths 
+            || (currentResultData.summary ? currentResultData.summary.myths : []) 
+            || [];
+
+        if (Array.isArray(mList) && mList.length > 0) {
+            mList.forEach((m, i) => {
+                const stem = (m.question || m.myth || "")
+                    .replace(/^迷思[:：]\s*/, "")
+                    .replace(/^常見想法[:：]\s*/, "");
+                const ans  = m.correct || m.explanation || "";
+
+                content += `● 題目 ${i + 1}：${stem}\n`;
+                content += `   正確觀念：${ans || "（尚未提供說明）"}\n\n`;
+            });
+        } else {
+            content += "本單元目前尚未設定「科學動動腦」題目。\n";
+        }
+
+        try {
+            const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+            const url  = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `${unitName || filters.unitName || "unit"}_重點整理.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            console.error(e);
+            alert("TXT 下載失敗，請再試一次或換一個瀏覽器。");
+        }
     }
-
-    // ＝＝＝＝＝＝＝ 單元來源資訊（學習階段、版本、年級、學期、單元名稱）＝＝＝＝＝＝＝
-    const stage   = filters.stage   || (currentResultData && currentResultData.stage)   || "";
-    const publisher = filters.publisher || (currentResultData && currentResultData.publisher) || "";
-    const grade   = filters.grade   || (currentResultData && currentResultData.grade)   || "";
-    const semRaw  = filters.semester || (currentResultData && currentResultData.semester) || "";
-    const unitName = (currentResultData.raw_content ? currentResultData.raw_content.unitName : filters.unitName) || "";
-
-    let semesterLabel = semRaw;
-    if (semRaw === "上") semesterLabel = "上學期";
-    else if (semRaw === "下") semesterLabel = "下學期";
-
-    // ＝＝＝＝＝＝＝ TXT 內容開始組裝 ＝＝＝＝＝＝＝
-    let content = "";
-
-    // 區塊 0：基本資訊（讓學生一眼看出這份筆記是哪個單元）
-    content += "【單元來源資訊】\n";
-    content += "----------------------------------------\n";
-    content += `學習階段：${stage || "-"}\n`;
-    content += `版本：${publisher || "-"}\n`;
-    content += `年級：${grade ? grade + "年級" : "-"}\n`;
-    content += `學期：${semesterLabel || "-"}\n`;
-    content += `單元名稱：${unitName || "-"}\n\n`;
-
-    // 區塊標題：統一格式，增加可視性
-    content += "========================================\n";
-    content += "  單元重點整理\n";
-    content += "========================================\n\n";
-
-    // 區塊一：核心概念摘要
-    const summaryEl = document.getElementById("summary-text");
-    let summary = summaryEl ? summaryEl.innerText.replace(/\n\s*\n/g, "\n\n").trim() : "";
-
-    content += "【一、核心概念摘要】\n";
-    content += "----------------------------------------\n";
-    content += (summary || "本單元的核心概念摘要尚未提供。") + "\n\n\n";
-
-    // 區塊二：科學詞彙與定義
-    content += "【二、科學詞彙與定義】\n";
-    content += "----------------------------------------\n";
-
-    // 這裡沿用你原本的資料來源邏輯
-    let vList = currentResultData.keywords 
-        || (currentResultData.summary ? (currentResultData.summary.keywords || currentResultData.summary.vocab_list) : []) 
-        || [];
-
-    if (Array.isArray(vList) && vList.length > 0) {
-        vList.forEach((v, i) => {
-            const term = v.term || v;
-            const def  = v.def || "";
-            content += `${i + 1}. ${term}\n`;
-            content += `   說明：${def || "（尚未提供解釋）"}\n\n`;
-        });
-    } else {
-        content += "目前尚未整理出本單元的科學詞彙與定義。\n\n";
-    }
-
-    // 區塊三：科學動動腦
-    content += "\n【三、科學動動腦】\n";
-    content += "----------------------------------------\n";
-
-    let mList = currentResultData.myths 
-        || (currentResultData.summary ? currentResultData.summary.myths : []) 
-        || [];
-
-    if (Array.isArray(mList) && mList.length > 0) {
-        mList.forEach((m, i) => {
-            const stem = (m.question || m.myth || "")
-                .replace(/^迷思[:：]\s*/, "")
-                .replace(/^常見想法[:：]\s*/, "");
-            const ans  = m.correct || m.explanation || "";
-
-            content += `● 題目 ${i + 1}：${stem}\n`;
-            content += `   正確觀念：${ans || "（尚未提供說明）"}\n\n`;
-        });
-    } else {
-        content += "本單元目前尚未設定「科學動動腦」題目。\n";
-    }
-
-    // ＝＝＝＝＝＝＝ 下載 TXT 檔案 ＝＝＝＝＝＝＝
-    try {
-        const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-        const url  = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `${unitName || filters.unitName || "unit"}_重點整理.txt`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    } catch (e) {
-        console.error(e);
-        alert("TXT 下載失敗，請再試一次或換一個瀏覽器。");
-    }
-}
-
 
     function downloadPDF() {
         if (!currentResultData) { 
@@ -931,7 +954,7 @@ function downloadTXT() {
         }
 
         if (typeof html2pdf === "undefined") {
-            alert("PDF 模組載入失敗，請檢查網路後重新整理頁面。");
+            alert("PDF 模組載入失敗，請檢查網路後重新整理頁面。"); 
             return;
         }
         
@@ -988,8 +1011,8 @@ function downloadTXT() {
         }
     }
 
-    // 取代原本的 toggleChat()
-    function toggleChat() { 
+    // === 小科聊天室開關邏輯 ===
+    function toggleChat() {
         const win = document.getElementById("xiaoke-window");
         if (!win) return;
 
@@ -998,23 +1021,80 @@ function downloadTXT() {
 
         if (wasClosed) {
             const chatBody = document.getElementById("chat-messages");
-            if (chatBody && !chatBody.innerHTML.trim()) {
+            if (chatBody && chatBody.innerHTML.trim() === "") {
+                let currentUnitName = "這個單元";
+                if (filters && filters.unitName) {
+                    currentUnitName = filters.unitName;
+                } else {
+                    const sel = document.getElementById("sel-unit");
+                    if (sel && sel.selectedIndex > -1 && !sel.disabled) {
+                        currentUnitName = sel.options[sel.selectedIndex].text;
+                    }
+                }
 
-                const unitName =
-                    (filters && filters.unitName) ||
-                    (currentResultData &&
-                        (currentResultData.unitName ||
-                         (currentResultData.raw_content && currentResultData.raw_content.unitName))) ||
-                    "這個單元";
-
-                const greet = `你好，我是小科，有關「${unitName}」，你有什麼問題要問我呢？`;
+                const greetMsg = `Hi，你好！我是小科，關於「${currentUnitName}」，你有什麼問題要問我？`;
 
                 chatBody.innerHTML = `
-                    <div class="self-start bg白 border border-slate-100 p-3 rounded-lg rounded-tr-none shadow-sm max-w-[85%] text-sm">
-                        <span class="font-bold text-blue-600 block mb-1 text-xs">小科 AI</span>${greet}
+                    <div class="self-start flex gap-2 max-w-[90%]">
+                        <div class="w-8 h-8 rounded-full bg-white border border-slate-200 p-0.5 shrink-0 shadow-sm">
+                            <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" class="w-full h-full rounded-full object-cover">
+                        </div>
+                        <div class="bg-white border border-slate-100 p-3 rounded-2xl rounded-tl-none shadow-sm text-sm text-slate-700 leading-relaxed">
+                            <span class="font-bold text-blue-500 block mb-1 text-xs">小科 AI</span>
+                            ${greetMsg}
+                        </div>
                     </div>`;
             }
         }
+    }
+
+    // === 小科拖曳功能 (Desktop) ===
+    let isDragging = false;
+    let dragStartX, dragStartY;
+    let initialLeft, initialTop;
+
+    function startDrag(e) {
+        if (e.button !== 0) return;
+        
+        const container = document.getElementById("floating-chat");
+        if (!container) return;
+
+        isDragging = false;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+
+        const rect = container.getBoundingClientRect();
+        initialLeft = rect.left;
+        initialTop = rect.top;
+
+        container.style.bottom = "auto";
+        container.style.right = "auto";
+        container.style.left = `${initialLeft}px`;
+        container.style.top = `${initialTop}px`;
+
+        document.addEventListener("mousemove", onDrag);
+        document.addEventListener("mouseup", stopDrag);
+    }
+
+    function onDrag(e) {
+        const dx = e.clientX - dragStartX;
+        const dy = e.clientY - dragStartY;
+
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+            isDragging = true;
+        }
+
+        const container = document.getElementById("floating-chat");
+        if (container) {
+            container.style.left = `${initialLeft + dx}px`;
+            container.style.top = `${initialTop + dy}px`;
+        }
+    }
+
+    function stopDrag() {
+        document.removeEventListener("mousemove", onDrag);
+        document.removeEventListener("mouseup", stopDrag);
+        setTimeout(() => { isDragging = false; }, 100);
     }
 
     async function sendChatMessage() {
@@ -1031,7 +1111,6 @@ function downloadTXT() {
         input.value = "";
 
         try {
-            // 同步使用 session/localStorage 的 currentUser
             const currentUser = JSON.parse(sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || '{"name":"訪客"}');
             const contextText = currentResultData ? (currentResultData.raw_content ? currentResultData.raw_content.text : "") : "";
             const contextVocab = currentResultData ? (currentResultData.raw_content ? currentResultData.raw_content.vocab_str : "") : "";
@@ -1061,45 +1140,39 @@ function downloadTXT() {
         }
     }
 
-   function openModal() {
-    const chartDiv = document.getElementById("mermaid-chart");
-    if (!chartDiv || !chartDiv.innerHTML.trim() || chartDiv.innerText.includes("錯誤")) {
-        return;
+    function openModal() {
+        const chartDiv = document.getElementById("mermaid-chart");
+        if (!chartDiv || !chartDiv.innerHTML.trim() || chartDiv.innerText.includes("錯誤")) {
+            return;
+        }
+
+        const modal   = document.getElementById("image-modal");
+        const content = document.getElementById("modal-content");
+        if (!modal || !content) return;
+
+        content.innerHTML = chartDiv.innerHTML;
+
+        const wrapper = content.querySelector(".mermaid");
+        if (wrapper) {
+            wrapper.style.width = "100%";
+            wrapper.style.overflow = "auto";
+        }
+
+        const svg = content.querySelector("svg");
+        if (svg) {
+            svg.removeAttribute("style");
+            svg.removeAttribute("width");
+            svg.removeAttribute("height");
+
+            svg.style.display = "block";
+            svg.style.margin  = "0 auto";
+            svg.style.width  = "1600px";   
+            svg.style.height = "auto";
+        }
+
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
     }
-
-    const modal   = document.getElementById("image-modal");
-    const content = document.getElementById("modal-content");
-    if (!modal || !content) return;
-
-    // 把頁面上的圖 copy 進來
-    content.innerHTML = chartDiv.innerHTML;
-
-    // 讓 wrapper 可以捲動
-    const wrapper = content.querySelector(".mermaid");
-    if (wrapper) {
-        wrapper.style.width = "100%";
-        wrapper.style.overflow = "auto";
-    }
-
-    // 燈箱裡的 svg 強制放大
-    const svg = content.querySelector("svg");
-    if (svg) {
-        svg.removeAttribute("style");
-        svg.removeAttribute("width");
-        svg.removeAttribute("height");
-
-        svg.style.display = "block";
-        svg.style.margin  = "0 auto";
-
-        // 這裡就是放大的倍率，可以自己微調
-        svg.style.width  = "1600px";   // 比視窗寬，會出現橫向捲軸
-        svg.style.height = "auto";
-    }
-
-    modal.classList.remove("hidden");
-    modal.classList.add("flex");
-}
-
 
     function closeModal() {
         const modal = document.getElementById("image-modal");
@@ -1123,11 +1196,9 @@ function downloadTXT() {
         vocabPanel.style.height = targetHeight + "px";
     }
 
-    // 科學動動腦：作答互動
     function answerMyth(index, chooseTrue) {
         if (!Array.isArray(mythData) || !mythData[index]) return;
 
-        // ★ 依序作答：只允許目前第一個尚未作答的題目
         try {
             let firstUnanswered = -1;
             for (let i = 0; i < mythData.length; i++) {
@@ -1157,14 +1228,11 @@ function downloadTXT() {
         const myth    = mythData[index].myth || mythData[index].misconception || '';
         const correct = mythData[index].correct || mythData[index].explanation || '';
 
-        // 優先使用後端的 isTrue（true=敘述正確、false=敘述錯誤）
         const isTrueFlag = (typeof mythData[index].isTrue === "boolean") ? mythData[index].isTrue : null;
         let isCorrectChoice;
         if (isTrueFlag === null) {
-            // 若沒有 isTrue（舊格式），維持原本假設：常見說法多半「不完全正確」
             isCorrectChoice = !chooseTrue;
         } else {
-            // 有 isTrue 時，學生選擇與 isTrue 一致才算答對
             isCorrectChoice = (chooseTrue === isTrueFlag);
         }
 
@@ -1179,7 +1247,6 @@ function downloadTXT() {
         let html = "";
 
         if (isCorrectChoice) {
-            // 答對：標綠，訊息「恭喜答對了！你真棒！」
             if (chooseTrue) {
                 btnTrue.classList.add("border-green-500","bg-green-50","text-green-700");
                 btnFalse.classList.add("opacity-70");
@@ -1192,7 +1259,6 @@ function downloadTXT() {
                 <div class="text-slate-700 text-sm mb-1">${correct}</div>
             `;
         } else {
-            // 答錯：錯的一側標紅，正確那側標綠，訊息「可惜答錯了，再試試！」
             if (chooseTrue) {
                 btnTrue.classList.add("border-red-500","bg-red-50","text-red-700");
                 btnFalse.classList.add("border-green-500","bg-green-50","text-green-700");
@@ -1210,7 +1276,6 @@ function downloadTXT() {
         feedback.classList.remove("hidden");
     }
 
-    // 單元小測驗：初始化與呈現
     function initQuiz(quizRaw) {
         const quizPanel   = document.getElementById("quiz-panel");
         const quizBody    = document.getElementById("quiz-body");
@@ -1227,11 +1292,10 @@ function downloadTXT() {
             "";
         quizTitleEl.innerText = unitName ? `單元小測驗－${unitName}` : "單元小測驗";
 
-        // ★ 最多只取前 10 題
         const sourceArray = Array.isArray(quizRaw) ? quizRaw.slice(0, 10) : [];
 
         if (!Array.isArray(sourceArray) || sourceArray.length === 0) {
-            quizState.questions    = [];
+            quizState.questions     = [];
             quizState.currentIndex = 0;
             quizState.hasAnswered  = false;
             quizBody.classList.add("hidden");
@@ -1242,42 +1306,31 @@ function downloadTXT() {
         }
 
         quizState.questions = sourceArray.map((q, idx) => {
-    const stem = q.stem || q.question || q.text || `第 ${idx + 1} 題`;
-    let options = q.options || q.choices || q.choice || [];
-    if (!Array.isArray(options)) options = [];
-    let correctIndex = -1;
+            const stem = q.stem || q.question || q.text || `第 ${idx + 1} 題`;
+            let options = q.options || q.choices || q.choice || [];
+            if (!Array.isArray(options)) options = [];
+            let correctIndex = -1;
 
-    if (typeof q.correctIndex === "number") correctIndex = q.correctIndex;
-    else if (typeof q.answerIndex === "number") correctIndex = q.answerIndex;
-    else if (typeof q.correct === "number") correctIndex = q.correct;
-    else if (typeof q.ans === "number") correctIndex = q.ans;
-    else if (typeof q.answer === "string") {
-        const map = { "A": 0, "B": 1, "C": 2, "D": 3 };
-        const key = q.answer.trim().toUpperCase()[0];
-        if (map[key] !== undefined) correctIndex = map[key];
-    }
+            if (typeof q.correctIndex === "number") correctIndex = q.correctIndex;
+            else if (typeof q.answerIndex === "number") correctIndex = q.answerIndex;
+            else if (typeof q.correct === "number") correctIndex = q.correct;
+            else if (typeof q.ans === "number") correctIndex = q.ans;
+            else if (typeof q.answer === "string") {
+                const map = { "A": 0, "B": 1, "C": 2, "D": 3 };
+                const key = q.answer.trim().toUpperCase()[0];
+                if (map[key] !== undefined) correctIndex = map[key];
+            }
 
-    const explanation = q.explanation || q.explain || q.detail || q.reason || "";
-    const id = q.id || `Q${idx + 1}`;
-    const concept = q.concept || q.conceptName || q.topic || `第 ${idx + 1} 題`;
+            const explanation = q.explanation || q.explain || q.detail || q.reason || "";
+            const id = q.id || `Q${idx + 1}`;
+            const concept = q.concept || q.conceptName || q.topic || `第 ${idx + 1} 題`;
 
-    return {
-        id,
-        stem,
-        options,
-        correctIndex,
-        explanation,
-        concept
-    };
-});
-
-quizState.currentIndex = 0;
-quizState.hasAnswered  = false;
-quizState.answers      = [];  // 清空作答紀錄
-
+            return { id, stem, options, correctIndex, explanation, concept };
+        });
 
         quizState.currentIndex = 0;
         quizState.hasAnswered  = false;
+        quizState.answers      = []; 
 
         quizEmpty.classList.add("hidden");
         quizBody.classList.remove("hidden");
@@ -1308,364 +1361,214 @@ quizState.answers      = [];  // 清空作答紀錄
         q.options.forEach((opt, optIndex) => {
             const btn = document.createElement("button");
             btn.type = "button";
-            btn.className = "quiz-option-btn w-full text左 px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg白 hover:bg-emerald-50 hover:border-emerald-300 text-slate-800";
+            btn.className = "quiz-option-btn w-full text-left px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-white hover:bg-emerald-50 hover:border-emerald-300 text-slate-800 flex items-center";
             btn.setAttribute("data-opt-index", optIndex);
             btn.onclick = () => handleQuizAnswer(optIndex);
-            btn.innerHTML = `<span class="inline-flex items-center justify-center w-6 h-6 mr-2 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold">${letters[optIndex] || ""}</span>${opt}`;
+            btn.innerHTML = `<span class="inline-flex items-center justify-center w-6 h-6 mr-2 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold shrink-0">${letters[optIndex] || ""}</span>${opt}`;
             quizOptionsEl.appendChild(btn);
         });
 
         quizProgressEl.innerText = `第 ${index + 1} 題／共 ${total} 題`;
 
-        // 主按鈕：每一題一開始都先鎖住，等答完題才開放
         btnMain.disabled = true;
         btnMain.classList.add("opacity-40","cursor-not-allowed");
         btnMain.innerText = (index === total - 1) ? "看結果" : "下一題";
     }
 
     function handleQuizAnswer(selectedIndex) {
-    if (quizState.hasAnswered) return;
-    const q = quizState.questions[quizState.currentIndex];
-    if (!q) return;
+        if (quizState.hasAnswered) return;
+        const q = quizState.questions[quizState.currentIndex];
+        if (!q) return;
 
-    const quizOptionsEl  = document.getElementById("quiz-options");
-    const quizFeedbackEl = document.getElementById("quiz-feedback");
-    if (!quizOptionsEl || !quizFeedbackEl) return;
+        const quizOptionsEl  = document.getElementById("quiz-options");
+        const quizFeedbackEl = document.getElementById("quiz-feedback");
+        if (!quizOptionsEl || !quizFeedbackEl) return;
 
-    const buttons = Array.from(quizOptionsEl.querySelectorAll("button.quiz-option-btn"));
-    const correctIndex = typeof q.correctIndex === "number" ? q.correctIndex : -1;
+        const buttons = Array.from(quizOptionsEl.querySelectorAll("button.quiz-option-btn"));
+        const correctIndex = typeof q.correctIndex === "number" ? q.correctIndex : -1;
 
-    buttons.forEach((btn) => {
-        btn.disabled = true;
-        btn.classList.remove(
-            "border-green-500","bg-green-50","text-green-700",
-            "border-red-500","bg-red-50","text-red-700"
-        );
-    });
+        buttons.forEach((btn) => {
+            btn.disabled = true;
+            btn.classList.remove(
+                "border-green-500","bg-green-50","text-green-700",
+                "border-red-500","bg-red-50","text-red-700"
+            );
+        });
 
-    let isCorrect = (selectedIndex === correctIndex && correctIndex >= 0);
+        let isCorrect = (selectedIndex === correctIndex && correctIndex >= 0);
 
-    // 保留你原本先寫入 isCorrect / concept 的記錄
-    quizState.answers[quizState.currentIndex] = {
-        concept: q.concept || q.conceptName || q.topic || `第 ${quizState.currentIndex + 1} 題`,
-        isCorrect: isCorrect
-    };
-
-    if (isCorrect) {
-        const btn = buttons[selectedIndex];
-        if (btn) {
-            btn.classList.add("border-green-500","bg-green-50","text-green-700");
-        }
-        quizFeedbackEl.className = "mt-4 text-sm rounded-xl px-3 py-2 bg-emerald-50 border border-emerald-200 text-emerald-800";
-        quizFeedbackEl.innerHTML = `
-            <div class="font-semibold text-emerald-700 mb-1">恭喜答對了！你真棒！</div>
-            <div class="text-slate-700 text-sm mb-1">${q.explanation || ""}</div>
-                    `;
-    } else {
-        const chosenBtn = buttons[selectedIndex];
-        if (chosenBtn) {
-            chosenBtn.classList.add("border-red-500","bg-red-50","text-red-700");
-        }
-        if (correctIndex >= 0 && buttons[correctIndex]) {
-            buttons[correctIndex].classList.add("border-green-500","bg-green-50","text-green-700");
-        }
-        quizFeedbackEl.className = "mt-4 text-sm rounded-xl px-3 py-2 bg-orange-50 border border-orange-200 text-orange-800";
-        quizFeedbackEl.innerHTML = `
-            <div class="font-semibold text-orange-600 mb-1">可惜答錯了，再試試！</div>
-            <div class="text-slate-700 text-sm mb-1">${q.explanation || ""}</div>
-             `;
-    }
-
-    quizFeedbackEl.classList.remove("hidden");
-
-    quizState.hasAnswered = true;
-    // 保留你原來第二次寫入的結構（correct + concept）
-    quizState.answers[quizState.currentIndex] = {
-        correct: isCorrect,
-        concept: q.concept
-    };
-
-    const btnMain = document.getElementById("quiz-main-btn");
-    if (btnMain) {
-        const isLast = (quizState.currentIndex === quizState.questions.length - 1);
-        btnMain.disabled = false;
-        btnMain.classList.remove("opacity-40","cursor-not-allowed");
-        btnMain.innerText = isLast ? "看結果" : "下一題";
-    }
-
-    try {
-        submitQuizLog(q, selectedIndex, correctIndex, isCorrect);
-    } catch (e) {
-        console.log("submitQuizLog 略過或失敗：", e);
-    }
-
-    // 之後如果你要啟用逐題 AI 解析，可以在這裡再自己加上一行：
-    // try { requestQuizAIExplanation(q, selectedIndex, isCorrect); } catch (e) { ... }
-}
-
-// ★ 新增：呼叫後端 AI，產生「整體測驗診斷」文字回饋
-// ★ 完整取代原本的 requestQuizAISummary 函式
-// ★ 完整取代原本的 requestQuizAISummary 函式
-function requestQuizAISummary(score, concepts, conceptScores, correctCount, totalQ) {
-    const detailEl     = document.getElementById("quiz-result-detail");
-    const scoreLabelEl = document.getElementById("quiz-score-label");
-    if (!detailEl || !scoreLabelEl) return;
-
-    const currentUser = JSON.parse(
-        sessionStorage.getItem("currentUser") ||
-        localStorage.getItem("currentUser") ||
-        '{"name":"訪客"}'
-    );
-
-    const raw = currentResultData && currentResultData.raw_content ? currentResultData.raw_content : {};
-    const contextText  = raw.text || raw.text_summary || raw.text_full || "";
-    const contextVocab = raw.vocab_str || "";
-
-    const unitName =
-        (filters && filters.unitName) ||
-        (currentResultData &&
-            (currentResultData.unitName ||
-             (currentResultData.raw_content && currentResultData.raw_content.unitName))) || "";
-
-    const answerRecords = quizState.questions.map((q, idx) => {
-        const ans = quizState.answers[idx];
-        return {
-            index: idx + 1,
-            concept: q.concept || q.conceptName || q.topic || `第 ${idx + 1} 題`,
-            correct: !!(ans && ans.correct)
+        quizState.answers[quizState.currentIndex] = {
+            concept: q.concept || q.conceptName || q.topic || `第 ${quizState.currentIndex + 1} 題`,
+            isCorrect: isCorrect,
+            correct: isCorrect
         };
-    });
 
-    const payload = {
-        action: "quiz_ai_summary",
-        userName: currentUser.name,
-        stage: filters.stage || "",
-        publisher: filters.publisher || "",
-        grade: filters.grade || "",
-        semester: filters.semester || "",
-        unitName: unitName,
-        score: score,
-        totalQuestions: totalQ,
-        totalCorrect: correctCount,
-        concepts: concepts,
-        conceptScores: conceptScores,
-        answers: answerRecords,
-        contextText: contextText,
-        contextVocab: contextVocab
-    };
-
-    // 右側文字先顯示「分析中」
-    detailEl.innerText = "AI 正在分析你的作答結果…";
-    scoreLabelEl.innerText = "";
-
-    fetch(GAS_API_URL, {
-        method: "POST",
-        body: JSON.stringify(payload)
-    })
-    .then(res => res.text())          // 先拿「純文字」，不直接 json()
-    .then(text => {
-        if (!text) {
-            // 完全沒東西 → 給一段安全預設說明
-            detailEl.innerText = "從左側的長條圖可以看出各概念的答對率，分數較低的概念可以回到課本文字與重點整理區再加強。";
-            scoreLabelEl.innerText = "";
-            return;
-        }
-
-        let json = null;
-        try {
-            json = JSON.parse(text);  // 能轉 JSON 就當 JSON
-        } catch (e) {
-            // 不能轉 JSON → 直接把後端文字顯示出來（通常是你在 Apps Script 裡組好的說明）
-            detailEl.innerHTML = text;
-            scoreLabelEl.innerText = "";
-            return;
-        }
-
-        if (!json) {
-            detailEl.innerText = "從左側的長條圖可以看出各概念的答對率，分數較低的概念可以回到課本文字與重點整理區再加強。";
-            scoreLabelEl.innerText = "";
-            return;
-        }
-
-        // ★ 放寬格式：{status,data} 或 {summary,detail} 或直接是一個字串都吃
-        let d = null;
-        if (typeof json.data !== "undefined") {
-            d = json.data;
-        } else if (json.summary || json.detail || json.text) {
-            d = json;
-        } else if (typeof json === "string") {
-            d = json;
-        }
-
-        if (!d) {
-            detailEl.innerText = "從左側的長條圖可以看出各概念的答對率，分數較低的概念可以回到課本文字與重點整理區再加強。";
-            scoreLabelEl.innerText = "";
-            return;
-        }
-
-        let summaryText = "";
-        let detailText  = "";
-
-        if (typeof d === "string") {
-            summaryText = d;
-        } else if (d && typeof d === "object") {
-            summaryText = d.summary || d.summary_html || d.text || d.explanation || "";
-            detailText  = d.detail  || d.detail_html  || "";
-        }
-
-        let combined = "";
-        if (summaryText) combined = summaryText;
-        if (detailText)  combined = combined ? (combined + "<br><br>" + detailText) : detailText;
-
-        if (combined) {
-            detailEl.innerHTML = combined;
-        } else {
-            detailEl.innerText = "從左側的長條圖可以看出各概念的答對率，分數較低的概念可以回到課本文字與重點整理區再加強。";
-        }
-
-        // 下方綠字不另外補診斷
-        scoreLabelEl.innerText = "";
-    })
-    .catch(err => {
-        console.log("quiz_ai_summary 呼叫失敗：", err);
-        scoreLabelEl.innerText = "";
-        // ★ 只有「真的連不上 Apps Script」時才會到這裡
-        detailEl.innerText = "AI 分析暫時無法提供，可以先參考圖表與逐題解析，自己歸納需要加強的地方。";
-    });
-}
-
-
-    function handleQuizMainButton() {
-        if (!quizState.questions.length) return;
-        if (!quizState.hasAnswered) return;
-
-        const isLast = (quizState.currentIndex === quizState.questions.length - 1);
-        if (isLast) {
-            renderQuizResult();
-        } else {
-            quizState.currentIndex += 1;
-            renderQuizQuestion();
-        }
-    }
-
-    // === 單元小測驗：總結成績 + 概念診斷 + 橫向長條圖（由 AI 產生文字回饋）===
-function renderQuizResult() {
-    const totalQ = quizState.questions.length;
-    if (!totalQ) return;
-
-    const resultBox      = document.getElementById("quiz-result");
-    const scoreNumberEl  = document.getElementById("quiz-score-number");
-    const scoreLabelEl   = document.getElementById("quiz-score-label");
-    const resultTextEl   = document.getElementById("quiz-result-text");
-    const detailEl       = document.getElementById("quiz-result-detail");
-    const canvas         = document.getElementById("quiz-radar");
-    const quizBody       = document.getElementById("quiz-body");
-    const quizProgress   = document.getElementById("quiz-progress");
-    const btnMain        = document.getElementById("quiz-main-btn");
-
-    if (!resultBox || !scoreNumberEl || !scoreLabelEl || !resultTextEl || !detailEl || !canvas) return;
-
-    // 按「看結果」後，隱藏題目區與按鈕，改由結果區佔據原本位置
-    if (quizBody) quizBody.classList.add("hidden");
-    if (quizProgress) quizProgress.classList.add("hidden");
-    if (btnMain) btnMain.classList.add("hidden");
-
-    // 統計總得分
-    const answered = quizState.answers.filter(a => a);
-    const correctCount = answered.filter(a => a.correct).length;
-    const score = Math.round((correctCount / totalQ) * 100);
-
-    // 顯示容器
-    resultBox.classList.remove("hidden");
-
-    // 分數本身
-    scoreNumberEl.innerText = `${score} 分`;
-    // 分數下方那一行改交給 AI，先顯示 loading 字樣
-    scoreLabelEl.innerText = "AI 正在分析你的作答結果…";
-
-    // 這一行保留（單純報告對幾題）
-    resultTextEl.innerText = `你答對 ${correctCount} 題／共 ${totalQ} 題。`;
-
-    // 依概念彙總答對率（只給圖形用，也一併傳給 AI 參考）
-    const conceptStats = {};
-    quizState.questions.forEach((q, idx) => {
-        const concept = q.concept || q.conceptName || q.topic || `第 ${idx + 1} 題`;
-        if (!conceptStats[concept]) {
-            conceptStats[concept] = { total: 0, correct: 0 };
-        }
-        conceptStats[concept].total += 1;
-        const ans = quizState.answers[idx];
-        if (ans && ans.correct) {
-            conceptStats[concept].correct += 1;
-        }
-    });
-
-    const concepts = Object.keys(conceptStats);
-    const conceptScores = concepts.map(c => {
-        const s = conceptStats[c];
-        return Math.round((s.correct / s.total) * 100);
-    });
-
-    // 右側文字區也交給 AI，先放一個 placeholder
-    detailEl.innerText = "AI 分析中…";
-
-    // 畫橫向長條圖（用同一個 quizRadarChart 變數，不改名稱）
-    const ctx = canvas.getContext("2d");
-    if (quizRadarChart) {
-        quizRadarChart.destroy();
-    }
-    quizRadarChart = new Chart(ctx, {
-        type: "bar",
-        data: {
-            labels: concepts,
-            datasets: [{
-                label: "答對率 (％)",
-                data: conceptScores
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            indexAxis: "y",
-            scales: {
-                x: {
-                    min: 0,
-                    max: 100,
-                    ticks: {
-                        stepSize: 100,   // 只出現 0 與 100 兩個刻度
-                        callback: (value) => {
-                            const v = Number(value);
-                            if (v === 0)   return "答錯";
-                            if (v === 100) return "答對";
-                            return "";
-                        }
-                    }
-                },
-                // ★ 這裡是關鍵：不要 autoSkip，就會顯示每一題
-                y: {
-                    ticks: {
-                        autoSkip: false
-                    }
-                }
+        if (isCorrect) {
+            const btn = buttons[selectedIndex];
+            if (btn) {
+                btn.classList.add("border-green-500","bg-green-50","text-green-700");
             }
+            quizFeedbackEl.className = "mt-4 text-sm rounded-xl px-3 py-2 bg-emerald-50 border border-emerald-200 text-emerald-800";
+            quizFeedbackEl.innerHTML = `
+                <div class="font-semibold text-emerald-700 mb-1">恭喜答對了！你真棒！</div>
+                <div class="text-slate-700 text-sm mb-1">${q.explanation || ""}</div>
+            `;
+        } else {
+            const chosenBtn = buttons[selectedIndex];
+            if (chosenBtn) {
+                chosenBtn.classList.add("border-red-500","bg-red-50","text-red-700");
+            }
+            if (correctIndex >= 0 && buttons[correctIndex]) {
+                buttons[correctIndex].classList.add("border-green-500","bg-green-50","text-green-700");
+            }
+            quizFeedbackEl.className = "mt-4 text-sm rounded-xl px-3 py-2 bg-orange-50 border border-orange-200 text-orange-800";
+            quizFeedbackEl.innerHTML = `
+                <div class="font-semibold text-orange-600 mb-1">可惜答錯了，再試試！</div>
+                <div class="text-slate-700 text-sm mb-1">${q.explanation || ""}</div>
+            `;
         }
-    });
 
-    // ★ 整體結果交給後端 AI 產生診斷文字
-    try {
-        requestQuizAISummary(score, concepts, conceptScores, correctCount, totalQ);
-    } catch (e) {
-        console.log("requestQuizAISummary 呼叫失敗（前端層級）：", e);
+        quizFeedbackEl.classList.remove("hidden");
+        quizState.hasAnswered = true;
+
+        const btnMain = document.getElementById("quiz-main-btn");
+        if (btnMain) {
+            const isLast = (quizState.currentIndex === quizState.questions.length - 1);
+            btnMain.disabled = false;
+            btnMain.classList.remove("opacity-40","cursor-not-allowed");
+            btnMain.innerText = isLast ? "看結果" : "下一題";
+        }
+
+        try {
+            submitQuizLog(q, selectedIndex, correctIndex, isCorrect);
+        } catch (e) {
+            console.log("submitQuizLog 略過或失敗：", e);
+        }
     }
-}
 
+    function requestQuizAISummary(score, concepts, conceptScores, correctCount, totalQ) {
+        const detailEl     = document.getElementById("quiz-result-detail");
+        const scoreLabelEl = document.getElementById("quiz-score-label");
+        if (!detailEl || !scoreLabelEl) return;
 
+        const currentUser = JSON.parse(
+            sessionStorage.getItem("currentUser") ||
+            localStorage.getItem("currentUser") ||
+            '{"name":"訪客"}'
+        );
 
-           
-    // 前端先預留 log_quiz_answer，後端沒實作也不會壞
-        function submitQuizLog(question, selectedIndex, correctIndex, isCorrect) {
+        const raw = currentResultData && currentResultData.raw_content ? currentResultData.raw_content : {};
+        const contextText  = raw.text || raw.text_summary || raw.text_full || "";
+        const contextVocab = raw.vocab_str || "";
+
+        const unitName =
+            (filters && filters.unitName) ||
+            (currentResultData &&
+                (currentResultData.unitName ||
+                 (currentResultData.raw_content && currentResultData.raw_content.unitName))) || "";
+
+        const answerRecords = quizState.questions.map((q, idx) => {
+            const ans = quizState.answers[idx];
+            return {
+                index: idx + 1,
+                concept: q.concept || q.conceptName || q.topic || `第 ${idx + 1} 題`,
+                correct: !!(ans && ans.correct)
+            };
+        });
+
+        const payload = {
+            action: "quiz_ai_summary",
+            userName: currentUser.name,
+            stage: filters.stage || "",
+            publisher: filters.publisher || "",
+            grade: filters.grade || "",
+            semester: filters.semester || "",
+            unitName: unitName,
+            score: score,
+            totalQuestions: totalQ,
+            totalCorrect: correctCount,
+            concepts: concepts,
+            conceptScores: conceptScores,
+            answers: answerRecords,
+            contextText: contextText,
+            contextVocab: contextVocab
+        };
+
+        detailEl.innerText = "AI 正在分析你的作答結果…";
+        scoreLabelEl.innerText = "";
+
+        fetch(GAS_API_URL, {
+            method: "POST",
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.text())
+        .then(text => {
+            if (!text) {
+                detailEl.innerText = "從左側的長條圖可以看出各概念的答對率，分數較低的概念可以回到課本文字與重點整理區再加強。";
+                scoreLabelEl.innerText = "";
+                return;
+            }
+
+            let json = null;
+            try {
+                json = JSON.parse(text); 
+            } catch (e) {
+                detailEl.innerHTML = text;
+                scoreLabelEl.innerText = "";
+                return;
+            }
+
+            if (!json) {
+                detailEl.innerText = "從左側的長條圖可以看出各概念的答對率，分數較低的概念可以回到課本文字與重點整理區再加強。";
+                scoreLabelEl.innerText = "";
+                return;
+            }
+
+            let d = null;
+            if (typeof json.data !== "undefined") {
+                d = json.data;
+            } else if (json.summary || json.detail || json.text) {
+                d = json;
+            } else if (typeof json === "string") {
+                d = json;
+            }
+
+            if (!d) {
+                detailEl.innerText = "從左側的長條圖可以看出各概念的答對率，分數較低的概念可以回到課本文字與重點整理區再加強。";
+                scoreLabelEl.innerText = "";
+                return;
+            }
+
+            let summaryText = "";
+            let detailText  = "";
+
+            if (typeof d === "string") {
+                summaryText = d;
+            } else if (d && typeof d === "object") {
+                summaryText = d.summary || d.summary_html || d.text || d.explanation || "";
+                detailText  = d.detail  || d.detail_html  || "";
+            }
+
+            let combined = "";
+            if (summaryText) combined = summaryText;
+            if (detailText)  combined = combined ? (combined + "<br><br>" + detailText) : detailText;
+
+            if (combined) {
+                detailEl.innerHTML = combined;
+            } else {
+                detailEl.innerText = "從左側的長條圖可以看出各概念的答對率，分數較低的概念可以回到課本文字與重點整理區再加強。";
+            }
+            scoreLabelEl.innerText = "";
+        })
+        .catch(err => {
+            console.log("quiz_ai_summary 呼叫失敗：", err);
+            scoreLabelEl.innerText = "";
+            detailEl.innerText = "AI 分析暫時無法提供，可以先參考圖表與逐題解析，自己歸納需要加強的地方。";
+        });
+    }
+
+    function submitQuizLog(question, selectedIndex, correctIndex, isCorrect) {
         if (!question) return;
-        // ★ 同步支援 session/localStorage，以確保寫入試算表時有正確姓名
         const currentUser = JSON.parse(sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || '{"name":"訪客"}');
 
         const payload = {
@@ -1688,7 +1591,6 @@ function renderQuizResult() {
             isCorrect: isCorrect ? "1" : "0"
         };
 
-        // ★ 改用 GET + query string，讓 Apps Script 的 doGet(e) 也能處理
         const params = new URLSearchParams(payload);
         fetch(`${GAS_API_URL}?${params.toString()}`)
             .catch(err => {
@@ -1696,12 +1598,10 @@ function renderQuizResult() {
             });
     }
 
-    // ★ 新增：向後端請求「AI 逐題解析」
     function requestQuizAIExplanation(question, selectedIndex, isCorrect) {
         const target = document.getElementById("quiz-ai-explanation");
         if (!target) return;
 
-        // 取得目前使用者
         const currentUser = JSON.parse(
             sessionStorage.getItem("currentUser") ||
             localStorage.getItem("currentUser") ||
@@ -1780,7 +1680,116 @@ function renderQuizResult() {
         });
     }
 
-// ---- 修正：確保「上一題／下一題」按鈕一定能正確觸發 ----
+    function handleQuizMainButton() {
+        if (!quizState.questions.length) return;
+        if (!quizState.hasAnswered) return;
+
+        const isLast = (quizState.currentIndex === quizState.questions.length - 1);
+        if (isLast) {
+            renderQuizResult();
+        } else {
+            quizState.currentIndex += 1;
+            renderQuizQuestion();
+        }
+    }
+
+    function renderQuizResult() {
+        const totalQ = quizState.questions.length;
+        if (!totalQ) return;
+
+        const resultBox      = document.getElementById("quiz-result");
+        const scoreNumberEl  = document.getElementById("quiz-score-number");
+        const scoreLabelEl   = document.getElementById("quiz-score-label");
+        const resultTextEl   = document.getElementById("quiz-result-text");
+        const detailEl       = document.getElementById("quiz-result-detail");
+        const canvas         = document.getElementById("quiz-radar");
+        const quizBody       = document.getElementById("quiz-body");
+        const quizProgress   = document.getElementById("quiz-progress");
+        const btnMain        = document.getElementById("quiz-main-btn");
+
+        if (!resultBox || !scoreNumberEl || !scoreLabelEl || !resultTextEl || !detailEl || !canvas) return;
+
+        if (quizBody) quizBody.classList.add("hidden");
+        if (quizProgress) quizProgress.classList.add("hidden");
+        if (btnMain) btnMain.classList.add("hidden");
+
+        const answered = quizState.answers.filter(a => a);
+        const correctCount = answered.filter(a => a.correct).length;
+        const score = Math.round((correctCount / totalQ) * 100);
+
+        resultBox.classList.remove("hidden");
+
+        scoreNumberEl.innerText = `${score} 分`;
+        scoreLabelEl.innerText = "AI 正在分析你的作答結果…";
+        resultTextEl.innerText = `你答對 ${correctCount} 題／共 ${totalQ} 題。`;
+
+        const conceptStats = {};
+        quizState.questions.forEach((q, idx) => {
+            const concept = q.concept || q.conceptName || q.topic || `第 ${idx + 1} 題`;
+            if (!conceptStats[concept]) {
+                conceptStats[concept] = { total: 0, correct: 0 };
+            }
+            conceptStats[concept].total += 1;
+            const ans = quizState.answers[idx];
+            if (ans && ans.correct) {
+                conceptStats[concept].correct += 1;
+            }
+        });
+
+        const concepts = Object.keys(conceptStats);
+        const conceptScores = concepts.map(c => {
+            const s = conceptStats[c];
+            return Math.round((s.correct / s.total) * 100);
+        });
+
+        detailEl.innerText = "AI 分析中…";
+
+        const ctx = canvas.getContext("2d");
+        if (quizRadarChart) {
+            quizRadarChart.destroy();
+        }
+        quizRadarChart = new Chart(ctx, {
+            type: "bar",
+            data: {
+                labels: concepts,
+                datasets: [{
+                    label: "答對率 (％)",
+                    data: conceptScores
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: "y",
+                scales: {
+                    x: {
+                        min: 0,
+                        max: 100,
+                        ticks: {
+                            stepSize: 100,
+                            callback: (value) => {
+                                const v = Number(value);
+                                if (v === 0)   return "答錯";
+                                if (v === 100) return "答對";
+                                return "";
+                            }
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            autoSkip: false
+                        }
+                    }
+                }
+            }
+        });
+
+        try {
+            requestQuizAISummary(score, concepts, conceptScores, correctCount, totalQ);
+        } catch (e) {
+            console.log("requestQuizAISummary 呼叫失敗（前端層級）：", e);
+        }
+    }
 
     window.addEventListener('resize', syncVocabHeight);  
     </script>
