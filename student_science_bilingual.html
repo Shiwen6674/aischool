@@ -353,7 +353,7 @@
         <aside class="w-64 glass-panel panel-left flex flex-col overflow-hidden hidden md:flex">
             <div class="p-5 border-b border-white/10 bg-black/20">
                 <h3 class="text-xs font-bold text-green-400 tracking-widest mb-1 uppercase" data-i18n="nav">MENU</h3>
-                <div class="text-white font-bold text-lg truncate" id="nav-title">請選擇單元</div>
+                <div class="text-white font-bold text-lg truncate" id="nav-title" data-i18n="side_select_guide">請選擇單元</div>
             </div>
             <div class="flex-grow scroll-area overflow-y-auto p-3" id="unit-list">
                 <div class="text-center text-slate-500 text-sm mt-10 p-4" data-i18n="select_hint">👈 請先上方選擇單元</div>
@@ -535,19 +535,26 @@
             applyLanguage(currentLang);
         }
 
-        function changeLanguage(lang) {
+function changeLanguage(lang) {
             currentLang = lang;
             localStorage.setItem('appLang', lang); 
             applyLanguage(lang);
+            
+            // [修正重點]：移除 && el.disabled 判斷
+            // 讓所有選單 (包含 "階段") 的標題 (options[0]) 都會強制更新為當前語言
             const ids=['stage','grade','version','semester','unit'];
             ids.forEach(id => {
                const el = document.getElementById(`sel-${id}`);
-               if(el && el.disabled) {
+               if(el) {
                    const key = id; 
                    const label = i18n[currentLang][key] || '...';
-                   el.options[0].text = label;
+                   // 強制更新選單的第一個選項（即預設標題）
+                   if(el.options.length > 0) {
+                       el.options[0].text = label;
+                   }
                }
             });
+            
             if(processedUnits.length > 0) {
                  filterUnits('stage');
             }
