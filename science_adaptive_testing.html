@@ -552,7 +552,10 @@
     const Meta = { mode: "tree", tree: {}, unitIndex: {}, publishers: [], unitsByPublisher: {} };
     const CAT = { started: false, test_id: "", student_id: "", current: null, next: null, selected: "", n: 15, step: 0 };
     const ACTION = { GET_UNIT_OPTIONS: "getUnitOptions", START_CAT: "startCAT", SUBMIT_NEXT: "submitAndNext", FINISH_CAT: "finishCAT" };
-    const META_ACTION_CANDIDATES = ["get_metadata", "getMaterialTree"];
+
+    // ✅ FIX(1): 後端不存在 getMaterialTree，改成常見支援的 metadata action
+    const META_ACTION_CANDIDATES = ["get_metadata", "getMetadata", "action_get_metadata"];
+
     const STUDENTID_ACTION_CANDIDATES = ["getStudentIdByEmail", "getStudentId"];
 
     /* ===========================
@@ -727,12 +730,21 @@
             const unitIndex = {};
 
             rows.forEach(r => {
-                const s = _pickRowValue(r, ["stage","learningStage","learning_stage","學習階段","阶段"]);
+                // ✅ FIX(2): 支援你試算表常見欄位（中小學/出版社/課別/課名），避免樹為空
+                const s = _pickRowValue(r, ["stage","learningStage","learning_stage","學習階段","中小學","阶段","学習阶段"]);
                 const g = _pickRowValue(r, ["grade","年級","年级"]);
                 const sem = _pickRowValue(r, ["semester","學期","学期"]);
-                const v = _pickRowValue(r, ["publisher","textbook_version","version","版本"]);
 
-                const unitName = _pickRowValue(r, ["unitName","unit_name","unit","單元","单元"]);
+                const v = _pickRowValue(r, ["publisher","textbook_version","textbookVersion","version","版本","出版社","出版社"]);
+
+                let unitName = _pickRowValue(r, ["unitName","unit_name","unit","單元","单元","課名","课名"]);
+                if(!unitName){
+                    const lessonNo = _pickRowValue(r, ["課別","课别","lesson_no","lessonNo","unit_no","unitNo"]);
+                    const lessonName = _pickRowValue(r, ["課名","课名","lesson_name","lessonName","unit_title","unitTitle"]);
+                    if(lessonNo && lessonName) unitName = `${lessonNo} ${lessonName}`;
+                    else unitName = lessonName || lessonNo || "";
+                }
+
                 if(!s || !g || !sem || !v || !unitName) return;
 
                 if(!tree[s]) tree[s]={};
@@ -854,9 +866,16 @@
         try {
             const payload = {
                 action: ACTION.START_CAT,
+
+                // ✅ FIX(3): 同時送 root 與原本 student 結構（不移除原本欄位，只補齊）
+                student_id: sid,
                 student: { student_id: sid },
+
                 unit: getUnitPayload(),
-                settings: { max_items: n }
+
+                // 同時送 settings + root max_items（提高相容性）
+                settings: { max_items: n },
+                max_items: n
             };
 
             const json = await api(payload);
