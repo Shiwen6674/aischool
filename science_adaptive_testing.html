@@ -642,6 +642,9 @@
     /* ===========================
        2.5) API Wrapper
        =========================== */
+/* ===========================
+       2.5) API Wrapper (修正後)
+       =========================== */
     async function api(payload){
         if(!payload.content_db_id) payload.content_db_id = CONTENT_DB_ID;
         if(!payload.sheet_name) payload.sheet_name = CONTENT_SHEET_NAME;
@@ -651,7 +654,6 @@
             res = await fetch(GAS_API_URL, {
                 method: "POST",
                 redirect: "follow",
-                // 重要：text/plain 避免觸發 preflight
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
                 body: JSON.stringify(payload)
             });
@@ -669,7 +671,11 @@
             throw new Error("Non-JSON response: " + snippet);
         }
 
-        if(json && json.status === "error") throw new Error(json.message || "API error");
+        // 🔥 修正重點：同時檢查 status="error" 以及 ok=false
+        if (json && (json.status === "error" || json.ok === false)) {
+            throw new Error(json.message || json.error || "API error");
+        }
+        
         return json;
     }
 
