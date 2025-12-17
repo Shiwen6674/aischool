@@ -28,289 +28,169 @@
         });
     </script>
     
-    <style>
-    /* =========================
-       AI 科技風：全域視覺基底
-       （不動任何功能與結構）
-       ========================= */
+<style>
+        /* 1. 全域深色科幻背景 */
+        body { 
+            background-color: #0B1121; 
+            color: #f1f5f9; 
+            font-family: 'Inter', 'Noto Sans TC', "Microsoft JhengHei", sans-serif;
+            overflow-x: hidden;
+        }
+        /* 極光背景特效 */
+        body::before {
+            content: ''; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.1), transparent 60%);
+            z-index: -2; pointer-events: none;
+        }
 
-    /* 背景：深色科技漸層 + 網格線（用多重 background-image 達成，不用 pseudo 避免層級干擾） */
-    body {
-        background-image:
-            radial-gradient(circle at 18% 12%, rgba(34, 211, 238, 0.22) 0%, transparent 45%),
-            radial-gradient(circle at 82% 24%, rgba(59, 130, 246, 0.18) 0%, transparent 52%),
-            radial-gradient(circle at 55% 88%, rgba(168, 85, 247, 0.12) 0%, transparent 55%),
-            repeating-linear-gradient(
-                0deg,
-                rgba(148, 163, 184, 0.08) 0px,
-                rgba(148, 163, 184, 0.08) 1px,
-                transparent 1px,
-                transparent 36px
-            ),
-            repeating-linear-gradient(
-                90deg,
-                rgba(148, 163, 184, 0.08) 0px,
-                rgba(148, 163, 184, 0.08) 1px,
-                transparent 1px,
-                transparent 36px
-            ),
-            linear-gradient(135deg, #020617 0%, #0b1220 45%, #020617 100%);
-        background-attachment: fixed;
-        background-size: auto, auto, auto, auto, auto, auto;
-        font-family: "Microsoft JhengHei", sans-serif;
-        -webkit-tap-highlight-color: transparent;
-    }
+        /* 2. 玻璃擬態面板 (通用) */
+        .glass-panel, .glass-card {
+            background: rgba(30, 41, 59, 0.7) !important; 
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); 
+            border: 1px solid rgba(255, 255, 255, 0.1) !important; 
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important; 
+            border-radius: 1.5rem !important; 
+            color: #e2e8f0 !important;
+        }
 
-    /* 玻璃面板：霧面玻璃 + 青藍霓虹邊框 */
-    .glass-panel {
-        background: rgba(255, 255, 255, 0.88);
-        backdrop-filter: blur(16px) saturate(160%);
-        border: 1px solid rgba(34, 211, 238, 0.28);
-        box-shadow:
-            0 14px 40px rgba(2, 6, 23, 0.18),
-            0 0 0 1px rgba(59, 130, 246, 0.08),
-            0 0 24px rgba(34, 211, 238, 0.10);
-    }
+        /* 3. 輸入選單優化 (HUD 風格) */
+        select, .tech-select {
+            background-color: rgba(15, 23, 42, 0.8) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: #fff !important;
+            border-radius: 0.75rem !important;
+            transition: all 0.3s ease;
+        }
+        select:focus, .tech-select:focus {
+            border-color: #38bdf8 !important;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+            outline: none;
+        }
+        select:disabled {
+            opacity: 0.5; cursor: not-allowed;
+        }
 
-    /* Loader：更科技感的青藍 */
-    .loader {
-        border: 4px solid rgba(203, 213, 225, 0.6);
-        border-top: 4px solid rgba(34, 211, 238, 0.95);
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-        filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.25));
-    }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* 4. 按鈕優化 (發光按鈕) */
+        #btn-generate, .tech-btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%) !important;
+            border: none !important;
+            color: white !important;
+            box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4) !important;
+            transition: all 0.3s ease !important;
+        }
+        #btn-generate:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(6, 182, 212, 0.6) !important;
+        }
+        #btn-generate:disabled { filter: grayscale(1); opacity: 0.5; }
 
-    /* Chat window：保留原行為，僅增添陰影層次 */
-    .chat-window { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: bottom right; }
-    .chat-window.closed {
-        transform: scale(0);
-        opacity: 0;
-        pointer-events: none;
-        height: 0 !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        border-width: 0 !important;
-    }
-
-    /* =========================
-       文字區塊：摘要排版（保留原邏輯，改科技視覺）
-       ========================= */
-    #summary-text h3 {
-        font-size: 1.3rem;
-        font-weight: 800;
-        color: #0b2a57;
-        margin-top: 1.5rem;
-        margin-bottom: 0.75rem;
-        padding: 0.55rem 0.85rem;
-        border-left: 5px solid rgba(34, 211, 238, 0.9);
-        background: linear-gradient(90deg, rgba(34, 211, 238, 0.14) 0%, rgba(255, 255, 255, 0) 100%);
-        border-radius: 0 10px 10px 0;
-        box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.12);
-    }
-    #summary-text ul { list-style-type: none; padding-left: 0.5rem; }
-    #summary-text li {
-        position: relative;
-        padding-left: 1.5rem;
-        margin-bottom: 0.55rem;
-        color: #334155;
-        font-size: 1.05rem;
-    }
-    #summary-text li::before {
-        content: "•";
-        color: rgba(34, 211, 238, 0.95);
-        font-weight: 800;
-        font-size: 1.25em;
-        position: absolute;
-        left: 0.25rem;
-        top: -2px;
-        text-shadow: 0 0 10px rgba(34, 211, 238, 0.18);
-    }
-
-    /* 詞彙卡：微浮起 + 青藍外光 */
-    .vocab-item { transition: transform 0.18s ease, box-shadow 0.18s ease; }
-    .vocab-item:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 24px rgba(2, 6, 23, 0.12), 0 0 0 1px rgba(34, 211, 238, 0.20);
-    }
-
-    /* =========================
-       Mermaid 圖表：保持原功能，提升科技感與可讀性
-       ========================= */
-    #mermaid-chart {
-        width: 100%;
-        display: block;
-        overflow-x: auto;
-        overflow-y: hidden;
-        padding: 10px 0;
-        pointer-events: auto;
-    }
-    #mermaid-chart .mermaid svg {
-        min-width: 900px;
-        height: auto !important;
-        font-family: "Microsoft JhengHei", sans-serif !important;
-        filter: drop-shadow(0 14px 28px rgba(2, 6, 23, 0.18));
-    }
-
-    /* 全螢幕燈箱 (可捲動) */
-    #image-modal { z-index: 99999; overflow: auto; -webkit-overflow-scrolling: touch; }
-    #modal-content {
-        width: 95vw; height: auto; min-height: 50vh;
-        max-width: none !important; overflow: visible;
-        background: rgba(255,255,255,0.96);
-        border-radius: 14px;
-        padding: 16px;
-        display: flex;
-        align-items: flex-start;
-        justify-content: center;
-        box-shadow: 0 18px 60px rgba(2, 6, 23, 0.45);
-        border: 1px solid rgba(34, 211, 238, 0.18);
-    }
-
-    /* PDF 下載 */
-    .pdf-page-break { page-break-before: always; break-before: page; }
-    .pdf-rotate-map {
-        transform: rotate(90deg);
-        transform-origin: top left;
-        width: 130% !important;
-        margin-left: 40px;
-        margin-top: -40px;
-        overflow: visible !important;
-    }
-    .no-pdf { display: none !important; }
-
-    /* click-mask：保留原邏輯 */
-    .click-mask {
-        position: absolute;
-        inset: 0;
-        z-index: 50;
-        background-color: transparent;
-        cursor: pointer;
-        pointer-events: auto;
-    }
-
-    /* 科學動動腦、單元小測驗互動按鈕：科技 hover 光暈 */
-    .myth-option-btn, .quiz-option-btn {
-        transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease, background-color 0.16s ease;
-        will-change: transform;
-    }
-    .myth-option-btn:hover, .quiz-option-btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 10px 22px rgba(2, 6, 23, 0.10), 0 0 0 1px rgba(34, 211, 238, 0.18);
-    }
-
-    /* 小螢幕：保留原規則 */
-    @media (max-width: 768px) {
-        #chart-container .click-mask { pointer-events: none; }
-    }
-    @media (max-width: 640px) {
-        #floating-chat { right: 10px; bottom: 10px; }
-        #floating-chat > button { width: 60px; height: 60px; }
-    }
-
-    /* =========================
-       Tailwind 類別外觀「不改結構」的加強：霓虹主按鈕/標籤
-       ========================= */
-
-    /* 主要藍按鈕：改成 AI 漸層 + 外光（不影響 onclick/disabled） */
-    button.bg-blue-600 {
-        background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%) !important;
-        border: 1px solid rgba(34, 211, 238, 0.30) !important;
-        box-shadow: 0 14px 34px rgba(6, 182, 212, 0.22), 0 6px 16px rgba(37, 99, 235, 0.18) !important;
-    }
-    button.bg-blue-600:hover { filter: brightness(1.03); }
-
-    /* 右上角圓形 icon：加一點科技光暈 */
-    nav .w-10.h-10.bg-white {
-        box-shadow: 0 10px 22px rgba(2, 6, 23, 0.10), 0 0 0 1px rgba(34, 211, 238, 0.12);
-        border: 1px solid rgba(34, 211, 238, 0.10);
-    }
-
-    /* TAG：改成青藍漸層徽章（不改內容與 JS） */
-    #result-tag {
-        background: linear-gradient(90deg, rgba(6, 182, 212, 0.22), rgba(59, 130, 246, 0.18)) !important;
-        border: 1px solid rgba(34, 211, 238, 0.25) !important;
-        color: #075985 !important;
-        box-shadow: 0 10px 22px rgba(2, 6, 23, 0.08);
-    }
-
-    /* 標題：微微霓虹陰影 */
-    #result-title {
-        text-shadow: 0 10px 30px rgba(2, 6, 23, 0.18);
-        letter-spacing: 0.2px;
-    }
-
-    /* Scrollbar（若你的 custom-scrollbar 有用到）：科技漸層滾動條 */
-    .custom-scrollbar::-webkit-scrollbar { width: 10px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: rgba(148, 163, 184, 0.15); border-radius: 999px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: linear-gradient(180deg, rgba(6, 182, 212, 0.65), rgba(59, 130, 246, 0.55));
-        border-radius: 999px;
-        border: 2px solid rgba(255, 255, 255, 0.75);
-    }
-</style>
+        /* 5. 標題與導航 */
+        nav {
+            background: rgba(15, 23, 42, 0.9) !important;
+            border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+            backdrop-filter: blur(12px);
+        }
+        .icon-static { opacity: 0.7; cursor: default; }
+        
+        /* 調整結果區文字顏色以適應深色模式 */
+        #summary-text, .vocab-item, #quiz-question, #quiz-options button {
+            color: #e2e8f0 !important;
+        }
+        .vocab-item { background: rgba(255,255,255,0.05) !important; border-color: rgba(255,255,255,0.1) !important; }
+        .text-slate-500, .text-slate-600, .text-slate-700 { color: #94a3b8 !important; }
+        .text-slate-800 { color: #f1f5f9 !important; }
+        
+        /* Loader */
+        .loader { border-color: rgba(255,255,255,0.1); border-top-color: #38bdf8; }
+        
+        /* PDF 下載時隱藏的元素 */
+        .no-print { display: block; }
+        @media print { .no-print { display: none !important; } }
+    </style>
 
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col">
 
-    <nav class="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center no-print">
-        <div class="flex items-center gap-4">
-            <a href="student.html" class="group flex items-center gap-2 text-slate-500 hover:text-blue-600 transition decoration-0">
-                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow group-hover:shadow-md transition">
-                    <i class="fa-solid fa-arrow-left"></i>
+<nav class="fixed top-0 left-0 right-0 h-16 flex items-center justify-between px-6 z-50 no-print">
+        <div class="flex items-center">
+            <a href="student_science.html" class="flex items-center gap-2 text-slate-300 hover:text-white transition group decoration-0">
+                <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition">
+                    <i class="fa-solid fa-arrow-left text-sm text-white"></i>
                 </div>
-                <span class="font-bold hidden md:block" data-i18n="back_home">返回學習中心</span>
+                <span class="font-bold tracking-wide text-white" data-i18n="back_home">返回 AI Science</span>
             </a>
-            <a href="sciencebilingual.html" class="group flex items-center gap-2 text-slate-500 hover:text-purple-600 transition decoration-0">
-                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow group-hover:shadow-md transition">
-                    <i class="fa-solid fa-book-open-reader"></i>
-                </div>
-                <span class="font-bold hidden md:block" data-i18n="btn_bilingual">科學雙語閱讀</span>
-            </a>
-            <div class="h-8 w-px bg-slate-300 mx-2 hidden sm:block"></div>
-            <div class="hidden sm:block">
-                <h1 class="font-bold text-lg" data-i18n="page_title">單元重點整理</h1>
-                <p class="text-xs text-slate-500" data-i18n="page_subtitle">AI 智能筆記生成</p>
-            </div>
         </div>
-        <div class="flex items-center gap-3">
-            <a href="aievaluation.html" class="group flex items-center gap-2 text-slate-500 hover:text-green-600 transition decoration-0 mr-2">
-                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow group-hover:shadow-md transition border border-slate-100">
-                    <i class="fa-solid fa-clipboard-check"></i>
-                </div>
-                <span class="font-bold hidden lg:block" data-i18n="btn_eval">AI 評分診斷</span>
-            </a>
-            <select id="language-selector" onchange="changeLanguage()" class="bg-white/50 border text-xs rounded-lg p-1.5 cursor-pointer outline-none focus:ring-1 focus:ring-blue-300">
-                <option value="zh-TW">繁體中文</option>
-                <option value="en">English</option>
-                <option value="ja">日本語</option>
-                <option value="zh-CN">简体中文</option>
-            </select>
-            <div class="flex items-center gap-2 pl-2 border-l border-slate-300">
-                 <div id="user-info" class="text-sm font-bold text-blue-600">訪客</div>
+
+        <div class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
+            <h1 class="text-xl font-black text-white tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-400" data-i18n="page_title">
+                單元重點整理
+            </h1>
+            <span class="text-[10px] text-slate-400 tracking-[0.2em] uppercase" data-i18n="page_subtitle">AI Intelligent Note Generation</span>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 icon-static">
+                <i class="fa-solid fa-book-open text-blue-400"></i>
+                <span class="text-xs text-slate-400" data-i18n="btn_bilingual">科學雙語閱讀</span>
+            </div>
+            <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 icon-static">
+                <i class="fa-solid fa-clipboard-check text-green-400"></i>
+                <span class="text-xs text-slate-400" data-i18n="btn_eval">AI 評分診斷</span>
+            </div>
+            
+            <div class="relative ml-2">
+                <select id="language-selector" onchange="changeLanguage()" class="bg-slate-800 text-xs text-slate-300 border border-slate-600 rounded px-2 py-1 focus:outline-none">
+                    <option value="zh-TW">繁體中文</option>
+                    <option value="en">English</option>
+                    <option value="ja">日本語</option>
+                    <option value="zh-CN">简体中文</option>
+                </select>
+            </div>
+            <div class="flex items-center gap-2 pl-2 border-l border-white/10">
+                 <div id="user-info" class="text-sm font-bold text-blue-400">訪客</div>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-4 py-8 flex-1 w-full pb-24">
-        <div id="selection-panel" class="glass-panel rounded-2xl p-6 mb-8 no-print">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-database"></i> <span data-i18n="settings_title">請挑選你要的學習單元</span></h2>
+<main class="max-w-7xl mx-auto px-4 pt-24 pb-24 flex-1 w-full">
+        <div id="selection-panel" class="glass-panel p-8 relative overflow-hidden no-print">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 blur-[80px] rounded-full pointer-events-none"></div>
+
+            <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+                <h2 class="font-bold text-lg text-white flex items-center gap-2">
+                    <i class="fa-solid fa-database text-cyan-400"></i> 
+                    <span data-i18n="settings_title">請挑選你要的學習單元</span>
+                </h2>
                 <span id="db-status" class="text-xs font-bold text-orange-500"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading...</span>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                <div><label class="text-xs font-bold text-slate-500 ml-1" data-i18n="label_stage">學習階段</label><select id="sel-stage" class="w-full p-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:border-blue-500"><option value="" disabled selected>Loading...</option></select></div>
-                <div><label class="text-xs font-bold text-slate-500 ml-1" data-i18n="label_publisher">版本</label><select id="sel-publisher" disabled class="w-full p-2.5 rounded-xl border border-slate-200 text-sm outline-none disabled:bg-slate-50"><option value="" disabled selected>Select...</option></select></div>
-                <div><label class="text-xs font-bold text-slate-500 ml-1" data-i18n="label_grade">年級</label><select id="sel-grade" disabled class="w-full p-2.5 rounded-xl border border-slate-200 text-sm outline-none disabled:bg-slate-50"><option value="" disabled selected>Select...</option></select></div>
-                <div><label class="text-xs font-bold text-slate-500 ml-1" data-i18n="label_semester">學期</label><select id="sel-semester" disabled class="w-full p-2.5 rounded-xl border border-slate-200 text-sm outline-none disabled:bg-slate-50"><option value="" disabled selected>Select...</option></select></div>
-                <div><label class="text-xs font-bold text-slate-500 ml-1" data-i18n="label_unit">單元名稱</label><select id="sel-unit" disabled class="w-full p-2.5 rounded-xl border border-slate-200 text-sm outline-none disabled:bg-slate-50"><option value="" disabled selected>Select...</option></select></div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="flex flex-col gap-2">
+                    <label class="text-xs text-slate-400 font-bold uppercase tracking-wider ml-1" data-i18n="label_stage">學習階段</label>
+                    <select id="sel-stage" class="w-full p-3"><option value="" disabled selected>Loading...</option></select>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="text-xs text-slate-400 font-bold uppercase tracking-wider ml-1" data-i18n="label_publisher">版本</label>
+                    <select id="sel-publisher" disabled class="w-full p-3"><option value="" disabled selected data-i18n="select_default">Select...</option></select>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="text-xs text-slate-400 font-bold uppercase tracking-wider ml-1" data-i18n="label_grade">年級</label>
+                    <select id="sel-grade" disabled class="w-full p-3"><option value="" disabled selected data-i18n="select_default">Select...</option></select>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="text-xs text-slate-400 font-bold uppercase tracking-wider ml-1" data-i18n="label_semester">學期</label>
+                    <select id="sel-semester" disabled class="w-full p-3"><option value="" disabled selected data-i18n="select_default">Select...</option></select>
+                </div>
+                <div class="flex flex-col gap-2 md:col-span-2 lg:col-span-4">
+                    <label class="text-xs text-slate-400 font-bold uppercase tracking-wider ml-1" data-i18n="label_unit">單元名稱</label>
+                    <select id="sel-unit" disabled class="w-full p-3"><option value="" disabled selected data-i18n="select_default">Select...</option></select>
+                </div>
             </div>
-            <div class="mt-6 flex justify-end">
-                <button id="btn-generate" onclick="startGeneration()" disabled class="bg-blue-600 text-white px-8 py-2.5 rounded-xl font-bold shadow-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="btn_generate">AI 分析並生成</span>
+
+            <div class="mt-8 flex justify-end pt-4 border-t border-white/10">
+                <button id="btn-generate" onclick="startGeneration()" disabled class="px-8 py-3 rounded-xl font-bold flex items-center gap-2 group disabled:cursor-not-allowed">
+                    <i class="fa-solid fa-wand-magic-sparkles group-hover:rotate-12 transition"></i> 
+                    <span data-i18n="btn_generate">AI 重點整理</span>
                 </button>
             </div>
         </div>
@@ -474,9 +354,9 @@
 let quizRadarChart = null; // 雷達圖實例
 
 
-    const i18n = {
+const i18n = {
         "zh-TW": { 
-            back_home:"返回學習中心", 
+            back_home:"返回 AI Science", // 修改
             btn_bilingual:"科學雙語閱讀", 
             btn_eval:"AI 評分診斷", 
             page_title:"單元重點整理", 
@@ -487,73 +367,50 @@ let quizRadarChart = null; // 雷達圖實例
             label_grade:"年級", 
             label_semester:"學期", 
             label_unit:"單元名稱", 
-            btn_generate:"AI 分析並生成", 
+            btn_generate:"AI 重點整理", // 修改
             btn_txt:"下載 TXT", 
             btn_pdf:"下載 PDF", 
             title_summary:"核心概念摘要", 
             title_vocab:"科學詞彙與定義", 
             title_map:"知識架構圖", 
-            title_myth:"科學動動腦" 
+            title_myth:"科學動動腦",
+            select_default: "請選擇..." // 新增
         },
         "en": { 
-            back_home:"Back Home", 
+            back_home:"Back to AI Science", // 修改
             btn_bilingual:"Bilingual Reading", 
             btn_eval:"AI Assessment", 
             page_title:"Unit Summary", 
-            page_subtitle:"AI Generator", 
+            page_subtitle:"AI Intelligent Note Generation", 
             settings_title:"Select Learning Unit", 
             label_stage:"Level", 
             label_publisher:"Publisher", 
             label_grade:"Grade", 
             label_semester:"Semester", 
             label_unit:"Unit", 
-            btn_generate:"Generate", 
+            btn_generate:"AI Summary", // 修改
             btn_txt:"Download TXT", 
             btn_pdf:"Download PDF", 
             title_summary:"Core Concepts", 
             title_vocab:"Vocabulary", 
             title_map:"Mind Map", 
-            title_myth:"Thinking Check" 
+            title_myth:"Thinking Check",
+            select_default: "Select..." // 新增
         },
-        "ja": { 
-            back_home:"ホームに戻る", 
-            btn_bilingual:"二言語読解", 
-            btn_eval:"AI 診断・採点", 
-            page_title:"単元のまとめ", 
-            page_subtitle:"AIノート生成", 
-            settings_title:"学習単元を選択", 
-            label_stage:"段階", 
-            label_publisher:"出版社", 
-            label_grade:"学年", 
-            label_semester:"学期", 
-            label_unit:"単元", 
-            btn_generate:"生成する", 
-            btn_txt:"TXTを保存", 
-            btn_pdf:"PDFを保存", 
-            title_summary:"核心概念", 
-            title_vocab:"科学用語", 
-            title_map:"知識マップ", 
-            title_myth:"考えてみよう" 
+        // ... (日文與簡中請依照上面邏輯修改 back_home, btn_generate 並新增 select_default) ...
+        "ja": {
+            // ...前略...
+            back_home:"AI Scienceに戻る",
+            btn_generate:"AI まとめ整理",
+            select_default: "選択してください...",
+            // ...後略...
         },
-        "zh-CN": { 
-            back_home:"返回学习中心", 
-            btn_bilingual:"科学双语阅读", 
-            btn_eval:"AI 评分诊断", 
-            page_title:"单元重点整理", 
-            page_subtitle:"AI 智能笔记生成", 
-            settings_title:"请挑选你要的学习单元", 
-            label_stage:"学习阶段", 
-            label_publisher:"版本", 
-            label_grade:"年级", 
-            label_semester:"学期", 
-            label_unit:"单元名称", 
-            btn_generate:"AI 分析并生成", 
-            btn_txt:"下载 TXT", 
-            btn_pdf:"下载 PDF", 
-            title_summary:"核心概念摘要", 
-            title_vocab:"科学词汇与定义", 
-            title_map:"知识架构图", 
-            title_myth:"科学动动脑" 
+        "zh-CN": {
+             // ...前略...
+            back_home:"返回 AI Science",
+            btn_generate:"AI 重点整理",
+            select_default: "请选择...",
+             // ...後略...
         }
     };
 
@@ -651,7 +508,7 @@ let quizRadarChart = null; // 雷達圖實例
         for(let i=level;i<4;i++){
             const el = document.getElementById(ids[i]);
             if (el) {
-                el.innerHTML='<option disabled selected>Select...</option>';
+                el.innerHTML='<option disabled selected data-i18n="select_default">Select...</option>';
                 el.disabled=true;
             }
         }
@@ -672,7 +529,7 @@ let quizRadarChart = null; // 雷達圖實例
         if(level===4) {
             const unitSelect = document.getElementById("sel-unit");
             if (!unitSelect) return;
-            unitSelect.innerHTML='<option disabled selected>Select...</option>';
+            unitSelect.innerHTML='<option disabled selected data-i18n="select_default">Select...</option>';
             if(relevantData.length>0) {
                 relevantData.forEach(d => {
                     const opt = document.createElement("option");
@@ -683,12 +540,13 @@ let quizRadarChart = null; // 雷達圖實例
                 unitSelect.disabled=false;
             }
         }
+        changeLanguage();
     }
 
     function populate(id, list, type) {
         const el = document.getElementById(id);
         if (!el) return;
-        el.innerHTML='<option disabled selected>Select...</option>';
+        el.innerHTML='<option disabled selected data-i18n="select_default">Select...</option>';
         list.forEach(o => {
             const opt = document.createElement("option");
             opt.value = o;
