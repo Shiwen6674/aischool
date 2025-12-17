@@ -113,7 +113,7 @@
     /* 選項按鈕 (深色適配) */
     .option-btn {
       transition: all 0.2s ease;
-      background: rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.1);
       border: 1px solid rgba(255,255,255,0.1);
       color: #e2e8f0;
     }
@@ -289,7 +289,7 @@
 
       <div id="qArea" class="relative z-10 min-h-[300px]">
         <div id="qWrap" class="hidden">
-          <div class="bg-white/5 rounded-2xl p-6 border border-white/10 shadow-inner mb-6">
+          <div class="bg-white/10 rounded-2xl p-6 border border-white/20 shadow-inner mb-6">
             <span class="inline-block px-3 py-1 rounded-md bg-orange-500/20 text-orange-300 text-xs font-bold mb-3 tracking-wider">QUESTION</span>
             <div id="qStem" class="text-xl font-bold text-white leading-relaxed"></div>
           </div>
@@ -1018,32 +1018,43 @@
         }
     }
 
-    function renderQuestion(item) {
-        CAT.current = item;
-        CAT.selected = "";
+function renderQuestion(item) {
+    CAT.current = item;
+    CAT.selected = "";
 
-        document.getElementById("qWrap").classList.remove("hidden");
-        document.getElementById("qStem").textContent = item.stem;
+    document.getElementById("qWrap").classList.remove("hidden");
+    document.getElementById("qStem").textContent = item.stem;
 
-        const optWrap = document.getElementById("optWrap");
-        optWrap.innerHTML = "";
+    const optWrap = document.getElementById("optWrap");
+    optWrap.innerHTML = "";
 
-        ["A","B","C","D"].forEach(key => {
-            const btn = document.createElement("button");
-            btn.className = "option-btn text-left w-full px-5 py-4 rounded-xl flex items-center gap-4 group";
-            btn.onclick = () => selectOption(key, btn);
-            btn.innerHTML = `
-                <div class="opt-badge w-8 h-8 rounded-lg bg-white/10 text-slate-300 font-bold flex items-center justify-center shrink-0">${key}</div>
-                <div class="flex-1 text-slate-200 font-medium">${(item.options && item.options[key]) ? item.options[key] : ""}</div>
-            `;
-            optWrap.appendChild(btn);
-        });
+    ["A","B","C","D"].forEach(key => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn text-left w-full px-5 py-4 rounded-xl flex items-center gap-4 group";
+        btn.onclick = () => selectOption(key, btn);
+        // 這裡保留了你剛剛要求的大字體 (text-lg) 和高亮度 (text-slate-100)
+        btn.innerHTML = `
+            <div class="opt-badge w-8 h-8 rounded-lg bg-white/10 text-slate-300 font-bold flex items-center justify-center shrink-0">${key}</div>
+            <div class="flex-1 text-slate-100 font-bold text-lg leading-relaxed">${(item.options && item.options[key]) ? item.options[key] : ""}</div>
+        `;
+        optWrap.appendChild(btn);
+    });
 
-        document.getElementById("btnSubmit").disabled = true;
-        document.getElementById("btnNext").disabled = true;
-        document.getElementById("btnNext").classList.add("opacity-50");
-        document.getElementById("hint").innerHTML = '<i class="fa-solid fa-circle-info text-blue-400"></i> 請選擇一個選項';
-    }
+    document.getElementById("btnSubmit").disabled = true;
+
+    // --- 👇 修改重點：重置「下一題」按鈕樣式 👇 ---
+    const btnNext = document.getElementById("btnNext");
+    btnNext.disabled = true;
+
+    // 1. 加回原本的「灰暗」樣式
+    btnNext.classList.add("opacity-50", "bg-slate-700", "text-slate-500");
+
+    // 2. 徹底移除「綠色、跳動、發光」樣式 (重要！否則下一題按鈕還是會一直跳)
+    btnNext.classList.remove("bg-emerald-500", "hover:bg-emerald-400", "text-white", "animate-bounce", "shadow-lg", "shadow-emerald-500/50");
+    // --- 👆 修改結束 👆 ---
+
+    document.getElementById("hint").innerHTML = '<i class="fa-solid fa-circle-info text-blue-400"></i> 請選擇一個選項';
+}
 
     function selectOption(key, btnElem) {
         CAT.selected = key;
@@ -1054,34 +1065,44 @@
     }
 
     async function submitAnswer() {
-        document.getElementById("btnSubmit").disabled = true;
+    document.getElementById("btnSubmit").disabled = true;
 
-        try {
-            const json = await api({
-                action: ACTION.SUBMIT_NEXT,
-                test_id: CAT.test_id,
-                student_id: CAT.student_id,
-                item_id: CAT.current.item_id,
-                response_option: CAT.selected,
-                max_items: CAT.n
-            });
+    try {
+        const json = await api({
+            action: ACTION.SUBMIT_NEXT,
+            test_id: CAT.test_id,
+            student_id: CAT.student_id,
+            item_id: CAT.current.item_id,
+            response_option: CAT.selected,
+            max_items: CAT.n
+        });
 
-            CAT.step++;
-            UI.setProgress(CAT.step, CAT.n);
+        CAT.step++;
+        UI.setProgress(CAT.step, CAT.n);
 
-            if(json.done || CAT.step >= CAT.n) {
-                await finishTest();
-            } else {
-                CAT.next = json.item;
-                document.getElementById("btnNext").disabled = false;
-                document.getElementById("btnNext").classList.remove("opacity-50");
-                document.getElementById("hint").innerHTML = "答案已送出，請按下一題";
-            }
-        } catch(e) {
-            UI.toast("錯誤", "送出失敗: " + e.message, "bad");
-            document.getElementById("btnSubmit").disabled = false;
+        if(json.done || CAT.step >= CAT.n) {
+            await finishTest();
+        } else {
+            // --- 👇 修改重點開始 👇 ---
+            CAT.next = json.item;
+            
+            const btnNext = document.getElementById("btnNext");
+            btnNext.disabled = false;
+
+            // 1. 移除原本灰灰暗暗的樣式
+            btnNext.classList.remove("opacity-50", "bg-slate-700", "text-slate-500");
+            
+            // 2. 加入鮮豔綠色 (bg-emerald-500) + 跳動動畫 (animate-bounce) + 發光陰影
+            btnNext.classList.add("bg-emerald-500", "hover:bg-emerald-400", "text-white", "animate-bounce", "shadow-lg", "shadow-emerald-500/50");
+
+            document.getElementById("hint").innerHTML = "答案已送出，請按下一題";
+            // --- 👆 修改重點結束 👆 ---
         }
+    } catch(e) {
+        UI.toast("錯誤", "送出失敗: " + e.message, "bad");
+        document.getElementById("btnSubmit").disabled = false;
     }
+}
 
     async function finishTest() {
         showLoading();
