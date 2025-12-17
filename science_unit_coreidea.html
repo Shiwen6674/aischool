@@ -432,7 +432,7 @@
         </div>
     </main>
 
-    <div id="floating-chat" class="hidden fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-3 no-print" style="touch-action: none;">
+    <div id="floating-chat" class="hidden fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-3 no-print" style="touch-action: none; display: none;">
         
         <div id="xiaoke-tooltip" class="xiaoke-tooltip">
             嗨！我是小科 👋
@@ -470,7 +470,7 @@
 
     <div id="image-modal" class="fixed inset-0 z-[200] bg-black/95 hidden flex-col items-center justify-center p-2 transition-opacity duration-300" onclick="closeModal()">
         <button class="absolute top-4 right-4 text-white/90 hover:text-white text-5xl font-bold p-2 z-[201]" onclick="closeModal()">&times;</button>
-        <div id="modal-content" class="bg-white rounded-lg shadow-2xl w-[98vw] h-auto max-h-[98vh] overflow-auto p-4 relative" onclick="event.stopPropagation()"></div>
+        <div id="modal-content" class="bg-white rounded-lg shadow-2xl w-[98vw] h-auto max-h-[95vh] overflow-auto p-4 relative" onclick="event.stopPropagation()"></div>
     </div>
 
     <script>
@@ -572,6 +572,10 @@
         const userInfo = document.getElementById("user-info");
         if (userInfo) userInfo.innerText = user.name;
         
+        // ★ 強制隱藏小科 (雙重確保)
+        const chatBtn = document.getElementById('floating-chat');
+        if (chatBtn) chatBtn.classList.add('hidden');
+
         const selStage = document.getElementById("sel-stage");
 
         try {
@@ -971,21 +975,21 @@
         const btn = document.getElementById('btn-generate');
         if (btn) btn.disabled = false;
         
-        // [修正] 生成後顯示懸浮按鈕
+        // ★ [修正] 成功生成後，移除 inline style 顯示懸浮按鈕
         const chatBtn = document.getElementById('floating-chat');
-    if (chatBtn) chatBtn.classList.remove('hidden'); 
-        
-        // 確保視窗是關閉的
+        if (chatBtn) {
+            chatBtn.classList.remove('hidden'); 
+            chatBtn.style.display = 'flex'; // 恢復 flex 佈局
+        }
         const chatWin = document.getElementById("xiaoke-window");
         if(chatWin) {
             chatWin.classList.add("closed");
             chatWin.classList.add("hidden");
         }
-        
-        // [修正] 顯示小科氣泡提示 (永久顯示，不自動消失)
         const tooltip = document.getElementById("xiaoke-tooltip");
         if (tooltip) {
             tooltip.classList.add("show");
+            setTimeout(() => { tooltip.classList.remove("show"); }, 5000);
         }
 
         setTimeout(syncVocabHeight, 100);
@@ -1083,86 +1087,19 @@
         }
     }
 
-    function downloadPDF() {
-        if (!currentResultData) { 
-            alert("請先生成內容後再下載！"); 
-            return; 
-        }
-
-        if (typeof html2pdf === "undefined") {
-            alert("PDF 模組載入失敗，請檢查網路後重新整理頁面。"); 
-            return;
-        }
-        
-        const source = document.getElementById("content-view");
-        if (!source) return;
-
-        const element = source.cloneNode(true);
-        element.querySelectorAll(".no-print, select, button").forEach(e => e.remove());
-        
-        const vocabContainer = element.querySelector("#keywords-list");
-        if(vocabContainer) {
-            vocabContainer.style.height = "auto";
-            vocabContainer.style.overflow = "visible";
-        }
-
-        const vocabPanel = element.querySelector("#vocab-panel");
-        if(vocabPanel) {
-            vocabPanel.style.height = "auto";
-            vocabPanel.classList.add("pdf-page-break"); 
-        }
-
-        const mapContainer = element.querySelector("#mermaid-chart");
-        if(mapContainer && mapContainer.parentElement && mapContainer.parentElement.parentElement) {
-            const parent = mapContainer.parentElement;
-            parent.parentElement.classList.add("pdf-page-break");
-            parent.style.height = "auto"; 
-            mapContainer.classList.add("pdf-rotate-map");
-        }
-
-        const mythList = element.querySelector("#myth-list");
-        if(mythList && mythList.parentElement) {
-            mythList.parentElement.classList.add("pdf-page-break");
-        }
-
-        const quizPanel = element.querySelector("#quiz-panel");
-        if (quizPanel) {
-            quizPanel.classList.add("pdf-page-break");
-        }
-
-        const opt = {
-            margin:       10,
-            filename:     (filters.unitName || 'unit') + "_重點整理.pdf",
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak:    { mode: ['css', 'legacy'] }
-        };
-
-        try {
-            html2pdf().set(opt).from(element).save();
-        } catch (e) {
-            console.error(e);
-            alert("PDF 下載失敗，請再試一次或換一個瀏覽器。");
-        }
-    }
-
-function toggleChat() {
+    function toggleChat() {
         const win = document.getElementById("xiaoke-window");
         const tooltip = document.getElementById("xiaoke-tooltip");
         if (!win) return;
         
+        if (tooltip) tooltip.classList.remove("show");
+
         const wasClosed = win.classList.contains("closed");
         
         if (wasClosed) {
-            // === [打開視窗] ===
             win.classList.remove("hidden");
             setTimeout(() => win.classList.remove("closed"), 10);
             
-            // ★ 關鍵修改：打開視窗時，隱藏氣泡
-            if (tooltip) tooltip.classList.remove("show");
-
-            // (以下是原本的歡迎詞邏輯，保持不變)
             const chatBody = document.getElementById("chat-messages");
             if (chatBody && chatBody.innerHTML.trim() === "") {
                 let currentUnitName = filters.unitName || "這個單元";
@@ -1170,7 +1107,9 @@ function toggleChat() {
                 if (sel && sel.selectedIndex > -1 && !sel.disabled) {
                     currentUnitName = sel.options[sel.selectedIndex].text;
                 }
+
                 const greetMsg = `Hi，你好！我是小科，關於「${currentUnitName}」，你有什麼問題要問我？`;
+
                 chatBody.innerHTML = `
                     <div class="self-start flex gap-2 max-w-[90%]">
                         <div class="w-8 h-8 rounded-full bg-white border border-slate-200 p-0.5 shrink-0 shadow-sm">
@@ -1183,15 +1122,8 @@ function toggleChat() {
                     </div>`;
             }
         } else {
-            // === [關閉視窗] ===
             win.classList.add("closed");
             setTimeout(() => win.classList.add("hidden"), 300);
-            
-            // ★ 關鍵修改：關閉視窗後，讓氣泡重新出現
-            if (tooltip) {
-                // 稍微延遲一點出現，體驗比較好
-                setTimeout(() => tooltip.classList.add("show"), 300);
-            }
         }
     }
 
@@ -1320,7 +1252,6 @@ function toggleChat() {
         if (!modal || !content) return;
 
         content.innerHTML = chartDiv.innerHTML;
-        // [修正] 寬度左右滿版 98vw，高度改為 h-auto 與 max-h-95vh 實現彈性
         content.className = "bg-white rounded-lg shadow-2xl w-[98vw] h-auto max-h-[95vh] overflow-auto p-4 relative";
 
         const wrapper = content.querySelector(".mermaid");
