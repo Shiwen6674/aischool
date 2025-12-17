@@ -973,7 +973,7 @@
         
         // [修正] 生成後顯示懸浮按鈕
         const chatBtn = document.getElementById('floating-chat');
-        if (chatBtn) chatBtn.classList.remove('hidden'); 
+    if (chatBtn) chatBtn.classList.remove('hidden'); 
         
         // 確保視窗是關閉的
         const chatWin = document.getElementById("xiaoke-window");
@@ -1147,20 +1147,22 @@
         }
     }
 
-    function toggleChat() {
+function toggleChat() {
         const win = document.getElementById("xiaoke-window");
         const tooltip = document.getElementById("xiaoke-tooltip");
         if (!win) return;
         
-        // 點擊後，我們還是希望氣泡保持顯示 (依照您的指示)
-        // 所以不移除 tooltip show class
-
         const wasClosed = win.classList.contains("closed");
         
         if (wasClosed) {
+            // === [打開視窗] ===
             win.classList.remove("hidden");
             setTimeout(() => win.classList.remove("closed"), 10);
             
+            // ★ 關鍵修改：打開視窗時，隱藏氣泡
+            if (tooltip) tooltip.classList.remove("show");
+
+            // (以下是原本的歡迎詞邏輯，保持不變)
             const chatBody = document.getElementById("chat-messages");
             if (chatBody && chatBody.innerHTML.trim() === "") {
                 let currentUnitName = filters.unitName || "這個單元";
@@ -1168,9 +1170,7 @@
                 if (sel && sel.selectedIndex > -1 && !sel.disabled) {
                     currentUnitName = sel.options[sel.selectedIndex].text;
                 }
-
                 const greetMsg = `Hi，你好！我是小科，關於「${currentUnitName}」，你有什麼問題要問我？`;
-
                 chatBody.innerHTML = `
                     <div class="self-start flex gap-2 max-w-[90%]">
                         <div class="w-8 h-8 rounded-full bg-white border border-slate-200 p-0.5 shrink-0 shadow-sm">
@@ -1183,8 +1183,15 @@
                     </div>`;
             }
         } else {
+            // === [關閉視窗] ===
             win.classList.add("closed");
             setTimeout(() => win.classList.add("hidden"), 300);
+            
+            // ★ 關鍵修改：關閉視窗後，讓氣泡重新出現
+            if (tooltip) {
+                // 稍微延遲一點出現，體驗比較好
+                setTimeout(() => tooltip.classList.add("show"), 300);
+            }
         }
     }
 
