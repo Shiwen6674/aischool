@@ -55,9 +55,9 @@
 
     /* 玻璃擬態面板 (深色版) */
     .glass-card {
-        background: rgba(51, 65, 85, 0.75); /* ✨ 改成這行，顏色更淺、更明顯 */
+        background: rgba(51, 65, 85, 0.75); 
         backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.2); /* 邊框也可以稍微亮一點 */
+        border: 1px solid rgba(255, 255, 255, 0.2);
         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
         border-radius: 1.5rem;
         color: #e2e8f0;
@@ -130,9 +130,28 @@
     }
     .option-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    /* PDF Report Styles (Hidden) - 保持白底以利列印 */
+    /* 送出按鈕：鮮亮橘色 */
+    .btn-submit-orange {
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        box-shadow: 0 4px 14px 0 rgba(234, 88, 12, 0.39);
+        color: white;
+        transition: all 0.2s ease;
+    }
+    .btn-submit-orange:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(234, 88, 12, 0.23);
+        background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);
+    }
+    .btn-submit-orange:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background: #475569;
+        box-shadow: none;
+    }
+
+    /* PDF Report Styles (Hidden) */
     #pdf-report-content {
-      width: 210mm; min-height: 297mm; background: white; padding: 20mm;
+      width: 210mm; min-height: 297mm; background: white; padding: 0;
       font-family: 'Noto Sans TC', sans-serif; color: #1e293b; display: none;
     }
     .report-section { margin-bottom: 30px; page-break-inside: avoid; }
@@ -140,6 +159,27 @@
         font-size: 18px; font-weight: 900; color: #1e3a8a;
         border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-bottom: 15px;
     }
+    .html2pdf__page-break {
+        page-break-before: always;
+        height: 0; 
+        display: block;
+    }
+    /* PDF 頁碼計數器 (從第3頁內容開始算第1頁) */
+    #pdf-content-body {
+        counter-reset: report-page;
+    }
+    .pdf-page-number::after {
+        counter-increment: report-page;
+        content: "Page " counter(report-page);
+        display: block;
+        text-align: center;
+        font-size: 10px;
+        color: #94a3b8;
+        margin-top: 20px;
+        border-top: 1px solid #e2e8f0;
+        padding-top: 10px;
+    }
+
     .no-print { display: block; }
     @media print { .no-print { display: none !important; } }
   </style>
@@ -301,7 +341,7 @@
               <i class="fa-solid fa-circle-info text-blue-400"></i> <span data-i18n="hint_select">請選擇一個選項</span>
             </div>
             <div class="flex gap-3 w-full md:w-auto">
-              <button id="btnSubmit" class="flex-1 md:flex-none px-8 py-2.5 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-lg flex items-center justify-center gap-2">
+              <button id="btnSubmit" class="flex-1 md:flex-none px-8 py-2.5 rounded-lg btn-submit-orange font-bold text-lg flex items-center justify-center gap-2">
                 <span data-i18n="btn_submit">送出</span> <i class="fa-solid fa-paper-plane"></i>
               </button>
               <button id="btnNext" disabled class="flex-1 md:flex-none px-8 py-2.5 rounded-lg bg-slate-700 text-slate-500 font-bold disabled:cursor-not-allowed transition flex items-center justify-center gap-2">
@@ -335,7 +375,10 @@
         <div class="bg-white/5 p-6 rounded-2xl border border-emerald-500/20 shadow-sm flex items-center justify-between">
           <div>
             <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1" data-i18n="label_accuracy">正確率</div>
-            <div id="resScore" class="text-4xl font-mono font-black text-white">—</div>
+            <div class="flex items-baseline gap-2">
+                <div id="resScore" class="text-4xl font-mono font-black text-white">—</div>
+                <div id="resCount" class="text-sm font-bold text-slate-400">(0/0)</div>
+            </div>
           </div>
           <div class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl">
             <i class="fa-solid fa-bullseye"></i>
@@ -344,7 +387,10 @@
         <div class="bg-white/5 p-6 rounded-2xl border border-emerald-500/20 shadow-sm flex items-center justify-between">
           <div>
             <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1" data-i18n="label_score">總分</div>
-            <div id="resScore100" class="text-4xl font-mono font-black text-emerald-400">—</div>
+            <div class="flex items-baseline gap-2">
+                <div id="resScore100" class="text-4xl font-mono font-black text-emerald-400">—</div>
+                <span class="text-xs text-slate-500 font-bold self-end">/ 100分制</span>
+            </div>
           </div>
           <div class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl">
             <i class="fa-solid fa-trophy"></i>
@@ -380,51 +426,72 @@
   </div>
 
   <div id="pdf-report-content">
-    <div style="height: 1120px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; border: 10px solid #f0f4f8; position: relative;">
-      <div style="font-size: 80px; color: #3b82f6; margin-bottom: 20px;">AI</div>
-      <div style="font-size: 24px; color: #64748b; margin-bottom: 10px; font-weight: bold; letter-spacing: 2px;">AI SCHOOL 自然科學</div>
-      <div style="font-size: 42px; color: #1e293b; font-weight: 900; margin-bottom: 20px;">單元試題診斷報告書</div>
-      <div id="pdf-cover-unit" style="font-size: 28px; color: #0f172a; margin-bottom: 60px; font-weight: bold; border-bottom: 2px solid #3b82f6; padding-bottom: 10px;"></div>
+    <div style="height: 1120px; padding: 40px; box-sizing: border-box; position: relative; border: 10px solid #f0f4f8; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+        <div style="font-size: 60px; color: #3b82f6; margin-bottom: 10px; font-weight: 900;">AI School</div>
+        <div style="font-size: 24px; color: #64748b; margin-bottom: 30px; font-weight: bold; letter-spacing: 2px;">AI SCIENCE 自然科學</div>
+        
+        <div style="width: 100px; height: 4px; background: #3b82f6; margin-bottom: 40px;"></div>
 
-      <div style="text-align: left; width: 60%; margin: 0 auto; font-size: 18px; line-height: 2;">
-        <div style="border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between;">
-          <span style="color: #64748b;">學生姓名：</span>
-          <span id="pdf-cover-name" style="font-weight: bold;"></span>
+        <div style="font-size: 42px; color: #1e293b; font-weight: 900; margin-bottom: 20px;">單元試題診斷報告書</div>
+        <div id="pdf-cover-unit" style="font-size: 24px; color: #0f172a; margin-bottom: 80px; font-weight: bold;"></div>
+
+        <div style="text-align: left; width: 70%; margin: 0 auto; font-size: 18px; line-height: 2.5; background: #f8fafc; padding: 30px; border-radius: 20px;">
+            <div style="border-bottom: 1px dashed #cbd5e1; display: flex; justify-content: space-between;">
+                <span style="color: #64748b; font-weight: bold;">學生姓名</span>
+                <span id="pdf-cover-name" style="font-weight: 900; color: #0f172a;"></span>
+            </div>
+            <div style="border-bottom: 1px dashed #cbd5e1; display: flex; justify-content: space-between; margin-top: 10px;">
+                <span style="color: #64748b; font-weight: bold;">診斷日期</span>
+                <span id="pdf-cover-date" style="font-weight: 900; color: #0f172a;"></span>
+            </div>
+            <div style="border-bottom: 1px dashed #cbd5e1; display: flex; justify-content: space-between; margin-top: 10px;">
+                <span style="color: #64748b; font-weight: bold;">測驗得分</span>
+                <span id="pdf-cover-score" style="font-weight: 900; color: #f59e0b;"></span>
+            </div>
         </div>
-        <div style="border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; margin-top: 20px;">
-          <span style="color: #64748b;">診斷日期：</span>
-          <span id="pdf-cover-date" style="font-weight: bold;"></span>
-        </div>
-      </div>
     </div>
 
     <div class="html2pdf__page-break"></div>
+    <div style="height: 1120px;"></div> <div class="html2pdf__page-break"></div>
 
-    <div style="padding: 40px;">
-      <div class="report-section">
-        <div class="report-title">一、測驗分數</div>
-        <div style="display: flex; gap: 40px; align-items: center; background: #f8fafc; padding: 20px; border-radius: 10px;">
-          <div style="text-align: center; flex: 1;">
-            <div style="font-size: 36px; font-weight: 900; color: #3b82f6;" id="pdf-score-circle">--</div>
-            <div style="font-size: 14px; font-weight: bold; color: #64748b;">總分</div>
-          </div>
-          <div style="flex: 2; border-left: 1px solid #e2e8f0; padding-left: 20px;">
-            <div style="margin-bottom: 5px;">答對題數：<span id="pdf-score-raw" style="font-weight: bold;"></span></div>
-            <div>評語：<span id="pdf-score-comment" style="font-weight: bold; color: #f59e0b;"></span></div>
-          </div>
+    <div id="pdf-content-body" style="padding: 40px; font-family: 'Noto Sans TC', sans-serif;">
+        
+        <div class="report-section">
+            <div class="report-title">一、測驗概況</div>
+            <div style="background: #f1f5f9; padding: 20px; border-radius: 12px; display: flex; align-items: center; justify-content: space-around;">
+                <div style="text-align: center;">
+                    <div id="pdf-inner-score" style="font-size: 48px; font-weight: 900; color: #3b82f6;">--</div>
+                    <div style="font-size: 14px; color: #64748b; font-weight: bold;">總分 (100分制)</div>
+                </div>
+                <div style="height: 50px; width: 1px; background: #cbd5e1;"></div>
+                <div style="text-align: center;">
+                    <div id="pdf-inner-count" style="font-size: 24px; font-weight: bold; color: #334155; margin-top: 10px;">--</div>
+                    <div style="font-size: 14px; color: #64748b;">答對題數</div>
+                </div>
+            </div>
         </div>
-      </div>
 
-      <div class="report-section">
-        <div class="report-title">二、錯題與概念分析</div>
-        <div style="font-size: 14px; color: #64748b; margin-bottom: 10px;">以下是您本次測驗較弱的概念與建議複習內容：</div>
-        <div id="pdf-wrong-list"></div>
-      </div>
+        <div class="report-section">
+            <div class="report-title">二、錯題與概念分析</div>
+            <div style="font-size: 13px; color: #64748b; margin-bottom: 15px;">以下為您本次測驗的錯誤題目與對應的課本概念解析：</div>
+            <div id="pdf-wrong-list">
+                </div>
+        </div>
 
-      <div class="report-section">
-        <div class="report-title">三、單元強化與學習建議</div>
-        <div id="pdf-feedback" style="font-size: 14px; line-height: 1.8; color: #334155; text-align: justify; white-space: pre-wrap;"></div>
-      </div>
+        <div class="html2pdf__page-break"></div>
+
+        <div class="report-section pdf-page-number">
+            <div class="report-title">三、AI 學習處方籤</div>
+            <div style="margin-bottom: 15px; padding: 15px; background: #ecfdf5; border-left: 4px solid #10b981; border-radius: 4px;">
+                <strong style="color: #047857;">關於能力估計值 (Theta) 的說明：</strong>
+                <p style="font-size: 12px; color: #065f46; margin: 5px 0 0 0; line-height: 1.5;">
+                    Theta (θ) 是 IRT 測驗中的能力指標。 0 代表該年級平均水平，正值代表高於平均，負值代表低於平均。
+                    此數值能比單純的分數更準確地反映您的學科能力穩定度。
+                </p>
+            </div>
+            
+            <div id="pdf-feedback" style="font-size: 14px; line-height: 1.8; color: #334155; text-align: justify; white-space: pre-wrap; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px;"></div>
+        </div>
     </div>
   </div>
 
@@ -567,7 +634,8 @@
     // Identity
     function getStudentIdFromLogin(){ const u=window.currentUser||JSON.parse(sessionStorage.getItem("currentUser")||"{}"); return u.student_id||""; }
     function __loadCurrentUser(){ return JSON.parse(sessionStorage.getItem("currentUser")||localStorage.getItem("currentUser")||'{"name":"訪客"}'); }
- /* ===========================
+    
+    /* ===========================
        更新後的 ensureStudentId 函式
        (支援讀取試算表 J 欄的 StudentID)
        =========================== */
@@ -662,12 +730,6 @@
     }
 
     /* ===========================
-       2.5) API Wrapper
-       =========================== */
-/* ===========================
-       2.5) API Wrapper (修正後)
-       =========================== */
-/* ===========================
        2.5) API Wrapper (嚴格檢查版)
        =========================== */
     async function api(payload){
@@ -963,9 +1025,6 @@
     /* ===========================
        4) TEST FLOW
        =========================== */
-/* ===========================
-       4) TEST FLOW
-       =========================== */
     async function startTest() {
         const uVal = document.getElementById("selUnit").value;
         const langVal = document.getElementById("language-selector").value;
@@ -1018,43 +1077,43 @@
         }
     }
 
-function renderQuestion(item) {
-    CAT.current = item;
-    CAT.selected = "";
+    function renderQuestion(item) {
+        CAT.current = item;
+        CAT.selected = "";
 
-    document.getElementById("qWrap").classList.remove("hidden");
-    document.getElementById("qStem").textContent = item.stem;
+        document.getElementById("qWrap").classList.remove("hidden");
+        document.getElementById("qStem").textContent = item.stem;
 
-    const optWrap = document.getElementById("optWrap");
-    optWrap.innerHTML = "";
+        const optWrap = document.getElementById("optWrap");
+        optWrap.innerHTML = "";
 
-    ["A","B","C","D"].forEach(key => {
-        const btn = document.createElement("button");
-        btn.className = "option-btn text-left w-full px-5 py-4 rounded-xl flex items-center gap-4 group";
-        btn.onclick = () => selectOption(key, btn);
-        // 這裡保留了你剛剛要求的大字體 (text-lg) 和高亮度 (text-slate-100)
-        btn.innerHTML = `
-            <div class="opt-badge w-8 h-8 rounded-lg bg-white/10 text-slate-300 font-bold flex items-center justify-center shrink-0">${key}</div>
-            <div class="flex-1 text-slate-100 font-bold text-lg leading-relaxed">${(item.options && item.options[key]) ? item.options[key] : ""}</div>
-        `;
-        optWrap.appendChild(btn);
-    });
+        ["A","B","C","D"].forEach(key => {
+            const btn = document.createElement("button");
+            btn.className = "option-btn text-left w-full px-5 py-4 rounded-xl flex items-center gap-4 group";
+            btn.onclick = () => selectOption(key, btn);
+            // 這裡保留了你剛剛要求的大字體 (text-lg) 和高亮度 (text-slate-100)
+            btn.innerHTML = `
+                <div class="opt-badge w-8 h-8 rounded-lg bg-white/10 text-slate-300 font-bold flex items-center justify-center shrink-0">${key}</div>
+                <div class="flex-1 text-slate-100 font-bold text-lg leading-relaxed">${(item.options && item.options[key]) ? item.options[key] : ""}</div>
+            `;
+            optWrap.appendChild(btn);
+        });
 
-    document.getElementById("btnSubmit").disabled = true;
+        document.getElementById("btnSubmit").disabled = true;
 
-    // --- 👇 修改重點：重置「下一題」按鈕樣式 👇 ---
-    const btnNext = document.getElementById("btnNext");
-    btnNext.disabled = true;
+        // --- 👇 修改重點：重置「下一題」按鈕樣式 👇 ---
+        const btnNext = document.getElementById("btnNext");
+        btnNext.disabled = true;
 
-    // 1. 加回原本的「灰暗」樣式
-    btnNext.classList.add("opacity-50", "bg-slate-700", "text-slate-500");
+        // 1. 加回原本的「灰暗」樣式
+        btnNext.classList.add("opacity-50", "bg-slate-700", "text-slate-500");
 
-    // 2. 徹底移除「綠色、跳動、發光」樣式 (重要！否則下一題按鈕還是會一直跳)
-    btnNext.classList.remove("bg-emerald-500", "hover:bg-emerald-400", "text-white", "animate-bounce", "shadow-lg", "shadow-emerald-500/50");
-    // --- 👆 修改結束 👆 ---
+        // 2. 徹底移除「綠色、跳動、發光」樣式 (重要！否則下一題按鈕還是會一直跳)
+        btnNext.classList.remove("bg-emerald-500", "hover:bg-emerald-400", "text-white", "animate-bounce", "shadow-lg", "shadow-emerald-500/50");
+        // --- 👆 修改結束 👆 ---
 
-    document.getElementById("hint").innerHTML = '<i class="fa-solid fa-circle-info text-blue-400"></i> 請選擇一個選項';
-}
+        document.getElementById("hint").innerHTML = '<i class="fa-solid fa-circle-info text-blue-400"></i> 請選擇一個選項';
+    }
 
     function selectOption(key, btnElem) {
         CAT.selected = key;
@@ -1065,44 +1124,44 @@ function renderQuestion(item) {
     }
 
     async function submitAnswer() {
-    document.getElementById("btnSubmit").disabled = true;
+        document.getElementById("btnSubmit").disabled = true;
 
-    try {
-        const json = await api({
-            action: ACTION.SUBMIT_NEXT,
-            test_id: CAT.test_id,
-            student_id: CAT.student_id,
-            item_id: CAT.current.item_id,
-            response_option: CAT.selected,
-            max_items: CAT.n
-        });
+        try {
+            const json = await api({
+                action: ACTION.SUBMIT_NEXT,
+                test_id: CAT.test_id,
+                student_id: CAT.student_id,
+                item_id: CAT.current.item_id,
+                response_option: CAT.selected,
+                max_items: CAT.n
+            });
 
-        CAT.step++;
-        UI.setProgress(CAT.step, CAT.n);
+            CAT.step++;
+            UI.setProgress(CAT.step, CAT.n);
 
-        if(json.done || CAT.step >= CAT.n) {
-            await finishTest();
-        } else {
-            // --- 👇 修改重點開始 👇 ---
-            CAT.next = json.item;
-            
-            const btnNext = document.getElementById("btnNext");
-            btnNext.disabled = false;
+            if(json.done || CAT.step >= CAT.n) {
+                await finishTest();
+            } else {
+                // --- 👇 修改重點開始 👇 ---
+                CAT.next = json.item;
+                
+                const btnNext = document.getElementById("btnNext");
+                btnNext.disabled = false;
 
-            // 1. 移除原本灰灰暗暗的樣式
-            btnNext.classList.remove("opacity-50", "bg-slate-700", "text-slate-500");
-            
-            // 2. 加入鮮豔綠色 (bg-emerald-500) + 跳動動畫 (animate-bounce) + 發光陰影
-            btnNext.classList.add("bg-emerald-500", "hover:bg-emerald-400", "text-white", "animate-bounce", "shadow-lg", "shadow-emerald-500/50");
+                // 1. 移除原本灰灰暗暗的樣式
+                btnNext.classList.remove("opacity-50", "bg-slate-700", "text-slate-500");
+                
+                // 2. 加入鮮豔綠色 (bg-emerald-500) + 跳動動畫 (animate-bounce) + 發光陰影
+                btnNext.classList.add("bg-emerald-500", "hover:bg-emerald-400", "text-white", "animate-bounce", "shadow-lg", "shadow-emerald-500/50");
 
-            document.getElementById("hint").innerHTML = "答案已送出，請按下一題";
-            // --- 👆 修改重點結束 👆 ---
+                document.getElementById("hint").innerHTML = "答案已送出，請按下一題";
+                // --- 👆 修改重點結束 👆 ---
+            }
+        } catch(e) {
+            UI.toast("錯誤", "送出失敗: " + e.message, "bad");
+            document.getElementById("btnSubmit").disabled = false;
         }
-    } catch(e) {
-        UI.toast("錯誤", "送出失敗: " + e.message, "bad");
-        document.getElementById("btnSubmit").disabled = false;
     }
-}
 
     async function finishTest() {
         showLoading();
@@ -1110,76 +1169,113 @@ function renderQuestion(item) {
             const json = await api({
                 action: ACTION.FINISH_CAT,
                 test_id: CAT.test_id,
-                student_id: CAT.student_id
+                student_id: CAT.student_id,
+                ai_feedback: true // 強制要求 AI 生成詳細建議
             });
 
             document.getElementById("secQuiz").classList.add("hidden");
             document.getElementById("secResult").classList.remove("hidden");
 
-            let correct = 0;
-            let total = CAT.step || 0;
-
-            if(typeof json.score === "string" && json.score.includes("/")){
-                const parts = json.score.split("/");
-                const c = parseInt(parts[0], 10);
-                const t = parseInt(parts[1], 10);
-                if(!isNaN(c)) correct = c;
-                if(!isNaN(t) && t > 0) total = t;
-            } else if (typeof json.correct === "number") {
-                correct = json.correct;
-            }
-
-            const accuracy = (total > 0) ? Math.round((correct / total) * 100) : 0;
+            // 顯示正確率與題數 (新需求)
+            const correct = json.correct_count || 0;
+            const total = json.total_count || 0;
+            const score100 = json.score_100 || 0;
+            const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
 
             document.getElementById("resScore").textContent = `${accuracy}%`;
-            document.getElementById("resScore100").textContent = `${correct * 4} 分`;
+            document.getElementById("resCount").textContent = `(${correct}/${total})`; // 新增：(答對/總數)
+            document.getElementById("resScore100").textContent = score100;
 
-            const wrongHtml = (json.wrong_items||[]).map((w,i) => `
-                <div class="bg-red-500/10 p-4 rounded-xl border border-red-500/20">
-                    <div class="flex items-start gap-3">
-                        <div class="bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mt-0.5">${i+1}</div>
-                        <div>
-                           <div class="font-bold text-red-200 mb-1">概念弱點：${w.concept_tag || "未標示"}</div>
-                           <div class="text-sm text-red-300/80">建議複習：${w.textbook_source || "全單元"}</div>
+            // 顯示錯題分析 (使用後端傳回的詳細資料)
+            const wrongList = json.wrong_items || [];
+            let wrongHtml = "";
+            
+            if (wrongList.length === 0) {
+                wrongHtml = "<div class='text-emerald-400 font-bold text-xl text-center py-8'>🎉 恭喜！全對，沒有錯題。</div>";
+            } else {
+                wrongHtml = wrongList.map((w, i) => `
+                    <div class="bg-red-500/10 p-5 rounded-xl border border-red-500/20 mb-4">
+                        <div class="flex items-start gap-3 mb-3">
+                            <div class="bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mt-1">${i + 1}</div>
+                            <div class="flex-1">
+                                <div class="font-bold text-slate-200 text-lg mb-2">${w.stem}</div>
+                                <div class="grid grid-cols-2 gap-4 text-sm mb-3">
+                                    <div class="bg-red-500/20 px-3 py-2 rounded text-red-200">
+                                        <span class="opacity-70 text-xs block mb-1">您的答案</span>
+                                        <span class="font-bold text-lg">${w.student_answer}</span>
+                                    </div>
+                                    <div class="bg-emerald-500/20 px-3 py-2 rounded text-emerald-300">
+                                        <span class="opacity-70 text-xs block mb-1">正確答案</span>
+                                        <span class="font-bold text-lg">${w.correct_answer}</span>
+                                    </div>
+                                </div>
+                                <div class="text-sm text-slate-300 bg-slate-800/50 p-3 rounded border border-slate-700">
+                                    <strong class="text-orange-400 mb-1 block"><i class="fa-solid fa-lightbulb"></i> 觀念弱點：${w.concept_tag}</strong>
+                                    <div class="text-slate-400 leading-relaxed text-justify">
+                                        <span class="text-xs text-blue-400 block mb-1">📖 課文回顧：</span>
+                                        ${w.remedial_text}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `).join("");
-            document.getElementById("resWrong").innerHTML = wrongHtml || "<div class='text-emerald-400'>恭喜！沒有錯題。</div>";
+                `).join("");
+            }
+            document.getElementById("resWrong").innerHTML = wrongHtml;
 
-            document.getElementById("resFeedback").textContent = json.feedback_student || "暫無建議";
+            // 顯示 AI 處方籤
+            document.getElementById("resFeedback").textContent = json.feedback_student || "正在生成建議...";
 
-            preparePDF(json, accuracy, correct);
+            // 準備 PDF 資料
+            preparePDF(json, accuracy, correct, total);
 
-        } catch(e) {
+        } catch (e) {
             UI.toast("錯誤", "結算失敗: " + e.message, "bad");
         } finally {
             hideLoading();
         }
     }
 
-    function preparePDF(json, acc, correct) {
+    function preparePDF(json, acc, correct, total) {
+        // 1. 封面資訊
         document.getElementById("pdf-cover-unit").textContent = getUnitInfoString();
         document.getElementById("pdf-cover-name").textContent = document.getElementById("user-info").textContent;
-        const date = new Date();
-        document.getElementById("pdf-cover-date").textContent = `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}`;
+        
+        const d = new Date();
+        document.getElementById("pdf-cover-date").textContent = `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+        document.getElementById("pdf-cover-score").textContent = `${json.score_100} 分`;
 
-        document.getElementById("pdf-score-circle").textContent = `${correct * 4}`;
-        document.getElementById("pdf-score-raw").textContent = `${correct} / ${CAT.step}`;
-        document.getElementById("pdf-score-comment").textContent = acc >= 80 ? "優秀" : (acc >= 60 ? "及格" : "加油");
+        // 2. 內頁分數
+        document.getElementById("pdf-inner-score").textContent = json.score_100;
+        document.getElementById("pdf-inner-count").textContent = `${correct} / ${total}`;
 
+        // 3. 錯題詳解 (PDF版樣式優化)
         const wrongList = document.getElementById("pdf-wrong-list");
-        if(json.wrong_items && json.wrong_items.length > 0) {
-             wrongList.innerHTML = json.wrong_items.map((w,i) => `
-                <div style="margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
-                   <strong>${i+1}. ${w.concept_tag || "未標示"}</strong><br>
-                   <span style="color: #666;">複習建議：${w.textbook_source || "全單元"}</span>
-                </div>
-             `).join("");
+        if (!json.wrong_items || json.wrong_items.length === 0) {
+            wrongList.innerHTML = "<div style='padding:20px; text-align:center; color:#10b981; font-weight:bold;'>表現優異，本單元無錯題！</div>";
         } else {
-             wrongList.innerHTML = "無錯題，表現優異！";
+            wrongList.innerHTML = json.wrong_items.map((w, i) => `
+                <div class="pdf-page-number" style="margin-bottom: 25px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; page-break-inside: avoid;">
+                    <div style="background: #f8fafc; padding: 10px 15px; border-bottom: 1px solid #e2e8f0; font-weight: bold; color: #1e293b; display: flex; align-items: flex-start; gap: 10px;">
+                        <span style="background:#ef4444; color:white; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px;">${i+1}</span>
+                        <span style="flex:1;">${w.stem}</span>
+                    </div>
+                    <div style="padding: 15px; background: white;">
+                        <div style="display: flex; gap: 20px; margin-bottom: 15px; border-bottom: 1px dashed #f1f5f9; padding-bottom: 10px;">
+                            <div style="color: #ef4444; font-weight:bold;">學生答案：${w.student_answer}</div>
+                            <div style="color: #10b981; font-weight:bold;">正確答案：${w.correct_answer}</div>
+                            <div style="color: #f59e0b; font-weight:bold;">弱點：${w.concept_tag}</div>
+                        </div>
+                        <div style="font-size: 12px; color: #334155; line-height: 1.6; text-align: justify;">
+                            <strong style="color: #3b82f6;">【課文重點複習】</strong><br>
+                            ${w.remedial_text}
+                        </div>
+                    </div>
+                </div>
+            `).join("");
         }
 
+        // 4. AI 建議
         document.getElementById("pdf-feedback").textContent = json.feedback_student || "暫無建議";
     }
 
