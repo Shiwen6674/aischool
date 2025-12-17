@@ -45,19 +45,28 @@
        ========================================= */
     body { background-color: #0f172a; color: #f8fafc; font-family: 'Inter', 'Noto Sans TC', sans-serif; -webkit-font-smoothing: antialiased; }
     
-    /* 玻璃擬態卡片 (網頁用) */
-    .glass-panel {
-        background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-radius: 1rem;
+    /* 玻璃擬態卡片 */
+    .glass-card {
+        background: rgba(51, 65, 85, 0.85); 
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); 
+        border-radius: 1.5rem;
     }
     
-    /* 按鈕與輸入元件 */
+    /* 輸入元件 */
     select { background-color: rgba(15, 23, 42, 0.8) !important; border: 1px solid rgba(255, 255, 255, 0.15) !important; color: #fff !important; }
+    select:focus { border-color: #38bdf8 !important; outline: none; }
+    
+    /* 按鈕群 */
     .option-btn { transition: all 0.2s; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; }
-    .option-btn.selected { background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%); border-color: transparent; color: white; }
-    .btn-submit-orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; }
-    .btn-submit-orange:disabled { opacity: 0.6; background: #475569; }
+    .option-btn:hover:not(:disabled) { background: rgba(255,255,255,0.1); border-color: #38bdf8; transform: translateY(-2px); }
+    .option-btn.selected { background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%); border-color: transparent; color: white; box-shadow: 0 0 15px rgba(6, 182, 212, 0.5); }
+    .option-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .btn-submit-orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); box-shadow: 0 4px 14px rgba(234, 88, 12, 0.4); color: white; transition: all 0.2s; }
+    .btn-submit-orange:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); }
+    .btn-submit-orange:disabled { opacity: 0.6; cursor: not-allowed; background: #475569; box-shadow: none; }
 
     /* Loading & Progress */
     #loading-overlay { background: rgba(11, 17, 33, 0.98); backdrop-filter: blur(8px); }
@@ -68,14 +77,14 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* =========================================
-       2. 百萬級 PDF 報告書專用樣式 (重點修改區)
+       2. 百萬級 PDF 報告書專用樣式 (這裡是你缺少的關鍵！)
        ========================================= */
     #pdf-report-content {
-        display: none; /* 網頁上隱藏 */
+        display: none; 
         width: 210mm; 
         background: #fff; 
         color: #334155;
-        font-family: "Microsoft JhengHei", "Heiti TC", sans-serif; /* 強制使用系統黑體，避免醜陋細明體 */
+        font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
     }
 
     .pdf-page {
@@ -86,19 +95,19 @@
         page-break-after: always;
         overflow: hidden;
         background: white;
-        border-top: 10px solid #2563eb; /* 頂部裝飾條 */
+        border-top: 10px solid #2563eb;
     }
 
-    /* 封面設計 (幾何風格，不使用漸層) */
+    /* 封面 */
     .cover-container {
         height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
-        border: 1px solid #e2e8f0; border-radius: 8px; margin-top: 20px;
+        border: 1px solid #e2e8f0; border-radius: 8px; margin-top: 20px; background: #f8fafc;
     }
     .cover-logo { font-size: 60px; font-weight: 900; color: #1e3a8a; letter-spacing: -2px; margin-bottom: 10px; }
     .cover-subtitle { font-size: 24px; color: #64748b; letter-spacing: 5px; margin-bottom: 60px; font-weight: bold; text-transform: uppercase; }
     
     .info-card {
-        width: 80%; background: #f8fafc; border-left: 8px solid #2563eb; 
+        width: 80%; background: #fff; border-left: 8px solid #2563eb; 
         padding: 40px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     }
     .info-row { display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding: 15px 0; font-size: 16px; }
@@ -121,46 +130,33 @@
     .stat-num { font-size: 42px; font-weight: 900; color: #2563eb; line-height: 1; }
     .stat-desc { font-size: 12px; color: #64748b; font-weight: bold; margin-top: 5px; text-transform: uppercase; }
 
-    /* 錯題樣式 (乾淨風格) */
+    /* 錯題樣式 */
     .wrong-item { 
-        margin-bottom: 25px; 
-        border-bottom: 1px solid #e2e8f0; 
-        padding-bottom: 20px; 
-        page-break-inside: avoid; 
+        margin-bottom: 25px; border-bottom: 1px solid #e2e8f0; 
+        padding-bottom: 20px; page-break-inside: avoid; 
     }
-    .wi-title { font-size: 14px; font-weight: 700; color: #1e293b; margin-bottom: 10px; line-height: 1.6; }
-    .wi-meta { display: flex; gap: 15px; margin-bottom: 10px; font-size: 12px; }
-    .tag-wrong { background: #fef2f2; color: #ef4444; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
-    .tag-correct { background: #f0fdf4; color: #16a34a; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
-    .wi-analysis { 
-        font-size: 13px; color: #475569; background: #f8fafc; padding: 12px; 
-        border-radius: 6px; line-height: 1.8; text-align: justify; 
-    }
-    .wi-highlight { color: #f59e0b; font-weight: bold; }
+    .wi-header { display: flex; gap: 10px; margin-bottom: 10px; align-items: baseline; }
+    .wi-index { color: white; background: #ef4444; width: 24px; height: 24px; border-radius: 50%; text-align: center; font-size: 14px; font-weight: bold; flex-shrink: 0; }
+    .wi-stem { font-weight: 700; color: #334155; font-size: 14px; }
+    .wi-ans-row { display: flex; gap: 15px; margin-bottom: 10px; font-size: 12px; }
+    .ans-box { padding: 4px 10px; border-radius: 4px; font-weight: bold; }
+    .ans-student { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; }
+    .ans-correct { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+    .wi-footer { background: #fffbeb; padding: 10px; border-radius: 6px; font-size: 12px; color: #475569; }
 
-    /* 處方籤樣式 (解決字體醜的問題：加大行高，增加間距) */
-    .advice-section { 
-        margin-bottom: 25px; page-break-inside: avoid; 
-        border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; 
-    }
-    .as-header { 
-        padding: 10px 15px; font-weight: 800; font-size: 14px; color: white; 
-        text-transform: uppercase; letter-spacing: 1px; 
-    }
-    .as-content { 
-        padding: 20px; font-size: 14px; line-height: 2; /* 行高加大，閱讀感提升 */
-        color: #334155; text-align: justify; 
-    }
-    .bg-blue { background: #3b82f6; }
-    .bg-yellow { background: #f59e0b; }
-    .bg-green { background: #10b981; }
+    /* 處方籤樣式 */
+    .advice-card { margin-bottom: 15px; border-radius: 8px; padding: 15px; border-left: 5px solid; page-break-inside: avoid; background: #fff; border: 1px solid #e2e8f0; border-left-width: 5px; }
+    .advice-blue { border-left-color: #3b82f6; }
+    .advice-yellow { border-left-color: #f59e0b; }
+    .advice-green { border-left-color: #10b981; }
+    .advice-title { font-weight: 900; margin-bottom: 5px; font-size: 14px; }
+    .advice-content { font-size: 13px; line-height: 1.8; text-align: justify; }
 
-    /* 頁碼 (寫死位置) */
     .pdf-footer-fixed { position: absolute; bottom: 15mm; right: 20mm; font-size: 12px; color: #cbd5e1; font-weight: bold; }
-
+    .html2pdf__page-break { page-break-before: always; height: 0; display: block; }
     .no-print { display: block; }
     @media print { .no-print { display: none !important; } }
-</style>
+  </style>
 </head>
 
 <body class="antialiased selection:bg-blue-500 selection:text-white">
@@ -436,6 +432,10 @@
     /* ===========================
        0) CONFIG & I18N
        =========================== */
+    <script>
+    /* ===========================
+       0) CONFIG & I18N
+       =========================== */
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxvAOgRDBE6T-2R37UeTzo0RSQukgGOlEYyBrTw8zUSOlIKNIzLdJXozjNx4Hn6brc2/exec";
     const CONTENT_DB_ID = "1cEfMEy3bvDa1tET3xmh7ShGeJy8KLUMa_JuULGBD-mk";
     const CONTENT_SHEET_NAME = "Sheet1";
@@ -452,11 +452,6 @@
             step2_title: "試題作答",
             step3_title: "AI 診斷報告",
             btn_reload: "重整教材",
-            label_stage: "學習階段",
-            label_grade: "年級",
-            label_semester: "學期",
-            label_version: "版本",
-            label_unit: "單元",
             label_q_count: "測驗題數",
             label_q_unit: "題",
             btn_start_ai: "AI 自動命題",
@@ -466,12 +461,8 @@
             btn_download: "下載報告書",
             btn_restart: "重測",
             label_accuracy: "正確率",
-            label_score: "總分",
-            title_wrong_analysis: "錯題概念分析",
-            title_ai_feedback: "AI 學習處方籤",
-            msg_select_unit: "請先完成單元選擇"
-        },
-        // ... (其他語言省略以節省空間，功能不變) ...
+            label_score: "總分"
+        }
     };
 
     /* ===========================
@@ -512,7 +503,6 @@
         }
     }
 
-    // UI Toast
     const UI = {
         toast(title, msg, type="info"){
             const t = document.getElementById("toast");
@@ -554,9 +544,6 @@
     }
     function hideLoading(){ document.getElementById("loading-overlay").style.display = "none"; }
 
-    /* ===========================
-       API Wrapper
-       =========================== */
     async function api(payload){
         if(!payload.content_db_id) payload.content_db_id = CONTENT_DB_ID;
         if(!payload.sheet_name) payload.sheet_name = CONTENT_SHEET_NAME;
@@ -578,9 +565,6 @@
         return json;
     }
 
-    /* ===========================
-       Setup & Logic
-       =========================== */
     function _parseCSV(text){
         const lines = text.split('\n').filter(l => l.trim());
         const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
@@ -734,9 +718,6 @@
         return `${p.stage}${p.grade}年級 ${p.semester} ${p.textbook_version} 「${p.unit_name}」`;
     }
 
-    /* ===========================
-       4) Main Test Logic
-       =========================== */
     async function startTest() {
         const uVal = document.getElementById("selUnit").value;
         if(!uVal) { UI.toast("提示", "請先完成單元選擇", "warn"); return; }
@@ -779,30 +760,42 @@
         }
     }
 
-function renderQuestion(item) {
+    function renderQuestion(item) {
         CAT.current = item;
         CAT.selected = "";
 
         document.getElementById("qWrap").classList.remove("hidden");
         
-        // --- 👇 修改開始：過濾掉後端的 JSON 標記 👇 ---
         let displayStem = item.stem;
-        
-        // 1. 檢查是否有 [STIMULUS_JSON]
+        let stimulusHtml = "";
+
+        // 1. 檢查並處理 [STIMULUS_JSON]
         if (displayStem.includes("[STIMULUS_JSON]")) {
-            // 只保留標記之前的部分
-            displayStem = displayStem.split("[STIMULUS_JSON]")[0].trim();
+            const parts = displayStem.split("[STIMULUS_JSON]");
+            const textPart = parts[0];
+            const jsonPart = parts[1];
+
+            try {
+                const stimData = JSON.parse(jsonPart);
+                stimulusHtml = renderStimulus(stimData);
+                
+                if (textPart.includes("【題目】")) {
+                    displayStem = textPart.split("【題目】")[1].trim();
+                } else {
+                    displayStem = textPart.trim();
+                }
+            } catch (e) {
+                console.error("JSON Parse Error", e);
+                displayStem = textPart; 
+            }
         }
 
-        // 2. (選用) 簡單美化一下題目中的表格文字標記
-        // 把 【材料】、【題目】 這些標籤加粗或變色
-        displayStem = displayStem.replace(/【(.*?)】/g, "<span class='text-cyan-400 font-bold'>【$1】</span>");
-        
-        // 3. 處理換行符號，讓排版更好看
-        displayStem = displayStem.replace(/\n/g, "<br>");
+        const finalHtml = `
+            ${stimulusHtml}
+            <div class="mt-4 leading-relaxed text-lg">${displayStem.replace(/\n/g, "<br>")}</div>
+        `;
 
-        document.getElementById("qStem").innerHTML = displayStem;
-        // --- 👆 修改結束 👆 ---
+        document.getElementById("qStem").innerHTML = finalHtml;
 
         const optWrap = document.getElementById("optWrap");
         optWrap.innerHTML = "";
@@ -826,6 +819,33 @@ function renderQuestion(item) {
         btnNext.classList.remove("bg-emerald-500", "hover:bg-emerald-400", "text-white", "animate-bounce", "shadow-lg", "shadow-emerald-500/50");
 
         document.getElementById("hint").innerHTML = '<i class="fa-solid fa-circle-info text-blue-400"></i> 請選擇一個選項';
+    }
+
+    // ★ 之前漏掉的函式補在這裡！
+    function renderStimulus(data) {
+        if (!data || data.kind !== "table" || !data.table) return "";
+        const cols = data.table.columns || [];
+        const rows = data.table.rows || [];
+
+        let html = `
+            <div class="mb-4 overflow-x-auto rounded-lg border border-slate-600">
+                <table class="w-full text-sm text-left text-slate-300">
+                    <thead class="text-xs text-slate-200 uppercase bg-slate-700">
+                        <tr>
+                            ${cols.map(c => `<th scope="col" class="px-4 py-3 border-b border-slate-600">${c}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows.map((row, i) => `
+                            <tr class="${i % 2 === 0 ? 'bg-slate-800' : 'bg-slate-700/50'} border-b border-slate-700 hover:bg-slate-600">
+                                ${row.map(cell => `<td class="px-4 py-3">${cell}</td>`).join('')}
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        return html;
     }
 
     function selectOption(key, btnElem) {
@@ -857,7 +877,6 @@ function renderQuestion(item) {
                 CAT.next = json.item;
                 const btnNext = document.getElementById("btnNext");
                 btnNext.disabled = false;
-                // Highlighting Next Button
                 btnNext.classList.remove("opacity-50", "bg-slate-700", "text-slate-500");
                 btnNext.classList.add("bg-emerald-500", "hover:bg-emerald-400", "text-white", "animate-bounce", "shadow-lg", "shadow-emerald-500/50");
                 document.getElementById("hint").innerHTML = "答案已送出，請按下一題";
@@ -869,7 +888,7 @@ function renderQuestion(item) {
     }
 
     async function finishTest() {
-        showLoading("ANALYZING", "AI 正在進行深度診斷...");
+        showLoading("ANALYZING", "AI 正在分析學習弱點...");
         try {
             const res = await fetch(GAS_API_URL, {
                 method: "POST",
@@ -881,11 +900,10 @@ function renderQuestion(item) {
                 })
             });
             const json = await res.json();
-            
+
             document.getElementById("secQuiz").classList.add("hidden");
             document.getElementById("secResult").classList.remove("hidden");
 
-            // 1. 填寫分數數據
             const correct = json.correct_count || 0;
             const total = json.total_count || 0;
             const score100 = json.score_100 || 0;
@@ -895,38 +913,36 @@ function renderQuestion(item) {
             document.getElementById("resCount").textContent = `(${correct}/${total})`;
             document.getElementById("resScore100").textContent = score100;
 
-            // 2. 處理錯題列表 (Web & PDF 同步生成)
-            const webList = document.getElementById("resWrongList");
-            const pdfList = document.getElementById("pdf-wrong-container");
-            webList.innerHTML = "";
-            pdfList.innerHTML = "";
+            // 錯題列表 (Web & PDF)
+            const wList = document.getElementById("resWrongList");
+            const pdfWList = document.getElementById("pdf-wrong-container");
+            wList.innerHTML = "";
+            pdfWList.innerHTML = "";
 
             if (!json.wrong_items || json.wrong_items.length === 0) {
-                const msg = "<div class='text-emerald-400 text-center font-bold py-4'>🎉 太棒了！全對！</div>";
-                webList.innerHTML = msg;
-                pdfList.innerHTML = "<div style='padding:20px; text-align:center; color:#10b981; font-weight:bold;'>表現優異，本單元無錯題。</div>";
+                wList.innerHTML = "<div class='text-emerald-400 text-center font-bold text-xl py-4'>🎉 恭喜！全對，沒有錯題。</div>";
+                pdfWList.innerHTML = "<div style='padding:30px; text-align:center; color:#10b981; font-weight:bold; border:1px dashed #cbd5e1; border-radius:8px;'>表現優異，本單元無錯題！</div>";
             } else {
                 json.wrong_items.forEach((w, i) => {
-                    // Web 版卡片
-                    webList.insertAdjacentHTML("beforeend", `
+                    wList.insertAdjacentHTML("beforeend", `
                         <div class="bg-slate-900/50 p-5 rounded-xl border border-red-500/20">
-                            <div class="font-bold text-slate-200 mb-2">Q: ${w.stem}</div>
+                            <div class="font-bold text-slate-200 mb-2 text-lg">Q: ${w.stem}</div>
                             <div class="flex gap-4 text-sm mb-3">
-                                <span class="text-red-400">❌ ${w.student_answer}</span>
-                                <span class="text-emerald-400">⭕ ${w.correct_answer}</span>
+                                <span class="text-red-400 font-bold bg-red-900/30 px-2 py-1 rounded">誤選: ${w.student_answer}</span>
+                                <span class="text-emerald-400 font-bold bg-emerald-900/30 px-2 py-1 rounded">正解: ${w.correct_answer}</span>
                             </div>
-                            <div class="text-sm text-slate-400 bg-slate-800 p-3 rounded">
-                                <i class="fa-solid fa-lightbulb text-yellow-500"></i> <strong class="text-slate-200">診斷：</strong>${w.remedial_text}
+                            <div class="text-sm text-slate-300 bg-slate-800 p-4 rounded-lg border border-slate-700 leading-relaxed text-justify">
+                                <strong class="text-blue-400 block mb-1">💡 診斷解析：</strong>
+                                ${w.remedial_text}
                             </div>
                         </div>
                     `);
 
-                    // PDF 版卡片 (極簡風格)
-                    pdfList.insertAdjacentHTML("beforeend", `
+                    pdfWList.insertAdjacentHTML("beforeend", `
                         <div class="wrong-item">
                             <div class="wi-header">
                                 <div class="wi-index">${i+1}</div>
-                                <div class="wi-stem">${w.stem.substring(0, 50) + (w.stem.length>50?"...":"")}</div>
+                                <div class="wi-stem">${w.stem.substring(0, 50)}${w.stem.length>50?'...':''}</div>
                             </div>
                             <div class="wi-body">
                                 <div class="wi-ans-row">
@@ -942,34 +958,21 @@ function renderQuestion(item) {
                 });
             }
 
-            // 3. 處理 AI 處方籤 (Web & PDF)
+            // AI 處方籤
             const aiData = json.feedback_student;
             const webAiBox = document.getElementById("resAiFeedback");
             const pdfAiBox = document.getElementById("pdf-advice-container");
             
-            // 判斷是否為結構化 JSON (由後端 generateDiagnosticJson_ 產生)
-            // 為了相容性，這裡做個判斷
-            let summary = "", analysis = "", actions = [];
-            if (typeof aiData === 'object' && aiData.overall_advice) {
-                 // 這是新版後端回傳的結構 (假設)
-                 // 如果後端回傳的是字串，嘗試 parse
-            } 
-            
-            // 假設後端回傳的是 JSON 物件 (根據上一輪 GAS 修改)
+            let summary="", analysis="", actions=[];
             if (typeof aiData === 'object' && aiData.summary) {
                  summary = aiData.summary;
                  analysis = aiData.weakness_analysis;
                  actions = aiData.action_plan || [];
             } else if (typeof aiData === 'string') {
-                 // Fallback: 如果是字串，直接顯示
-                 webAiBox.innerHTML = marked.parse(aiData);
-                 pdfAiBox.innerHTML = `<div class="advice-card advice-blue"><div class="advice-content">${marked.parse(aiData)}</div></div>`;
-                 updatePdfInfo(score100, correct, total);
-                 hideLoading();
-                 return;
+                 summary = "AI 分析結果";
+                 analysis = aiData; 
             }
 
-            // 渲染 Web 版處方籤
             webAiBox.innerHTML = `
                 <div class="grid gap-4">
                     <div class="bg-blue-500/10 border border-blue-500/30 p-4 rounded-xl">
@@ -989,47 +992,44 @@ function renderQuestion(item) {
                 </div>
             `;
 
-            // 渲染 PDF 版處方籤 (雜誌卡片)
             pdfAiBox.innerHTML = `
                 <div class="advice-card advice-blue">
-                    <div class="advice-title"><i class="fa-solid fa-user-graduate"></i> 總體評估</div>
+                    <div class="advice-title">總體評估 OVERVIEW</div>
                     <div class="advice-content">${summary}</div>
                 </div>
                 <div class="advice-card advice-yellow">
-                    <div class="advice-title"><i class="fa-solid fa-magnifying-glass-chart"></i> 弱點與迷思分析</div>
+                    <div class="advice-title">弱點診斷 DIAGNOSIS</div>
                     <div class="advice-content">${analysis}</div>
                 </div>
                 <div class="advice-card advice-green">
-                    <div class="advice-title"><i class="fa-solid fa-list-check"></i> 具體行動建議</div>
+                    <div class="advice-title">行動建議 ACTION PLAN</div>
                     <div class="advice-content">
-                        <ul style="padding-left:15px; margin:0;">
-                            ${actions.map(a => `<li style="margin-bottom:5px;">${a}</li>`).join('')}
+                        <ul style="margin:0; padding-left:20px;">
+                            ${actions.map(a => `<li style="margin-bottom:8px;">${a}</li>`).join('')}
                         </ul>
                     </div>
                 </div>
             `;
 
             updatePdfInfo(score100, correct, total);
-            hideLoading();
+            toggleLoad(false);
 
         } catch(e) {
-            console.error(e);
-            alert("結算發生錯誤，請檢查網路或稍後重試。");
-            hideLoading();
+            alert("結算失敗: " + e.message);
+            toggleLoad(false);
         }
     }
 
     function updatePdfInfo(score, correct, total) {
         document.getElementById("pdf-unit-title").textContent = getUnitInfoString();
         document.getElementById("pdf-name").textContent = document.getElementById("user-info").textContent;
-        
         const d = new Date();
         document.getElementById("pdf-date").textContent = `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
-        document.getElementById("pdf-score-badge").textContent = `${score} 分`;
-        
+        document.getElementById("pdf-score-cover").textContent = `${score} 分`;
         document.getElementById("pdf-inner-score").textContent = score;
         document.getElementById("pdf-inner-count").textContent = `${correct}/${total}`;
     }
+
     function downloadPDF() {
         const el = document.getElementById("pdf-report-content");
         el.style.display = "block";
@@ -1054,6 +1054,6 @@ function renderQuestion(item) {
         changeLanguage();
         bootstrapMaterials();
     });
-  </script>
+ </script>
 </body>
 </html>
