@@ -93,9 +93,6 @@
         .icon-static { opacity: 0.7; cursor: default; }
         
         /* 調整結果區文字顏色以適應深色模式 */
-        #summary-text, .vocab-item, #quiz-question, #quiz-options button {
-            color: #e2e8f0 !important;
-        }
         .vocab-item { background: rgba(255,255,255,0.05) !important; border-color: rgba(255,255,255,0.1) !important; }
         .text-slate-500, .text-slate-600, .text-slate-700 { color: #94a3b8 !important; }
         .text-slate-800 { color: #f1f5f9 !important; }
@@ -107,32 +104,117 @@
         .no-print { display: block; }
         @media print { .no-print { display: none !important; } }
 
+        /* === [需求 1] 文字區塊：精美教科書排版 === */
+        #summary-text {
+            font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+            color: #1e293b !important; /* 強制深色字，避免看不清楚 */
+        }
+        
+        /* 大標題 */
+        #summary-text h3 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #0f172a !important;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            padding-left: 1rem;
+            border-left: 6px solid #3b82f6; /* 藍色側邊條 */
+            background: linear-gradient(90deg, #eff6ff 0%, transparent 100%); /* 淺藍漸層背景 */
+            line-height: 1.5;
+            border-radius: 4px;
+        }
+
+        /* 重點黃底標示 (類似螢光筆效果) */
+        #summary-text strong, #summary-text b {
+            background: linear-gradient(120deg, rgba(253, 224, 71, 0.4) 0%, rgba(253, 224, 71, 0.7) 100%);
+            padding: 0 4px;
+            border-radius: 4px;
+            color: #0f172a !important; 
+            font-weight: 800;
+        }
+
+        /* 列表層次感 */
+        #summary-text ul { list-style: none; padding-left: 0; }
+        #summary-text li { 
+            position: relative; 
+            padding-left: 1.8rem; 
+            margin-bottom: 0.8rem; 
+            line-height: 1.8;
+            font-size: 1.05rem;
+            color: #334155 !important;
+        }
+        /* 第一層項目符號 */
+        #summary-text > ul > li::before {
+            content: "●"; color: #3b82f6; font-weight: bold; position: absolute; left: 0.2rem; top: 0;
+        }
+        /* 第二層項目縮排 */
+        #summary-text ul ul { margin-top: 0.5rem; padding-left: 1rem; }
+        #summary-text ul ul li::before {
+            content: "○"; color: #64748b; font-weight: normal; position: absolute; left: 0.2rem; top: 0;
+        }
+
+        /* === [需求 3 & 4] 科學動動腦 & 區塊辨識度 === */
+        /* 摘要面板：藍色系 */
+        #summary-panel { border-left: 5px solid #3b82f6 !important; background: #ffffff !important; }
+        
+        /* 詞彙面板：紫色系 */
+        #vocab-panel { border-left: 5px solid #a855f7 !important; background: #faf5ff !important; }
+        #vocab-panel h3 { color: #6b21a8 !important; }
+
+        /* 架構圖面板：青色系 */
+        .glass-panel:has(#chart-container) { border-top: 5px solid #06b6d4 !important; background: #ecfeff !important; }
+
+        /* 動動腦面板：橙色系 (取代原本刺眼的紅) */
+        .glass-panel:has(#myth-list) { border-left: 5px solid #f97316 !important; background: #fff7ed !important; }
+        /* 動動腦題目卡片優化 */
+        #myth-list .bg-white {
+            background-color: #ffffff !important; 
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        /* 題目文字：深藍色，清楚易讀 */
+        #myth-list .text-slate-800 {
+            color: #1e3a8a !important; /* 深藍色 */
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        /* 選項按鈕：增加對比 */
+        .myth-option-btn {
+            background-color: #f8fafc !important;
+            border: 1px solid #cbd5e1 !important;
+            color: #334155 !important;
+            font-weight: 600;
+        }
+        .myth-option-btn:hover {
+            background-color: #eff6ff !important;
+            border-color: #60a5fa !important;
+            color: #1d4ed8 !important;
+        }
+
+        /* 測驗面板：綠色系 */
+        #quiz-panel { border-left: 5px solid #10b981 !important; background: #f0fdf4 !important; }
+
         /* === 小科 AI 專屬特效 === */
         .xiaoke-glow {
             position: relative;
             z-index: 10;
-            border: 2px solid rgba(56, 189, 248, 0.6); /* 亮藍邊框 */
+            border: 2px solid rgba(56, 189, 248, 0.6);
             box-shadow: 0 0 15px rgba(56, 189, 248, 0.4), 0 0 30px rgba(59, 130, 246, 0.2);
             animation: float-pulse 3s infinite ease-in-out;
-            cursor: grab; /* 顯示手掌游標，提示可拖曳 */
+            cursor: grab;
             transition: transform 0.2s, box-shadow 0.2s;
         }
-        /* 按住時的效果 */
         .xiaoke-glow:active {
             cursor: grabbing;
             transform: scale(0.95);
             box-shadow: 0 0 25px rgba(56, 189, 248, 0.8);
         }
-        
-        /* 呼吸與漂浮動畫 */
         @keyframes float-pulse {
             0%, 100% { transform: translateY(0); filter: brightness(1); }
             50% { transform: translateY(-6px); filter: brightness(1.2) drop-shadow(0 0 8px rgba(56, 189, 248, 0.6)); }
         }
-
-        /* 確保拖曳時位置正確 */
         #floating-chat {
-            touch-action: none; /* 防止手機上拖曳時觸發捲動 */
+            touch-action: none; 
             user-select: none;
         }
     </style>
@@ -236,46 +318,44 @@
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start"> 
                 
-                <div id="summary-panel" class="md:col-span-2 glass-panel p-6 rounded-2xl bg-white border-l-4 border-blue-500 shadow-sm">
+                <div id="summary-panel" class="md:col-span-2 glass-panel p-6 rounded-2xl shadow-sm">
                     <h3 class="font-bold text-blue-800 mb-4 text-xl"><i class="fa-solid fa-star text-yellow-400"></i> <span data-i18n="title_summary">核心概念摘要</span></h3>
-                    <div id="summary-text" class="prose max-w-none text-slate-600 leading-relaxed"></div>
+                    <div id="summary-text" class="prose max-w-none leading-relaxed"></div>
                 </div>
                 
-                <div id="vocab-panel" class="glass-panel p-6 rounded-2xl bg-gradient-to-br from-white to-blue-50 border-l-4 border-blue-500 h-full flex flex-col shadow-sm">
+                <div id="vocab-panel" class="glass-panel p-6 rounded-2xl shadow-sm flex flex-col">
                     <h3 class="font-bold text-slate-700 mb-4 text-xl"><span data-i18n="title_vocab">科學詞彙與定義</span></h3>
-                    
                     <div class="flex-1 overflow-y-auto custom-scrollbar min-h-0 pr-2">
                         <div id="keywords-list" class="space-y-3 pb-2"></div>
                     </div>
                 </div>
 
-                <div class="md:col-span-3 glass-panel p-6 rounded-2xl bg-white pdf-page-break shadow-sm">
+                <div class="md:col-span-3 glass-panel p-6 rounded-2xl shadow-sm pdf-page-break">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-purple-700 text-xl cursor-pointer hover:text-purple-900 transition w-fit select-none flex items-center gap-2" onclick="openModal()" ontouchend="openModal()">
+                        <h3 class="font-bold text-cyan-700 text-xl cursor-pointer hover:text-cyan-900 transition w-fit select-none flex items-center gap-2" onclick="openModal()" ontouchend="openModal()">
                             <i class="fa-solid fa-project-diagram"></i> 
                             <span data-i18n="title_map">知識架構圖</span> 
-                            <span class="text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full ml-2">點擊放大</span>
+                            <span class="text-xs bg-cyan-100 text-cyan-600 px-2 py-0.5 rounded-full ml-2">點擊放大</span>
                         </h3>
                         <button onclick="openModal()" class="bg-blue-50 text-blue-600 px-3 py-1 rounded-lg text-sm font-bold border border-blue-200 hover:bg-blue-100 transition no-pdf">
                             <i class="fa-solid fa-expand mr-1"></i> 全螢幕
                         </button>
                     </div>
-                    
                     <div class="bg-slate-50 rounded-xl p-4 md:p-6 border border-slate-100 overflow-hidden w-full relative h-auto" id="chart-container">
                         <div class="click-mask" onclick="openModal()"></div>
                         <div id="mermaid-chart" class="w-full"></div>
                     </div>
                 </div>
                 
-                <div class="md:col-span-3 glass-panel p-6 rounded-2xl bg-red-50/50 border border-red-100 pdf-page-break shadow-sm">
-                    <h3 class="font-bold text-red-600 mb-4 text-xl">
+                <div class="md:col-span-3 glass-panel p-6 rounded-2xl shadow-sm pdf-page-break">
+                    <h3 class="font-bold text-orange-600 mb-4 text-xl">
                         <i class="fa-solid fa-lightbulb"></i> 
                         <span data-i18n="title_myth">科學動動腦</span>
                     </h3>
                     <div id="myth-list" class="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch"></div>
                 </div>
 
-                <div id="quiz-panel" class="md:col-span-3 glass-panel p-6 rounded-2xl bg-white border border-emerald-100 shadow-sm">
+                <div id="quiz-panel" class="md:col-span-3 glass-panel p-6 rounded-2xl shadow-sm">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="font-bold text-emerald-700 text-xl flex items-center gap-2">
                             <i class="fa-solid fa-circle-question"></i>
@@ -322,17 +402,16 @@
         </div>
     </main>
 
-    <div id="floating-chat" class="hidden fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-3 no-print">
-       
+    <div id="floating-chat" class="hidden fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-3 no-print" style="touch-action: none;">
         <div id="xiaoke-window" class="chat-window closed w-80 md:w-96 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-blue-200 flex flex-col overflow-hidden h-[450px] transition-all origin-bottom-right">
-            <div class="bg-gradient-to-r from-blue-600 to-cyan-500 p-3 text-white flex justify-between items-center shadow-md">
-                <div class="flex items-center gap-2">
+            <div class="bg-gradient-to-r from-blue-600 to-cyan-500 p-3 text-white flex justify-between items-center shadow-md cursor-grab active:cursor-grabbing" onmousedown="startDrag(event)">
+                <div class="flex items-center gap-2 pointer-events-none">
                     <div class="w-8 h-8 rounded-full bg-white p-0.5 shadow-sm">
                         <img src="https://raw.githubusercontent.com/Shiwen6674/sciencelearninghub/main/irob.png" alt="小科" class="w-full h-full object-cover rounded-full">
                     </div>
                     <span class="font-bold text-sm tracking-wide">小科 AI 助手</span>
                 </div>
-                <button onclick="toggleChat()" class="text-white/80 hover:text-white w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition">
+                <button onclick="toggleChat()" onmousedown="event.stopPropagation()" class="text-white/80 hover:text-white w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition cursor-pointer">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
@@ -677,25 +756,35 @@
             resultTag.innerText = `${p} ${g}年級 ${s}`;
         }
 
+        // === [需求 1] 核心概念摘要：精美排版 ===
         const summaryBox = document.getElementById('summary-text');
         if (summaryBox) {
-            let summaryContent = data.summary;
-
-            if (summaryContent && typeof summaryContent === 'object') {
-                summaryContent =
-                    summaryContent.summary_html ||
-                    summaryContent.html ||
-                    summaryContent.content ||
-                    summaryContent.text ||
-                    summaryContent.summary ||
-                    '';
+            let content = data.summary;
+            if (typeof content === 'object') {
+                content = content.summary_html || content.html || content.content || content.text || content.summary || '';
+            } else if (!content && raw.text_summary) {
+                content = raw.text_summary;
             }
 
-            if (!summaryContent && raw.text_summary) {
-                summaryContent = raw.text_summary;
+            // 強制優化排版：將簡單的文字轉為層級分明的 HTML
+            if (content) {
+                if (!content.includes('<') && content.includes('\n')) {
+                    content = content.split('\n').map(line => {
+                        line = line.trim();
+                        if (!line) return '';
+                        if (/^[一二三四五六七八九十]、|^[0-9]+\./.test(line)) {
+                            return `<h3>${line}</h3>`;
+                        }
+                        if (/^[\(（][0-9]+[\)）]|^[-•]/.test(line)) {
+                            return `<ul><li>${line}</li></ul>`;
+                        }
+                        return `<p>${line}</p>`;
+                    }).join('');
+                }
+                // 重點黃底標示
+                content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             }
-
-            summaryBox.innerHTML = summaryContent || '生成摘要失敗...';
+            summaryBox.innerHTML = content || '生成摘要失敗...';
         }
 
         const keywordList = document.getElementById('keywords-list');
@@ -728,6 +817,7 @@
             }
         }
 
+        // === [需求 2] 知識架構圖：由上而下 (TD) ===
         const chartDiv = document.getElementById('mermaid-chart');
         if (chartDiv) {
             let mapData =
@@ -736,15 +826,19 @@
                 '';
 
             if (mapData && typeof mapData === 'string') {
-                mapData = mapData
-                    .replace(/```mermaid/i, '')
-                    .replace(/```/g, '')
-                    .trim();
+                mapData = mapData.replace(/```mermaid/i, '').replace(/```/g, '').trim();
+                
+                // 強制方向為 TD (Top-Down)
+                if (!mapData.startsWith('graph TD') && !mapData.startsWith('graph TB')) {
+                    mapData = mapData.replace(/^graph [LR][LR]/, 'graph TD');
+                    if (!mapData.startsWith('graph')) {
+                        mapData = 'graph TD\n' + mapData;
+                    }
+                }
             }
 
             if (mapData) {
                 chartDiv.innerHTML = `<div class="mermaid">${mapData}</div>`;
-                
                 try {
                     mermaid.init(undefined, document.querySelectorAll('.mermaid')).then(() => {
                         const svg = chartDiv.querySelector('svg');
@@ -757,6 +851,7 @@
                             svg.style.display = "block";
                             svg.style.margin = "0 auto";
                             svg.style.fontFamily = '"Microsoft JhengHei", sans-serif';
+                            svg.style.fontSize = "16px"; 
                         }
                     });
                 } catch (e) {
@@ -768,6 +863,7 @@
             }
         }
 
+        // === [需求 3] 科學動動腦配色與字體 ===
         const mythListEl = document.getElementById('myth-list');
         if (mythListEl) {
             mythListEl.innerHTML = '';
@@ -835,8 +931,14 @@
 
         const btn = document.getElementById('btn-generate');
         if (btn) btn.disabled = false;
+        
+        // ★ 修正重點：只顯示「懸浮按鈕」，視窗保持關閉
         const chatBtn = document.getElementById('floating-chat');
-        if (chatBtn) chatBtn.classList.remove('hidden');
+        if (chatBtn) chatBtn.classList.remove('hidden'); 
+        const chatWin = document.getElementById("xiaoke-window");
+        if(chatWin && !chatWin.classList.contains("closed")) {
+            chatWin.classList.add("closed");
+        }
 
         setTimeout(syncVocabHeight, 100);
     }
@@ -1427,253 +1529,6 @@
             submitQuizLog(q, selectedIndex, correctIndex, isCorrect);
         } catch (e) {
             console.log("submitQuizLog 略過或失敗：", e);
-        }
-    }
-
-    function requestQuizAISummary(score, concepts, conceptScores, correctCount, totalQ) {
-        const detailEl     = document.getElementById("quiz-result-detail");
-        const scoreLabelEl = document.getElementById("quiz-score-label");
-        if (!detailEl || !scoreLabelEl) return;
-
-        const currentUser = JSON.parse(
-            sessionStorage.getItem("currentUser") ||
-            localStorage.getItem("currentUser") ||
-            '{"name":"訪客"}'
-        );
-
-        const raw = currentResultData && currentResultData.raw_content ? currentResultData.raw_content : {};
-        const contextText  = raw.text || raw.text_summary || raw.text_full || "";
-        const contextVocab = raw.vocab_str || "";
-
-        const unitName =
-            (filters && filters.unitName) ||
-            (currentResultData &&
-                (currentResultData.unitName ||
-                 (currentResultData.raw_content && currentResultData.raw_content.unitName))) || "";
-
-        const answerRecords = quizState.questions.map((q, idx) => {
-            const ans = quizState.answers[idx];
-            return {
-                index: idx + 1,
-                concept: q.concept || q.conceptName || q.topic || `第 ${idx + 1} 題`,
-                correct: !!(ans && ans.correct)
-            };
-        });
-
-        const payload = {
-            action: "quiz_ai_summary",
-            userName: currentUser.name,
-            stage: filters.stage || "",
-            publisher: filters.publisher || "",
-            grade: filters.grade || "",
-            semester: filters.semester || "",
-            unitName: unitName,
-            score: score,
-            totalQuestions: totalQ,
-            totalCorrect: correctCount,
-            concepts: concepts,
-            conceptScores: conceptScores,
-            answers: answerRecords,
-            contextText: contextText,
-            contextVocab: contextVocab
-        };
-
-        detailEl.innerText = "AI 正在分析你的作答結果…";
-        scoreLabelEl.innerText = "";
-
-        fetch(GAS_API_URL, {
-            method: "POST",
-            body: JSON.stringify(payload)
-        })
-        .then(res => res.text())
-        .then(text => {
-            if (!text) {
-                detailEl.innerText = "從左側的長條圖可以看出各概念的答對率，分數較低的概念可以回到課本文字與重點整理區再加強。";
-                scoreLabelEl.innerText = "";
-                return;
-            }
-
-            let json = null;
-            try {
-                json = JSON.parse(text); 
-            } catch (e) {
-                detailEl.innerHTML = text;
-                scoreLabelEl.innerText = "";
-                return;
-            }
-
-            if (!json) {
-                detailEl.innerText = "從左側的長條圖可以看出各概念的答對率，分數較低的概念可以回到課本文字與重點整理區再加強。";
-                scoreLabelEl.innerText = "";
-                return;
-            }
-
-            let d = null;
-            if (typeof json.data !== "undefined") {
-                d = json.data;
-            } else if (json.summary || json.detail || json.text) {
-                d = json;
-            } else if (typeof json === "string") {
-                d = json;
-            }
-
-            if (!d) {
-                detailEl.innerText = "從左側的長條圖可以看出各概念的答對率，分數較低的概念可以回到課本文字與重點整理區再加強。";
-                scoreLabelEl.innerText = "";
-                return;
-            }
-
-            let summaryText = "";
-            let detailText  = "";
-
-            if (typeof d === "string") {
-                summaryText = d;
-            } else if (d && typeof d === "object") {
-                summaryText = d.summary || d.summary_html || d.text || d.explanation || "";
-                detailText  = d.detail  || d.detail_html  || "";
-            }
-
-            let combined = "";
-            if (summaryText) combined = summaryText;
-            if (detailText)  combined = combined ? (combined + "<br><br>" + detailText) : detailText;
-
-            if (combined) {
-                detailEl.innerHTML = combined;
-            } else {
-                detailEl.innerText = "從左側的長條圖可以看出各概念的答對率，分數較低的概念可以回到課本文字與重點整理區再加強。";
-            }
-            scoreLabelEl.innerText = "";
-        })
-        .catch(err => {
-            console.log("quiz_ai_summary 呼叫失敗：", err);
-            scoreLabelEl.innerText = "";
-            detailEl.innerText = "AI 分析暫時無法提供，可以先參考圖表與逐題解析，自己歸納需要加強的地方。";
-        });
-    }
-
-    function submitQuizLog(question, selectedIndex, correctIndex, isCorrect) {
-        if (!question) return;
-        const currentUser = JSON.parse(sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || '{"name":"訪客"}');
-
-        const payload = {
-            action: "log_quiz_answer",
-            userName: currentUser.name,
-            stage: filters.stage || "",
-            publisher: filters.publisher || "",
-            grade: filters.grade || "",
-            semester: filters.semester || "",
-            unitName:
-                (filters && filters.unitName) ||
-                (currentResultData &&
-                    (currentResultData.unitName ||
-                     (currentResultData.raw_content && currentResultData.raw_content.unitName))) || "",
-            questionId: question.id || `Q${quizState.currentIndex + 1}`,
-            questionIndex: quizState.currentIndex + 1,
-            questionText: question.stem || "",
-            studentAnswer: typeof selectedIndex === "number" ? selectedIndex.toString() : "",
-            correctAnswer: typeof correctIndex === "number" ? correctIndex.toString() : "",
-            isCorrect: isCorrect ? "1" : "0"
-        };
-
-        const params = new URLSearchParams(payload);
-        fetch(`${GAS_API_URL}?${params.toString()}`)
-            .catch(err => {
-                console.log("log_quiz_answer 呼叫失敗（可忽略於前端）:", err);
-            });
-    }
-
-    function requestQuizAIExplanation(question, selectedIndex, isCorrect) {
-        const target = document.getElementById("quiz-ai-explanation");
-        if (!target) return;
-
-        const currentUser = JSON.parse(
-            sessionStorage.getItem("currentUser") ||
-            localStorage.getItem("currentUser") ||
-            '{"name":"訪客"}'
-        );
-
-        const raw = currentResultData && currentResultData.raw_content ? currentResultData.raw_content : {};
-        const contextText  = raw.text || raw.text_summary || raw.text_full || "";
-        const contextVocab = raw.vocab_str || "";
-
-        const unitName =
-            (filters && filters.unitName) ||
-            (currentResultData &&
-                (currentResultData.unitName ||
-                 (currentResultData.raw_content && currentResultData.raw_content.unitName))) || "";
-
-        const payload = {
-            action: "quiz_ai_explain",
-            userName: currentUser.name,
-            stage: filters.stage || "",
-            publisher: filters.publisher || "",
-            grade: filters.grade || "",
-            semester: filters.semester || "",
-            unitName: unitName,
-            contextText: contextText,
-            contextVocab: contextVocab,
-            isCorrect: isCorrect ? 1 : 0,
-            question: {
-                id: question.id || `Q${quizState.currentIndex + 1}`,
-                stem: question.stem || "",
-                options: question.options || [],
-                correctIndex: (typeof question.correctIndex === "number" ? question.correctIndex : -1),
-                studentIndex: (typeof selectedIndex === "number" ? selectedIndex : -1),
-                concept: question.concept || question.conceptName || question.topic || `第 ${quizState.currentIndex + 1} 題`
-            }
-        };
-
-        target.innerText = "AI 解析生成中…";
-
-        fetch(GAS_API_URL, {
-            method: "POST",
-            body: JSON.stringify(payload)
-        })
-        .then(res => {
-            try {
-                return res.json();
-            } catch (e) {
-                throw new Error("解析 JSON 失敗");
-            }
-        })
-        .then(json => {
-            if (!target) return;
-            if (!json || json.status !== "success" || !json.data) {
-                target.innerText = "AI 解析暫時無法提供，先對照課本文字自己想一想。";
-                return;
-            }
-
-            const d = json.data;
-            const html =
-                d.explanation_html ||
-                d.explanation ||
-                d.text ||
-                (typeof d === "string" ? d : "");
-
-            if (html) {
-                target.innerHTML = html;
-            } else {
-                target.innerText = "AI 解析暫時無法提供，先對照課本文字自己想一想。";
-            }
-        })
-        .catch(err => {
-            console.log("quiz_ai_explain 呼叫失敗：", err);
-            if (target) {
-                target.innerText = "AI 解析目前連線不穩定，稍後可以再試一次。";
-            }
-        });
-    }
-
-    function handleQuizMainButton() {
-        if (!quizState.questions.length) return;
-        if (!quizState.hasAnswered) return;
-
-        const isLast = (quizState.currentIndex === quizState.questions.length - 1);
-        if (isLast) {
-            renderQuizResult();
-        } else {
-            quizState.currentIndex += 1;
-            renderQuizQuestion();
         }
     }
 
