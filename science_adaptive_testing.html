@@ -432,7 +432,7 @@
     /* ===========================
        0) CONFIG & I18N
        =========================== */
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxvAOgRDBE6T-2R37UeTzo0RSQukgGOlEYyBrTw8zUSOlIKNIzLdJXozjNx4Hn6brc2/exec";
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxBWrZCp-xLckDGZnhe64K0IUa_8CJZRzqZbrgL8lQdNn3S1WgaEzbdOtpo4mGwN6_H/exec";
     const CONTENT_DB_ID = "1cEfMEy3bvDa1tET3xmh7ShGeJy8KLUMa_JuULGBD-mk";
     const CONTENT_SHEET_NAME = "Sheet1";
     const USER_DB_ID = "1cDOsaa7E0EwD1R9CeCWoGf8_9ZMcFv8fxQ5d-LWUKu8";
@@ -564,7 +564,6 @@
     async function ensureStudentId(){ 
         let sid = getStudentIdFromLogin(); 
         if(sid) { CAT.student_id = sid; return sid; }
-        // Fallback logic omitted for brevity, assuming standard login flow
         return ""; 
     }
     
@@ -613,9 +612,13 @@
 
     // API Wrapper
     async function api(payload){
+        // 自動帶入 DB ID 參數，確保後端能收到
+        if(!payload.content_db_id) payload.content_db_id = CONTENT_DB_ID;
+        if(!payload.sheet_name) payload.sheet_name = CONTENT_SHEET_NAME;
+        
         const res = await fetch(GAS_API_URL, {
             method: "POST",
-            body: JSON.stringify(payload) // Simplify for this context
+            body: JSON.stringify(payload) 
         });
         const json = await res.json();
         if(json.status === "error") throw new Error(json.message);
@@ -625,7 +628,6 @@
     /* ===========================
        3) CORE LOGIC (Tree, Dropdowns)
        =========================== */
-    // Note: Simplified logic for brevity, assumes standard data structure
     function setOptions(selectEl, options, placeholder){ 
         selectEl.innerHTML=""; 
         if(!options||options.length===0){ 
@@ -636,36 +638,54 @@
         } 
     }
     
-    // ... (Using same logic as Unit Mastery page for populate/updateLevel but adapted for this DOM)
-    // For this specific output, I'll implement the bootstrap logic directly for the 4 selectors
-    
+    // 初始化教材樹 (相容您的舊版資料結構)
     async function bootstrapMaterials(){
-        // Mocking the load for structure - in real usage, copy the robust loadMaterialTree from previous turn
-        const res = await fetch(GAS_API_URL + "?action=get_metadata");
-        const json = await res.json();
-        if(json.status === "success") {
-             // Basic tree builder
-             const rows = json.data;
-             const tree = {};
-             const unitIndex = {};
-             rows.forEach(r => {
-                 const s = r.stage, g = r.grade, sem = r.semester, v = r.publisher;
-                 const key = `${s}|${g}|${sem}|${v}`;
-                 if(!tree[s]) tree[s]={};
-                 if(!tree[s][g]) tree[s][g]={};
-                 if(!tree[s][g][sem]) tree[s][g][sem]={};
-                 if(!tree[s][g][sem][v]) tree[s][g][sem][v]=[];
-                 const uObj = { unit_key: r.unitName, unit_name: r.unitName }; // Simplified key
-                 tree[s][g][sem][v].push(uObj);
-                 Meta.unitIndex[r.unitName] = r;
-             });
-             Meta.tree = tree;
-             refreshDropdowns();
+        try {
+            // [修正] 改用 fetch 加上 redirect: 'follow' 解決 CORS 302 問題
+            const res = await fetch(GAS_API_URL + "?action=get_metadata", { redirect: "follow" });
+            const json = await res.json();
+            
+            if(json.status === "success") {
+                 // 建立選單樹
+                 const rows = json.data;
+                 const tree = {};
+                 const unitIndex = {};
+                 
+                 rows.forEach(r => {
+                     // 處理資料欄位可能的不同命名
+                     const s = r.stage || r.learningStage;
+                     const g = r.grade;
+                     const sem = r.semester;
+                     const v = r.publisher;
+                     
+                     if(!s || !g || !sem || !v) return;
+
+                     if(!tree[s]) tree[s]={};
+                     if(!tree[s][g]) tree[s][g]={};
+                     if(!tree[s][g][sem]) tree[s][g][sem]={};
+                     if(!tree[s][g][sem][v]) tree[s][g][sem][v]=[];
+                     
+                     const uObj = { unit_key: r.unitName, unit_name: r.unitName }; 
+                     tree[s][g][sem][v].push(uObj);
+                     Meta.unitIndex[r.unitName] = r;
+                 });
+                 Meta.tree = tree;
+                 refreshDropdowns();
+                 UI.toast("連線成功", "教材資料已載入", "good");
+                 document.getElementById("connBadge").className = "hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold";
+                 document.getElementById("connBadge").innerHTML = '<i class="fa-solid fa-wifi"></i> <span>Online</span>';
+            } else {
+                 throw new Error("API 回傳狀態非 success");
+            }
+        } catch(e) {
+            console.error(e);
+            UI.toast("連線失敗", "無法載入教材資料，請稍後重試。", "bad");
+            document.getElementById("connBadge").className = "hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold";
+            document.getElementById("connBadge").innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> <span>Offline</span>';
         }
     }
 
     function refreshDropdowns() {
-        // Simplified cascade logic
         const sEl = document.getElementById("selStage");
         const stageKeys = Object.keys(Meta.tree || {});
         setOptions(sEl, stageKeys.map(x=>({value:x,label:x})), "Select...");
@@ -674,6 +694,8 @@
             const gEl = document.getElementById("selGrade");
             const st = sEl.value;
             const grades = Meta.tree[st] ? Object.keys(Meta.tree[st]) : [];
+            // 數字排序
+            grades.sort((a,b) => Number(a) - Number(b));
             setOptions(gEl, grades.map(x=>({value:x,label:x+"年級"})), "Select...");
             gEl.dispatchEvent(new Event('change'));
         };
@@ -707,7 +729,7 @@
         const g = document.getElementById("selGrade").value;
         const sem = document.getElementById("selSemester").value;
         const p = document.getElementById("selPublisher").value;
-        const u = document.getElementById("selUnit").value; // This is name in simplified logic
+        const u = document.getElementById("selUnit").value; 
         return `${s}${g}年級 ${sem} ${p} 「${u}」`;
     }
     
@@ -726,7 +748,11 @@
        =========================== */
     async function startTest() {
         const uVal = document.getElementById("selUnit").value;
-        if(!uVal) { UI.toast("提示", i18n[document.getElementById("language-selector").value].msg_select_unit, "warn"); return; }
+        // 修正多語系讀取錯誤
+        const langVal = document.getElementById("language-selector").value;
+        const hintMsg = i18n[langVal] ? i18n[langVal].msg_select_unit : "請先完成單元選擇";
+
+        if(!uVal) { UI.toast("提示", hintMsg, "warn"); return; }
         
         const sid = await ensureStudentId();
         const n = document.getElementById("inpN").value;
@@ -860,7 +886,7 @@
             const accuracy = Math.round((correct/total)*100);
             
             document.getElementById("resScore").textContent = `${accuracy}%`;
-            document.getElementById("resScore100").textContent = `${correct * 4} 分`; // Mock calculation or from backend
+            document.getElementById("resScore100").textContent = `${correct * 4} 分`; 
             
             // Wrong Items & Feedback
             const wrongHtml = (json.wrong_items||[]).map((w,i) => `
@@ -894,7 +920,7 @@
         const date = new Date();
         document.getElementById("pdf-cover-date").textContent = `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}`;
         
-        document.getElementById("pdf-score-circle").textContent = `${correct * 4}`; // Assuming 100/25 questions logic or arbitrary
+        document.getElementById("pdf-score-circle").textContent = `${correct * 4}`; 
         document.getElementById("pdf-score-raw").textContent = `${correct} / ${CAT.step}`;
         document.getElementById("pdf-score-comment").textContent = acc >= 80 ? "優秀" : (acc >= 60 ? "及格" : "加油");
         
