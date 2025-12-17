@@ -567,10 +567,32 @@
     // Identity
     function getStudentIdFromLogin(){ const u=window.currentUser||JSON.parse(sessionStorage.getItem("currentUser")||"{}"); return u.student_id||""; }
     function __loadCurrentUser(){ return JSON.parse(sessionStorage.getItem("currentUser")||localStorage.getItem("currentUser")||'{"name":"訪客"}'); }
+ /* ===========================
+       更新後的 ensureStudentId 函式
+       (支援讀取試算表 J 欄的 StudentID)
+       =========================== */
     async function ensureStudentId(){
-        let sid = getStudentIdFromLogin();
-        if(sid) { CAT.student_id = sid; return sid; }
-        return "";
+        // 1. 嘗試從登入資訊取得使用者物件
+        const user = window.currentUser || JSON.parse(sessionStorage.getItem("currentUser") || "{}");
+        
+        // 2. 嘗試抓取各種可能的欄位名稱 (對應你的試算表 J 欄)
+        // 你的試算表欄位是 "StudentID"，所以 user.StudentID 最重要
+        let sid = user.StudentID || user.student_id || user.id || "";
+
+        // 3. 如果抓到了 (例如 "1")，就存入 CAT 狀態並回傳
+        if(sid) {
+            CAT.student_id = sid;
+            console.log("已偵測到正式學號:", sid);
+            return sid;
+        }
+        
+        // 4. (後備方案) 如果真的沒登入(訪客)，才產生臨時 ID
+        // 這樣可以避免 "missing student_id" 錯誤
+        sid = "guest_" + new Date().getTime(); 
+        console.log("未登入，使用臨時訪客 ID:", sid);
+        
+        CAT.student_id = sid;
+        return sid;
     }
 
     // I18N
