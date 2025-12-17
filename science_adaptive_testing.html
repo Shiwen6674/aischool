@@ -41,49 +41,43 @@
 
   <style>
     /* =========================================
-       1. 全域與網頁版樣式 (Web UI)
+       1. 網頁版 UI (保持深色科技感)
        ========================================= */
-    body { background-color: #0f172a; color: #f8fafc; font-family: 'Noto Sans TC', sans-serif; -webkit-font-smoothing: antialiased; }
+    body { background-color: #0f172a; color: #f8fafc; font-family: 'Inter', 'Noto Sans TC', sans-serif; -webkit-font-smoothing: antialiased; }
     
-.glass-panel {
-        /* 👇 修改這一行：改成較亮的藍灰色，透明度 0.85 */
-        background: rgba(51, 65, 85, 0.85); 
-                backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.2); /* 邊框也可以稍微亮一點 */
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        border-radius: 1rem;
+    /* 玻璃擬態卡片 (網頁用) */
+    .glass-panel {
+        background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-radius: 1rem;
     }
-    /* 輸入元件 */
+    
+    /* 按鈕與輸入元件 */
     select { background-color: rgba(15, 23, 42, 0.8) !important; border: 1px solid rgba(255, 255, 255, 0.15) !important; color: #fff !important; }
-    select:focus { border-color: #38bdf8 !important; outline: none; }
-    
-    /* 按鈕群 */
     .option-btn { transition: all 0.2s; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; }
-    .option-btn:hover:not(:disabled) { background: rgba(255,255,255,0.1); border-color: #38bdf8; transform: translateY(-2px); }
-    .option-btn.selected { background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%); border-color: transparent; color: white; box-shadow: 0 0 20px rgba(6, 182, 212, 0.4); }
-    
-    .btn-submit-orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); box-shadow: 0 4px 14px rgba(234, 88, 12, 0.4); color: white; transition: all 0.2s; }
-    .btn-submit-orange:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); }
-    .btn-submit-orange:disabled { opacity: 0.6; cursor: not-allowed; background: #475569; box-shadow: none; }
+    .option-btn.selected { background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%); border-color: transparent; color: white; }
+    .btn-submit-orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; }
+    .btn-submit-orange:disabled { opacity: 0.6; background: #475569; }
 
-    /* Loading */
+    /* Loading & Progress */
     #loading-overlay { background: rgba(11, 17, 33, 0.98); backdrop-filter: blur(8px); }
     .tech-spinner { width: 50px; height: 50px; border: 4px solid rgba(56, 189, 248, 0.3); border-top-color: #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* 賽車進度條 */
     .track-container { background: rgba(255,255,255,0.1); border-radius: 999px; height: 8px; position: relative; }
     .track-fill { background: linear-gradient(90deg, #f97316, #eab308); height: 100%; border-radius: 999px; transition: width 0.5s ease; }
     .car-wrapper { position: absolute; top: 50%; transform: translate(-50%, -50%); transition: left 0.5s ease; z-index: 10; font-size: 1.2rem; filter: drop-shadow(0 0 5px rgba(255,165,0,0.5)); }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     /* =========================================
-       2. 百萬級 PDF 報告書專用樣式 (隱藏於網頁)
+       2. 百萬級 PDF 報告書專用樣式 (重點修改區)
        ========================================= */
     #pdf-report-content {
-        display: none; /* 網頁上不顯示 */
-        width: 210mm; background: #fff; color: #334155;
-        font-family: 'Noto Sans TC', sans-serif;
+        display: none; /* 網頁上隱藏 */
+        width: 210mm; 
+        background: #fff; 
+        color: #334155;
+        font-family: "Microsoft JhengHei", "Heiti TC", sans-serif; /* 強制使用系統黑體，避免醜陋細明體 */
     }
+
     .pdf-page {
         width: 210mm; height: 296mm; /* A4 */
         padding: 15mm 20mm;
@@ -92,65 +86,81 @@
         page-break-after: always;
         overflow: hidden;
         background: white;
+        border-top: 10px solid #2563eb; /* 頂部裝飾條 */
     }
 
-    /* PDF 封面設計 */
-    .cover-bg {
-        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        background: radial-gradient(circle at 100% 0%, #eff6ff 10%, transparent 40%),
-                    radial-gradient(circle at 0% 100%, #f0fdf4 10%, transparent 40%);
-        z-index: 0;
+    /* 封面設計 (幾何風格，不使用漸層) */
+    .cover-container {
+        height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+        border: 1px solid #e2e8f0; border-radius: 8px; margin-top: 20px;
     }
-    .cover-content { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-    .cover-title-en { font-family: 'Orbitron', sans-serif; font-size: 72px; font-weight: 900; color: #1e3a8a; letter-spacing: -2px; margin-bottom: 10px; }
-    .cover-title-zh { font-size: 28px; font-weight: 700; color: #64748b; letter-spacing: 8px; margin-bottom: 50px; text-transform: uppercase; }
-    .cover-card { background: white; padding: 40px 60px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); width: 80%; border: 1px solid #e2e8f0; }
-    .cover-row { display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding: 15px 0; font-size: 16px; }
-    .cover-row:last-child { border-bottom: none; }
-    .cover-label { color: #94a3b8; font-weight: 500; }
-    .cover-val { color: #0f172a; font-weight: 700; font-size: 18px; }
-    .score-badge { display: inline-block; padding: 5px 15px; background: #fff7ed; color: #ea580c; border-radius: 99px; font-weight: 800; font-family: 'Orbitron', sans-serif; }
-
-    /* PDF 內頁通用 */
-    .pdf-header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 25px; }
-    .header-title { font-size: 24px; font-weight: 900; color: #1e293b; }
-    .header-sub { font-size: 12px; color: #94a3b8; font-family: 'Orbitron', sans-serif; }
-    .pdf-footer { position: absolute; bottom: 15mm; left: 0; width: 100%; text-align: center; font-size: 10px; color: #cbd5e1; font-family: 'Orbitron', sans-serif; }
-
-    /* 儀表板區塊 */
-    .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-    .stat-card { background: #f8fafc; border-radius: 12px; padding: 20px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #e2e8f0; }
-    .stat-label { font-size: 12px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
-    .stat-value { font-size: 36px; font-weight: 900; font-family: 'Orbitron', sans-serif; }
-    .text-blue { color: #2563eb; } .text-orange { color: #ea580c; }
+    .cover-logo { font-size: 60px; font-weight: 900; color: #1e3a8a; letter-spacing: -2px; margin-bottom: 10px; }
+    .cover-subtitle { font-size: 24px; color: #64748b; letter-spacing: 5px; margin-bottom: 60px; font-weight: bold; text-transform: uppercase; }
     
-    /* 錯題卡片 (極簡風格) */
-    .wrong-item { margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; page-break-inside: avoid; }
-    .wi-header { background: #f1f5f9; padding: 8px 15px; display: flex; gap: 10px; align-items: baseline; border-bottom: 1px solid #e2e8f0; }
-    .wi-index { background: #ef4444; color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
-    .wi-stem { font-size: 13px; color: #334155; font-weight: 700; flex: 1; }
-    .wi-body { padding: 12px 15px; display: flex; flex-direction: column; gap: 8px; }
-    .wi-ans-row { display: flex; gap: 20px; font-size: 12px; }
-    .ans-box { padding: 4px 10px; border-radius: 4px; font-weight: bold; }
-    .ans-student { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; }
-    .ans-correct { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
-    .wi-footer { font-size: 11px; color: #64748b; background: #fff; padding-top: 5px; border-top: 1px dashed #e2e8f0; line-height: 1.5; }
-    
-    /* 處方籤卡片 (雜誌風格) */
-    .advice-card { margin-bottom: 15px; border-radius: 12px; padding: 15px 20px; border-left: 5px solid; page-break-inside: avoid; }
-    .advice-blue { background: #eff6ff; border-color: #3b82f6; }
-    .advice-yellow { background: #fffbeb; border-color: #f59e0b; }
-    .advice-green { background: #f0fdf4; border-color: #10b981; }
-    .advice-title { font-size: 14px; font-weight: 900; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-    .advice-content { font-size: 13px; line-height: 1.6; color: #334155; text-align: justify; }
-    .advice-blue .advice-title { color: #1e40af; }
-    .advice-yellow .advice-title { color: #92400e; }
-    .advice-green .advice-title { color: #166534; }
+    .info-card {
+        width: 80%; background: #f8fafc; border-left: 8px solid #2563eb; 
+        padding: 40px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .info-row { display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding: 15px 0; font-size: 16px; }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: #64748b; font-weight: 600; }
+    .info-val { color: #0f172a; font-weight: 800; font-size: 18px; }
+    .score-highlight { color: #f97316; font-size: 24px; }
 
-    .html2pdf__page-break { page-break-before: always; height: 0; display: block; }
+    /* 內頁標頭 */
+    .pdf-header { 
+        display: flex; justify-content: space-between; align-items: flex-end; 
+        border-bottom: 3px solid #0f172a; padding-bottom: 10px; margin-bottom: 30px; 
+    }
+    .ph-title { font-size: 22px; font-weight: 900; color: #0f172a; }
+    .ph-sub { font-size: 12px; color: #94a3b8; font-weight: bold; letter-spacing: 1px; }
+
+    /* 儀表板 */
+    .stats-box { display: flex; gap: 20px; margin-bottom: 30px; }
+    .stat-item { flex: 1; background: #f1f5f9; padding: 20px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .stat-num { font-size: 42px; font-weight: 900; color: #2563eb; line-height: 1; }
+    .stat-desc { font-size: 12px; color: #64748b; font-weight: bold; margin-top: 5px; text-transform: uppercase; }
+
+    /* 錯題樣式 (乾淨風格) */
+    .wrong-item { 
+        margin-bottom: 25px; 
+        border-bottom: 1px solid #e2e8f0; 
+        padding-bottom: 20px; 
+        page-break-inside: avoid; 
+    }
+    .wi-title { font-size: 14px; font-weight: 700; color: #1e293b; margin-bottom: 10px; line-height: 1.6; }
+    .wi-meta { display: flex; gap: 15px; margin-bottom: 10px; font-size: 12px; }
+    .tag-wrong { background: #fef2f2; color: #ef4444; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
+    .tag-correct { background: #f0fdf4; color: #16a34a; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
+    .wi-analysis { 
+        font-size: 13px; color: #475569; background: #f8fafc; padding: 12px; 
+        border-radius: 6px; line-height: 1.8; text-align: justify; 
+    }
+    .wi-highlight { color: #f59e0b; font-weight: bold; }
+
+    /* 處方籤樣式 (解決字體醜的問題：加大行高，增加間距) */
+    .advice-section { 
+        margin-bottom: 25px; page-break-inside: avoid; 
+        border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; 
+    }
+    .as-header { 
+        padding: 10px 15px; font-weight: 800; font-size: 14px; color: white; 
+        text-transform: uppercase; letter-spacing: 1px; 
+    }
+    .as-content { 
+        padding: 20px; font-size: 14px; line-height: 2; /* 行高加大，閱讀感提升 */
+        color: #334155; text-align: justify; 
+    }
+    .bg-blue { background: #3b82f6; }
+    .bg-yellow { background: #f59e0b; }
+    .bg-green { background: #10b981; }
+
+    /* 頁碼 (寫死位置) */
+    .pdf-footer-fixed { position: absolute; bottom: 15mm; right: 20mm; font-size: 12px; color: #cbd5e1; font-weight: bold; }
+
     .no-print { display: block; }
     @media print { .no-print { display: none !important; } }
-  </style>
+</style>
 </head>
 
 <body class="antialiased selection:bg-blue-500 selection:text-white">
@@ -346,77 +356,79 @@
   </div>
 
 <div id="pdf-report-content">
+    
     <div class="pdf-page">
-      <div class="cover-bg"></div>
-      <div class="cover-content">
-        <div style="margin-bottom: 60px;">
-           <div class="cover-title-en">AI SCIENCE</div>
-           <div class="cover-title-zh">自然科學適性診斷報告書</div>
-        </div>
-        <div class="cover-card">
-           <div style="font-size: 20px; font-weight: 900; color: #0f172a; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #3b82f6;" id="pdf-unit-title">--</div>
-           <div class="cover-row">
-             <span class="cover-label">學生姓名</span>
-             <span class="cover-val" id="pdf-name">--</span>
+      <div class="cover-container">
+        <div class="cover-logo">AI SCIENCE</div>
+        <div class="cover-subtitle">自然科學適性診斷報告</div>
+        
+        <div class="info-card">
+           <div class="info-row">
+             <span class="info-label">測驗單元 UNIT</span>
+             <span class="info-val" id="pdf-unit-title">--</span>
            </div>
-           <div class="cover-row">
-             <span class="cover-label">診斷日期</span>
-             <span class="cover-val" id="pdf-date">--</span>
+           <div class="info-row">
+             <span class="info-label">學生姓名 NAME</span>
+             <span class="info-val" id="pdf-name">--</span>
            </div>
-           <div class="cover-row">
-             <span class="cover-label">測驗得分</span>
-             <span class="score-badge" id="pdf-score-badge">--</span>
+           <div class="info-row">
+             <span class="info-label">診斷日期 DATE</span>
+             <span class="info-val" id="pdf-date">--</span>
+           </div>
+           <div class="info-row">
+             <span class="info-label">測驗得分 SCORE</span>
+             <span class="info-val score-highlight" id="pdf-score-cover">--</span>
            </div>
         </div>
       </div>
-    </div>
+      </div>
 
     <div class="html2pdf__page-break"></div>
-    <div class="pdf-page" style="display:flex; justify-content:center; align-items:center; color:#cbd5e1; font-size:12px;">
-      (此頁刻意留白，以利雙面列印)
+    <div class="pdf-page" style="display:flex; justify-content:center; align-items:center; color:#e2e8f0; font-size:12px;">
+      [ 此頁留白 INTENTIONALLY BLANK ]
     </div>
     <div class="html2pdf__page-break"></div>
 
-    <div class="pdf-page" style="counter-reset: page 1;">
+    <div class="pdf-page">
       <div class="pdf-header">
-         <div class="header-title">診斷結果詳析</div>
-         <div class="header-sub">DIAGNOSTIC REPORT</div>
+         <div>
+             <div class="ph-title">診斷結果詳析</div>
+             <div class="ph-sub">DIAGNOSTIC REPORT</div>
+         </div>
+         <div class="ph-title" style="color:#cbd5e1;">01</div>
       </div>
 
-      <div class="dashboard-grid">
-         <div class="stat-card">
-            <div>
-               <div class="stat-label">總分 Score</div>
-               <div class="stat-value text-blue" id="pdf-inner-score">--</div>
-            </div>
-            <i class="fa-solid fa-chart-line text-blue-200 text-4xl"></i>
+      <div class="stats-box">
+         <div class="stat-item">
+            <div class="stat-num" id="pdf-inner-score">--</div>
+            <div class="stat-desc">總分 (SCORE)</div>
          </div>
-         <div class="stat-card">
-            <div>
-               <div class="stat-label">答對題數 Correct</div>
-               <div class="stat-value text-orange" id="pdf-inner-count">--</div>
-            </div>
-            <i class="fa-solid fa-check-circle text-orange-200 text-4xl"></i>
+         <div class="stat-item">
+            <div class="stat-num" style="color:#f59e0b;" id="pdf-inner-count">--</div>
+            <div class="stat-desc">答對題數 (CORRECT)</div>
          </div>
       </div>
 
-      <div style="font-size:14px; font-weight:800; color:#1e293b; margin-bottom:15px; border-left:4px solid #ef4444; padding-left:10px;">
+      <div style="margin-bottom:20px; font-weight:800; color:#1e293b; border-left:5px solid #ef4444; padding-left:10px; font-size:16px;">
         錯題概念分析
       </div>
       <div id="pdf-wrong-container"></div>
       
-      <div class="pdf-footer">Page 1</div>
+      <div class="pdf-footer-fixed">Page 1</div>
     </div>
 
     <div class="pdf-page">
       <div class="pdf-header">
-         <div class="header-title">AI 學習處方籤</div>
-         <div class="header-sub">LEARNING PRESCRIPTION</div>
+         <div>
+             <div class="ph-title">AI 學習處方籤</div>
+             <div class="ph-sub">LEARNING PRESCRIPTION</div>
+         </div>
+         <div class="ph-title" style="color:#cbd5e1;">02</div>
       </div>
 
       <div id="pdf-advice-container"></div>
 
-      <div class="pdf-footer">Page 2</div>
+      <div class="pdf-footer-fixed">Page 2</div>
     </div>
   </div>
 
