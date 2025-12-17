@@ -645,6 +645,9 @@
 /* ===========================
        2.5) API Wrapper (修正後)
        =========================== */
+/* ===========================
+       2.5) API Wrapper (嚴格檢查版)
+       =========================== */
     async function api(payload){
         if(!payload.content_db_id) payload.content_db_id = CONTENT_DB_ID;
         if(!payload.sheet_name) payload.sheet_name = CONTENT_SHEET_NAME;
@@ -665,15 +668,17 @@
 
         let json;
         try{
+            // 如果 raw 是空字串，這裡會變成 {}
             json = raw ? JSON.parse(raw) : {};
         }catch(_){
             const snippet = (raw || "").slice(0, 300);
             throw new Error("Non-JSON response: " + snippet);
         }
 
-        // 🔥 修正重點：同時檢查 status="error" 以及 ok=false
-        if (json && (json.status === "error" || json.ok === false)) {
-            throw new Error(json.message || json.error || "API error");
+        // 🔥 嚴格修正：只要 ok 不為 true (包含 undefined, null, false) 就報錯
+        if (!json || !json.ok || json.status === "error") {
+            console.error("API Error Debug:", json); // 讓你在 F12 看到真正回傳了什麼
+            throw new Error(json.message || json.error || "API returned incomplete data (empty or failed).");
         }
         
         return json;
@@ -936,6 +941,9 @@
     /* ===========================
        4) TEST FLOW
        =========================== */
+/* ===========================
+       4) TEST FLOW
+       =========================== */
     async function startTest() {
         const uVal = document.getElementById("selUnit").value;
         const langVal = document.getElementById("language-selector").value;
@@ -960,6 +968,12 @@
 
             const json = await api(payload);
 
+            // 🔥 防呆檢查：確保後端真的有回傳 item 物件
+            if (!json.item) {
+                console.error("Missing item in response:", json);
+                throw new Error("命題成功但無題目資料 (Item missing)。請檢查後端日誌。");
+            }
+
             CAT.started = true;
             CAT.test_id = json.test_id || "";
             CAT.student_id = sid;
@@ -975,6 +989,7 @@
             UI.setProgress(0, n);
 
         } catch(e) {
+            console.error(e);
             UI.toast("錯誤", "命題失敗: " + e.message, "bad");
         } finally {
             hideLoading();
