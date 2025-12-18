@@ -56,7 +56,17 @@
     }
     
     /* 輸入元件 */
-    select { background-color: rgba(15, 23, 42, 0.8) !important; border: 1px solid rgba(255, 255, 255, 0.15) !important; color: #fff !important; }
+    select {
+    /* 👇 加入這三行，把瀏覽器預設的醜箭頭隱藏掉 */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    
+    /* 👇 原本的樣式保持不動 */
+    background-color: rgba(15, 23, 42, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: #fff !important;
+}
     select:focus { border-color: #38bdf8 !important; outline: none; }
     
     /* 按鈕群 */
