@@ -769,7 +769,11 @@ function _parseCSV(text){
   unit: getUnitPayload(),
   settings: { max_items: n },
   max_items: n,
-
+  n: n,
+  num_items: n,
+  n_items: n,
+  maxItems: n,
+  settings2: { n: n, num_items: n }, //（可有可無，但很保險）
   // 4) 建議加：方便你在 Network 看後端有沒有真的寫入
   debug: true
 };
@@ -988,7 +992,21 @@ function splitWeaknessSections(text){
       student_id: CAT.student_id,
       item_id: CAT.current.item_id,
       response_option: CAT.selected,
-      max_items: CAT.n
+      max_items: CAT.n,
+
+  // ★補齊常見鍵（避免後端回到 DEFAULT=8）
+  n: CAT.n,
+  num_items: CAT.n,
+  n_items: CAT.n,
+  maxItems: CAT.n,
+  settings: { max_items: CAT.n },
+
+  // ★如果你的後端在 submitAndNext 才寫題庫/寫回應，建議也一併帶 sheet 名稱（保險）
+  sheet_name: CONTENT_SHEET_NAME,
+  item_bank_sheet: "CATItemBank",
+  itembank_sheet: "CATItemBank",
+  response_sheet: "CATresponse",
+  response_sheet_name: "CATresponse",
     });
 
     // 已完成第幾題（答完才 +1）
