@@ -1376,48 +1376,127 @@ if (chartDiv) {
         setTimeout(() => { isDragging = false; }, 100);
     }
 
-    async function sendChatMessage() {
-        const input = document.getElementById("chat-input"); 
-        if (!input) return;
-        const msg = input.value.trim(); 
-        if(!msg) return;
+async function sendChatMessage() {
+  const input = document.getElementById("chat-input");
+  if (!input) return;
 
-        const chatBody = document.getElementById("chat-messages");
-        if (chatBody) {
-            chatBody.innerHTML += `<div class="self-end bg-blue-600 text-white p-3 rounded-lg rounded-tr-none shadow-sm max-w-[85%] ml-auto text-sm">${msg}</div>`;
-            chatBody.scrollTop = chatBody.scrollHeight;
-        }
-        input.value = "";
+  const msg = input.value.trim();
+  if (!msg) return;
 
-        try {
-            const currentUser = JSON.parse(sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || '{"name":"訪客"}');
-            const contextText = currentResultData ? (currentResultData.raw_content ? currentResultData.raw_content.text : "") : "";
-            const contextVocab = currentResultData ? (currentResultData.raw_content ? currentResultData.raw_content.vocab_str : "") : "";
-            const res = await fetch(GAS_API_URL, { 
-                method: 'POST', 
-                body: JSON.stringify({ 
-                    action: 'chat_with_ai', 
-                    message: msg, 
-                    currentUnit: filters.unitName || "",
-                    contextText: contextText,
-                    contextVocab: contextVocab,
-                    userName: currentUser.name,
-                    stage: filters.stage,
-                    publisher: filters.publisher,
-                    grade: filters.grade,
-                    semester: filters.semester 
-                }) 
-            });
-            const json = await res.json();
-            const cleanReply = (json.data || "").replace(/\*\*/g, "");
-            if (chatBody) {
-                chatBody.innerHTML += `<div class="self-start bg-white border border-slate-100 p-3 rounded-lg rounded-tr-none shadow-sm max-w-[85%] text-sm"><span class="font-bold text-blue-600 block mb-1 text-xs">小科 AI 助手</span>${cleanReply}</div>`;
-                chatBody.scrollTop = chatBody.scrollHeight;
-            }
-        } catch(e) { 
-            console.error(e); 
-        }
+  const chatBody = document.getElementById("chat-messages");
+  if (chatBody) {
+    chatBody.innerHTML += `
+      <div class="self-end bg-blue-600 text-white p-3 rounded-lg rounded-tr-none shadow-sm max-w-[85%] ml-auto text-sm">
+        ${msg}
+      </div>`;
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
+  input.value = "";
+
+  // 先放一個「思考中」訊息，避免使用者覺得沒反應
+  let pendingEl = null;
+  if (chatBody) {
+    const wrap = document.createElement("div");
+    wrap.className = "self-start bg-white border border-slate-100 p-3 rounded-lg rounded-tr-none shadow-sm max-w-[85%] text-sm";
+    wrap.innerHTML = `<span class="font-bold text-blue-600 block mb-1 text-xs">小科 AI 助手</span>思考中…`;
+    chatBody.appendChild(wrap);
+    chatBody.scrollTop = chatBody.scrollHeight;
+    pendingEl = wrap;
+  }
+
+  // 取 currentUser（你前面已做過正規化，這裡再保險一次）
+  let currentUser = { name: "訪客" };
+  try {
+    const raw = sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser");
+    if (raw) currentUser = JSON.parse(raw);
+  } catch (e) {}
+
+  // 避免送太大導致 Apps Script/網路層失敗（最小截斷，不動你的資料結構）
+  const contextTextFull  = currentResultData?.raw_content?.text || "";
+  const contextVocabFull = currentResultData?.raw_content?.vocab_str || "";
+  const contextText  = String(contextTextFull).slice(0, 6000);
+  const contextVocab = String(contextVocabFull).slice(0, 3000);
+
+  const payload = {
+    action: "chat_with_ai",
+    message: msg,
+    currentUnit: filters.unitName || "",
+    contextText,
+    contextVocab,
+    userName: currentUser.name || "訪客",
+    stage: filters.stage,
+    publisher: filters.publisher,
+    grade: filters.grade,
+    semester: filters.semester
+  };
+
+  // timeout：避免卡住
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 20000);
+
+  try {
+    const res = await fetch(GAS_API_URL, {
+      method: "POST",
+      body: JSON.stringify(payload),
+      signal: controller.signal
+      // 注意：不要加 headers: {'Content-Type':'application/json'}
+      // 以免觸發 preflight，導致 Apps Script 回不來
+    });
+
+    clearTimeout(timer);
+
+    if (!res.ok) {
+      throw new Error(`HTTP 錯誤：${res.status}`);
     }
+
+    const text = await res.text();
+
+    // 安全解析 JSON
+    let json = null;
+    try {
+      json = JSON.parse(text);
+    } catch (e) {
+      // 後端若回的是純文字/HTML，也不要讓前端沉默
+      json = { status: "error", message: "後端回傳非 JSON", raw: text };
+    }
+
+    // 兼容不同回傳欄位
+    const ok = (json.status === "success");
+    const reply =
+      (ok ? (json.data || json.reply || json.answer || "") : "") ||
+      (!ok ? (json.message || json.error || "") : "");
+
+    const cleanReply = String(reply || "").replace(/\*\*/g, "").trim();
+
+    if (pendingEl) {
+      if (cleanReply) {
+        pendingEl.innerHTML = `<span class="font-bold text-blue-600 block mb-1 text-xs">小科 AI 助手</span>${cleanReply}`;
+      } else {
+        // 把可診斷資訊放出來，避免「看起來沒回」
+        const rawPreview = String(json.raw || text || "").slice(0, 200);
+        pendingEl.innerHTML = `
+          <span class="font-bold text-blue-600 block mb-1 text-xs">小科 AI 助手</span>
+          <div class="text-slate-700">目前無法取得回覆。</div>
+          <div class="text-[11px] text-slate-400 mt-2">診斷：${ok ? "success 但 data 空白" : "status!=success"}；回傳片段：${rawPreview}</div>`;
+      }
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+  } catch (e) {
+    clearTimeout(timer);
+    console.error("小科對話失敗：", e);
+
+    if (pendingEl) {
+      const msg = (e && e.name === "AbortError")
+        ? "連線逾時（20 秒）。請稍後再試，或縮短問題內容。"
+        : `連線/解析失敗：${e.message || e}`;
+      pendingEl.innerHTML = `
+        <span class="font-bold text-blue-600 block mb-1 text-xs">小科 AI 助手</span>
+        <div class="text-slate-700">${msg}</div>`;
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+  }
+}
+
 
     function openModal() {
         const chartDiv = document.getElementById("mermaid-chart");
