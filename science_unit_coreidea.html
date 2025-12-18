@@ -961,30 +961,21 @@ if (chartDiv) {
 }
 
 
-            if (mapData) {
-                chartDiv.innerHTML = `<div class="mermaid">${mapData}</div>`;
-                try {
-                    mermaid.init(undefined, document.querySelectorAll('.mermaid')).then(() => {
-                        const svg = chartDiv.querySelector('svg');
-                        if (svg) {
-                            svg.removeAttribute('style');
-                            svg.removeAttribute('width');
-                            svg.removeAttribute('height');
-                            
-                            svg.style.height = "auto";
-                            svg.style.display = "block";
-                            svg.style.margin = "0 auto";
-                            svg.style.fontFamily = '"Microsoft JhengHei", sans-serif';
-                            svg.style.fontSize = "16px"; 
-                        }
-                    });
-                } catch (e) {
-                    console.error('Mermaid 繪圖失敗', e);
-                    chartDiv.innerText = '架構圖繪製失敗，請重試。';
-                }
-            } else {
-                chartDiv.innerText = '無架構圖數據';
-            }
+            const chartDiv = document.getElementById('mermaid-chart');
+if (chartDiv) {
+  let mapData =
+    data.mindMap ||
+    (data.summary && (data.summary.mindMap || data.summary.mermaid)) ||
+    '';
+
+  if (typeof mapData === 'string') {
+    mapData = mapData.replace(/```mermaid/i, '').replace(/```/g, '').trim();
+  }
+
+  if (mapData) renderMermaidSafe(chartDiv, mapData);
+  else chartDiv.textContent = '無架構圖數據';
+}
+
         }
 
         const mythListEl = document.getElementById('myth-list');
@@ -1313,7 +1304,7 @@ if (chartDiv) {
             const json = await res.json();
             const cleanReply = (json.data || "").replace(/\*\*/g, "");
             if (chatBody) {
-                chatBody.innerHTML += `<div class="self-start bg白 border border-slate-100 p-3 rounded-lg rounded-tr-none shadow-sm max-w-[85%] text-sm"><span class="font-bold text-blue-600 block mb-1 text-xs">小科 AI 助手</span>${cleanReply}</div>`;
+                chatBody.innerHTML += `<div class="self-start bg-white border border-slate-100 p-3 rounded-lg rounded-tr-none shadow-sm max-w-[85%] text-sm"><span class="font-bold text-blue-600 block mb-1 text-xs">小科 AI 助手</span>${cleanReply}</div>`;
                 chatBody.scrollTop = chatBody.scrollHeight;
             }
         } catch(e) { 
