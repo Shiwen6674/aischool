@@ -766,6 +766,84 @@
             if (btn) btn.disabled = false;
         }
     }
+function normalizeMermaidCode(code) {
+    if (!code || typeof code !== "string") return "";
+
+    code = code.replace(/```mermaid\s*/i, "").replace(/```/g, "").trim();
+    code = code.replace(/^mermaid\s*\n/i, "").trim();
+
+    const lines = code.split("\n");
+    let header = "";
+    for (const line of lines) {
+        const t = line.trim();
+        if (!t) continue;
+        if (t.startsWith("%%")) continue; // Mermaid comment / init directive
+        header = t.toLowerCase();
+        break;
+    }
+
+    // 這些開頭都屬於 Mermaid 合法圖形類型，不要硬改成 graph TD
+    const okStarts = [
+        "graph", "flowchart", "mindmap", "mindmap-v2",
+        "sequencediagram", "statediagram", "classdiagram",
+        "erdiagram", "journey", "gantt", "pie", "timeline"
+    ];
+
+    const firstToken = header ? header.split(/\s+/)[0] : "";
+    if (okStarts.includes(firstToken)) return code;
+
+    // 若沒標頭，但內容看起來像 flowchart，才補 graph TD
+    if (code.includes("-->") || code.includes("---") || code.includes("==>")) {
+        return "graph TD\n" + code;
+    }
+
+    // 其他情況：原樣回傳（避免越修越壞）
+    return code;
+}
+
+async function renderMermaidSafe(targetEl, rawCode) {
+    if (!targetEl) return;
+
+    const code = normalizeMermaidCode(rawCode);
+    if (!code) {
+        targetEl.innerText = "無架構圖數據";
+        return;
+    }
+
+    // 關鍵：用 textContent，不用 innerHTML（避免 <br> 等被瀏覽器當 HTML 吃掉）
+    targetEl.innerHTML = "";
+    const wrapper = document.createElement("div");
+    wrapper.className = "mermaid";
+    wrapper.textContent = code;
+    targetEl.appendChild(wrapper);
+
+    try {
+        if (mermaid.parse) {
+            await mermaid.parse(code);
+        }
+        if (mermaid.run) {
+            await mermaid.run({ nodes: [wrapper] });
+        } else {
+            // 後備（理論上 v10 有 run）
+            mermaid.init(undefined, [wrapper]);
+        }
+
+        const svg = targetEl.querySelector("svg");
+        if (svg) {
+            svg.removeAttribute("width");
+            svg.removeAttribute("height");
+            svg.style.width = "100%";
+            svg.style.height = "auto";
+            svg.style.display = "block";
+            svg.style.margin = "0 auto";
+            svg.style.fontFamily = '"Microsoft JhengHei", "Noto Sans TC", sans-serif';
+            svg.style.fontSize = "16px";
+        }
+    } catch (e) {
+        console.error("Mermaid 繪圖失敗：", e, "\n原始碼：\n", code);
+        targetEl.innerHTML = "架構圖繪製失敗（Mermaid 語法錯誤）";
+    }
+}
 
     function renderResult(data) {
         console.log("渲染數據:", data);
@@ -863,23 +941,25 @@
             }
         }
 
-        const chartDiv = document.getElementById('mermaid-chart');
-        if (chartDiv) {
-            let mapData =
-                data.mindMap ||
-                (data.summary && (data.summary.mindMap || data.summary.mermaid)) ||
-                '';
+const chartDiv = document.getElementById('mermaid-chart');
+if (chartDiv) {
+    let mapData =
+        data.mindMap ||
+        (data.summary && (data.summary.mindMap || data.summary.mermaid)) ||
+        '';
 
-            if (mapData && typeof mapData === 'string') {
-                mapData = mapData.replace(/```mermaid/i, '').replace(/```/g, '').trim();
-                
-                if (!mapData.startsWith('graph TD') && !mapData.startsWith('graph TB')) {
-                    mapData = mapData.replace(/^graph [LR][LR]/, 'graph TD');
-                    if (!mapData.startsWith('graph')) {
-                        mapData = 'graph TD\n' + mapData;
-                    }
-                }
-            }
+    if (mapData && typeof mapData === 'string') {
+        mapData = mapData.replace(/```mermaid/i, '').replace(/```/g, '').trim();
+    }
+
+    if (mapData) {
+        // 用安全渲染（避免 innerHTML 破壞 Mermaid 文字）
+        renderMermaidSafe(chartDiv, mapData);
+    } else {
+        chartDiv.innerText = '無架構圖數據';
+    }
+}
+
 
             if (mapData) {
                 chartDiv.innerHTML = `<div class="mermaid">${mapData}</div>`;
