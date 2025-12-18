@@ -998,57 +998,89 @@ function _parseCSV(text){
     }
 
     // AI 處方籤
-    const aiData = json.feedback_student;
-    const webAiBox = document.getElementById("resAiFeedback");
-    const pdfAiBox = document.getElementById("pdf-advice-container");
+const aiData = json.feedback_student;
+const webAiBox = document.getElementById("resAiFeedback");
+const pdfAiBox = document.getElementById("pdf-advice-container");
 
-    let summary = "", analysis = "", actions = [];
-    if (typeof aiData === "object" && aiData && aiData.summary) {
-      summary = aiData.summary;
-      analysis = aiData.weakness_analysis;
-      actions = aiData.action_plan || [];
-    } else if (typeof aiData === "string") {
-      summary = "AI 分析結果";
-      analysis = aiData;
-    }
+let overview = "";
+let misconception = "";
+let review = "";
+let actions = [];
 
-    webAiBox.innerHTML = `
-      <div class="grid gap-4">
-        <div class="bg-blue-500/10 border border-blue-500/30 p-4 rounded-xl">
-          <h4 class="text-blue-400 font-bold mb-2">總體評估</h4>
-          <p class="text-slate-300 text-sm whitespace-pre-line leading-7">${summary}</p>
-        </div>
-        <div class="bg-yellow-500/10 border border-yellow-500/30 p-4 rounded-xl">
-          <h4 class="text-yellow-400 font-bold mb-2">弱點診斷</h4>
-          <p class="text-slate-300 text-sm whitespace-pre-line leading-7">${analysis}</p>
-        </div>
-        <div class="bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-xl">
-          <h4 class="text-emerald-400 font-bold mb-2">行動建議</h4>
-          <ul class="list-disc list-inside text-slate-300 text-sm space-y-1">
-            ${actions.map(a => `<li>${a}</li>`).join("")}
-          </ul>
-        </div>
-      </div>
-    `;
+if (typeof aiData === "object" && aiData && aiData.summary) {
+  // 你的舊格式（JSON 物件）仍可用
+  overview = aiData.summary || "";
+  misconception = aiData.weakness_analysis || "";
+  actions = Array.isArray(aiData.action_plan) ? aiData.action_plan : [];
+} else if (typeof aiData === "string") {
+  // ★ 新增：支援後台 Plain Text
+  const parsed = parsePrescriptionText(aiData);
+  overview = parsed.overview;
+  misconception = parsed.misconception;
+  review = parsed.review;
 
-    pdfAiBox.innerHTML = `
-      <div class="advice-card advice-blue">
-        <div class="advice-title">總體評估 OVERVIEW</div>
-        <div class="advice-content">${summary}</div>
+  actions = parsed.suggestionList.length
+    ? parsed.suggestionList
+    : (parsed.suggestionText ? [parsed.suggestionText] : []);
+}
+
+// 避免空白（你現在遇到的就是空白）
+if (!overview) overview = "（AI 未提供總體評估內容）";
+if (!misconception && !review) misconception = "（AI 未提供弱點診斷內容）";
+if (!actions.length) actions = ["（AI 未提供行動建議，請老師確認後台輸出是否含【學習建議】或【行動建議】段落）"];
+
+// ★ UI：卡片風格 + 色塊 + 段落標題字體更大
+webAiBox.innerHTML = `
+  <div class="grid gap-4">
+    <!-- 總體表現 -->
+    <div class="rounded-2xl border border-blue-500/30 bg-blue-500/10 p-5">
+      <div class="text-base font-black text-blue-300 mb-2">總體表現</div>
+      <div class="text-sm leading-relaxed text-slate-200 whitespace-pre-line">${overview}</div>
+    </div>
+
+    <!-- 兩張子卡：重點迷思 / 精準複習 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5">
+        <div class="text-base font-black text-amber-300 mb-2">重點迷思</div>
+        <div class="text-sm leading-relaxed text-slate-200 whitespace-pre-line">${misconception || "（無）"}</div>
       </div>
-      <div class="advice-card advice-yellow">
-        <div class="advice-title">弱點診斷 DIAGNOSIS</div>
-        <div class="advice-content">${analysis}</div>
+
+      <div class="rounded-2xl border border-fuchsia-500/30 bg-fuchsia-500/10 p-5">
+        <div class="text-base font-black text-fuchsia-300 mb-2">精準複習</div>
+        <div class="text-sm leading-relaxed text-slate-200 whitespace-pre-line">${review || "（無）"}</div>
       </div>
-      <div class="advice-card advice-green">
-        <div class="advice-title">行動建議 ACTION PLAN</div>
-        <div class="advice-content">
-          <ul style="margin:0; padding-left:20px;">
-            ${actions.map(a => `<li style="margin-bottom:8px;">${a}</li>`).join("")}
-          </ul>
-        </div>
-      </div>
-    `;
+    </div>
+
+    <!-- 行動建議 -->
+    <div class="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5">
+      <div class="text-base font-black text-emerald-300 mb-2">行動建議</div>
+      <ul class="list-disc list-inside text-sm leading-relaxed text-slate-200 space-y-1">
+        ${actions.map(a => `<li>${a}</li>`).join("")}
+      </ul>
+    </div>
+  </div>
+`;
+
+// PDF（先用簡單版：把迷思+複習合併，避免 PDF 太碎）
+pdfAiBox.innerHTML = `
+  <div class="advice-card advice-blue">
+    <div class="advice-title">總體表現 OVERVIEW</div>
+    <div class="advice-content">${overview}</div>
+  </div>
+  <div class="advice-card advice-yellow">
+    <div class="advice-title">重點迷思與精準複習 DIAGNOSIS</div>
+    <div class="advice-content">${(misconception + (review ? "\n\n" + review : "")).replace(/\n/g,"<br>")}</div>
+  </div>
+  <div class="advice-card advice-green">
+    <div class="advice-title">行動建議 ACTION PLAN</div>
+    <div class="advice-content">
+      <ul style="margin:0; padding-left:20px;">
+        ${actions.map(a => `<li style="margin-bottom:8px;">${a}</li>`).join("")}
+      </ul>
+    </div>
+  </div>
+`;
+
 
     updatePdfInfo(score100, correct, total);
 
