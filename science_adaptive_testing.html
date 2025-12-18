@@ -866,36 +866,48 @@ function _parseCSV(text){
         document.getElementById("hint").innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i> 已選擇 ${key}`;
     }
 
-    async function submitAnswer() {
-        document.getElementById("btnSubmit").disabled = true;
-        try {
-            const json = await api({
-                action: ACTION.SUBMIT_NEXT,
-                test_id: CAT.test_id,
-                student_id: CAT.student_id,
-                item_id: CAT.current.item_id,
-                response_option: CAT.selected,
-                max_items: CAT.n
-            });
+   async function submitAnswer() {
+  document.getElementById("btnSubmit").disabled = true;
+  try {
+    const json = await api({
+      action: ACTION.SUBMIT_NEXT,
+      test_id: CAT.test_id,
+      student_id: CAT.student_id,
+      item_id: CAT.current.item_id,
+      response_option: CAT.selected,
+      max_items: CAT.n
+    });
 
-            CAT.step++;
-            UI.setProgress(CAT.step, CAT.n);
+    CAT.step++;
+    UI.setProgress(CAT.step, CAT.n);
 
-            if(json.done || CAT.step >= CAT.n) {
-                await finishTest();
-            } else {
-                CAT.next = json.item;
-                const btnNext = document.getElementById("btnNext");
-                btnNext.disabled = false;
-                btnNext.classList.remove("opacity-50", "bg-slate-700", "text-slate-500");
-                btnNext.classList.add("bg-emerald-500", "hover:bg-emerald-400", "text-white", "animate-bounce", "shadow-lg", "shadow-emerald-500/50");
-                document.getElementById("hint").innerHTML = "答案已送出，請按下一題";
-            }
-        } catch(e) {
-            UI.toast("錯誤", "送出失敗: " + e.message, "bad");
-            document.getElementById("btnSubmit").disabled = false;
-        }
+    // ✅ 只要未達設定題數，就不允許提前結束
+    if (CAT.step >= CAT.n) {
+      await finishTest();
+      return;
     }
+
+    // ✅ 未達題數但後端沒給下一題：避免卡住，提示後結束
+    if (!json.item) {
+      UI.toast("提示", `後端未回傳下一題（目前 ${CAT.step}/${CAT.n}），請檢查 GAS 是否有提前 done。`, "warn");
+      await finishTest();
+      return;
+    }
+
+    // 下一題
+    CAT.next = json.item;
+    const btnNext = document.getElementById("btnNext");
+    btnNext.disabled = false;
+    btnNext.classList.remove("opacity-50", "bg-slate-700", "text-slate-500");
+    btnNext.classList.add("bg-emerald-500", "hover:bg-emerald-400", "text-white", "animate-bounce", "shadow-lg", "shadow-emerald-500/50");
+    document.getElementById("hint").innerHTML = "答案已送出，請按下一題";
+
+  } catch(e) {
+    UI.toast("錯誤", "送出失敗: " + e.message, "bad");
+    document.getElementById("btnSubmit").disabled = false;
+  }
+}
+
 
    async function finishTest() {
   showLoading("ANALYZING", "AI 正在分析學習弱點...");
