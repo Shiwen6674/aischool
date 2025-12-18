@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+TC:wght@300;400;700;900&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
   <script>
     tailwind.config = {
@@ -561,16 +562,19 @@
         return json;
     }
 
-    function _parseCSV(text){
-        const lines = text.split('\n').filter(l => l.trim());
-        const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
-        return lines.slice(1).map(line => {
-            const vals = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
-            const obj = {};
-            headers.forEach((h, i) => obj[h] = vals[i] || "");
-            return obj;
-        });
-    }
+function _parseCSV(text){
+  if (typeof Papa === "undefined") throw new Error("PapaParse not loaded");
+  const parsed = Papa.parse(text, {
+    header: true,
+    skipEmptyLines: true,
+    dynamicTyping: false
+  });
+  if (parsed.errors && parsed.errors.length) {
+    console.warn("CSV parse warnings:", parsed.errors.slice(0, 5));
+  }
+  return parsed.data || [];
+}
+
 
     async function _loadRowsFromPublicCSV(){
         const res = await fetch(MATERIALS_CSV_URL, { cache: "no-store" });
@@ -1008,11 +1012,11 @@
             `;
 
             updatePdfInfo(score100, correct, total);
-            toggleLoad(false);
+            toggleLoad();
 
         } catch(e) {
             alert("結算失敗: " + e.message);
-            toggleLoad(false);
+            toggleLoad();
         }
     }
 
