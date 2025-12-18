@@ -969,26 +969,6 @@ async function renderMermaidSafe(targetEl, rawCode) {
 
 const chartDiv = document.getElementById('mermaid-chart');
 if (chartDiv) {
-    let mapData =
-        data.mindMap ||
-        (data.summary && (data.summary.mindMap || data.summary.mermaid)) ||
-        '';
-
-    if (mapData && typeof mapData === 'string') {
-        mapData = mapData.replace(/```mermaid/i, '').replace(/```/g, '').trim();
-    }
-
-    if (mapData) {
-        // 用安全渲染（避免 innerHTML 破壞 Mermaid 文字）
-        renderMermaidSafe(chartDiv, mapData);
-    } else {
-        chartDiv.innerText = '無架構圖數據';
-    }
-}
-
-
-            const chartDiv = document.getElementById('mermaid-chart');
-if (chartDiv) {
   let mapData =
     data.mindMap ||
     (data.summary && (data.summary.mindMap || data.summary.mermaid)) ||
@@ -998,11 +978,12 @@ if (chartDiv) {
     mapData = mapData.replace(/```mermaid/i, '').replace(/```/g, '').trim();
   }
 
-  if (mapData) renderMermaidSafe(chartDiv, mapData);
-  else chartDiv.textContent = '無架構圖數據';
+  if (mapData) {
+    renderMermaidSafe(chartDiv, mapData);
+  } else {
+    chartDiv.textContent = '無架構圖數據';
+  }
 }
-
-        }
 
         const mythListEl = document.getElementById('myth-list');
         if (mythListEl) {
