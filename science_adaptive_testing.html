@@ -753,15 +753,27 @@ function _parseCSV(text){
         try {
             const payload = {
   action: ACTION.START_CAT,
+
+  // 1) 明確告訴後端：教材在哪張表（避免後端找不到課文來源）
+  sheet_name: CONTENT_SHEET_NAME,     // "Sheet1"
+
+  // 2) 明確告訴後端：題庫要寫到哪張表（你原本只送 item_bank_sheet，現在補齊常見別名）
+  item_bank_sheet: "CATItemBank",
+  itembank_sheet: "CATItemBank",
+  item_bank_sheet_name: "CATItemBank",
+
+  // 3) 必要識別
+  content_db_id: CONTENT_DB_ID,       // 直接送，別只靠 api() 補（避免後端大小寫/欄位名不同）
   student_id: sid,
   student: { student_id: sid },
   unit: getUnitPayload(),
   settings: { max_items: n },
   max_items: n,
 
-  // 明確指定題庫工作表
-  item_bank_sheet: "CATItemBank"
+  // 4) 建議加：方便你在 Network 看後端有沒有真的寫入
+  debug: true
 };
+
 
 
             const json = await api(payload);
