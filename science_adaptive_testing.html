@@ -570,6 +570,7 @@
         }
         return json;
     }
+function toggleLoad(){ hideLoading(); }
 
 function _parseCSV(text){
   if (typeof Papa === "undefined") throw new Error("PapaParse not loaded");
@@ -896,138 +897,137 @@ function _parseCSV(text){
         }
     }
 
-    async function finishTest() {
-        showLoading("ANALYZING", "AI 正在分析學習弱點...");
-        try {
-            const res = await fetch(GAS_API_URL, {
-                method: "POST",
-                body: JSON.stringify({
-                    action: "finishCAT",
-                    test_id: CAT.test_id,
-                    student_id: CAT.student_id,
-                    ai_feedback: true
-                })
-            });
-            const json = await res.json();
+   async function finishTest() {
+  showLoading("ANALYZING", "AI 正在分析學習弱點...");
+  try {
+    // 改用你已經寫好的 api()（它有正確 headers、錯誤處理、ok 檢查）
+    const json = await api({
+      action: ACTION.FINISH_CAT,   // "finishCAT"
+      test_id: CAT.test_id,
+      student_id: CAT.student_id,
+      ai_feedback: true
+    });
 
-            document.getElementById("secQuiz").classList.add("hidden");
-            document.getElementById("secResult").classList.remove("hidden");
+    document.getElementById("secQuiz").classList.add("hidden");
+    document.getElementById("secResult").classList.remove("hidden");
 
-            const correct = json.correct_count || 0;
-            const total = json.total_count || 0;
-            const score100 = json.score_100 || 0;
-            const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
+    const correct = json.correct_count || 0;
+    const total = json.total_count || 0;
+    const score100 = json.score_100 || 0;
+    const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
 
-            document.getElementById("resScore").textContent = `${accuracy}%`;
-            document.getElementById("resCount").textContent = `(${correct}/${total})`;
-            document.getElementById("resScore100").textContent = score100;
+    document.getElementById("resScore").textContent = `${accuracy}%`;
+    document.getElementById("resCount").textContent = `(${correct}/${total})`;
+    document.getElementById("resScore100").textContent = score100;
 
-            // 錯題列表 (Web & PDF)
-            const wList = document.getElementById("resWrongList");
-            const pdfWList = document.getElementById("pdf-wrong-container");
-            wList.innerHTML = "";
-            pdfWList.innerHTML = "";
+    // 錯題列表 (Web & PDF)
+    const wList = document.getElementById("resWrongList");
+    const pdfWList = document.getElementById("pdf-wrong-container");
+    wList.innerHTML = "";
+    pdfWList.innerHTML = "";
 
-            if (!json.wrong_items || json.wrong_items.length === 0) {
-                wList.innerHTML = "<div class='text-emerald-400 text-center font-bold text-xl py-4'>🎉 恭喜！全對，沒有錯題。</div>";
-                pdfWList.innerHTML = "<div style='padding:30px; text-align:center; color:#10b981; font-weight:bold; border:1px dashed #cbd5e1; border-radius:8px;'>表現優異，本單元無錯題！</div>";
-            } else {
-                json.wrong_items.forEach((w, i) => {
-                    wList.insertAdjacentHTML("beforeend", `
-                        <div class="bg-slate-900/50 p-5 rounded-xl border border-red-500/20">
-                            <div class="font-bold text-slate-200 mb-2 text-lg">Q: ${w.stem}</div>
-                            <div class="flex gap-4 text-sm mb-3">
-                                <span class="text-red-400 font-bold bg-red-900/30 px-2 py-1 rounded">誤選: ${w.student_answer}</span>
-                                <span class="text-emerald-400 font-bold bg-emerald-900/30 px-2 py-1 rounded">正解: ${w.correct_answer}</span>
-                            </div>
-                            <div class="text-sm text-slate-300 bg-slate-800 p-4 rounded-lg border border-slate-700 leading-relaxed text-justify">
-                                <strong class="text-blue-400 block mb-1">💡 診斷解析：</strong>
-                                ${w.remedial_text}
-                            </div>
-                        </div>
-                    `);
+    if (!json.wrong_items || json.wrong_items.length === 0) {
+      wList.innerHTML = "<div class='text-emerald-400 text-center font-bold text-xl py-4'>恭喜！全對，沒有錯題。</div>";
+      pdfWList.innerHTML = "<div style='padding:30px; text-align:center; color:#10b981; font-weight:bold; border:1px dashed #cbd5e1; border-radius:8px;'>表現優異，本單元無錯題！</div>";
+    } else {
+      json.wrong_items.forEach((w, i) => {
+        wList.insertAdjacentHTML("beforeend", `
+          <div class="bg-slate-900/50 p-5 rounded-xl border border-red-500/20">
+            <div class="font-bold text-slate-200 mb-2 text-lg">Q: ${w.stem}</div>
+            <div class="flex gap-4 text-sm mb-3">
+              <span class="text-red-400 font-bold bg-red-900/30 px-2 py-1 rounded">誤選: ${w.student_answer}</span>
+              <span class="text-emerald-400 font-bold bg-emerald-900/30 px-2 py-1 rounded">正解: ${w.correct_answer}</span>
+            </div>
+            <div class="text-sm text-slate-300 bg-slate-800 p-4 rounded-lg border border-slate-700 leading-relaxed text-justify">
+              <strong class="text-blue-400 block mb-1">診斷解析：</strong>
+              ${w.remedial_text}
+            </div>
+          </div>
+        `);
 
-                    pdfWList.insertAdjacentHTML("beforeend", `
-                        <div class="wrong-item">
-                            <div class="wi-header">
-                                <div class="wi-index">${i+1}</div>
-                                <div class="wi-stem">${w.stem.substring(0, 50)}${w.stem.length>50?'...':''}</div>
-                            </div>
-                            <div class="wi-body">
-                                <div class="wi-ans-row">
-                                    <span class="ans-box ans-student">誤選：${w.student_answer}</span>
-                                    <span class="ans-box ans-correct">正解：${w.correct_answer}</span>
-                                </div>
-                                <div class="wi-footer">
-                                    <strong>弱點與解析：</strong>${w.remedial_text}
-                                </div>
-                            </div>
-                        </div>
-                    `);
-                });
-            }
-
-            // AI 處方籤
-            const aiData = json.feedback_student;
-            const webAiBox = document.getElementById("resAiFeedback");
-            const pdfAiBox = document.getElementById("pdf-advice-container");
-            
-            let summary="", analysis="", actions=[];
-            if (typeof aiData === 'object' && aiData.summary) {
-                 summary = aiData.summary;
-                 analysis = aiData.weakness_analysis;
-                 actions = aiData.action_plan || [];
-            } else if (typeof aiData === 'string') {
-                 summary = "AI 分析結果";
-                 analysis = aiData; 
-            }
-
-            webAiBox.innerHTML = `
-                <div class="grid gap-4">
-                    <div class="bg-blue-500/10 border border-blue-500/30 p-4 rounded-xl">
-                        <h4 class="text-blue-400 font-bold mb-2">🎓 總體評估</h4>
-                        <p class="text-slate-300 text-sm">${summary}</p>
-                    </div>
-                    <div class="bg-yellow-500/10 border border-yellow-500/30 p-4 rounded-xl">
-                        <h4 class="text-yellow-400 font-bold mb-2">🔍 弱點診斷</h4>
-                        <p class="text-slate-300 text-sm">${analysis}</p>
-                    </div>
-                    <div class="bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-xl">
-                        <h4 class="text-emerald-400 font-bold mb-2">🚀 行動建議</h4>
-                        <ul class="list-disc list-inside text-slate-300 text-sm space-y-1">
-                            ${actions.map(a => `<li>${a}</li>`).join('')}
-                        </ul>
-                    </div>
-                </div>
-            `;
-
-            pdfAiBox.innerHTML = `
-                <div class="advice-card advice-blue">
-                    <div class="advice-title">總體評估 OVERVIEW</div>
-                    <div class="advice-content">${summary}</div>
-                </div>
-                <div class="advice-card advice-yellow">
-                    <div class="advice-title">弱點診斷 DIAGNOSIS</div>
-                    <div class="advice-content">${analysis}</div>
-                </div>
-                <div class="advice-card advice-green">
-                    <div class="advice-title">行動建議 ACTION PLAN</div>
-                    <div class="advice-content">
-                        <ul style="margin:0; padding-left:20px;">
-                            ${actions.map(a => `<li style="margin-bottom:8px;">${a}</li>`).join('')}
-                        </ul>
-                    </div>
-                </div>
-            `;
-
-            updatePdfInfo(score100, correct, total);
-            toggleLoad();
-
-        } catch(e) {
-            alert("結算失敗: " + e.message);
-            toggleLoad();
-        }
+        pdfWList.insertAdjacentHTML("beforeend", `
+          <div class="wrong-item">
+            <div class="wi-header">
+              <div class="wi-index">${i + 1}</div>
+              <div class="wi-stem">${w.stem.substring(0, 50)}${w.stem.length > 50 ? "..." : ""}</div>
+            </div>
+            <div class="wi-body">
+              <div class="wi-ans-row">
+                <span class="ans-box ans-student">誤選：${w.student_answer}</span>
+                <span class="ans-box ans-correct">正解：${w.correct_answer}</span>
+              </div>
+              <div class="wi-footer">
+                <strong>弱點與解析：</strong>${w.remedial_text}
+              </div>
+            </div>
+          </div>
+        `);
+      });
     }
+
+    // AI 處方籤
+    const aiData = json.feedback_student;
+    const webAiBox = document.getElementById("resAiFeedback");
+    const pdfAiBox = document.getElementById("pdf-advice-container");
+
+    let summary = "", analysis = "", actions = [];
+    if (typeof aiData === "object" && aiData && aiData.summary) {
+      summary = aiData.summary;
+      analysis = aiData.weakness_analysis;
+      actions = aiData.action_plan || [];
+    } else if (typeof aiData === "string") {
+      summary = "AI 分析結果";
+      analysis = aiData;
+    }
+
+    webAiBox.innerHTML = `
+      <div class="grid gap-4">
+        <div class="bg-blue-500/10 border border-blue-500/30 p-4 rounded-xl">
+          <h4 class="text-blue-400 font-bold mb-2">總體評估</h4>
+          <p class="text-slate-300 text-sm">${summary}</p>
+        </div>
+        <div class="bg-yellow-500/10 border border-yellow-500/30 p-4 rounded-xl">
+          <h4 class="text-yellow-400 font-bold mb-2">弱點診斷</h4>
+          <p class="text-slate-300 text-sm">${analysis}</p>
+        </div>
+        <div class="bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-xl">
+          <h4 class="text-emerald-400 font-bold mb-2">行動建議</h4>
+          <ul class="list-disc list-inside text-slate-300 text-sm space-y-1">
+            ${actions.map(a => `<li>${a}</li>`).join("")}
+          </ul>
+        </div>
+      </div>
+    `;
+
+    pdfAiBox.innerHTML = `
+      <div class="advice-card advice-blue">
+        <div class="advice-title">總體評估 OVERVIEW</div>
+        <div class="advice-content">${summary}</div>
+      </div>
+      <div class="advice-card advice-yellow">
+        <div class="advice-title">弱點診斷 DIAGNOSIS</div>
+        <div class="advice-content">${analysis}</div>
+      </div>
+      <div class="advice-card advice-green">
+        <div class="advice-title">行動建議 ACTION PLAN</div>
+        <div class="advice-content">
+          <ul style="margin:0; padding-left:20px;">
+            ${actions.map(a => `<li style="margin-bottom:8px;">${a}</li>`).join("")}
+          </ul>
+        </div>
+      </div>
+    `;
+
+    updatePdfInfo(score100, correct, total);
+
+  } catch (e) {
+    UI.toast("錯誤", "結算失敗: " + e.message, "bad");
+  } finally {
+    // 不論成功失敗都要關掉 loading，避免卡住
+    hideLoading();
+  }
+}
+
 
     function updatePdfInfo(score, correct, total) {
         document.getElementById("pdf-unit-title").textContent = getUnitInfoString();
