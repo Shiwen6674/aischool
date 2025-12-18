@@ -752,13 +752,17 @@ function _parseCSV(text){
 
         try {
             const payload = {
-                action: ACTION.START_CAT,
-                student_id: sid,
-                student: { student_id: sid },
-                unit: getUnitPayload(),
-                settings: { max_items: n },
-                max_items: n
-            };
+  action: ACTION.START_CAT,
+  student_id: sid,
+  student: { student_id: sid },
+  unit: getUnitPayload(),
+  settings: { max_items: n },
+  max_items: n,
+
+  // 明確指定題庫工作表
+  item_bank_sheet: "CATItemBank"
+};
+
 
             const json = await api(payload);
             if (!json.item) throw new Error("命題成功但無題目資料");
