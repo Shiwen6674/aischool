@@ -868,6 +868,7 @@ function _parseCSV(text){
 
    async function submitAnswer() {
   document.getElementById("btnSubmit").disabled = true;
+
   try {
     const json = await api({
       action: ACTION.SUBMIT_NEXT,
@@ -878,35 +879,52 @@ function _parseCSV(text){
       max_items: CAT.n
     });
 
+    // 已完成第幾題（答完才 +1）
     CAT.step++;
     UI.setProgress(CAT.step, CAT.n);
 
-    // ✅ 只要未達設定題數，就不允許提前結束
-    if (CAT.step >= CAT.n) {
-      await finishTest();
-      return;
-    }
-
-    // ✅ 未達題數但後端沒給下一題：避免卡住，提示後結束
-    if (!json.item) {
-      UI.toast("提示", `後端未回傳下一題（目前 ${CAT.step}/${CAT.n}），請檢查 GAS 是否有提前 done。`, "warn");
-      await finishTest();
-      return;
-    }
-
-    // 下一題
-    CAT.next = json.item;
     const btnNext = document.getElementById("btnNext");
+
+    // ====== 重點：只用 CAT.step 判斷是否結束，不要用 json.done ======
+    if (CAT.step >= CAT.n) {
+      // 已答滿 CAT.n 題：不立刻分析，改成讓學生按「AI評分診斷」才分析
+      CAT.next = null;
+
+      btnNext.disabled = false;
+      btnNext.classList.remove("opacity-50", "bg-slate-700", "text-slate-500");
+      btnNext.classList.add("bg-emerald-500", "hover:bg-emerald-400", "text-white", "shadow-lg", "shadow-emerald-500/50");
+
+      // 把「下一題」改成「AI評分診斷」
+      btnNext.innerHTML = `<span>AI評分診斷</span> <i class="fa-solid fa-chart-line"></i>`;
+
+      document.getElementById("hint").innerHTML = "已完成作答，請按「AI評分診斷」開始分析";
+      return;
+    }
+
+    // 還沒答滿 CAT.n 題：正常前進到下一題
+    if (!json.item) {
+      // 如果後端真的沒給下一題，你至少不會直接進入分析，而是提示「後端沒出題」
+      UI.toast("錯誤", "後端未回傳下一題，無法繼續作答（請檢查後端是否提前結束）。", "bad");
+      return;
+    }
+
+    CAT.next = json.item;
+
     btnNext.disabled = false;
     btnNext.classList.remove("opacity-50", "bg-slate-700", "text-slate-500");
     btnNext.classList.add("bg-emerald-500", "hover:bg-emerald-400", "text-white", "animate-bounce", "shadow-lg", "shadow-emerald-500/50");
+
+    // 確保不是最後一題時，按鈕維持「下一題」
+    btnNext.innerHTML = `<span data-i18n="btn_next">下一題</span> <i class="fa-solid fa-arrow-right"></i>`;
+
     document.getElementById("hint").innerHTML = "答案已送出，請按下一題";
 
-  } catch(e) {
+  } catch (e) {
     UI.toast("錯誤", "送出失敗: " + e.message, "bad");
     document.getElementById("btnSubmit").disabled = false;
   }
 }
+
 
 
    async function finishTest() {
@@ -1072,7 +1090,16 @@ function _parseCSV(text){
         document.getElementById("user-info").textContent = user.name || "訪客";
         document.getElementById("btnStart").addEventListener("click", startTest);
         document.getElementById("btnSubmit").addEventListener("click", submitAnswer);
-        document.getElementById("btnNext").addEventListener("click", () => { if(CAT.next) renderQuestion(CAT.next); });
+        document.getElementById("btnNext").addEventListener("click", async () => {
+  // 若已答滿題數：按下就開始分析
+  if (CAT.step >= CAT.n) {
+    await finishTest();
+    return;
+  }
+  // 否則：前往下一題
+  if (CAT.next) renderQuestion(CAT.next);
+});
+
         document.getElementById("btnReload").addEventListener("click", bootstrapMaterials);
         changeLanguage();
         bootstrapMaterials();
