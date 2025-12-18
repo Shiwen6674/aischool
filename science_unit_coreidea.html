@@ -568,9 +568,35 @@
     };
 
     window.onload = async () => {
-        const user = JSON.parse(sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || '{"name":"訪客"}');
         const userInfo = document.getElementById("user-info");
-        if (userInfo) userInfo.innerText = user.name;
+
+let rawUser = sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser");
+let user = { name: "訪客" };
+
+try {
+  if (rawUser) {
+    const obj = JSON.parse(rawUser);
+    user = {
+      ...obj,
+      // 兼容不同欄位命名
+      id: obj.id || obj.student_id || obj.studentId || obj.StudentID || "",
+      name: obj.name || obj.Name || obj.userName || obj.username || obj.email || "訪客"
+    };
+  }
+} catch (e) {
+  // rawUser 不是 JSON（例如 [object Object] 或單純字串）→ 不要讓整頁掛掉
+  const s = String(rawUser || "");
+  user = { id: s, name: s || "訪客" };
+}
+
+// 顯示姓名
+if (userInfo) userInfo.innerText = user.name || "訪客";
+
+// 立刻把格式「正規化」回存，避免下次再爆
+sessionStorage.setItem("currentUser", JSON.stringify(user));
+// 若你希望關掉瀏覽器也保留登入，再加這行：
+// localStorage.setItem("currentUser", JSON.stringify(user));
+
         
         // ★ 強制隱藏小科 (雙重確保)
         const chatBtn = document.getElementById('floating-chat');
