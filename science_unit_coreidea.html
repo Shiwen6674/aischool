@@ -170,6 +170,64 @@
         #summary-text ul ul { margin-top: 0.4rem; padding-left: 0.5rem; }
         #summary-text ul ul li::before { content: "○"; color: #94a3b8; font-weight: normal; position: absolute; left: 0.2rem; top: 0; }
 
+/* =========================================
+   5.x 摘要內的【表格 / 圖片】顯示強化（後台已產出圖表時用）
+   ========================================= */
+#summary-text .table-wrap{
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  border:1px solid #e2e8f0;
+  border-radius:12px;
+  background:#fff;
+}
+
+#summary-text table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:0.95rem;
+  min-width:520px; /* 避免欄太多時壓扁 */
+}
+
+#summary-text th, 
+#summary-text td{
+  border:1px solid #e2e8f0;
+  padding:0.55rem 0.65rem;
+  vertical-align:top;
+  color:#0f172a !important;
+}
+
+#summary-text th{
+  background:#eff6ff;
+  font-weight:800;
+  color:#1e3a8a !important;
+  white-space:nowrap;
+}
+
+#summary-text tr:nth-child(even) td{
+  background:#f8fafc;
+}
+
+#summary-text img{
+  max-width:100%;
+  height:auto;
+  display:block;
+  margin:0.75rem auto;
+  border-radius:12px;
+  border:1px solid #e2e8f0;
+}
+
+#summary-text figure{
+  margin:0.75rem 0;
+}
+
+#summary-text figcaption{
+  font-size:0.85rem;
+  color:#475569 !important;
+  margin-top:0.4rem;
+  line-height:1.5;
+}
+
+        
         /* =========================================
            6. 區塊顏色識別
            ========================================= */
@@ -871,6 +929,48 @@ async function renderMermaidSafe(targetEl, rawCode) {
     }
 }
 
+// ====== [新增：摘要內表格/圖片/Mermaid 強化] ======
+function enhanceSummaryMedia(summaryEl){
+  if(!summaryEl) return;
+
+  // 1) 表格：自動包一層可橫向捲動容器（只包一次）
+  summaryEl.querySelectorAll("table").forEach(tbl=>{
+    const p = tbl.parentElement;
+    if(p && p.classList.contains("table-wrap")) return;
+
+    const wrap = document.createElement("div");
+    wrap.className = "table-wrap";
+    tbl.parentNode.insertBefore(wrap, tbl);
+    wrap.appendChild(tbl);
+  });
+
+  // 2) 圖片：lazy + async（不改 src，只強化顯示）
+  summaryEl.querySelectorAll("img").forEach(img=>{
+    if(!img.getAttribute("loading")) img.setAttribute("loading","lazy");
+    if(!img.getAttribute("decoding")) img.setAttribute("decoding","async");
+  });
+
+  // 3) 若摘要內也含 Mermaid 區塊（後台直接給 <div class="mermaid">code</div>）
+  const mermaidNodes = Array.from(summaryEl.querySelectorAll(".mermaid"));
+  if(mermaidNodes.length){
+    mermaidNodes.forEach(node=>{
+      // 若已經被轉成 svg，就不重跑
+      if(node.querySelector("svg")) return;
+      const rawCode = node.textContent || "";
+      node.textContent = normalizeMermaidCode(rawCode);
+    });
+
+    try{
+      if(mermaid.run) mermaid.run({ nodes: mermaidNodes });
+      else mermaid.init(undefined, mermaidNodes);
+    }catch(e){
+      console.error("Summary Mermaid render failed:", e);
+    }
+  }
+}
+
+
+        
     function renderResult(data) {
         console.log("渲染數據:", data);
 
@@ -935,6 +1035,7 @@ async function renderMermaidSafe(targetEl, rawCode) {
                 content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             }
             summaryBox.innerHTML = content || '生成摘要失敗...';
+            enhanceSummaryMedia(summaryBox);
         }
 
         const keywordList = document.getElementById('keywords-list');
@@ -963,8 +1064,7 @@ async function renderMermaidSafe(targetEl, rawCode) {
                 });
             } else {
                 keywordList.innerHTML = '<div class="text-slate-400 p-2">無詞彙資料</div>';
-                mythData = [];
-            }
+                }
         }
 
 const chartDiv = document.getElementById('mermaid-chart');
