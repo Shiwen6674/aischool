@@ -1172,98 +1172,366 @@ if (chartDiv) {
 
         setTimeout(syncVocabHeight, 100);
     }
+// ===============================
+//  [TXT 百萬美元版] 工具函式
+//  放在 downloadTXT() 前面即可
+// ===============================
+const TXT_CFG = {
+  width: 48,          // 每行約 35–55 字，這裡取 48（手機友善）
+  maxLinesPerBlock: 4,
+  sep: "────────────────────────────────────────",
+  sep2: "========================================",
+  indent: "　　"        // 全形縮排（視覺節奏）
+};
 
-    function downloadTXT() {
-        if (!currentResultData) { 
-            alert("請先生成內容後再下載！"); 
-            return; 
-        }
+function sanitizeFilename(name) {
+  return String(name || "unit")
+    .replace(/[\\\/:*?"<>|]/g, "_")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
-        const stage    = filters.stage    || (currentResultData && currentResultData.stage)    || "";
-        const publisher = filters.publisher || (currentResultData && currentResultData.publisher) || "";
-        const grade    = filters.grade    || (currentResultData && currentResultData.grade)    || "";
-        const semRaw   = filters.semester || (currentResultData && currentResultData.semester) || "";
-        const unitName = (currentResultData.raw_content ? currentResultData.raw_content.unitName : filters.unitName) || "";
+// 全稱詞 → 範圍詞（保守處理：避免亂改專有名詞）
+function softenAbsoluteWording(s) {
+  if (!s) return "";
+  let out = String(s);
 
-        let semesterLabel = semRaw;
-        if (semRaw === "上") semesterLabel = "上學期";
-        else if (semRaw === "下") semesterLabel = "下學期";
+  // 高風險詞先處理
+  out = out.replace(/所有/g, "多數");
+  out = out.replace(/一定/g, "通常");
+  out = out.replace(/完全/g, "大多");
+  out = out.replace(/必然/g, "往往");
+  out = out.replace(/絕對/g, "多半");
 
-        let content = "";
+  // 「都」只改常見搭配，避免「都市」「都會區」等誤傷
+  out = out.replace(/都會/g, "常會");
+  out = out.replace(/都能/g, "多半能");
+  out = out.replace(/都可以/g, "通常可以");
+  out = out.replace(/都要/g, "通常要");
+  out = out.replace(/都是/g, "多半是");
 
-        content += "【單元來源資訊】\n";
-        content += "----------------------------------------\n";
-        content += `學習階段：${stage || "-"}\n`;
-        content += `版本：${publisher || "-"}\n`;
-        content += `年級：${grade ? grade + "年級" : "-"}\n`;
-        content += `學期：${semesterLabel || "-"}\n`;
-        content += `單元名稱：${unitName || "-"}\n\n`;
+  return out;
+}
 
-        content += "========================================\n";
-        content += "  單元重點整理\n";
-        content += "========================================\n\n";
+// 計算顯示寬度（CJK 以 2 格估算，ASCII 以 1 格）
+function displayWidth(str) {
+  str = String(str || "");
+  let w = 0;
+  for (const ch of str) {
+    const code = ch.codePointAt(0);
+    // 粗略：ASCII 1，其它多視為全形 2
+    w += (code <= 0x007f) ? 1 : 2;
+  }
+  return w;
+}
 
-        const summaryEl = document.getElementById("summary-text");
-        let summary = summaryEl ? summaryEl.innerText.replace(/\n\s*\n/g, "\n\n").trim() : "";
+function padRightByWidth(str, targetWidth) {
+  str = String(str || "");
+  const cur = displayWidth(str);
+  if (cur >= targetWidth) return str;
+  return str + " ".repeat(targetWidth - cur);
+}
 
-        content += "【一、核心概念摘要】\n";
-        content += "----------------------------------------\n";
-        content += (summary || "本單元的核心概念摘要尚未提供。") + "\n\n\n";
+// 文字換行（保留 prefix，例如「1) 」「• 」）
+function wrapText(text, width = TXT_CFG.width, prefix = "") {
+  text = String(text || "")
+    .replace(/\r\n/g, "\n")
+    .replace(/[ \t]+/g, " ")
+    .trim();
+  text = softenAbsoluteWording(text);
 
-        content += "【二、科學詞彙與定義】\n";
-        content += "----------------------------------------\n";
+  if (!text) return [];
 
-        let vList = currentResultData.keywords 
-            || (currentResultData.summary ? (currentResultData.summary.keywords || currentResultData.summary.vocab_list) : []) 
-            || [];
+  const lines = [];
+  let line = prefix;
+  let count = 0;
 
-        if (Array.isArray(vList) && vList.length > 0) {
-            vList.forEach((v, i) => {
-                const term = v.term || v;
-                const def  = v.def || "";
-                content += `${i + 1}. ${term}\n`;
-                content += `   說明：${def || "（尚未提供解釋）"}\n\n`;
-            });
-        } else {
-            content += "目前尚未整理出本單元的科學詞彙與定義。\n\n";
-        }
+  const pushLine = () => {
+    lines.push(line.trimEnd());
+    line = prefix;
+    count = 0;
+  };
 
-        content += "\n【三、科學動動腦】\n";
-        content += "----------------------------------------\n";
+  // 以字元為單位貪婪換行；遇到空白/標點時優先斷行（簡化版）
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    const add = 1; // 這裡用「字元數」控制（CJK 已很接近全形節奏）
 
-        let mList = currentResultData.myths 
-            || (currentResultData.summary ? currentResultData.summary.myths : []) 
-            || [];
-
-        if (Array.isArray(mList) && mList.length > 0) {
-            mList.forEach((m, i) => {
-                const stem = (m.question || m.myth || "")
-                    .replace(/^迷思[:：]\s*/, "")
-                    .replace(/^常見想法[:：]\s*/, "");
-                const ans  = m.correct || m.explanation || "";
-
-                content += `● 題目 ${i + 1}：${stem}\n`;
-                content += `   正確觀念：${ans || "（尚未提供說明）"}\n\n`;
-            });
-        } else {
-            content += "本單元目前尚未設定「科學動動腦」題目。\n";
-        }
-
-        try {
-            const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-            const url  = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = `${unitName || filters.unitName || "unit"}_重點整理.txt`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-        } catch (e) {
-            console.error(e);
-            alert("TXT 下載失敗，請再試一次或換一個瀏覽器。");
-        }
+    if ((line + ch).length > width) {
+      pushLine();
     }
+    line += ch;
+    count += add;
+  }
+  if (line.trim()) lines.push(line.trimEnd());
+
+  return lines;
+}
+
+// 每段不超過 4 行：超過就拆成「↳」續行段
+function clampBlockLines(lines, maxLines = TXT_CFG.maxLinesPerBlock) {
+  if (!Array.isArray(lines)) return [];
+  if (lines.length <= maxLines) return lines;
+
+  const out = [];
+  let chunk = [];
+  for (let i = 0; i < lines.length; i++) {
+    chunk.push(lines[i]);
+    if (chunk.length === maxLines) {
+      out.push(...chunk);
+      chunk = [];
+      // 下一段用縮排＋↳（視覺提示）
+      if (i < lines.length - 1) out.push(TXT_CFG.indent + "↳");
+    }
+  }
+  if (chunk.length) out.push(...chunk);
+  return out;
+}
+
+function pickFirstNonEmptyLines(text, n = 3) {
+  const arr = String(text || "")
+    .split("\n")
+    .map(s => s.trim())
+    .filter(s => s && !/^(【.*】|第\s*\d+\s*題|核心概念|摘要)/.test(s));
+  const uniq = [];
+  for (const s of arr) {
+    if (!uniq.includes(s)) uniq.push(s);
+    if (uniq.length >= n) break;
+  }
+  return uniq;
+}
+
+function pickKeySentences(summaryText, n = 3) {
+  // 先抓「行」，不夠再抓「句」
+  let picked = pickFirstNonEmptyLines(summaryText, n);
+  if (picked.length >= n) return picked.slice(0, n);
+
+  const sentences = String(summaryText || "")
+    .replace(/\r\n/g, "\n")
+    .split(/(?<=[。！？\?])\s*/g)
+    .map(s => s.trim())
+    .filter(s => s.length >= 6);
+
+  for (const s of sentences) {
+    if (!picked.includes(s)) picked.push(s);
+    if (picked.length >= n) break;
+  }
+  return picked.slice(0, n);
+}
+
+function findExampleSentence(contextText, term) {
+  term = String(term || "").trim();
+  if (!term) return "";
+  const ctx = String(contextText || "");
+  if (!ctx) return "";
+
+  // 用句號/換行切句，找含 term 的第一句
+  const parts = ctx.split(/[\n。！？\?]/).map(s => s.trim()).filter(Boolean);
+  for (const p of parts) {
+    if (p.includes(term) && p.length >= 8) {
+      // 控制長度：太長就截到 60 字左右
+      return p.length > 60 ? p.slice(0, 60) + "…" : p;
+    }
+  }
+  return "";
+}
+
+function buildBoxTableTwoCol(left, right) {
+  // 兩欄簡單框表（用寬度估算做 padding）
+  const colW = 22; // 你也可調 20~26 之間
+  const L = String(left || "").trim();
+  const R = String(right || "").trim();
+
+  const top = "┌" + "─".repeat(colW) + "┬" + "─".repeat(colW) + "┐";
+  const mid = "├" + "─".repeat(colW) + "┼" + "─".repeat(colW) + "┤";
+  const bot = "└" + "─".repeat(colW) + "┴" + "─".repeat(colW) + "┘";
+
+  const h  = "│" + padRightByWidth("常見迷思", colW) + "│" + padRightByWidth("正確觀念", colW) + "│";
+  const r1 = "│" + padRightByWidth(L, colW)       + "│" + padRightByWidth(R, colW)       + "│";
+
+  return [top, h, mid, r1, bot].join("\n");
+}
+
+function buildMillionDollarTXT() {
+  const stage     = filters.stage     || currentResultData?.stage     || "";
+  const publisher = filters.publisher || currentResultData?.publisher || "";
+  const grade     = filters.grade     || currentResultData?.grade     || "";
+  const semRaw    = filters.semester  || currentResultData?.semester  || "";
+  const unitName  =
+    (currentResultData?.raw_content?.unitName) ||
+    (currentResultData?.unitName) ||
+    (filters.unitName) ||
+    "未命名單元";
+
+  let semesterLabel = semRaw;
+  if (semRaw === "上") semesterLabel = "上學期";
+  else if (semRaw === "下") semesterLabel = "下學期";
+
+  // 來源文本：用於抓「例句」
+  const contextText =
+    currentResultData?.raw_content?.text ||
+    currentResultData?.raw_content?.content ||
+    "";
+
+  // 摘要：用畫面上的 innerText（已經是整理後的）
+  const summaryEl = document.getElementById("summary-text");
+  const summaryText = summaryEl ? summaryEl.innerText.replace(/\n\s*\n/g, "\n").trim() : "";
+
+  // 詞彙
+  let vList =
+    currentResultData?.keywords ||
+    currentResultData?.summary?.keywords ||
+    currentResultData?.summary?.vocab_list ||
+    currentResultData?.raw_content?.vocab_list ||
+    [];
+
+  if (!Array.isArray(vList)) vList = [];
+
+  // 迷思（科學動動腦）
+  let mList =
+    currentResultData?.myths ||
+    currentResultData?.summary?.myths ||
+    [];
+  if (!Array.isArray(mList)) mList = [];
+
+  // 1) 一頁快速總覽
+  const mustMem = pickKeySentences(summaryText, 3);
+
+  const firstMyth = mList[0] || {};
+  const mythStem = String(firstMyth.question || firstMyth.myth || firstMyth.misconception || "").trim()
+    .replace(/^迷思[:：]\s*/, "")
+    .replace(/^常見想法[:：]\s*/, "");
+  const mythCorrect = String(firstMyth.correct || firstMyth.explanation || "").trim();
+
+  // 2) 產生 TXT
+  let out = "";
+  out += `【單元重點精熟｜學生精讀版 TXT】\n`;
+  out += TXT_CFG.sep2 + "\n";
+  out += `單元：${unitName}\n`;
+  out += `來源：${stage || "-"}｜${publisher || "-"}｜${grade ? grade + "年級" : "-"}｜${semesterLabel || "-"}\n`;
+  out += TXT_CFG.sep2 + "\n\n";
+
+  out += `【一頁快速總覽】\n${TXT_CFG.sep}\n`;
+
+  out += `【必背 3 句】\n`;
+  for (let i = 0; i < 3; i++) {
+    const s = mustMem[i] || "（本單元摘要不足，請老師補一句最關鍵的話）";
+    const lines = clampBlockLines(wrapText(s, TXT_CFG.width, `${i + 1}) `));
+    out += lines.join("\n") + "\n";
+  }
+  out += "\n";
+
+  out += `【常見迷思 1 則】\n`;
+  const mythLine = mythStem || "（本單元尚未提供迷思題）";
+  const corrLine = mythCorrect || "（尚未提供正確觀念說明）";
+  out += clampBlockLines(wrapText(`• ${mythLine}`, TXT_CFG.width)).join("\n") + "\n";
+  out += clampBlockLines(wrapText(`${TXT_CFG.indent}→ 正解：${corrLine}`, TXT_CFG.width)).join("\n") + "\n\n";
+
+  out += `【一張對照】\n`;
+  out += buildBoxTableTwoCol(mythStem || "（無）", mythCorrect || "（無）") + "\n\n";
+
+  // 3) 核心概念（每段不超過 4 行）
+  out += `【核心概念】\n${TXT_CFG.sep}\n`;
+  if (summaryText) {
+    const bullets = pickFirstNonEmptyLines(summaryText, 8);
+    if (bullets.length) {
+      bullets.forEach((b, idx) => {
+        const lines = clampBlockLines(wrapText(b, TXT_CFG.width, `• `));
+        out += lines.join("\n") + "\n";
+      });
+    } else {
+      out += "（本單元的核心概念摘要尚未提供）\n";
+    }
+  } else {
+    out += "（本單元的核心概念摘要尚未提供）\n";
+  }
+  out += "\n";
+
+  // 4) 必學詞彙（每詞 1 行定義 + 1 行例句）
+  out += `【必學詞彙（每詞 2 行）】\n${TXT_CFG.sep}\n`;
+  const vocabTake = vList.slice(0, 12); // 只收必學詞（上限可調）
+  if (vocabTake.length) {
+    vocabTake.forEach((v) => {
+      const term = (typeof v === "object") ? (v.term || v.word || "") : String(v || "");
+      const def  = (typeof v === "object") ? (v.def  || v.definition || "") : "";
+      if (!term.trim()) return;
+
+      const ex = findExampleSentence(contextText, term) || findExampleSentence(summaryText, term);
+
+      out += `【${term.trim()}】\n`;
+      out += clampBlockLines(wrapText(`定義：${def || "（尚未提供定義）"}`, TXT_CFG.width, TXT_CFG.indent)).join("\n") + "\n";
+      out += clampBlockLines(wrapText(`例句：${ex || "（課文未擷取到含此詞的句子，請老師補一例）"}`, TXT_CFG.width, TXT_CFG.indent)).join("\n") + "\n";
+      out += "\n";
+    });
+  } else {
+    out += "（本單元目前無詞彙資料）\n\n";
+  }
+
+  // 5) 科學動動腦（精選 3 題，便於「3 分鐘複習流程」）
+  out += `【科學動動腦（精選 3 題）】\n${TXT_CFG.sep}\n`;
+  const mythsTake = mList.slice(0, 3);
+  if (mythsTake.length) {
+    mythsTake.forEach((m, idx) => {
+      const q = String(m.question || m.myth || m.misconception || "").trim()
+        .replace(/^迷思[:：]\s*/, "")
+        .replace(/^常見想法[:：]\s*/, "");
+      const a = String(m.correct || m.explanation || "").trim();
+
+      out += `【Q${idx + 1}】\n`;
+      out += clampBlockLines(wrapText(q || "（題幹缺漏）", TXT_CFG.width, TXT_CFG.indent)).join("\n") + "\n";
+      out += `【正解】\n`;
+      out += clampBlockLines(wrapText(a || "（尚未提供說明）", TXT_CFG.width, TXT_CFG.indent)).join("\n") + "\n\n";
+    });
+  } else {
+    out += "（本單元目前尚未設定「科學動動腦」題目）\n\n";
+  }
+
+  // 6) 3 分鐘複習流程（固定模板）
+  out += `【3 分鐘複習流程】\n${TXT_CFG.sep}\n`;
+  out += `1) 30 秒：讀「一頁快速總覽」的【必背 3 句】。\n`;
+  out += `2) 60 秒：做【科學動動腦】Q1～Q3。\n`;
+  out += `3) 60 秒：檢查錯題 → 回到【核心概念】相近段落再讀一次。\n`;
+  out += `4) 30 秒：再看一次【一張對照】（迷思 vs 正解），確保不再混淆。\n`;
+
+  return out.trim() + "\n";
+}
+
+  function downloadTXT() {
+  if (!currentResultData) {
+    alert("請先生成內容後再下載！");
+    return;
+  }
+
+  try {
+    const unitName =
+      (currentResultData?.raw_content?.unitName) ||
+      (currentResultData?.unitName) ||
+      (filters.unitName) ||
+      "unit";
+
+    const filename = sanitizeFilename(`${unitName}_重點整理_學生精讀版.txt`);
+
+    // 用「百萬美元版模板」重新排版
+    const content = buildMillionDollarTXT();
+
+    // 為了讓 Windows 記事本不亂碼：加 UTF-8 BOM
+    const withBOM = "\ufeff" + content;
+
+    const blob = new Blob([withBOM], { type: "text/plain;charset=utf-8" });
+    const url  = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    console.error(e);
+    alert("TXT 下載失敗，請再試一次或換一個瀏覽器。");
+  }
+}
+
 
     function toggleChat() {
         const win = document.getElementById("xiaoke-window");
