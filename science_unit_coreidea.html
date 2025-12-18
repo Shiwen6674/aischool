@@ -1645,6 +1645,38 @@
             console.log("requestQuizAISummary 呼叫失敗（前端層級）：", e);
         }
     }
+// ====== [QUIZ 必補：下一題按鈕處理] ======
+function handleQuizMainButton() {
+  // 尚未作答，不允許下一題
+  if (!quizState.hasAnswered) return;
+
+  const total = quizState.questions.length;
+  const idx = quizState.currentIndex;
+
+  // 最後一題：顯示結果
+  if (idx >= total - 1) {
+    renderQuizResult();
+    return;
+  }
+
+  // 下一題
+  quizState.currentIndex += 1;
+  quizState.hasAnswered = false;
+  renderQuizQuestion();
+}
+
+// ====== [QUIZ 建議補：避免 Console 噴錯（可先空殼）] ======
+function submitQuizLog(q, selectedIndex, correctIndex, isCorrect) {
+  // 先留空：之後要送到 GAS 再補 fetch
+}
+
+function requestQuizAISummary(score, concepts, conceptScores, correctCount, totalQ) {
+  // 先留空：之後要呼叫 GAS 產生診斷再補 fetch
+  const scoreLabelEl = document.getElementById("quiz-score-label");
+  const detailEl = document.getElementById("quiz-result-detail");
+  if (scoreLabelEl) scoreLabelEl.innerText = "作答分析完成";
+  if (detailEl) detailEl.innerText = "（尚未啟用 AI 診斷摘要功能）";
+}
 
     window.addEventListener('resize', syncVocabHeight);  
     </script>
