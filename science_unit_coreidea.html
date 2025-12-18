@@ -127,6 +127,104 @@
         .no-print { display: block; }
         @media print { .no-print { display: none !important; } }
 
+        /* Loading 彩虹科技光條 + 文字亮度提升 */
+.loading-screen{
+  position: relative;
+  overflow: hidden;
+}
+
+/* 兩條彩虹光條跑馬燈 */
+.loading-screen::before,
+.loading-screen::after{
+  content:"";
+  position:absolute;
+  pointer-events:none;
+  filter: blur(10px);
+  opacity:0.75;
+  mix-blend-mode: screen;
+}
+
+/* 光條 1 */
+.loading-screen::before{
+  width: 55%;
+  height: 14px;
+  top: 38%;
+  left: -70%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 120, 180, 0.55),
+    rgba(120, 210, 255, 0.60),
+    rgba(170, 255, 210, 0.55),
+    rgba(255, 240, 150, 0.50),
+    rgba(200, 160, 255, 0.55),
+    transparent
+  );
+  transform: rotate(-12deg);
+  animation: rainbowSweep1 2.6s linear infinite;
+}
+
+/* 光條 2 */
+.loading-screen::after{
+  width: 45%;
+  height: 10px;
+  top: 58%;
+  left: -60%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(120, 210, 255, 0.55),
+    rgba(255, 170, 220, 0.55),
+    rgba(180, 255, 230, 0.50),
+    rgba(255, 240, 170, 0.45),
+    transparent
+  );
+  transform: rotate(-10deg);
+  animation: rainbowSweep2 3.2s linear infinite;
+  animation-delay: 0.55s;
+}
+
+@keyframes rainbowSweep1{
+  0%   { transform: translateX(-20%) rotate(-12deg); opacity: 0.15; }
+  15%  { opacity: 0.70; }
+  50%  { opacity: 0.85; }
+  100% { transform: translateX(260%) rotate(-12deg); opacity: 0.15; }
+}
+@keyframes rainbowSweep2{
+  0%   { transform: translateX(-20%) rotate(-10deg); opacity: 0.10; }
+  20%  { opacity: 0.55; }
+  55%  { opacity: 0.80; }
+  100% { transform: translateX(250%) rotate(-10deg); opacity: 0.10; }
+}
+
+/* 文字亮一點 + 柔光 */
+.loading-text{
+  position: relative;
+  z-index: 2;
+  color: rgba(255,255,255,0.92);
+  letter-spacing: 0.08em;
+  text-shadow:
+    0 0 10px rgba(120, 210, 255, 0.55),
+    0 0 22px rgba(190, 140, 255, 0.35),
+    0 0 40px rgba(255, 180, 220, 0.22);
+  animation: textGlow 2.4s ease-in-out infinite;
+}
+
+@keyframes textGlow{
+  0%,100% { opacity: 0.88; transform: translateY(0); }
+  50%     { opacity: 1.00; transform: translateY(-1px); }
+}
+
+/* 無障礙：使用者若偏好減少動態，就停動畫 */
+@media (prefers-reduced-motion: reduce){
+  .loading-screen::before,
+  .loading-screen::after,
+  .loading-text{
+    animation: none !important;
+  }
+}
+
+
         /* =========================================
            5. 核心概念排版 (卡片式)
            ========================================= */
@@ -384,10 +482,11 @@
             </div>
         </div>
 
-        <div id="loading-view" class="hidden flex-col items-center justify-center py-20">
-            <div class="loader mb-4"></div>
-            <h3 class="text-xl font-bold text-slate-700">AI 單元重點整理中...</h3>
-        </div>
+        <div id="loading-view" class="hidden flex-col items-center justify-center py-20 loading-screen">
+  <div class="loader mb-4"></div>
+  <h3 class="text-xl font-bold loading-text">AI 單元重點整理中...</h3>
+</div>
+
 
         <div id="content-view" class="hidden animate-fade-in-up">
             <div class="mb-6 flex flex-col md:flex-row justify-between md:items-end gap-4 relative z-20">
