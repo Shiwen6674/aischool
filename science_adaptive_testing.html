@@ -550,26 +550,39 @@
     }
     function hideLoading(){ document.getElementById("loading-overlay").style.display = "none"; }
 
-    async function api(payload){
-        if(!payload.content_db_id) payload.content_db_id = CONTENT_DB_ID;
-        if(!payload.sheet_name) payload.sheet_name = CONTENT_SHEET_NAME;
-        let res, raw;
-        try{
-            res = await fetch(GAS_API_URL, {
-                method: "POST", redirect: "follow",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify(payload)
-            });
-        }catch(err){ throw new Error("Network error: " + err.message); }
-        try{ raw = await res.text(); }catch(_){ raw = ""; }
-        let json;
-        try{ json = raw ? JSON.parse(raw) : {}; }catch(_){ throw new Error("Non-JSON response"); }
-        if (!json || !json.ok || json.status === "error") {
-            console.error("API Error Debug:", json);
-            throw new Error(json.message || json.error || "API returned error.");
-        }
-        return json;
-    }
+   async function api(payload){
+  if(!payload.content_db_id) payload.content_db_id = CONTENT_DB_ID;
+
+  // 只有「讀教材」才預設 Sheet1，其他 action 不要硬塞 Sheet1
+  const needSheet1 = new Set(["get_metadata","getMetadata","action_get_metadata"]);
+  if(!payload.sheet_name && needSheet1.has(payload.action)){
+    payload.sheet_name = CONTENT_SHEET_NAME; // Sheet1
+  }
+
+  let res, raw;
+  try{
+    res = await fetch(GAS_API_URL, {
+      method: "POST",
+      redirect: "follow",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+  }catch(err){
+    throw new Error("Network error: " + err.message);
+  }
+
+  raw = await res.text();
+  let json;
+  try{ json = raw ? JSON.parse(raw) : {}; }
+  catch(_){ throw new Error("Non-JSON response"); }
+
+  if (!json || !json.ok || json.status === "error") {
+    console.error("API Error Debug:", json);
+    throw new Error(json.message || json.error || "API returned error.");
+  }
+  return json;
+}
+
 function toggleLoad(){ hideLoading(); }
 
 function _parseCSV(text){
