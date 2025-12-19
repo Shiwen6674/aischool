@@ -461,25 +461,80 @@
     const MATERIALS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRbgkNiMflfeLQd3KN8F4yjjIr6G2flnCAy-nUPMiC7_xDfdg_0hJ2Qzbsr92u8htlPLFR8GwwQPK_g/pub?gid=0&single=true&output=csv";
 
     const i18n = {
-        "zh-TW": {
-            page_title: "AI 適性診斷中心",
-            back_home: "返回 AI Science",
-            step1_title: "單元配置",
-            step2_title: "試題作答",
-            step3_title: "AI 診斷報告",
-            btn_reload: "重整教材",
-            label_q_count: "測驗題數",
-            label_q_unit: "題",
-            btn_start_ai: "AI 自動命題",
-            hint_select: "請選擇一個選項",
-            btn_submit: "送出",
-            btn_next: "下一題",
-            btn_download: "下載報告書",
-            btn_restart: "重測",
-            label_accuracy: "正確率",
-            label_score: "總分"
-        }
+      "zh-TW": {
+        page_title: "AI 適性診斷中心",
+        back_home: "返回 AI Science",
+        step1_title: "單元配置",
+        step2_title: "試題作答",
+        step3_title: "AI 診斷報告",
+        btn_reload: "重整教材",
+        label_q_count: "測驗題數",
+        label_q_unit: "題",
+        btn_start_ai: "AI 自動命題",
+        hint_select: "請選擇一個選項",
+        btn_submit: "送出",
+        btn_next: "下一題",
+        btn_download: "下載報告書",
+        btn_restart: "重測",
+        label_accuracy: "正確率",
+        label_score: "總分"
+      },
+      "en": {
+        page_title: "AI Adaptive Diagnostic Center",
+        back_home: "Back to AI Science",
+        step1_title: "Unit Setup",
+        step2_title: "Answer Questions",
+        step3_title: "AI Diagnostic Report",
+        btn_reload: "Reload Materials",
+        label_q_count: "Number of Questions",
+        label_q_unit: "Q",
+        btn_start_ai: "Generate by AI",
+        hint_select: "Please select an option",
+        btn_submit: "Submit",
+        btn_next: "Next",
+        btn_download: "Download Report",
+        btn_restart: "Restart",
+        label_accuracy: "Accuracy",
+        label_score: "Score"
+      },
+      "ja": {
+        page_title: "AI 適応型診断センター",
+        back_home: "AI Science に戻る",
+        step1_title: "単元設定",
+        step2_title: "解答",
+        step3_title: "AI 診断レポート",
+        btn_reload: "教材を再読み込み",
+        label_q_count: "問題数",
+        label_q_unit: "問",
+        btn_start_ai: "AI 自動作問",
+        hint_select: "選択肢を1つ選んでください",
+        btn_submit: "送信",
+        btn_next: "次へ",
+        btn_download: "レポートを保存",
+        btn_restart: "やり直し",
+        label_accuracy: "正答率",
+        label_score: "得点"
+      },
+      "zh-CN": {
+        page_title: "AI 适性诊断中心",
+        back_home: "返回 AI Science",
+        step1_title: "单元配置",
+        step2_title: "试题作答",
+        step3_title: "AI 诊断报告",
+        btn_reload: "重载教材",
+        label_q_count: "测验题数",
+        label_q_unit: "题",
+        btn_start_ai: "AI 自动命题",
+        hint_select: "请选择一个选项",
+        btn_submit: "提交",
+        btn_next: "下一题",
+        btn_download: "下载报告书",
+        btn_restart: "重测",
+        label_accuracy: "正确率",
+        label_score: "总分"
+      }
     };
+
 
     /* ===========================
        1) GLOBAL STATE
@@ -506,7 +561,7 @@
 
     
     async function ensureStudentId(){
-        const user = window.currentUser || JSON.parse(sessionStorage.getItem("currentUser") || "{}");
+        const user = window.currentUser || __loadCurrentUser();
         let sid = user.StudentID || user.student_id || user.id || "";
         if(sid) {
             CAT.student_id = sid;
@@ -1147,6 +1202,7 @@ function getOptionTextFromWrongItem(w, key){
     document.getElementById("resScore100").textContent = score100;
 
     // 錯題列表 (Web & PDF)
+    // 錯題列表 (Web & PDF)
     const wList = document.getElementById("resWrongList");
     const pdfWList = document.getElementById("pdf-wrong-container");
     wList.innerHTML = "";
@@ -1156,38 +1212,65 @@ function getOptionTextFromWrongItem(w, key){
       wList.innerHTML = "<div class='text-emerald-400 text-center font-bold text-xl py-4'>恭喜！全對，沒有錯題。</div>";
       pdfWList.innerHTML = "<div style='padding:30px; text-align:center; color:#10b981; font-weight:bold; border:1px dashed #cbd5e1; border-radius:8px;'>表現優異，本單元無錯題！</div>";
     } else {
-json.wrong_items.forEach((w, i) => {
-  const sKey = w.student_answer;   // 例如 "A"
-  const cKey = w.correct_answer;   // 例如 "B"
-  const sText = getOptionTextFromWrongItem(w, sKey);
-  const cText = getOptionTextFromWrongItem(w, cKey);
+      json.wrong_items.forEach((w, i) => {
+        const sKey = w.student_answer;   // 例如 "A"
+        const cKey = w.correct_answer;   // 例如 "B"
+        const sText = getOptionTextFromWrongItem(w, sKey);
+        const cText = getOptionTextFromWrongItem(w, cKey);
 
-  const sLine = sText ? sText : "（未取得該選項內容）";
-  const cLine = cText ? cText : "（未取得該選項內容）";
+        const sLine = sText ? sText : "（未取得該選項內容）";
+        const cLine = cText ? cText : "（未取得該選項內容）";
 
-  // ===== Web =====
-  wList.insertAdjacentHTML("beforeend", `
-    <div class="bg-slate-900/50 p-5 rounded-xl border border-red-500/20">
-      <div class="font-bold text-slate-200 mb-2 text-lg">Q${i + 1}：${w.stem}</div>
+        // ===== Web =====
+        wList.insertAdjacentHTML("beforeend", `
+          <div class="bg-slate-900/50 p-5 rounded-xl border border-red-500/20">
+            <div class="font-bold text-slate-200 mb-2 text-lg">Q${i + 1}：${w.stem}</div>
 
-      <div class="flex gap-4 text-sm mb-3">
-        <span class="text-red-400 font-bold bg-red-900/30 px-2 py-1 rounded">誤選: ${sKey}</span>
-        <span class="text-emerald-400 font-bold bg-emerald-900/30 px-2 py-1 rounded">正解: ${cKey}</span>
-      </div>
+            <div class="flex gap-4 text-sm mb-3">
+              <span class="text-red-400 font-bold bg-red-900/30 px-2 py-1 rounded">誤選: ${sKey}</span>
+              <span class="text-emerald-400 font-bold bg-emerald-900/30 px-2 py-1 rounded">正解: ${cKey}</span>
+            </div>
 
-      <!-- 新增：把誤選A/正解B 的「選項內容」寫出來（各一行） -->
-      <div class="text-sm text-slate-200 bg-slate-800/60 border border-slate-700 rounded-lg p-3 leading-relaxed mb-3">
-        <div><span class="font-black text-red-300">誤選 ${sKey}：</span>${sLine}</div>
-        <div><span class="font-black text-emerald-300">正解 ${cKey}：</span>${cLine}</div>
-      </div>
+            <div class="text-sm text-slate-200 bg-slate-800/60 border border-slate-700 rounded-lg p-3 leading-relaxed mb-3">
+              <div><span class="font-black text-red-300">誤選 ${sKey}：</span>${sLine}</div>
+              <div><span class="font-black text-emerald-300">正解 ${cKey}：</span>${cLine}</div>
+            </div>
 
-      <div class="text-sm text-slate-300 bg-slate-800 p-4 rounded-lg border border-slate-700 leading-relaxed text-justify">
-        <strong class="text-blue-400 block mb-1">診斷解析：</strong>
-        ${w.remedial_text}
-      </div>
-    </div>
-  `);
-}
+            <div class="text-sm text-slate-300 bg-slate-800 p-4 rounded-lg border border-slate-700 leading-relaxed text-justify">
+              <strong class="text-blue-400 block mb-1">診斷解析：</strong>
+              ${w.remedial_text}
+            </div>
+          </div>
+        `);
+
+        // ===== PDF =====
+        pdfWList.insertAdjacentHTML("beforeend", `
+          <div class="wrong-item">
+            <div class="wi-header">
+              <div class="wi-index">${i + 1}</div>
+              <div class="wi-stem">Q${i + 1}：${String(w.stem || "").substring(0, 50)}${String(w.stem || "").length > 50 ? "..." : ""}</div>
+            </div>
+
+            <div class="wi-body">
+              <div class="wi-ans-row">
+                <span class="ans-box ans-student">誤選：${sKey}</span>
+                <span class="ans-box ans-correct">正解：${cKey}</span>
+              </div>
+
+              <div style="margin:8px 0 10px 0; font-size:12px; line-height:1.6; color:#334155;">
+                <div><span style="font-weight:900; color:#ef4444;">誤選 ${sKey}：</span>${sLine}</div>
+                <div><span style="font-weight:900; color:#16a34a;">正解 ${cKey}：</span>${cLine}</div>
+              </div>
+
+              <div class="wi-footer">
+                <strong>弱點與解析：</strong>${w.remedial_text}
+              </div>
+            </div>
+          </div>
+        `);
+      });
+    }
+
   // ===== PDF =====
   pdfWList.insertAdjacentHTML("beforeend", `
     <div class="wrong-item">
