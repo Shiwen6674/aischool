@@ -594,8 +594,6 @@ function changeLanguage() {
   });
 }
 
-    }
-
     const UI = {
         toast(title, msg, type="info"){
             const t = document.getElementById("toast");
@@ -922,75 +920,74 @@ function _parseCSV(text){
         }
     }
 
-    function renderQuestion(item) {
-        CAT.current = item;
-      if(item && item.item_id) CAT.itemMap[item.item_id] = item; // ✅記住題目（含 options）
+function renderQuestion(item) {
+  CAT.current = item;
+  if(item && item.item_id) CAT.itemMap[item.item_id] = item; // ✅記住題目（含 options）
+  CAT.selected = "";
 
-        CAT.selected = "";
-// 題號顯示：Q1、Q2...
-const qNo = CAT.step + 1; // step 是「已作答題數」，下一題就是 step+1
-const badge = document.getElementById("qNoBadge");
-if (badge) badge.textContent = `Q${qNo}`;
+  // ✅只保留一次 qNo 宣告
+  const qNo = Math.min(CAT.step + 1, CAT.n);
+  const badge = document.getElementById("qNoBadge");
+  if (badge) badge.textContent = `Q${qNo}`;
 
-        document.getElementById("qWrap").classList.remove("hidden");
-        
-        let displayStem = item.stem;
-        let stimulusHtml = "";
+  document.getElementById("qWrap").classList.remove("hidden");
 
-        // 1. 檢查並處理 [STIMULUS_JSON]
-        if (displayStem.includes("[STIMULUS_JSON]")) {
-            const parts = displayStem.split("[STIMULUS_JSON]");
-            const textPart = parts[0];
-            const jsonPart = parts[1];
+  let displayStem = item.stem;
+  let stimulusHtml = "";
 
-            try {
-                const stimData = JSON.parse(jsonPart);
-                stimulusHtml = renderStimulus(stimData);
-                
-                if (textPart.includes("【題目】")) {
-                    displayStem = textPart.split("【題目】")[1].trim();
-                } else {
-                    displayStem = textPart.trim();
-                }
-            } catch (e) {
-                console.error("JSON Parse Error", e);
-                displayStem = textPart; 
-            }
-        }
+  // 1. 檢查並處理 [STIMULUS_JSON]
+  if (displayStem.includes("[STIMULUS_JSON]")) {
+    const parts = displayStem.split("[STIMULUS_JSON]");
+    const textPart = parts[0];
+    const jsonPart = parts[1];
 
-const qNo = Math.min(CAT.step + 1, CAT.n); // ✅Q1/Q2...
-const finalHtml = `
-    <div class="text-orange-300 font-black mb-2">Q${qNo}</div>
+    try {
+      const stimData = JSON.parse(jsonPart);
+      stimulusHtml = renderStimulus(stimData);
+
+      if (textPart.includes("【題目】")) {
+        displayStem = textPart.split("【題目】")[1].trim();
+      } else {
+        displayStem = textPart.trim();
+      }
+    } catch (e) {
+      console.error("JSON Parse Error", e);
+      displayStem = textPart;
+    }
+  }
+
+  // ✅不要再宣告第二個 qNo，直接用上面的 qNo
+  const finalHtml = `
     ${stimulusHtml}
     <div class="mt-2 leading-relaxed text-lg">${displayStem.replace(/\n/g, "<br>")}</div>
-`;
+  `;
 
+  document.getElementById("qStem").innerHTML = finalHtml;
 
-        document.getElementById("qStem").innerHTML = finalHtml;
+  const optWrap = document.getElementById("optWrap");
+  optWrap.innerHTML = "";
 
-        const optWrap = document.getElementById("optWrap");
-        optWrap.innerHTML = "";
+  ["A","B","C","D"].forEach(key => {
+    const btn = document.createElement("button");
+    btn.className = "option-btn text-left w-full px-5 py-4 rounded-xl flex items-center gap-4 group";
+    btn.onclick = () => selectOption(key, btn);
+    btn.innerHTML = `
+      <div class="opt-badge w-8 h-8 rounded-lg bg-white/10 text-slate-300 font-bold flex items-center justify-center shrink-0">${key}</div>
+      <div class="flex-1 text-slate-100 font-bold text-lg leading-relaxed">${(item.options && item.options[key]) ? item.options[key] : ""}</div>
+    `;
+    optWrap.appendChild(btn);
+  });
 
-        ["A","B","C","D"].forEach(key => {
-            const btn = document.createElement("button");
-            btn.className = "option-btn text-left w-full px-5 py-4 rounded-xl flex items-center gap-4 group";
-            btn.onclick = () => selectOption(key, btn);
-            btn.innerHTML = `
-                <div class="opt-badge w-8 h-8 rounded-lg bg-white/10 text-slate-300 font-bold flex items-center justify-center shrink-0">${key}</div>
-                <div class="flex-1 text-slate-100 font-bold text-lg leading-relaxed">${(item.options && item.options[key]) ? item.options[key] : ""}</div>
-            `;
-            optWrap.appendChild(btn);
-        });
+  document.getElementById("btnSubmit").disabled = true;
 
-        document.getElementById("btnSubmit").disabled = true;
-        
-        const btnNext = document.getElementById("btnNext");
-        btnNext.disabled = true;
-        btnNext.classList.add("opacity-50", "bg-slate-700", "text-slate-500");
-        btnNext.classList.remove("bg-emerald-500", "hover:bg-emerald-400", "text-white", "animate-bounce", "shadow-lg", "shadow-emerald-500/50");
+  const btnNext = document.getElementById("btnNext");
+  btnNext.disabled = true;
+  btnNext.classList.add("opacity-50", "bg-slate-700", "text-slate-500");
+  btnNext.classList.remove("bg-emerald-500", "hover:bg-emerald-400", "text-white", "animate-bounce", "shadow-lg", "shadow-emerald-500/50");
 
-        document.getElementById("hint").innerHTML = '<i class="fa-solid fa-circle-info text-blue-400"></i> 請選擇一個選項';
-    }
+  document.getElementById("hint").innerHTML = '<i class="fa-solid fa-circle-info text-blue-400"></i> 請選擇一個選項';
+}
+
 
     // ★ 之前漏掉的函式補在這裡！
     function renderStimulus(data) {
@@ -1426,18 +1423,27 @@ function buildPdfFileName(){
 }
 
       
-    function downloadPDF() {
-        const el = document.getElementById("pdf-report-content");
-        el.style.display = "block";
-        const opt = {
-            margin: 0,
-filename: buildPdfFileName(),
-...
-html2pdf().set(opt).from(el).save()
-  .catch(()=>{})
-  .finally(() => { el.style.display = "none"; });
+function downloadPDF() {
+  const el = document.getElementById("pdf-report-content");
+  el.style.display = "block";
 
-    }
+  const opt = {
+    margin: 0,
+    filename: buildPdfFileName(),
+    image: { type: "jpeg", quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, allowTaint: true, backgroundColor: "#ffffff" },
+    jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+    pagebreak: { mode: ["css"] }
+  };
+
+  html2pdf().set(opt).from(el).save()
+    .catch((err) => {
+      console.error(err);
+      UI.toast("錯誤", "PDF 匯出失敗: " + (err && err.message ? err.message : err), "bad");
+    })
+    .finally(() => { el.style.display = "none"; });
+}
+
 
     /* INIT */
     document.addEventListener("DOMContentLoaded", () => {
