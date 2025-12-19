@@ -585,38 +585,24 @@
     }
 
     // 3. 非同步確保 ID (用於 startTest)
-    async function ensureStudentId() {
-        const user = __loadCurrentUser();
-        const sid = user.id;
-
-        if (!sid || String(sid).startsWith("guest_")) {
-            console.log("未偵測到正式帳號，使用訪客 ID:", sid);
-        } else {
-            console.log("已偵測到正式帳號 (Email):", sid);
-        }
-        
-        CAT.student_id = sid;
-        return sid;
-    }
-
-    
 async function ensureStudentId(){
-  const user = window.currentUser || __loadCurrentUser(); // ✅統一走安全讀取
-  let sid = user.StudentID || user.student_id || user.studentId || user.id || "";
+  const user = window.currentUser || __loadCurrentUser();
+
+  // 以 Email/Account/ID 為唯一識別（符合你後端用 Email 做鍵的設計）
+  let sid = user.email || user.account || user.id || user.StudentID || user.student_id || user.studentId || "";
   sid = String(sid || "").trim();
 
-  if(sid){
+  if (sid) {
     CAT.student_id = sid;
-    console.log("已偵測到正式學號:", sid);
+    console.log("已偵測到使用者 ID:", sid);
     return sid;
   }
 
   sid = "guest_" + Date.now();
   CAT.student_id = sid;
-  console.log("未登入，使用臨時訪客 ID:", sid);
+  console.log("未登入，使用訪客 ID:", sid);
   return sid;
 }
-
 
 function changeLanguage() {
   const sel = document.getElementById("language-selector");
@@ -676,12 +662,19 @@ function changeLanguage() {
     function hideLoading(){ document.getElementById("loading-overlay").style.display = "none"; }
 
 async function api(payload){
-  if(!payload.content_db_id) payload.content_db_id = CONTENT_DB_ID;
+  payload = payload || {};
 
-  // 只有「讀教材」才預設 Sheet1，其他 action 不要硬塞 Sheet1
+  // === 1) 補齊常見後端參數別名（很多 GAS 後端不是用 content_db_id 這個鍵）===
+  const dbid = payload.content_db_id || CONTENT_DB_ID;
+  payload.content_db_id = dbid;
+  payload.spreadsheet_id = payload.spreadsheet_id || dbid;
+  payload.db_id = payload.db_id || dbid;
+
+  // 只有「讀教材」才預設 Sheet1
   const needSheet1 = new Set(["get_metadata","getMetadata","action_get_metadata"]);
   if(!payload.sheet_name && needSheet1.has(payload.action)){
-    payload.sheet_name = CONTENT_SHEET_NAME; // Sheet1
+    payload.sheet_name = CONTENT_SHEET_NAME;  // "Sheet1"
+    payload.sheetName  = CONTENT_SHEET_NAME;  // 常見別名
   }
 
   let res, raw;
@@ -697,47 +690,42 @@ async function api(payload){
   }
 
   raw = await res.text();
-
-  // 容錯：移除常見 XSSI 前綴（若沒有也不影響）
   const rawTrim = String(raw || "").trim().replace(/^\)\]\}',?\s*/,"");
+
+  // === 2) HTTP 狀態先判斷（很多時候會是 302/403/500）===
+  if(!res.ok){
+    const head = rawTrim.slice(0, 200).replace(/\s+/g, " ");
+    throw new Error(`GAS HTTP ${res.status}. Body(head): ${head}`);
+  }
+
+  // === 3) 明確偵測「其實拿到 HTML」(登入頁/錯誤頁)===
+  if(/^<!doctype html/i.test(rawTrim) || /<html/i.test(rawTrim)){
+    const head = rawTrim.slice(0, 200).replace(/\s+/g, " ");
+    throw new Error(`GAS returned HTML (not JSON). Check deployment/permission. Body(head): ${head}`);
+  }
 
   let json = {};
   try{
     json = rawTrim ? JSON.parse(rawTrim) : {};
   }catch(e){
-    console.error("API Non-JSON Raw:", raw);
-    throw new Error("Non-JSON response");
+    const head = rawTrim.slice(0, 200).replace(/\s+/g, " ");
+    throw new Error("Non-JSON response. Body(head): " + head);
   }
 
-  // ✅ 兼容不同後端格式：ok/success/status
   const status = String(json.status || "").toLowerCase();
-  const okFlag =
-    (json.ok === true) ||
-    (json.success === true) ||
-    (status === "ok") ||
-    (status === "success");
-
   const isError =
     (json.ok === false) ||
     (json.success === false) ||
-    (status === "error") ||
-    (status === "fail") ||
-    (status === "failed") ||
+    (status === "error" || status === "fail" || status === "failed") ||
     (!!json.error);
 
-  if (isError) {
-    console.error("API Error Debug (parsed):", json);
-    console.error("API Raw:", rawTrim);
+  if(isError){
     throw new Error(json.message || json.error || `API returned error (status=${json.status || "?"}).`);
-  }
-
-  // 沒有 ok/success 旗標，但也不是 error：視為成功（避免你現在卡死）
-  if (!okFlag) {
-    console.warn("API response has no ok/success flag; treat as success:", json);
   }
 
   return json;
 }
+
 
 
 function toggleLoad(){ hideLoading(); }
@@ -1311,73 +1299,65 @@ async function finishTest() {
     const wrongItems = Array.isArray(json.wrong_items) ? json.wrong_items : [];
 
     if (!wrongItems.length) {
-      wList.innerHTML = "<div class='text-emerald-400 text-center font-bold text-xl py-4'>恭喜！全對，沒有錯題。</div>";
-      pdfWList.innerHTML = "<div style='padding:30px; text-align:center; color:#10b981; font-weight:bold; border:1px dashed #cbd5e1; border-radius:8px;'>表現優異，本單元無錯題！</div>";
-    } else {
-     if (!wrongItems.length) {
-      wList.innerHTML = "<div class='text-emerald-400 text-center font-bold text-xl py-4'>恭喜！全對，沒有錯題。</div>";
-      pdfWList.innerHTML = "<div style='padding:30px; text-align:center; color:#10b981; font-weight:bold; border:1px dashed #cbd5e1; border-radius:8px;'>表現優異，本單元無錯題！</div>";
-    } else {
-      wrongItems.forEach((w, i) => {
-        // ★ 修改 1: 使用後端回傳的 w.index 作為題號 (若無則 fallback 到 i+1)
-        const qNum = w.index || (i + 1);
+  wList.innerHTML = "<div class='text-emerald-400 text-center font-bold text-xl py-4'>恭喜！全對，沒有錯題。</div>";
+  pdfWList.innerHTML = "<div style='padding:30px; text-align:center; color:#10b981; font-weight:bold; border:1px dashed #cbd5e1; border-radius:8px;'>表現優異，本單元無錯題！</div>";
+} else {
+  wrongItems.forEach((w, i) => {
+    const qNum = w.index || (i + 1);
 
-        const sKey = String(w.student_answer || w.response_option || "").trim() || "？";
-        const cKey = String(w.correct_answer || w.correct_key || "").trim() || "？";
+    const sKey = String(w.student_answer || w.response_option || "").trim() || "？";
+    const cKey = String(w.correct_answer || w.correct_key || "").trim() || "？";
 
-        const sText = getOptionTextFromWrongItem(w, sKey);
-        const cText = getOptionTextFromWrongItem(w, cKey);
+    const sText = getOptionTextFromWrongItem(w, sKey);
+    const cText = getOptionTextFromWrongItem(w, cKey);
 
-        const sLine = sText ? sText : "（未取得該選項內容）";
-        const cLine = cText ? cText : "（未取得該選項內容）";
+    const sLine = sText ? sText : "（未取得該選項內容）";
+    const cLine = cText ? cText : "（未取得該選項內容）";
 
-        // ★ 修改 2: 呼叫 processStem 來處理 [STIMULUS_JSON] 表格與題幹
-        const stemHtml = processStem(w.stem);
+    const stemHtml = processStem(w.stem);
 
-        // ---- Web 畫面 ----
-        wList.insertAdjacentHTML("beforeend", `
-          <div class="bg-slate-900/50 p-5 rounded-xl border border-red-500/20">
-            <div class="flex items-start gap-3 mb-3">
-               <span class="inline-flex items-center justify-center bg-red-500/20 text-red-400 font-bold px-3 py-1 rounded-lg text-sm shrink-0">
-                 Q${qNum}
-               </span>
-            </div>
-            <div class="mb-4 text-white text-lg">${stemHtml}</div>
+    wList.insertAdjacentHTML("beforeend", `
+      <div class="bg-slate-900/50 p-5 rounded-xl border border-red-500/20">
+        <div class="flex items-start gap-3 mb-3">
+           <span class="inline-flex items-center justify-center bg-red-500/20 text-red-400 font-bold px-3 py-1 rounded-lg text-sm shrink-0">
+             Q${qNum}
+           </span>
+        </div>
+        <div class="mb-4 text-white text-lg">${stemHtml}</div>
 
-            <div class="text-base text-slate-200 bg-slate-800/60 border border-slate-700 rounded-lg p-3 leading-relaxed mb-4">
-              <div><span class="font-black text-red-300">誤選 ${sKey}：</span>${sLine}</div>
-              <div><span class="font-black text-emerald-300">正解 ${cKey}：</span>${cLine}</div>
-            </div>
+        <div class="text-base text-slate-200 bg-slate-800/60 border border-slate-700 rounded-lg p-3 leading-relaxed mb-4">
+          <div><span class="font-black text-red-300">誤選 ${sKey}：</span>${sLine}</div>
+          <div><span class="font-black text-emerald-300">正解 ${cKey}：</span>${cLine}</div>
+        </div>
 
-            <div class="text-lg text-slate-200 bg-slate-800 p-4 rounded-lg border border-slate-700 leading-relaxed text-justify">
-              <strong class="text-blue-400 block mb-2">診斷解析：</strong>
-              ${w.remedial_text || ""}
-            </div>
+        <div class="text-lg text-slate-200 bg-slate-800 p-4 rounded-lg border border-slate-700 leading-relaxed text-justify">
+          <strong class="text-blue-400 block mb-2">診斷解析：</strong>
+          ${w.remedial_text || ""}
+        </div>
+      </div>
+    `);
+
+    pdfWList.insertAdjacentHTML("beforeend", `
+      <div class="wrong-item">
+        <div class="wi-header">
+          <div class="wi-index">${qNum}</div>
+          <div class="wi-stem" style="width:100%;">${stemHtml}</div>
+        </div>
+
+        <div class="wi-body">
+          <div style="margin:8px 0 10px 0; font-size:12px; line-height:1.6; color:#334155;">
+            <div><span style="font-weight:900; color:#ef4444;">誤選 ${sKey}：</span>${sLine}</div>
+            <div><span style="font-weight:900; color:#16a34a;">正解 ${cKey}：</span>${cLine}</div>
           </div>
-        `);
 
-        // ---- PDF 報告書 ----
-        pdfWList.insertAdjacentHTML("beforeend", `
-          <div class="wrong-item">
-            <div class="wi-header">
-              <div class="wi-index">${qNum}</div>
-              <div class="wi-stem" style="width:100%;">${stemHtml}</div>
-            </div>
-
-            <div class="wi-body">
-              <div style="margin:8px 0 10px 0; font-size:12px; line-height:1.6; color:#334155;">
-                <div><span style="font-weight:900; color:#ef4444;">誤選 ${sKey}：</span>${sLine}</div>
-                <div><span style="font-weight:900; color:#16a34a;">正解 ${cKey}：</span>${cLine}</div>
-              </div>
-
-              <div class="wi-footer">
-                <strong>診斷解析：</strong>${w.remedial_text || ""}
-              </div>
-            </div>
+          <div class="wi-footer">
+            <strong>診斷解析：</strong>${w.remedial_text || ""}
           </div>
-        `);
-      });
-    }
+        </div>
+      </div>
+    `);
+  });
+}
 
     // ===== AI 學習診斷：固定三塊（總體評估 / 迷思分析 / 學習建議）=====
     const aiObj = normalizeAiFeedback(json.feedback_student);
