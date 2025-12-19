@@ -1451,150 +1451,135 @@ function buildBoxTableTwoCol(left, right) {
   return [top, h, mid, r1, bot].join("\n");
 }
 
+// ===============================
+//  [TXT 教科書精修版] 排版函式
+// ===============================
 function buildMillionDollarTXT() {
-  const stage     = filters.stage     || currentResultData?.stage     || "";
-  const publisher = filters.publisher || currentResultData?.publisher || "";
-  const grade     = filters.grade     || currentResultData?.grade     || "";
-  const semRaw    = filters.semester  || currentResultData?.semester  || "";
-  const unitName  =
-    (currentResultData?.raw_content?.unitName) ||
-    (currentResultData?.unitName) ||
-    (filters.unitName) ||
-    "未命名單元";
+    // --- 1. 資料準備 ---
+    const stage = filters.stage || currentResultData?.stage || "";
+    const publisher = filters.publisher || currentResultData?.publisher || "";
+    const grade = filters.grade || currentResultData?.grade || "";
+    const semRaw = filters.semester || currentResultData?.semester || "";
+    const unitName = (currentResultData?.raw_content?.unitName) || (currentResultData?.unitName) || (filters.unitName) || "單元重點";
 
-  let semesterLabel = semRaw;
-  if (semRaw === "上") semesterLabel = "上學期";
-  else if (semRaw === "下") semesterLabel = "下學期";
+    let semesterLabel = semRaw;
+    if (semRaw === "上") semesterLabel = "上學期";
+    else if (semRaw === "下") semesterLabel = "下學期";
 
-  // 來源文本：用於抓「例句」
-  const contextText =
-    currentResultData?.raw_content?.text ||
-    currentResultData?.raw_content?.content ||
-    "";
+    // 內容來源
+    const contextText = currentResultData?.raw_content?.text || "";
+    const summaryEl = document.getElementById("summary-text");
+    // 取得摘要文字，並做初步清洗
+    const summaryText = summaryEl ? summaryEl.innerText.replace(/\n\s*\n/g, "\n").trim() : "";
 
-  // 摘要：用畫面上的 innerText（已經是整理後的）
-  const summaryEl = document.getElementById("summary-text");
-  const summaryText = summaryEl ? summaryEl.innerText.replace(/\n\s*\n/g, "\n").trim() : "";
+    // 詞彙與迷思
+    let vList = currentResultData?.keywords || currentResultData?.summary?.keywords || currentResultData?.summary?.vocab_list || [];
+    if (!Array.isArray(vList)) vList = [];
 
-  // 詞彙
-  let vList =
-    currentResultData?.keywords ||
-    currentResultData?.summary?.keywords ||
-    currentResultData?.summary?.vocab_list ||
-    currentResultData?.raw_content?.vocab_list ||
-    [];
+    let mList = currentResultData?.myths || currentResultData?.summary?.myths || [];
+    if (!Array.isArray(mList)) mList = [];
 
-  if (!Array.isArray(vList)) vList = [];
+    // --- 2. 排版工具 (內部 Helper) ---
+    const width = 50; // 設定稍寬一點，適合閱讀
+    const lineDouble = "=".repeat(width);
+    const lineSingle = "-".repeat(width);
+    const lineDot    = ".".repeat(width);
 
-  // 迷思（科學動動腦）
-  let mList =
-    currentResultData?.myths ||
-    currentResultData?.summary?.myths ||
-    [];
-  if (!Array.isArray(mList)) mList = [];
+    // 文字置中工具
+    const center = (str) => {
+        const len = displayWidth(str);
+        if (len >= width) return str;
+        const pad = Math.floor((width - len) / 2);
+        return " ".repeat(pad) + str;
+    };
 
-  // 1) 一頁快速總覽
-  const mustMem = pickKeySentences(summaryText, 3);
+    // --- 3. 開始組裝 TXT 內容 ---
+    let out = "";
 
-  const firstMyth = mList[0] || {};
-  const mythStem = String(firstMyth.question || firstMyth.myth || firstMyth.misconception || "").trim()
-    .replace(/^迷思[:：]\s*/, "")
-    .replace(/^常見想法[:：]\s*/, "");
-  const mythCorrect = String(firstMyth.correct || firstMyth.explanation || "").trim();
+    // [封面區]：像講義的標頭
+    out += lineDouble + "\n";
+    out += center("【自然科學．單元重點精華】") + "\n";
+    out += lineDouble + "\n";
+    out += `單元名稱：${unitName}\n`;
+    out += `適用範圍：${stage} ｜ ${publisher} ｜ ${grade}年級${semesterLabel}\n`;
+    out += lineDouble + "\n\n\n";
 
-  // 2) 產生 TXT
-  let out = "";
-  out += `【單元重點精熟｜學生精讀版 TXT】\n`;
-  out += TXT_CFG.sep2 + "\n";
-  out += `單元：${unitName}\n`;
-  out += `來源：${stage || "-"}｜${publisher || "-"}｜${grade ? grade + "年級" : "-"}｜${semesterLabel || "-"}\n`;
-  out += TXT_CFG.sep2 + "\n\n";
-
-  out += `【一頁快速總覽】\n${TXT_CFG.sep}\n`;
-
-  out += `【必背 3 句】\n`;
-  for (let i = 0; i < 3; i++) {
-    const s = mustMem[i] || "（本單元摘要不足，請老師補一句最關鍵的話）";
-    const lines = clampBlockLines(wrapText(s, TXT_CFG.width, `${i + 1}) `));
-    out += lines.join("\n") + "\n";
-  }
-  out += "\n";
-
-  out += `【常見迷思 1 則】\n`;
-  const mythLine = mythStem || "（本單元尚未提供迷思題）";
-  const corrLine = mythCorrect || "（尚未提供正確觀念說明）";
-  out += clampBlockLines(wrapText(`• ${mythLine}`, TXT_CFG.width)).join("\n") + "\n";
-  out += clampBlockLines(wrapText(`${TXT_CFG.indent}→ 正解：${corrLine}`, TXT_CFG.width)).join("\n") + "\n\n";
-
-  out += `【一張對照】\n`;
-  out += buildBoxTableTwoCol(mythStem || "（無）", mythCorrect || "（無）") + "\n\n";
-
-  // 3) 核心概念（每段不超過 4 行）
-  out += `【核心概念】\n${TXT_CFG.sep}\n`;
-  if (summaryText) {
-    const bullets = pickFirstNonEmptyLines(summaryText, 8);
-    if (bullets.length) {
-      bullets.forEach((b, idx) => {
-        const lines = clampBlockLines(wrapText(b, TXT_CFG.width, `• `));
-        out += lines.join("\n") + "\n";
-      });
+    // [第一部分]：核心概念 (教科書正文風格)
+    out += center("★ 第一部分：核心概念梳理 ★") + "\n";
+    out += lineSingle + "\n";
+    
+    if (summaryText) {
+        // 將摘要依據換行符號切割，處理成條列式
+        const lines = summaryText.split('\n');
+        lines.forEach(line => {
+            const trimmed = line.trim();
+            if (!trimmed) return;
+            // 判斷是否為標題 (簡單判斷：長度短或是數字開頭)
+            const isHeader = /^[0-9]+\.|^第.+節|^[一二三四]、/.test(trimmed);
+            
+            if (isHeader) {
+                out += "\n" + `◎ ${trimmed}` + "\n"; // 子標題加強
+            } else {
+                // 一般內文：加上縮排與自動換行
+                const wrapped = wrapText(trimmed, width - 4, ""); 
+                wrapped.forEach(w => out += `    ${w}\n`);
+                out += "\n"; // 段落間空行
+            }
+        });
     } else {
-      out += "（本單元的核心概念摘要尚未提供）\n";
+        out += "（本單元尚未生成核心摘要）\n";
     }
-  } else {
-    out += "（本單元的核心概念摘要尚未提供）\n";
-  }
-  out += "\n";
+    out += "\n\n";
 
-  // 4) 必學詞彙（每詞 1 行定義 + 1 行例句）
-  out += `【必學詞彙（每詞 2 行）】\n${TXT_CFG.sep}\n`;
-  const vocabTake = vList.slice(0, 12); // 只收必學詞（上限可調）
-  if (vocabTake.length) {
-    vocabTake.forEach((v) => {
-      const term = (typeof v === "object") ? (v.term || v.word || "") : String(v || "");
-      const def  = (typeof v === "object") ? (v.def  || v.definition || "") : "";
-      if (!term.trim()) return;
+    // [第二部分]：觀念釐清 (對照表風格)
+    if (mList.length > 0) {
+        out += center("★ 第二部分：迷思概念 VS 正確觀念 ★") + "\n";
+        out += lineSingle + "\n";
+        out += "透過對照，釐清容易混淆的科學觀念：\n\n";
 
-      const ex = findExampleSentence(contextText, term) || findExampleSentence(summaryText, term);
+        mList.forEach((m, i) => {
+            const q = String(m.question || m.myth || "").replace(/^迷思[:：]\s*/, "");
+            const a = String(m.correct || m.explanation || "");
+            
+            // 模仿表格的框線設計
+            out += `【觀念 ${i + 1}】\n`;
+            out += `(X) 誤解：${q}\n`;
+            out += `(O) 正解：${wrapText(a, width - 8, "").join("\n          ")}\n`; // 正解縮排對齊
+            out += lineDot + "\n"; // 每題之間用虛線隔開
+        });
+        out += "\n\n";
+    }
 
-      out += `【${term.trim()}】\n`;
-      out += clampBlockLines(wrapText(`定義：${def || "（尚未提供定義）"}`, TXT_CFG.width, TXT_CFG.indent)).join("\n") + "\n";
-      out += clampBlockLines(wrapText(`例句：${ex || "（課文未擷取到含此詞的句子，請老師補一例）"}`, TXT_CFG.width, TXT_CFG.indent)).join("\n") + "\n";
-      out += "\n";
-    });
-  } else {
-    out += "（本單元目前無詞彙資料）\n\n";
-  }
+    // [第三部分]：必考科學詞彙 (字典卡風格)
+    if (vList.length > 0) {
+        out += center("★ 第三部分：必考科學詞彙 ★") + "\n";
+        out += lineSingle + "\n";
+        
+        // 取前 15 個詞彙
+        vList.slice(0, 15).forEach((v, i) => {
+            const term = (typeof v === "object") ? (v.term || v.word || "") : String(v);
+            const def = (typeof v === "object") ? (v.def || v.definition || "（詳見課本）") : "";
+            
+            // 找例句
+            let ex = findExampleSentence(contextText, term);
+            if (!ex) ex = findExampleSentence(summaryText, term);
+            if (!ex) ex = "（請參考課本相關段落）";
 
-  // 5) 科學動動腦（精選 3 題，便於「3 分鐘複習流程」）
-  out += `【科學動動腦（精選 3 題）】\n${TXT_CFG.sep}\n`;
-  const mythsTake = mList.slice(0, 3);
-  if (mythsTake.length) {
-    mythsTake.forEach((m, idx) => {
-      const q = String(m.question || m.myth || m.misconception || "").trim()
-        .replace(/^迷思[:：]\s*/, "")
-        .replace(/^常見想法[:：]\s*/, "");
-      const a = String(m.correct || m.explanation || "").trim();
+            out += `● ${term}\n`;
+            out += `  [定義] ${wrapText(def, width - 9, "").join("\n         ")}\n`;
+            out += `  [例句] ${wrapText(ex, width - 9, "").join("\n         ")}\n`;
+            out += "\n"; // 詞彙間空行
+        });
+    }
 
-      out += `【Q${idx + 1}】\n`;
-      out += clampBlockLines(wrapText(q || "（題幹缺漏）", TXT_CFG.width, TXT_CFG.indent)).join("\n") + "\n";
-      out += `【正解】\n`;
-      out += clampBlockLines(wrapText(a || "（尚未提供說明）", TXT_CFG.width, TXT_CFG.indent)).join("\n") + "\n\n";
-    });
-  } else {
-    out += "（本單元目前尚未設定「科學動動腦」題目）\n\n";
-  }
+    // [結尾]：鼓勵語
+    out += "\n" + lineDouble + "\n";
+    out += center("祝 學習順利，科學滿分！") + "\n";
+    out += center("Generated by AI Science Hub") + "\n";
+    out += lineDouble + "\n";
 
-  // 6) 3 分鐘複習流程（固定模板）
-  out += `【3 分鐘複習流程】\n${TXT_CFG.sep}\n`;
-  out += `1) 30 秒：讀「一頁快速總覽」的【必背 3 句】。\n`;
-  out += `2) 60 秒：做【科學動動腦】Q1～Q3。\n`;
-  out += `3) 60 秒：檢查錯題 → 回到【核心概念】相近段落再讀一次。\n`;
-  out += `4) 30 秒：再看一次【一張對照】（迷思 vs 正解），確保不再混淆。\n`;
-
-  return out.trim() + "\n";
+    return out;
 }
-
   function downloadTXT() {
   if (!currentResultData) {
     alert("請先生成內容後再下載！");
