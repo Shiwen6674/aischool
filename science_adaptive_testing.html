@@ -1178,10 +1178,9 @@ function getOptionTextFromWrongItem(w, key){
 
 
 
-   async function finishTest() {
+async function finishTest() {
   showLoading("ANALYZING", "AI 正在分析學習弱點...");
   try {
-    // 改用你已經寫好的 api()（它有正確 headers、錯誤處理、ok 檢查）
     const json = await api({
       action: ACTION.FINISH_CAT,   // "finishCAT"
       test_id: CAT.test_id,
@@ -1192,9 +1191,9 @@ function getOptionTextFromWrongItem(w, key){
     document.getElementById("secQuiz").classList.add("hidden");
     document.getElementById("secResult").classList.remove("hidden");
 
-    const correct = json.correct_count || 0;
-    const total = json.total_count || 0;
-    const score100 = json.score_100 || 0;
+    const correct = Number(json.correct_count || 0);
+    const total = Number(json.total_count || 0);
+    const score100 = Number(json.score_100 || 0);
     const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
 
     document.getElementById("resScore").textContent = `${accuracy}%`;
@@ -1202,68 +1201,71 @@ function getOptionTextFromWrongItem(w, key){
     document.getElementById("resScore100").textContent = score100;
 
     // 錯題列表 (Web & PDF)
-    // 錯題列表 (Web & PDF)
     const wList = document.getElementById("resWrongList");
     const pdfWList = document.getElementById("pdf-wrong-container");
     wList.innerHTML = "";
     pdfWList.innerHTML = "";
 
-    if (!json.wrong_items || json.wrong_items.length === 0) {
+    if (!Array.isArray(json.wrong_items) || json.wrong_items.length === 0) {
       wList.innerHTML = "<div class='text-emerald-400 text-center font-bold text-xl py-4'>恭喜！全對，沒有錯題。</div>";
       pdfWList.innerHTML = "<div style='padding:30px; text-align:center; color:#10b981; font-weight:bold; border:1px dashed #cbd5e1; border-radius:8px;'>表現優異，本單元無錯題！</div>";
     } else {
       json.wrong_items.forEach((w, i) => {
-        const sKey = w.student_answer;   // 例如 "A"
-        const cKey = w.correct_answer;   // 例如 "B"
+        const stem = String(w.stem || "");
+        const sKey = String(w.student_answer || "").trim();
+        const cKey = String(w.correct_answer || "").trim();
+
         const sText = getOptionTextFromWrongItem(w, sKey);
         const cText = getOptionTextFromWrongItem(w, cKey);
 
         const sLine = sText ? sText : "（未取得該選項內容）";
         const cLine = cText ? cText : "（未取得該選項內容）";
+        const remedial = String(w.remedial_text || "");
 
         // ===== Web =====
         wList.insertAdjacentHTML("beforeend", `
           <div class="bg-slate-900/50 p-5 rounded-xl border border-red-500/20">
-            <div class="font-bold text-slate-200 mb-2 text-lg">Q${i + 1}：${w.stem}</div>
+            <div class="font-bold text-slate-200 mb-2 text-lg">Q${i + 1}：${stem}</div>
 
             <div class="flex gap-4 text-sm mb-3">
-              <span class="text-red-400 font-bold bg-red-900/30 px-2 py-1 rounded">誤選: ${sKey}</span>
-              <span class="text-emerald-400 font-bold bg-emerald-900/30 px-2 py-1 rounded">正解: ${cKey}</span>
+              <span class="text-red-400 font-bold bg-red-900/30 px-2 py-1 rounded">誤選: ${sKey || "?"}</span>
+              <span class="text-emerald-400 font-bold bg-emerald-900/30 px-2 py-1 rounded">正解: ${cKey || "?"}</span>
             </div>
 
             <div class="text-sm text-slate-200 bg-slate-800/60 border border-slate-700 rounded-lg p-3 leading-relaxed mb-3">
-              <div><span class="font-black text-red-300">誤選 ${sKey}：</span>${sLine}</div>
-              <div><span class="font-black text-emerald-300">正解 ${cKey}：</span>${cLine}</div>
+              <div><span class="font-black text-red-300">誤選 ${sKey || "?"}：</span>${sLine}</div>
+              <div><span class="font-black text-emerald-300">正解 ${cKey || "?"}：</span>${cLine}</div>
             </div>
 
             <div class="text-sm text-slate-300 bg-slate-800 p-4 rounded-lg border border-slate-700 leading-relaxed text-justify">
               <strong class="text-blue-400 block mb-1">診斷解析：</strong>
-              ${w.remedial_text}
+              ${remedial}
             </div>
           </div>
         `);
 
         // ===== PDF =====
+        const shortStem = stem.length > 50 ? (stem.substring(0, 50) + "...") : stem;
         pdfWList.insertAdjacentHTML("beforeend", `
           <div class="wrong-item">
             <div class="wi-header">
               <div class="wi-index">${i + 1}</div>
-              <div class="wi-stem">Q${i + 1}：${String(w.stem || "").substring(0, 50)}${String(w.stem || "").length > 50 ? "..." : ""}</div>
+              <div class="wi-stem">Q${i + 1}：${shortStem}</div>
             </div>
 
             <div class="wi-body">
               <div class="wi-ans-row">
-                <span class="ans-box ans-student">誤選：${sKey}</span>
-                <span class="ans-box ans-correct">正解：${cKey}</span>
+                <span class="ans-box ans-student">誤選：${sKey || "?"}</span>
+                <span class="ans-box ans-correct">正解：${cKey || "?"}</span>
               </div>
 
               <div style="margin:8px 0 10px 0; font-size:12px; line-height:1.6; color:#334155;">
-                <div><span style="font-weight:900; color:#ef4444;">誤選 ${sKey}：</span>${sLine}</div>
-                <div><span style="font-weight:900; color:#16a34a;">正解 ${cKey}：</span>${cLine}</div>
+                <div><span style="font-weight:900; color:#ef4444;">誤選 ${sKey || "?"}：</span>${sLine}</div>
+                <div><span style="font-weight:900; color:#16a34a;">正解 ${cKey || "?"}：</span>${cLine}</div>
               </div>
 
               <div class="wi-footer">
-                <strong>弱點與解析：</strong>${w.remedial_text}
+                <strong>弱點與解析：</strong>${remedial}
               </div>
             </div>
           </div>
@@ -1271,148 +1273,105 @@ function getOptionTextFromWrongItem(w, key){
       });
     }
 
-  // ===== PDF =====
-  pdfWList.insertAdjacentHTML("beforeend", `
-    <div class="wrong-item">
-      <div class="wi-header">
-        <div class="wi-index">${i + 1}</div>
-        <div class="wi-stem">Q${i + 1}：${w.stem.substring(0, 50)}${w.stem.length > 50 ? "..." : ""}</div>
+    // ===== AI 處方籤 =====
+    const aiObj = normalizeAiFeedback(json.feedback_student);
+    const webAiBox = document.getElementById("resAiFeedback");
+    const pdfAiBox = document.getElementById("pdf-advice-container");
+
+    const summary = String(aiObj.summary || "").trim();
+    const weakness = String(aiObj.weakness_analysis || "").trim();
+    let actions = Array.isArray(aiObj.action_plan) ? aiObj.action_plan : [];
+    actions = actions.map(x => String(x || "").trim()).filter(Boolean);
+
+    const secAll = splitWeaknessSections(weakness);
+
+    let overviewFromSection = "";
+    const secList = [];
+    for (const sec of secAll) {
+      const t = String(sec.title || "").trim();
+      if (!overviewFromSection && /總體評估|整體評估|overall/i.test(t)) {
+        overviewFromSection = String(sec.body || "").trim();
+        continue;
+      }
+      secList.push(sec);
+    }
+
+    const overviewText = (summary || overviewFromSection || "（未取得總體評估內容）").trim();
+    const safeActions = actions.length ? actions : ["（未取得行動建議：請檢查後台回傳是否含 action_plan 陣列）"];
+
+    function cardClassByTitle(title) {
+      const t = String(title || "");
+      if (t.includes("重點迷思")) return "border-amber-500/30 bg-amber-500/10";
+      if (t.includes("學習診斷") || t.includes("學習處方籤") || t.includes("學習處方簽") || t.includes("學習建議")) return "border-emerald-500/30 bg-emerald-500/10";
+      if (t.includes("精準複習") || t.includes("課文")) return "border-fuchsia-500/30 bg-fuchsia-500/10";
+      return "border-slate-500/30 bg-slate-500/10";
+    }
+    function renameSectionTitle(title) {
+      return String(title || "").replace(/學習處方[籤簽]/g, "學習診斷");
+    }
+
+    webAiBox.innerHTML = `
+      <div class="grid gap-4">
+        <div class="rounded-2xl border border-blue-500/30 bg-blue-500/10 p-5">
+          <div class="text-base font-black text-blue-300 mb-2">總體評估</div>
+          <div class="text-sm leading-relaxed text-slate-200 whitespace-pre-line">${overviewText}</div>
+        </div>
+
+        <div class="grid gap-3">
+          ${
+            secList.length
+              ? secList.map(sec => `
+                  <div class="rounded-2xl border ${cardClassByTitle(renameSectionTitle(sec.title))} p-5">
+                    <div class="text-base font-black mb-2 text-slate-100">${renameSectionTitle(sec.title) || "弱點診斷"}</div>
+                    <div class="text-sm leading-relaxed text-slate-200 whitespace-pre-line">${sec.body || "（無內容）"}</div>
+                  </div>
+                `).join("")
+              : `
+                <div class="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5">
+                  <div class="text-base font-black text-amber-300 mb-2">弱點診斷</div>
+                  <div class="text-sm leading-relaxed text-slate-200 whitespace-pre-line">${weakness || "（未取得弱點診斷內容）"}</div>
+                </div>
+              `
+          }
+        </div>
+      </div>
+    `;
+
+    const diagnosisTextForPdf =
+      secList.length
+        ? secList.map(sec => `【${sec.title || "弱點診斷"}】\n${sec.body || ""}`.trim()).join("\n\n")
+        : (weakness || "（未取得弱點診斷內容）");
+
+    pdfAiBox.innerHTML = `
+      <div class="advice-card advice-blue">
+        <div class="advice-title">總體評估 OVERVIEW</div>
+        <div class="advice-content">${overviewText.replace(/\n/g, "<br>")}</div>
       </div>
 
-      <div class="wi-body">
-        <div class="wi-ans-row">
-          <span class="ans-box ans-student">誤選：${sKey}</span>
-          <span class="ans-box ans-correct">正解：${cKey}</span>
-        </div>
+      <div class="advice-card advice-yellow">
+        <div class="advice-title">弱點診斷 DIAGNOSIS</div>
+        <div class="advice-content">${diagnosisTextForPdf.replace(/\n/g, "<br>")}</div>
+      </div>
 
-        <!-- 新增：PDF 也把選項內容寫出來（各一行） -->
-        <div style="margin:8px 0 10px 0; font-size:12px; line-height:1.6; color:#334155;">
-          <div><span style="font-weight:900; color:#ef4444;">誤選 ${sKey}：</span>${sLine}</div>
-          <div><span style="font-weight:900; color:#16a34a;">正解 ${cKey}：</span>${cLine}</div>
-        </div>
-
-        <div class="wi-footer">
-          <strong>弱點與解析：</strong>${w.remedial_text}
+      <div class="advice-card advice-green">
+        <div class="advice-title">行動建議 ACTION PLAN</div>
+        <div class="advice-content">
+          <ul style="margin:0; padding-left:20px;">
+            ${safeActions.map(a => `<li style="margin-bottom:8px;">${a}</li>`).join("")}
+          </ul>
         </div>
       </div>
-    </div>
-  `);
-});
-
-
-    // AI 處方籤
-// AI 處方籤
-const aiObj = normalizeAiFeedback(json.feedback_student);
-const webAiBox = document.getElementById("resAiFeedback");
-const pdfAiBox = document.getElementById("pdf-advice-container");
-
-// 取值（避免空白）
-const summary = (aiObj.summary || "").trim();
-const weakness = (aiObj.weakness_analysis || "").trim();
-let actions = Array.isArray(aiObj.action_plan) ? aiObj.action_plan.filter(x => String(x||"").trim()) : [];
-actions = actions.map(x => String(x).trim());
-
-// 把 weakness_analysis 切成多段卡片
-const secAll = splitWeaknessSections(weakness);
-
-// ✅ 把【總體評估】從 weakness 裡抽出來（保留「成功的第二個」來源）
-let overviewFromSection = "";
-const secList = [];
-for (const sec of secAll) {
-  const t = String(sec.title || "").trim();
-  if (!overviewFromSection && /總體評估|整體評估|overall/i.test(t)) {
-    overviewFromSection = String(sec.body || "").trim();
-    continue; // 不放進 secList，避免重複顯示
-  }
-  secList.push(sec);
-}
-
-// ✅ 只顯示一次總體評估：優先用 summary；若 summary 空，就用 weakness 裡的【總體評估】
-const overviewText =
-  (summary || overviewFromSection || "（未取得總體評估內容：請檢查後台回傳 summary 欄位，或 weakness_analysis 是否包含【總體評估】段落）").trim();
-
-// 行動建議：若空，給提示字（避免整塊空白）
-const safeActions = actions.length ? actions : ["（未取得行動建議：請檢查後台回傳是否含 action_plan 陣列）"];
-
-// 顏色配置：依標題關鍵字套色
-function cardClassByTitle(title){
-  const t = String(title || "");
-  if (t.includes("重點迷思")) return "border-amber-500/30 bg-amber-500/10 text-amber-300";
-  if (t.includes("學習診斷") || t.includes("學習處方籤") || t.includes("學習處方簽") || t.includes("學習建議"))
-  return "border-emerald-500/30 bg-emerald-500/10 text-emerald-300";
-  if (t.includes("精準複習") || t.includes("課文")) return "border-fuchsia-500/30 bg-fuchsia-500/10 text-fuchsia-300";
-  return "border-slate-500/30 bg-slate-500/10 text-slate-200";
-}
-function renameSectionTitle(title){
-  return String(title || "").replace(/學習處方[籤簽]/g, "學習診斷");
-}
-
-// ===== Web UI：只保留「一個」總體評估 =====
-webAiBox.innerHTML = `
-  <div class="grid gap-4">
-
-    <div class="rounded-2xl border border-blue-500/30 bg-blue-500/10 p-5">
-      <div class="text-base font-black text-blue-300 mb-2">總體評估</div>
-      <div class="text-sm leading-relaxed text-slate-200 whitespace-pre-line">${overviewText}</div>
-    </div>
-
-    <div class="grid gap-3">
-      ${
-  secList.length
-    ? secList.map(sec => `
-        <div class="rounded-2xl border ${cardClassByTitle(renameSectionTitle(sec.title))} p-5">
-          <div class="text-base font-black mb-2">${renameSectionTitle(sec.title) || "弱點診斷"}</div>
-          <div class="text-sm leading-relaxed text-slate-200 whitespace-pre-line">${sec.body || "（無內容）"}</div>
-        </div>
-      `).join("")
-    : `<div class="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5">
-         <div class="text-base font-black text-amber-300 mb-2">弱點診斷</div>
-         <div class="text-sm leading-relaxed text-slate-200 whitespace-pre-line">${weakness || "（未取得弱點診斷內容）"}</div>
-       </div>`
-}
-
-    </div>
-  </div>
-`;
-
-// ===== PDF：也只保留一次總體評估，並用「去掉總體評估段落後」的診斷內容 =====
-const diagnosisTextForPdf =
-  secList.length
-    ? secList.map(sec => `【${sec.title || "弱點診斷"}】\n${sec.body || ""}`.trim()).join("\n\n")
-    : (weakness || "（未取得弱點診斷內容）");
-
-pdfAiBox.innerHTML = `
-  <div class="advice-card advice-blue">
-    <div class="advice-title">總體評估 OVERVIEW</div>
-    <div class="advice-content">${overviewText.replace(/\n/g,"<br>")}</div>
-  </div>
-
-  <div class="advice-card advice-yellow">
-    <div class="advice-title">弱點診斷 DIAGNOSIS</div>
-    <div class="advice-content">${diagnosisTextForPdf.replace(/\n/g,"<br>")}</div>
-  </div>
-
-  <div class="advice-card advice-green">
-    <div class="advice-title">行動建議 ACTION PLAN</div>
-    <div class="advice-content">
-      <ul style="margin:0; padding-left:20px;">
-        ${safeActions.map(a => `<li style="margin-bottom:8px;">${a}</li>`).join("")}
-      </ul>
-    </div>
-  </div>
-`;
-;
-
+    `;
 
     updatePdfInfo(score100, correct, total);
 
   } catch (e) {
     UI.toast("錯誤", "結算失敗: " + e.message, "bad");
   } finally {
-    // 不論成功失敗都要關掉 loading，避免卡住
     hideLoading();
   }
 }
+
 
 
     function updatePdfInfo(score, correct, total) {
