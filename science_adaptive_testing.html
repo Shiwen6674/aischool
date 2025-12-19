@@ -352,9 +352,10 @@
 
         <div class="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-2xl border border-blue-500/30 shadow-lg relative overflow-hidden">
           <div class="absolute top-0 right-0 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-          <h3 class="text-lg font-bold text-blue-400 mb-6 flex items-center gap-2 relative z-10">
-            <i class="fa-solid fa-user-doctor"></i> AI 學習處方籤
-          </h3>
+         <h3 class="text-lg font-bold text-blue-400 mb-6 flex items-center gap-2 relative z-10">
+  <i class="fa-solid fa-user-doctor"></i> AI 學習診斷
+</h3>
+
           <div id="resAiFeedback" class="markdown-body text-slate-300 leading-loose relative z-10"></div>
         </div>
       </div>
@@ -434,8 +435,9 @@
     <div class="pdf-page">
       <div class="pdf-header">
          <div>
-             <div class="ph-title">AI 學習處方籤</div>
-             <div class="ph-sub">LEARNING PRESCRIPTION</div>
+             <div class="ph-title">AI 學習診斷</div>
+<div class="ph-sub">LEARNING DIAGNOSIS</div>
+
          </div>
          <div class="ph-title" style="color:#cbd5e1;">02</div>
       </div>
@@ -1243,9 +1245,13 @@ const safeActions = actions.length ? actions : ["（未取得行動建議：請�
 function cardClassByTitle(title){
   const t = String(title || "");
   if (t.includes("重點迷思")) return "border-amber-500/30 bg-amber-500/10 text-amber-300";
-  if (t.includes("學習處方籤") || t.includes("學習建議")) return "border-emerald-500/30 bg-emerald-500/10 text-emerald-300";
+  if (t.includes("學習診斷") || t.includes("學習處方籤") || t.includes("學習處方簽") || t.includes("學習建議"))
+  return "border-emerald-500/30 bg-emerald-500/10 text-emerald-300";
   if (t.includes("精準複習") || t.includes("課文")) return "border-fuchsia-500/30 bg-fuchsia-500/10 text-fuchsia-300";
   return "border-slate-500/30 bg-slate-500/10 text-slate-200";
+}
+function renameSectionTitle(title){
+  return String(title || "").replace(/學習處方[籤簽]/g, "學習診斷");
 }
 
 // ===== Web UI：只保留「一個」總體評估 =====
@@ -1260,26 +1266,18 @@ webAiBox.innerHTML = `
     <div class="grid gap-3">
       ${
         secList.length
-          ? secList.map(sec => `
-              <div class="rounded-2xl border ${cardClassByTitle(sec.title)} p-5">
-                <div class="text-base font-black mb-2">${sec.title || "弱點診斷"}</div>
-                <div class="text-sm leading-relaxed text-slate-200 whitespace-pre-line">${sec.body || "（無內容）"}</div>
-              </div>
-            `).join("")
+         secList.map(sec => `
+  <div class="rounded-2xl border ${cardClassByTitle(renameSectionTitle(sec.title))} p-5">
+    <div class="text-base font-black mb-2">${renameSectionTitle(sec.title) || "弱點診斷"}</div>
+    <div class="text-sm leading-relaxed text-slate-200 whitespace-pre-line">${sec.body || "（無內容）"}</div>
+  </div>
+`).join("")
           : `<div class="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5">
                <div class="text-base font-black text-amber-300 mb-2">弱點診斷</div>
                <div class="text-sm leading-relaxed text-slate-200 whitespace-pre-line">${weakness || "（未取得弱點診斷內容）"}</div>
              </div>`
       }
     </div>
-
-    <div class="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5">
-      <div class="text-base font-black text-emerald-300 mb-2">行動建議</div>
-      <ul class="list-disc list-inside text-sm leading-relaxed text-slate-200 space-y-1">
-        ${safeActions.map(a => `<li>${a}</li>`).join("")}
-      </ul>
-    </div>
-
   </div>
 `;
 
