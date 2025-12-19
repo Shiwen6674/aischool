@@ -2295,12 +2295,133 @@ function submitQuizLog(q, selectedIndex, correctIndex, isCorrect) {
 }
 
 function requestQuizAISummary(score, concepts, conceptScores, correctCount, totalQ) {
-  // 先留空：之後要呼叫 GAS 產生診斷再補 fetch
-  const scoreLabelEl = document.getElementById("quiz-score-label");
-  const detailEl = document.getElementById("quiz-result-detail");
-  if (scoreLabelEl) scoreLabelEl.innerText = "作答分析完成";
-  if (detailEl) detailEl.innerText = "（尚未啟用 AI 診斷摘要功能）";
+    const detailEl     = document.getElementById("quiz-result-detail");
+    const scoreLabelEl = document.getElementById("quiz-score-label");
+    if (!detailEl || !scoreLabelEl) return;
+
+    const currentUser = JSON.parse(
+        sessionStorage.getItem("currentUser") ||
+        localStorage.getItem("currentUser") ||
+        '{"name":"訪客"}'
+    );
+
+    const raw = currentResultData && currentResultData.raw_content ? currentResultData.raw_content : {};
+    const contextText  = raw.text || raw.text_summary || raw.text_full || "";
+    const contextVocab = raw.vocab_str || "";
+
+    const unitName =
+        (filters && filters.unitName) ||
+        (currentResultData &&
+            (currentResultData.unitName ||
+             (currentResultData.raw_content && currentResultData.raw_content.unitName))) || "";
+
+    const answerRecords = quizState.questions.map((q, idx) => {
+        const ans = quizState.answers[idx];
+        return {
+            index: idx + 1,
+            concept: q.concept || q.conceptName || q.topic || `第 ${idx + 1} 題`,
+            correct: !!(ans && ans.correct)
+        };
+    });
+
+    const payload = {
+        action: "quiz_ai_summary",
+        userName: currentUser.name,
+        stage: filters.stage || "",
+        publisher: filters.publisher || "",
+        grade: filters.grade || "",
+        semester: filters.semester || "",
+        unitName: unitName,
+        score: score,
+        totalQuestions: totalQ,
+        totalCorrect: correctCount,
+        concepts: concepts,
+        conceptScores: conceptScores,
+        answers: answerRecords,
+        contextText: contextText,
+        contextVocab: contextVocab
+    };
+
+    // 右側文字先顯示「分析中」
+    detailEl.innerText = "AI 正在分析你的作答結果…";
+    scoreLabelEl.innerText = "";
+
+    fetch(GAS_API_URL, {
+        method: "POST",
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.text())          // 先拿「純文字」，不直接 json()
+    .then(text => {
+        if (!text) {
+            // 完全沒東西 → 給一段安全預設說明
+            detailEl.innerText = "從左側的長條圖可以看出各概念的答對率，分數較低的概念可以回到課本文字與重點整理區再加強。";
+            scoreLabelEl.innerText = "";
+            return;
+        }
+
+        let json = null;
+        try {
+            json = JSON.parse(text);  // 能轉 JSON 就當 JSON
+        } catch (e) {
+            // 不能轉 JSON → 直接把後端文字顯示出來（通常是你在 Apps Script 裡組好的說明）
+            detailEl.innerHTML = text;
+            scoreLabelEl.innerText = "";
+            return;
+        }
+
+        if (!json) {
+            detailEl.innerText = "從左側的長條圖可以看出各概念的答對率，分數較低的概念可以回到課本文字與重點整理區再加強。";
+            scoreLabelEl.innerText = "";
+            return;
+        }
+
+        // ★ 放寬格式：{status,data} 或 {summary,detail} 或直接是一個字串都吃
+        let d = null;
+        if (typeof json.data !== "undefined") {
+            d = json.data;
+        } else if (json.summary || json.detail || json.text) {
+            d = json;
+        } else if (typeof json === "string") {
+            d = json;
+        }
+
+        if (!d) {
+            detailEl.innerText = "從左側的長條圖可以看出各概念的答對率，分數較低的概念可以回到課本文字與重點整理區再加強。";
+            scoreLabelEl.innerText = "";
+            return;
+        }
+
+        let summaryText = "";
+        let detailText  = "";
+
+        if (typeof d === "string") {
+            summaryText = d;
+        } else if (d && typeof d === "object") {
+            summaryText = d.summary || d.summary_html || d.text || d.explanation || "";
+            detailText  = d.detail  || d.detail_html  || "";
+        }
+
+        let combined = "";
+        if (summaryText) combined = summaryText;
+        if (detailText)  combined = combined ? (combined + "<br><br>" + detailText) : detailText;
+
+        if (combined) {
+            detailEl.innerHTML = combined;
+        } else {
+            detailEl.innerText = "從左側的長條圖可以看出各概念的答對率，分數較低的概念可以回到課本文字與重點整理區再加強。";
+        }
+
+        // 下方綠字不另外補診斷
+        scoreLabelEl.innerText = "";
+    })
+    .catch(err => {
+        console.log("quiz_ai_summary 呼叫失敗：", err);
+        scoreLabelEl.innerText = "";
+        // ★ 只有「真的連不上 Apps Script」時才會到這裡
+        detailEl.innerText = "AI 分析暫時無法提供，可以先參考圖表與逐題解析，自己歸納需要加強的地方。";
+    });
 }
+
 
     window.addEventListener('resize', syncVocabHeight);  
     </script>
