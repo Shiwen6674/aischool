@@ -493,7 +493,17 @@
        2) HELPER FUNCTIONS
        =========================== */
     function getStudentIdFromLogin(){ const u=window.currentUser||JSON.parse(sessionStorage.getItem("currentUser")||"{}"); return u.student_id||""; }
-    function __loadCurrentUser(){ return JSON.parse(sessionStorage.getItem("currentUser")||localStorage.getItem("currentUser")||'{"name":"訪客"}'); }
+    function __loadCurrentUser(){
+  const raw = sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || "";
+  if(!raw) return { name: "訪客" };
+  try{
+    const obj = JSON.parse(raw);
+    return (obj && typeof obj === "object") ? obj : { name: String(obj || "訪客") };
+  }catch(e){
+    return { name: "訪客" };
+  }
+}
+
     
     async function ensureStudentId(){
         const user = window.currentUser || JSON.parse(sessionStorage.getItem("currentUser") || "{}");
@@ -1177,7 +1187,7 @@ json.wrong_items.forEach((w, i) => {
       </div>
     </div>
   `);
-
+}
   // ===== PDF =====
   pdfWList.insertAdjacentHTML("beforeend", `
     <div class="wrong-item">
@@ -1265,18 +1275,19 @@ webAiBox.innerHTML = `
 
     <div class="grid gap-3">
       ${
-        secList.length
-         secList.map(sec => `
-  <div class="rounded-2xl border ${cardClassByTitle(renameSectionTitle(sec.title))} p-5">
-    <div class="text-base font-black mb-2">${renameSectionTitle(sec.title) || "弱點診斷"}</div>
-    <div class="text-sm leading-relaxed text-slate-200 whitespace-pre-line">${sec.body || "（無內容）"}</div>
-  </div>
-`).join("")
-          : `<div class="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5">
-               <div class="text-base font-black text-amber-300 mb-2">弱點診斷</div>
-               <div class="text-sm leading-relaxed text-slate-200 whitespace-pre-line">${weakness || "（未取得弱點診斷內容）"}</div>
-             </div>`
-      }
+  secList.length
+    ? secList.map(sec => `
+        <div class="rounded-2xl border ${cardClassByTitle(renameSectionTitle(sec.title))} p-5">
+          <div class="text-base font-black mb-2">${renameSectionTitle(sec.title) || "弱點診斷"}</div>
+          <div class="text-sm leading-relaxed text-slate-200 whitespace-pre-line">${sec.body || "（無內容）"}</div>
+        </div>
+      `).join("")
+    : `<div class="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5">
+         <div class="text-base font-black text-amber-300 mb-2">弱點診斷</div>
+         <div class="text-sm leading-relaxed text-slate-200 whitespace-pre-line">${weakness || "（未取得弱點診斷內容）"}</div>
+       </div>`
+}
+
     </div>
   </div>
 `;
