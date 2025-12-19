@@ -1206,6 +1206,7 @@ json.wrong_items.forEach((w, i) => {
 
 
     // AI 處方籤
+// AI 處方籤
 const aiObj = normalizeAiFeedback(json.feedback_student);
 const webAiBox = document.getElementById("resAiFeedback");
 const pdfAiBox = document.getElementById("pdf-advice-container");
@@ -1216,14 +1217,29 @@ const weakness = (aiObj.weakness_analysis || "").trim();
 let actions = Array.isArray(aiObj.action_plan) ? aiObj.action_plan.filter(x => String(x||"").trim()) : [];
 actions = actions.map(x => String(x).trim());
 
-// 若仍為空，給提示字（避免你看到「沒東西」）
-const safeSummary = summary || "（未取得總體評估內容：請檢查後台回傳是否含 summary 欄位）";
-const safeActions = actions.length ? actions : ["（未取得行動建議：請檢查後台回傳是否含 action_plan 陣列且有 2 點）"];
-
 // 把 weakness_analysis 切成多段卡片
-const secList = splitWeaknessSections(weakness);
+const secAll = splitWeaknessSections(weakness);
 
-// 顏色配置：依標題關鍵字套色（你可再加關鍵字）
+// ✅ 把【總體評估】從 weakness 裡抽出來（保留「成功的第二個」來源）
+let overviewFromSection = "";
+const secList = [];
+for (const sec of secAll) {
+  const t = String(sec.title || "").trim();
+  if (!overviewFromSection && /總體評估|整體評估|overall/i.test(t)) {
+    overviewFromSection = String(sec.body || "").trim();
+    continue; // 不放進 secList，避免重複顯示
+  }
+  secList.push(sec);
+}
+
+// ✅ 只顯示一次總體評估：優先用 summary；若 summary 空，就用 weakness 裡的【總體評估】
+const overviewText =
+  (summary || overviewFromSection || "（未取得總體評估內容：請檢查後台回傳 summary 欄位，或 weakness_analysis 是否包含【總體評估】段落）").trim();
+
+// 行動建議：若空，給提示字（避免整塊空白）
+const safeActions = actions.length ? actions : ["（未取得行動建議：請檢查後台回傳是否含 action_plan 陣列）"];
+
+// 顏色配置：依標題關鍵字套色
 function cardClassByTitle(title){
   const t = String(title || "");
   if (t.includes("重點迷思")) return "border-amber-500/30 bg-amber-500/10 text-amber-300";
@@ -1232,13 +1248,13 @@ function cardClassByTitle(title){
   return "border-slate-500/30 bg-slate-500/10 text-slate-200";
 }
 
-// Web UI：卡片化
+// ===== Web UI：只保留「一個」總體評估 =====
 webAiBox.innerHTML = `
   <div class="grid gap-4">
 
     <div class="rounded-2xl border border-blue-500/30 bg-blue-500/10 p-5">
       <div class="text-base font-black text-blue-300 mb-2">總體評估</div>
-      <div class="text-sm leading-relaxed text-slate-200 whitespace-pre-line">${safeSummary}</div>
+      <div class="text-sm leading-relaxed text-slate-200 whitespace-pre-line">${overviewText}</div>
     </div>
 
     <div class="grid gap-3">
@@ -1258,7 +1274,7 @@ webAiBox.innerHTML = `
     </div>
 
     <div class="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5">
-      <div class="text-base font-black text-emerald-300 mb-2">行動建議（2點）</div>
+      <div class="text-base font-black text-emerald-300 mb-2">行動建議</div>
       <ul class="list-disc list-inside text-sm leading-relaxed text-slate-200 space-y-1">
         ${safeActions.map(a => `<li>${a}</li>`).join("")}
       </ul>
@@ -1266,25 +1282,34 @@ webAiBox.innerHTML = `
 
   </div>
 `;
-// PDF（先用簡單版：把迷思+複習合併，避免 PDF 太碎）
+
+// ===== PDF：也只保留一次總體評估，並用「去掉總體評估段落後」的診斷內容 =====
+const diagnosisTextForPdf =
+  secList.length
+    ? secList.map(sec => `【${sec.title || "弱點診斷"}】\n${sec.body || ""}`.trim()).join("\n\n")
+    : (weakness || "（未取得弱點診斷內容）");
+
 pdfAiBox.innerHTML = `
   <div class="advice-card advice-blue">
-    <div class="advice-title">總體表現 OVERVIEW</div>
-    <div class="advice-content">${overview}</div>
+    <div class="advice-title">總體評估 OVERVIEW</div>
+    <div class="advice-content">${overviewText.replace(/\n/g,"<br>")}</div>
   </div>
+
   <div class="advice-card advice-yellow">
-    <div class="advice-title">重點迷思與精準複習 DIAGNOSIS</div>
-    <div class="advice-content">${(misconception + (review ? "\n\n" + review : "")).replace(/\n/g,"<br>")}</div>
+    <div class="advice-title">弱點診斷 DIAGNOSIS</div>
+    <div class="advice-content">${diagnosisTextForPdf.replace(/\n/g,"<br>")}</div>
   </div>
+
   <div class="advice-card advice-green">
     <div class="advice-title">行動建議 ACTION PLAN</div>
     <div class="advice-content">
       <ul style="margin:0; padding-left:20px;">
-        ${actions.map(a => `<li style="margin-bottom:8px;">${a}</li>`).join("")}
+        ${safeActions.map(a => `<li style="margin-bottom:8px;">${a}</li>`).join("")}
       </ul>
     </div>
   </div>
 `;
+;
 
 
     updatePdfInfo(score100, correct, total);
