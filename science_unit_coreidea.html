@@ -2330,7 +2330,62 @@ function submitQuizLog(question, selectedIndex, correctIndex, isCorrect) {
         .catch(err => console.log("測驗紀錄送出失敗 (可忽略):", err));
 }
 
-// ====== [修正] 請求 AI 總結 (補上 account) ======
+// ====== [新增] UI 美化工具：將 AI 純文字轉為精美卡片 HTML ======
+function formatAIResponseToCards(text) {
+    if (!text) return "";
+
+    // 1. 嘗試偵測轉折關鍵字來分段 (例如：不過、但是、建議)
+    let parts = [];
+    // 優先順序：不過 > 但是 > 建議
+    if (text.includes("不過")) {
+        parts = text.split("不過");
+        parts[1] = "不過" + parts[1]; // 把連接詞加回去
+    } else if (text.includes("但是")) {
+        parts = text.split("但是");
+        parts[1] = "但是" + parts[1];
+    } else {
+        // 如果沒有明顯轉折，就試著用雙換行分段，或者視為整段
+        parts = text.split("\n\n");
+    }
+
+    // 如果真的分不出來，就只顯示一張總結卡 (藍色系)
+    if (parts.length < 2) {
+        return `
+            <div class="mb-4 p-5 rounded-2xl bg-indigo-50 border-l-4 border-indigo-500 shadow-sm text-slate-700 leading-relaxed">
+                <h4 class="font-bold text-indigo-700 text-lg mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-line"></i> 整體學習診斷
+                </h4>
+                ${text.replace(/\n/g, '<br>')}
+            </div>`;
+    }
+
+    // 2. 構建兩張卡片：表現亮點 (綠色系) & 補強建議 (橘色系)
+    const positiveText = parts[0].trim().replace(/\n/g, '<br>');
+    // 把剩下的部分都接起來當作建議
+    const improveText = parts.slice(1).join("").trim().replace(/\n/g, '<br>');
+
+    return `
+        <div class="mb-4 p-5 rounded-2xl bg-emerald-50 border-l-4 border-emerald-500 shadow-sm transition hover:shadow-md">
+            <h4 class="font-bold text-emerald-700 text-lg mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-trophy text-yellow-500"></i> 你的表現亮點
+            </h4>
+            <div class="text-slate-700 text-sm md:text-base leading-7">
+                ${positiveText}
+            </div>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-orange-50 border-l-4 border-orange-500 shadow-sm transition hover:shadow-md">
+            <h4 class="font-bold text-orange-700 text-lg mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-rocket text-red-500"></i> 加油站：補強建議
+            </h4>
+            <div class="text-slate-700 text-sm md:text-base leading-7">
+                ${improveText}
+            </div>
+        </div>
+    `;
+}
+
+// ====== [修改] 請求 AI 總結 (加入 UI 美化與 Loading 動畫) ======
 function requestQuizAISummary(score, concepts, conceptScores, correctCount, totalQ) {
     const detailEl = document.getElementById("quiz-result-detail");
     const scoreLabelEl = document.getElementById("quiz-score-label");
@@ -2344,7 +2399,7 @@ function requestQuizAISummary(score, concepts, conceptScores, correctCount, tota
             const parsed = JSON.parse(raw);
             currentUser = {
                 name: parsed.name || "訪客",
-                account: parsed.account || parsed.name || "訪客" // ★ 關鍵修正
+                account: parsed.account || parsed.name || "訪客"
             };
         }
     } catch (e) {}
@@ -2352,9 +2407,7 @@ function requestQuizAISummary(score, concepts, conceptScores, correctCount, tota
     const rawContent = currentResultData && currentResultData.raw_content ? currentResultData.raw_content : {};
     const contextText = rawContent.text || rawContent.text_summary || "";
     const contextVocab = rawContent.vocab_str || "";
-
-    const unitName = (filters && filters.unitName) ||
-        (currentResultData && (currentResultData.unitName || (currentResultData.raw_content && currentResultData.raw_content.unitName))) || "";
+    const unitName = (filters && filters.unitName) || (currentResultData && currentResultData.unitName) || "";
 
     const answerRecords = quizState.questions.map((q, idx) => {
         const ans = quizState.answers[idx];
@@ -2367,7 +2420,7 @@ function requestQuizAISummary(score, concepts, conceptScores, correctCount, tota
 
     const payload = {
         action: "quiz_ai_summary",
-        account: currentUser.account, // ★ 關鍵修正：傳送帳號給 AI
+        account: currentUser.account,
         userName: currentUser.name,
         stage: filters.stage || "",
         publisher: filters.publisher || "",
@@ -2384,8 +2437,15 @@ function requestQuizAISummary(score, concepts, conceptScores, correctCount, tota
         contextVocab: contextVocab
     };
 
-    // UI 顯示 Loading
-    detailEl.innerText = "AI 正在分析你的作答結果... (約需 5-10 秒)";
+    // ★ 修改點：更漂亮的 Loading 動畫
+    detailEl.innerHTML = `
+        <div class="flex flex-col items-center justify-center h-48 space-y-3">
+            <i class="fa-solid fa-robot fa-bounce text-3xl text-blue-500"></i>
+            <span class="text-sm font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-cyan-500 animate-pulse">
+                AI 老師正在分析你的作答...
+            </span>
+        </div>
+    `;
     scoreLabelEl.innerText = "";
 
     fetch(GAS_API_URL, {
@@ -2405,15 +2465,23 @@ function requestQuizAISummary(score, concepts, conceptScores, correctCount, tota
             aiText = text;
         }
 
+        // ★ 修改點：使用美化函式渲染 HTML 卡片
         if (aiText) {
-            detailEl.innerHTML = aiText;
+            detailEl.innerHTML = formatAIResponseToCards(aiText);
         } else {
-            detailEl.innerText = "AI 分析暫時無法提供，請參考左側圖表進行複習。";
+            detailEl.innerHTML = `
+                <div class="p-4 rounded-xl bg-gray-50 border border-gray-200 text-gray-500 text-center">
+                    <i class="fa-solid fa-circle-exclamation mb-2"></i><br>
+                    AI 分析暫時無法提供，請參考左側圖表進行複習。
+                </div>`;
         }
     })
     .catch(err => {
         console.error("AI Summary Error:", err);
-        detailEl.innerText = "連線逾時或錯誤，無法取得 AI 分析。";
+        detailEl.innerHTML = `
+            <div class="p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-center text-sm">
+                連線逾時，無法取得 AI 分析。<br>請稍後再試。
+            </div>`;
     });
 }
     window.addEventListener('resize', syncVocabHeight);  
