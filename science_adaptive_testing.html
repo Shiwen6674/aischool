@@ -550,7 +550,7 @@
     }
     function hideLoading(){ document.getElementById("loading-overlay").style.display = "none"; }
 
-   async function api(payload){
+async function api(payload){
   if(!payload.content_db_id) payload.content_db_id = CONTENT_DB_ID;
 
   // 只有「讀教材」才預設 Sheet1，其他 action 不要硬塞 Sheet1
@@ -572,16 +572,48 @@
   }
 
   raw = await res.text();
-  let json;
-  try{ json = raw ? JSON.parse(raw) : {}; }
-  catch(_){ throw new Error("Non-JSON response"); }
 
-  if (!json || !json.ok || json.status === "error") {
-    console.error("API Error Debug:", json);
-    throw new Error(json.message || json.error || "API returned error.");
+  // 容錯：移除常見 XSSI 前綴（若沒有也不影響）
+  const rawTrim = String(raw || "").trim().replace(/^\)\]\}',?\s*/,"");
+
+  let json = {};
+  try{
+    json = rawTrim ? JSON.parse(rawTrim) : {};
+  }catch(e){
+    console.error("API Non-JSON Raw:", raw);
+    throw new Error("Non-JSON response");
   }
+
+  // ✅ 兼容不同後端格式：ok/success/status
+  const status = String(json.status || "").toLowerCase();
+  const okFlag =
+    (json.ok === true) ||
+    (json.success === true) ||
+    (status === "ok") ||
+    (status === "success");
+
+  const isError =
+    (json.ok === false) ||
+    (json.success === false) ||
+    (status === "error") ||
+    (status === "fail") ||
+    (status === "failed") ||
+    (!!json.error);
+
+  if (isError) {
+    console.error("API Error Debug (parsed):", json);
+    console.error("API Raw:", rawTrim);
+    throw new Error(json.message || json.error || `API returned error (status=${json.status || "?"}).`);
+  }
+
+  // 沒有 ok/success 旗標，但也不是 error：視為成功（避免你現在卡死）
+  if (!okFlag) {
+    console.warn("API response has no ok/success flag; treat as success:", json);
+  }
+
   return json;
 }
+
 
 function toggleLoad(){ hideLoading(); }
 
@@ -1188,28 +1220,6 @@ webAiBox.innerHTML = `
 
   </div>
 `;
-
-// PDF：先用簡潔版（避免太花）
-pdfAiBox.innerHTML = `
-  <div class="advice-card advice-blue">
-    <div class="advice-title">總體評估 OVERVIEW</div>
-    <div class="advice-content">${safeSummary.replace(/\n/g,"<br>")}</div>
-  </div>
-  <div class="advice-card advice-yellow">
-    <div class="advice-title">弱點診斷 DIAGNOSIS</div>
-    <div class="advice-content">${(weakness || "（未取得弱點診斷內容）").replace(/\n/g,"<br>")}</div>
-  </div>
-  <div class="advice-card advice-green">
-    <div class="advice-title">行動建議 ACTION PLAN</div>
-    <div class="advice-content">
-      <ul style="margin:0; padding-left:20px;">
-        ${safeActions.map(a => `<li style="margin-bottom:8px;">${a}</li>`).join("")}
-      </ul>
-    </div>
-  </div>
-`;
-
-
 // PDF（先用簡單版：把迷思+複習合併，避免 PDF 太碎）
 pdfAiBox.innerHTML = `
   <div class="advice-card advice-blue">
