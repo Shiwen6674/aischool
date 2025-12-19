@@ -544,20 +544,60 @@
     const ACTION = { GET_UNIT_OPTIONS: "getUnitOptions", START_CAT: "startCAT", SUBMIT_NEXT: "submitAndNext", FINISH_CAT: "finishCAT" };
     const META_ACTION_CANDIDATES = ["get_metadata", "getMetadata", "action_get_metadata"];
 
-    /* ===========================
-       2) HELPER FUNCTIONS
+/* ===========================
+       2) HELPER FUNCTIONS (修正版)
        =========================== */
-    function getStudentIdFromLogin(){ const u=window.currentUser||JSON.parse(sessionStorage.getItem("currentUser")||"{}"); return u.student_id||""; }
-    function __loadCurrentUser(){
-  const raw = sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || "";
-  if(!raw) return { name: "訪客" };
-  try{
-    const obj = JSON.parse(raw);
-    return (obj && typeof obj === "object") ? obj : { name: String(obj || "訪客") };
-  }catch(e){
-    return { name: "訪客" };
-  }
-}
+    
+    // 1. 統一讀取使用者資訊的函式
+    function __loadCurrentUser() {
+        const raw = sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || "";
+        
+        // 預設訪客物件
+        const guestUser = { name: "訪客", id: "guest_" + Date.now() };
+
+        if (!raw) return guestUser;
+
+        try {
+            const obj = JSON.parse(raw);
+            
+            // ★ 關鍵修正：對應試算表邏輯
+            // ID 優先抓取 email (A欄) 或 account，若無則抓 id
+            const finalId = obj.email || obj.account || obj.id || guestUser.id;
+            
+            // Name 優先抓取 name (D欄) 或 Name，若無則抓 username
+            const finalName = obj.name || obj.Name || obj.username || "訪客";
+
+            return {
+                id: finalId,      // 這是要傳給後端紀錄的唯一識別 (Email)
+                name: finalName,  // 這是顯示在右上角的姓名
+                ...obj            // 保留其他原始欄位
+            };
+        } catch (e) {
+            console.error("解析使用者資料失敗", e);
+            return guestUser;
+        }
+    }
+
+    // 2. 取得學生 ID (用於 API 呼叫)
+    function getStudentIdFromLogin() { 
+        const user = __loadCurrentUser(); 
+        return user.id; 
+    }
+
+    // 3. 非同步確保 ID (用於 startTest)
+    async function ensureStudentId() {
+        const user = __loadCurrentUser();
+        const sid = user.id;
+
+        if (!sid || String(sid).startsWith("guest_")) {
+            console.log("未偵測到正式帳號，使用訪客 ID:", sid);
+        } else {
+            console.log("已偵測到正式帳號 (Email):", sid);
+        }
+        
+        CAT.student_id = sid;
+        return sid;
+    }
 
     
 async function ensureStudentId(){
