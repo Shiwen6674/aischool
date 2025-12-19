@@ -1016,6 +1016,37 @@ function renderQuestion(item) {
         return html;
     }
 
+// ★ 新增這個函式，用來統一處理「題目文字 + 表格渲染」
+function processStem(rawStem) {
+    if (!rawStem) return "";
+    let displayStem = rawStem;
+    let stimulusHtml = "";
+
+    if (displayStem.includes("[STIMULUS_JSON]")) {
+        const parts = displayStem.split("[STIMULUS_JSON]");
+        const textPart = parts[0];
+        const jsonPart = parts[1];
+
+        try {
+            const stimData = JSON.parse(jsonPart);
+            stimulusHtml = renderStimulus(stimData); // 呼叫你原本就有的 renderStimulus
+
+            if (textPart.includes("【題目】")) {
+                displayStem = textPart.split("【題目】")[1].trim();
+            } else {
+                displayStem = textPart.trim();
+            }
+        } catch (e) {
+            console.error("JSON Parse Error", e);
+            displayStem = textPart;
+        }
+    }
+    // 回傳組合後的 HTML
+    return `${stimulusHtml}<div class="mt-2 leading-relaxed text-base md:text-lg">${displayStem.replace(/\n/g, "<br>")}</div>`;
+}
+
+
+      
 // 1) 把 feedback_student 可能是「物件」或「JSON字串」統一成物件
 function normalizeAiFeedback(aiDataRaw){
   if (!aiDataRaw) return { summary:"", weakness_analysis:"", action_plan:[] };
@@ -1243,7 +1274,14 @@ async function finishTest() {
       wList.innerHTML = "<div class='text-emerald-400 text-center font-bold text-xl py-4'>恭喜！全對，沒有錯題。</div>";
       pdfWList.innerHTML = "<div style='padding:30px; text-align:center; color:#10b981; font-weight:bold; border:1px dashed #cbd5e1; border-radius:8px;'>表現優異，本單元無錯題！</div>";
     } else {
+     if (!wrongItems.length) {
+      wList.innerHTML = "<div class='text-emerald-400 text-center font-bold text-xl py-4'>恭喜！全對，沒有錯題。</div>";
+      pdfWList.innerHTML = "<div style='padding:30px; text-align:center; color:#10b981; font-weight:bold; border:1px dashed #cbd5e1; border-radius:8px;'>表現優異，本單元無錯題！</div>";
+    } else {
       wrongItems.forEach((w, i) => {
+        // ★ 修改 1: 使用後端回傳的 w.index 作為題號 (若無則 fallback 到 i+1)
+        const qNum = w.index || (i + 1);
+
         const sKey = String(w.student_answer || w.response_option || "").trim() || "？";
         const cKey = String(w.correct_answer || w.correct_key || "").trim() || "？";
 
@@ -1253,10 +1291,18 @@ async function finishTest() {
         const sLine = sText ? sText : "（未取得該選項內容）";
         const cLine = cText ? cText : "（未取得該選項內容）";
 
-        // ---- Web（✅已刪掉「誤選: B 正解: C」那行；✅診斷解析字體改 text-lg）----
+        // ★ 修改 2: 呼叫 processStem 來處理 [STIMULUS_JSON] 表格與題幹
+        const stemHtml = processStem(w.stem);
+
+        // ---- Web 畫面 ----
         wList.insertAdjacentHTML("beforeend", `
           <div class="bg-slate-900/50 p-5 rounded-xl border border-red-500/20">
-            <div class="font-bold text-slate-200 mb-3 text-lg">Q${i + 1}：${w.stem || ""}</div>
+            <div class="flex items-start gap-3 mb-3">
+               <span class="inline-flex items-center justify-center bg-red-500/20 text-red-400 font-bold px-3 py-1 rounded-lg text-sm shrink-0">
+                 Q${qNum}
+               </span>
+            </div>
+            <div class="mb-4 text-white text-lg">${stemHtml}</div>
 
             <div class="text-base text-slate-200 bg-slate-800/60 border border-slate-700 rounded-lg p-3 leading-relaxed mb-4">
               <div><span class="font-black text-red-300">誤選 ${sKey}：</span>${sLine}</div>
@@ -1270,12 +1316,12 @@ async function finishTest() {
           </div>
         `);
 
-        // ---- PDF（同樣保留兩行選項內容）----
+        // ---- PDF 報告書 ----
         pdfWList.insertAdjacentHTML("beforeend", `
           <div class="wrong-item">
             <div class="wi-header">
-              <div class="wi-index">${i + 1}</div>
-              <div class="wi-stem">Q${i + 1}：${String(w.stem || "").substring(0, 50)}${String(w.stem || "").length > 50 ? "..." : ""}</div>
+              <div class="wi-index">${qNum}</div>
+              <div class="wi-stem" style="width:100%;">${stemHtml}</div>
             </div>
 
             <div class="wi-body">
