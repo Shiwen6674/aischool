@@ -153,7 +153,15 @@
     .ans-box { padding: 4px 10px; border-radius: 4px; font-weight: bold; }
     .ans-student { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; }
     .ans-correct { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
-    .wi-footer { background: #fffbeb; padding: 10px; border-radius: 6px; font-size: 12px; color: #475569; }
+    .wi-footer {
+  background: #fffbeb;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 14px;      /* 原本 12px */
+  line-height: 1.8;     /* 新增：更好讀 */
+  color: #475569;
+}
+
 
     /* 處方籤樣式 */
     .advice-card { margin-bottom: 15px; border-radius: 8px; padding: 15px; border-left: 5px solid; page-break-inside: avoid; background: #fff; border: 1px solid #e2e8f0; border-left-width: 5px; }
@@ -1004,6 +1012,20 @@ function splitWeaknessSections(text){
   pushCurrent();
   return sections;
 }
+function getOptionTextFromWrongItem(w, key){
+  const k = String(key || "").trim();
+  if(!k) return "";
+
+  // 常見格式 1：options: {A:"...",B:"...",...}
+  if (w && w.options && w.options[k] != null) return String(w.options[k]);
+
+  // 常見格式 2：option_A / option_B...
+  const map = { A:"option_A", B:"option_B", C:"option_C", D:"option_D" };
+  const f = map[k];
+  if (f && w && w[f] != null) return String(w[f]);
+
+  return "";
+}
 
       
     function selectOption(key, btnElem) {
@@ -1122,42 +1144,66 @@ function splitWeaknessSections(text){
       wList.innerHTML = "<div class='text-emerald-400 text-center font-bold text-xl py-4'>恭喜！全對，沒有錯題。</div>";
       pdfWList.innerHTML = "<div style='padding:30px; text-align:center; color:#10b981; font-weight:bold; border:1px dashed #cbd5e1; border-radius:8px;'>表現優異，本單元無錯題！</div>";
     } else {
-      json.wrong_items.forEach((w, i) => {
-        wList.insertAdjacentHTML("beforeend", `
-          <div class="bg-slate-900/50 p-5 rounded-xl border border-red-500/20">
-            <div class="font-bold text-slate-200 mb-2 text-lg">Q${i + 1}：${w.stem}</div>
+json.wrong_items.forEach((w, i) => {
+  const sKey = w.student_answer;   // 例如 "A"
+  const cKey = w.correct_answer;   // 例如 "B"
+  const sText = getOptionTextFromWrongItem(w, sKey);
+  const cText = getOptionTextFromWrongItem(w, cKey);
 
-            <div class="flex gap-4 text-sm mb-3">
-              <span class="text-red-400 font-bold bg-red-900/30 px-2 py-1 rounded">誤選: ${w.student_answer}</span>
-              <span class="text-emerald-400 font-bold bg-emerald-900/30 px-2 py-1 rounded">正解: ${w.correct_answer}</span>
-            </div>
-            <div class="text-sm text-slate-300 bg-slate-800 p-4 rounded-lg border border-slate-700 leading-relaxed text-justify">
-              <strong class="text-blue-400 block mb-1">診斷解析：</strong>
-              ${w.remedial_text}
-            </div>
-          </div>
-        `);
+  const sLine = sText ? sText : "（未取得該選項內容）";
+  const cLine = cText ? cText : "（未取得該選項內容）";
 
-        pdfWList.insertAdjacentHTML("beforeend", `
-          <div class="wrong-item">
-            <div class="wi-header">
-              <div class="wi-index">${i + 1}</div>
-              <div class="wi-stem">Q${i + 1}：${w.stem.substring(0, 50)}${w.stem.length > 50 ? "..." : ""}</div>
+  // ===== Web =====
+  wList.insertAdjacentHTML("beforeend", `
+    <div class="bg-slate-900/50 p-5 rounded-xl border border-red-500/20">
+      <div class="font-bold text-slate-200 mb-2 text-lg">Q${i + 1}：${w.stem}</div>
 
-            </div>
-            <div class="wi-body">
-              <div class="wi-ans-row">
-                <span class="ans-box ans-student">誤選：${w.student_answer}</span>
-                <span class="ans-box ans-correct">正解：${w.correct_answer}</span>
-              </div>
-              <div class="wi-footer">
-                <strong>弱點與解析：</strong>${w.remedial_text}
-              </div>
-            </div>
-          </div>
-        `);
-      });
-    }
+      <div class="flex gap-4 text-sm mb-3">
+        <span class="text-red-400 font-bold bg-red-900/30 px-2 py-1 rounded">誤選: ${sKey}</span>
+        <span class="text-emerald-400 font-bold bg-emerald-900/30 px-2 py-1 rounded">正解: ${cKey}</span>
+      </div>
+
+      <!-- 新增：把誤選A/正解B 的「選項內容」寫出來（各一行） -->
+      <div class="text-sm text-slate-200 bg-slate-800/60 border border-slate-700 rounded-lg p-3 leading-relaxed mb-3">
+        <div><span class="font-black text-red-300">誤選 ${sKey}：</span>${sLine}</div>
+        <div><span class="font-black text-emerald-300">正解 ${cKey}：</span>${cLine}</div>
+      </div>
+
+      <div class="text-sm text-slate-300 bg-slate-800 p-4 rounded-lg border border-slate-700 leading-relaxed text-justify">
+        <strong class="text-blue-400 block mb-1">診斷解析：</strong>
+        ${w.remedial_text}
+      </div>
+    </div>
+  `);
+
+  // ===== PDF =====
+  pdfWList.insertAdjacentHTML("beforeend", `
+    <div class="wrong-item">
+      <div class="wi-header">
+        <div class="wi-index">${i + 1}</div>
+        <div class="wi-stem">Q${i + 1}：${w.stem.substring(0, 50)}${w.stem.length > 50 ? "..." : ""}</div>
+      </div>
+
+      <div class="wi-body">
+        <div class="wi-ans-row">
+          <span class="ans-box ans-student">誤選：${sKey}</span>
+          <span class="ans-box ans-correct">正解：${cKey}</span>
+        </div>
+
+        <!-- 新增：PDF 也把選項內容寫出來（各一行） -->
+        <div style="margin:8px 0 10px 0; font-size:12px; line-height:1.6; color:#334155;">
+          <div><span style="font-weight:900; color:#ef4444;">誤選 ${sKey}：</span>${sLine}</div>
+          <div><span style="font-weight:900; color:#16a34a;">正解 ${cKey}：</span>${cLine}</div>
+        </div>
+
+        <div class="wi-footer">
+          <strong>弱點與解析：</strong>${w.remedial_text}
+        </div>
+      </div>
+    </div>
+  `);
+});
+
 
     // AI 處方籤
 const aiObj = normalizeAiFeedback(json.feedback_student);
