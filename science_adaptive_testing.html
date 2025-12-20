@@ -954,21 +954,30 @@ function _parseCSV(text){
 
 
 
-            const json = await api(payload);
-            if (!json.item) throw new Error("命題成功但無題目資料");
+           const json = await api(payload);
 
-            CAT.started = true;
-            CAT.test_id = json.test_id || "";
-            CAT.student_id = sid;
-            CAT.n = n;
-            CAT.step = 0;
+// ✅ 修正2：兼容不同後端回傳欄位（item / data.item / items[0] / data.items[0]）
+const firstItem =
+  json.item ||
+  (json.data && json.data.item) ||
+  (Array.isArray(json.items) ? json.items[0] : null) ||
+  (json.data && Array.isArray(json.data.items) ? json.data.items[0] : null);
 
-            document.getElementById("secConfig").classList.add("hidden");
-            document.getElementById("secQuiz").classList.remove("hidden");
-            document.getElementById("quizHeaderInfo").textContent = getUnitInfoString();
+if (!firstItem) throw new Error("命題成功但無題目資料");
 
-            renderQuestion(json.item);
-            UI.setProgress(0, n);
+CAT.started = true;
+CAT.test_id = json.test_id || "";
+CAT.student_id = sid;
+CAT.n = n;
+CAT.step = 0;
+
+document.getElementById("secConfig").classList.add("hidden");
+document.getElementById("secQuiz").classList.remove("hidden");
+document.getElementById("quizHeaderInfo").textContent = getUnitInfoString();
+
+renderQuestion(firstItem);
+UI.setProgress(0, n);
+;
 
         } catch(e) {
             UI.toast("錯誤", "命題失敗: " + e.message, "bad");
@@ -1030,7 +1039,7 @@ function renderQuestion(item) {
     btn.onclick = () => selectOption(key, btn);
     btn.innerHTML = `
       <div class="opt-badge w-8 h-8 rounded-lg bg-white/10 text-slate-300 font-bold flex items-center justify-center shrink-0">${key}</div>
-      <div class="flex-1 text-slate-100 font-bold text-lg leading-relaxed">${(item.options && item.options[key]) ? item.options[key] : ""}</div>
+      <div class="flex-1 text-slate-100 font-bold text-lg leading-relaxed">${getOptionTextFromWrongItem(item, key) || ""}</div>
     `;
     optWrap.appendChild(btn);
   });
@@ -1271,13 +1280,20 @@ function getOptionTextFromWrongItem(w, key){
     }
 
     // 還沒答滿 CAT.n 題：正常前進到下一題
-    if (!json.item) {
-      // 如果後端真的沒給下一題，你至少不會直接進入分析，而是提示「後端沒出題」
-      UI.toast("錯誤", "後端未回傳下一題，無法繼續作答（請檢查後端是否提前結束）。", "bad");
-      return;
-    }
+    const nextItem =
+  json.item ||
+  json.next_item ||
+  (json.data && json.data.item) ||
+  (Array.isArray(json.items) ? json.items[0] : null) ||
+  (json.data && Array.isArray(json.data.items) ? json.data.items[0] : null);
 
-    CAT.next = json.item;
+if (!nextItem) {
+  UI.toast("錯誤", "後端未回傳下一題，無法繼續作答（請檢查後端是否提前結束）。", "bad");
+  return;
+}
+
+CAT.next = nextItem;
+
 
     btnNext.disabled = false;
     btnNext.classList.remove("opacity-50", "bg-slate-700", "text-slate-500");
