@@ -54,7 +54,17 @@
         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); 
         border-radius: 1.5rem;
     }
-    
+
+    /* 隱藏 number 原生上下調整箭頭（改用你自己的 +/-） */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
     /* 輸入元件 */
     select {
     /* 👇 加入這三行，把瀏覽器預設的醜箭頭隱藏掉 */
@@ -240,11 +250,30 @@
 
       <div class="mt-8 pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
         <div class="flex items-center gap-4 bg-white/5 px-4 py-2 rounded-xl border border-white/10">
-          <span class="text-sm font-bold text-slate-300" data-i18n="label_q_count">測驗題數</span>
-          <div class="h-4 w-px bg-white/20"></div>
-          <input id="inpN" type="number" min="5" max="30" value="10" class="w-16 bg-transparent text-center font-mono font-bold text-lg text-cyan-400 focus:outline-none">
-          <span class="text-xs font-bold text-slate-400">題</span>
-        </div>
+  <span class="text-sm font-bold text-slate-300" data-i18n="label_q_count">測驗題數</span>
+  <div class="h-4 w-px bg-white/20"></div>
+
+  <div class="flex items-center rounded-xl overflow-hidden border border-white/10 bg-[#0f172a]/50">
+    <button id="btnNMinus" type="button"
+      class="px-3 py-2 text-slate-200 hover:bg-white/10 active:scale-95 transition disabled:opacity-40 disabled:cursor-not-allowed"
+      aria-label="減少題數">
+      <i class="fa-solid fa-minus"></i>
+    </button>
+
+    <input id="inpN" type="number" min="5" max="30" value="10" inputmode="numeric"
+      class="w-16 bg-transparent text-center font-mono font-black text-lg text-cyan-400 focus:outline-none"
+      aria-label="題數" />
+
+    <button id="btnNPlus" type="button"
+      class="px-3 py-2 text-slate-200 hover:bg-white/10 active:scale-95 transition disabled:opacity-40 disabled:cursor-not-allowed"
+      aria-label="增加題數">
+      <i class="fa-solid fa-plus"></i>
+    </button>
+  </div>
+
+  <span class="text-xs font-bold text-slate-400">題</span>
+</div>
+
         <button id="btnStart" class="w-full md:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-lg shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 group">
           <i class="fa-solid fa-rocket group-hover:animate-bounce"></i>
           <span data-i18n="btn_start_ai">AI 自動命題</span>
@@ -960,7 +989,7 @@ function renderQuestion(item) {
 
   document.getElementById("qWrap").classList.remove("hidden");
 
-  let displayStem = item.stem;
+  let displayStem = String((item && item.stem) ? item.stem : "");
   let stimulusHtml = "";
 
   // 1. 檢查並處理 [STIMULUS_JSON]
@@ -1509,12 +1538,49 @@ function downloadPDF() {
     })
     .finally(() => { el.style.display = "none"; });
 }
+function initQuestionCountStepper(){
+  const inp = document.getElementById("inpN");
+  const btnMinus = document.getElementById("btnNMinus");
+  const btnPlus  = document.getElementById("btnNPlus");
+  if(!inp || !btnMinus || !btnPlus) return;
+
+  const min = parseInt(inp.min || "5", 10);
+  const max = parseInt(inp.max || "30", 10);
+
+  function clampInt(v){
+    v = parseInt(v, 10);
+    if(Number.isNaN(v)) v = min;
+    return Math.max(min, Math.min(max, v));
+  }
+
+  function refreshButtons(){
+    const v = clampInt(inp.value);
+    btnMinus.disabled = (v <= min);
+    btnPlus.disabled  = (v >= max);
+  }
+
+  function setValue(v){
+    inp.value = clampInt(v);
+    refreshButtons();
+  }
+
+  btnMinus.addEventListener("click", () => setValue(parseInt(inp.value || min, 10) - 1));
+  btnPlus.addEventListener("click",  () => setValue(parseInt(inp.value || min, 10) + 1));
+
+  // 手動輸入也要被限制在 min/max
+  inp.addEventListener("change", () => setValue(inp.value));
+  inp.addEventListener("blur",   () => setValue(inp.value));
+
+  // 初始化
+  setValue(inp.value);
+}
 
 
     /* INIT */
     document.addEventListener("DOMContentLoaded", () => {
         const user = __loadCurrentUser();
         document.getElementById("user-info").textContent = user.name || "訪客";
+      initQuestionCountStepper();
         document.getElementById("btnStart").addEventListener("click", startTest);
         document.getElementById("btnSubmit").addEventListener("click", submitAnswer);
         document.getElementById("btnNext").addEventListener("click", async () => {
