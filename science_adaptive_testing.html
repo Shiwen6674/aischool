@@ -187,52 +187,57 @@ input[type="number"] {
     @media print { .no-print { display: none !important; } }
 
 /* =========================================
-   3. Google Translate 客製化樣式 (暴力隱藏版)
+   3. Google Translate 客製化樣式 (暴力隱藏版 2.0)
    ========================================= */
 
-/* 1. 隱藏 Google 翻譯產生的頂部橫幅 iframe */
-.goog-te-banner-frame.skiptranslate {
-    display: none !important;
-}
+/* 1. 隱藏 Google 翻譯的頂部橫幅 (包含 iframe 和 div 兩種模式) */
+.goog-te-banner-frame.skiptranslate, 
+.goog-te-banner-frame,
 iframe.goog-te-banner-frame {
     display: none !important;
     visibility: hidden !important;
     height: 0 !important;
+    width: 0 !important;
 }
 
-/* 2. 強制將 Body 推回頂部 (修正 Google 造成的位移) */
+/* 2. 關鍵：隱藏 Body 直屬的 skiptranslate 區塊 (這是新版橫幅的藏身處) */
+body > .skiptranslate {
+    display: none !important;
+}
+
+/* 3. 強制將 Body 貼回頂部 (修正橫幅造成的 40px 位移) */
 body {
     top: 0px !important;
-    position: static !important; /* 避免 Google 強制設為 relative */
-    margin-top: 0px !important;  /* 確保沒有外邊距 */
+    position: static !important;
+    margin-top: 0px !important;
 }
 
-/* 3. 隱藏原本的 Google 翻譯選單容器 (我們已經自製選單了) */
+/* 4. 隱藏原本的選單掛載點 */
 #google_translate_element {
-    display: none;
+    display: none !important;
 }
 
-/* 4. 隱藏滑鼠指上去時的翻譯提示框 (Tooltip) */
+/* 5. 隱藏滑鼠指上去的翻譯提示框 (Tooltip) */
+#goog-gt-tt, 
+.goog-te-balloon-frame,
 .goog-tooltip {
     display: none !important;
 }
-.goog-tooltip:hover {
-    display: none !important;
-}
+
+/* 6. 去除翻譯後文字的背景色與框線 */
 .goog-text-highlight {
     background-color: transparent !important;
     border: none !important;
     box-shadow: none !important;
 }
 
-/* 5. 修正 PDF 匯出時可能出現的 Google 垃圾標籤 */
+/* 7. 修正 PDF 匯出時的干擾 */
 @media print {
     font {
         background-color: transparent !important;
         box-shadow: none !important;
     }
 }
-
     /* 注音模式專用樣式 */
 ruby { display: inline-flex; flex-direction: column; align-items: center; vertical-align: bottom; margin: 0 2px; }
 rt { font-family: "Bopomofo", sans-serif; font-size: 0.6em; line-height: 1; margin-bottom: -0.2em; color: #cbd5e1; font-weight: normal; }
