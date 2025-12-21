@@ -265,43 +265,42 @@ body {
     }
 }
 /* =========================================
-   4. 注音模式樣式 (台灣直排注音 3.0 - 修正版)
+   4. 注音模式樣式 (台灣直排注音 - 暴力強制版)
    ========================================= */
 
-/* 1. 全局行距調整：避免注音跟上一行打架 */
+/* 1. 調整行高，給注音空間 */
 body.zhuyin-mode .leading-relaxed {
-    line-height: 2.2 !important; 
+    line-height: 2.5 !important;
 }
 
-/* 2. Ruby 容器 */
+/* 2. Ruby 容器：強制左右排列 */
 ruby {
-    display: inline-flex;       /* ★ 關鍵：讓「字」與「注音」變成左右並排 */
-    /* flex-direction: column;  <--- 兇手就是這行，我把它拿掉了！ */
-    align-items: center;        /* 垂直置中對齊 */
-    vertical-align: text-bottom;/* 對齊基線 */
-    margin: 0 2px;              /* 字與字之間的間距 */
+    display: inline-flex !important;      /* 強制字與注音左右排 */
+    flex-direction: row !important;       /* 確保是橫向 (左字 右注音) */
+    align-items: center !important;       /* 垂直置中 */
+    vertical-align: text-bottom !important;
+    margin: 0 2px !important;
 }
 
-/* 3. 注音本體 (rt) */
+/* 3. 注音本體：強制直排且轉正 */
 rt {
-    display: block;             /* 讓它變成區塊，才能設定寬高 */
-    font-family: "Bopomofo", sans-serif; 
-    font-size: 0.5em;           /* 注音大小 (約本字的 50%) */
-    line-height: 1.1;           /* 注音符號之間的距離 */
-    color: #cbd5e1;             /* 注音顏色 */
-    font-weight: normal;
+    display: block !important;
+    font-family: "Bopomofo", sans-serif !important;
+    font-size: 0.5em !important;          /* 字體大小 */
+    line-height: 1.1 !important;
+    color: #cbd5e1 !important;            /* 淺灰色 */
+    font-weight: normal !important;
     
-    /* ★ 關鍵：讓注音符號直排 ★ */
-    writing-mode: vertical-rl;  /* 文字流向：從上到下，從右到左 */
-    text-orientation: upright;  /* 符號轉正 */
+    /* ★ 核心：直排魔法 ★ */
+    writing-mode: vertical-rl !important; /* 從上到下 */
+    text-orientation: upright !important; /* 符號轉正 (不倒過來) */
     
-    margin-left: 3px;           /* 注音跟國字的距離 */
-    padding: 0;
-    text-align: center;
+    margin-left: 4px !important;          /* 稍微遠離國字 */
+    text-align: center !important;
 }
 
-/* 4. 隱藏不支援 ruby 時的括號 (rp) */
-rp { display: none; }
+/* 隱藏括號 */
+rp { display: none !important; }
 
 /* =========================================
    5. PDF 學習建議清單樣式修正 (強制顯示分點)
@@ -1900,30 +1899,33 @@ function initQuestionCountStepper(){
    遺失的注音工具函式包 (補在這裡)
    ========================================= */
 
-// 1. 核心轉換函式：強制輸出台灣注音
+/* =========================================
+   修正後的 JS：強制輸出注音 (ㄅㄆㄇ)
+   ========================================= */
 function convertToRubyHtml(text) {
-    // 如果 pinyinPro 沒載入成功，就直接回傳原文，避免報錯
-    if (typeof pinyinPro === 'undefined') return text;
+    // 檢查函式庫是否載入
+    if (typeof pinyinPro === 'undefined') {
+        console.error("pinyin-pro library not loaded!");
+        return text; 
+    }
     
     const { pinyin } = pinyinPro;
     
-    // ★★★ 關鍵修改在這裡 ★★★
-    // pattern: 'zhuyin' -> 確保輸出 ㄅㄆㄇ
-    // toneType: 'symbol' -> 確保輸出 聲調符號
+    // ★★★ 關鍵修改：pattern: 'zhuyin' ★★★
+    // 這會強制它吐出 ㄅㄆㄇ，而不是 abc
     const tokens = pinyin(text, { 
-        pattern: 'zhuyin',    
-        toneType: 'symbol',   
+        pattern: 'zhuyin',    // <--- 絕對不能是 'pinyin'
+        toneType: 'symbol',   // 顯示聲調符號
         type: 'all',          
         multiple: false       
     });
 
     let html = '';
     tokens.forEach(t => {
-        // 如果是中文字，就包上注音標籤
         if (t.isZh) {
+            // 生成 ruby 標籤
             html += `<ruby>${t.origin}<rt>${t.pinyin}</rt></ruby>`;
         } else {
-            // 標點符號或英文，直接顯示原本的字
             html += t.origin;
         }
     });
