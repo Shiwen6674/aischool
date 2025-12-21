@@ -241,11 +241,39 @@ body {
         box-shadow: none !important;
     }
 }
-    /* 注音模式專用樣式 */
-ruby { display: inline-flex; flex-direction: column; align-items: center; vertical-align: bottom; margin: 0 2px; }
-rt { font-family: "Bopomofo", sans-serif; font-size: 0.6em; line-height: 1; margin-bottom: -0.2em; color: #cbd5e1; font-weight: normal; }
-/* 開啟注音時拉高行距，避免重疊 */
-body.zhuyin-mode .leading-relaxed { line-height: 2.5 !important; }
+/* =========================================
+       4. 注音模式樣式 (台灣直排注音版) - 修改這裡
+       ========================================= */
+    
+    /* 開啟注音時拉高行距，避免注音打架 */
+    body.zhuyin-mode .leading-relaxed {
+        line-height: 2.8 !important; 
+    }
+
+    /* Ruby 容器 */
+    ruby {
+        display: inline-flex;
+        flex-direction: column; 
+        align-items: center;
+        margin: 0 2px;
+        vertical-align: text-bottom;
+    }
+
+    /* 注音符號本體 (rt) */
+    rt {
+        font-family: "Bopomofo", sans-serif; /* 優先使用注音字型 */
+        font-size: 0.4em; /* 字體大小 */
+        line-height: 1;
+        color: #cbd5e1; /* 淺灰色 */
+        font-weight: normal;
+        
+        /* ★ 關鍵：強制注音直排顯示在右側 ★ */
+        writing-mode: vertical-rl; /* 直排 */
+        text-orientation: upright; /* 字轉正 */
+        letter-spacing: 0.1em;     /* 聲調與符號的間距 */
+        margin-left: 4px;          /* 與國字的距離 */
+        transform: translateY(-2px); /* 微調位置 */
+    }
     
   </style>
 </head>
