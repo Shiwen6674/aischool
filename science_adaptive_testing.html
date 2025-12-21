@@ -111,13 +111,15 @@ input[type="number"] {
         font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
     }
 
-    .pdf-page {
-        width: 210mm; height: 296mm; /* A4 */
+.pdf-page {
+        width: 210mm; 
+        min-height: 296mm; /* 改成 min-height，容許內容撐開 (雖然後面JS會控制) */
+        /* height: 296mm;  <-- 這一行拿掉或註解掉 */
         padding: 15mm 20mm;
         box-sizing: border-box;
         position: relative;
-        page-break-after: always;
-        overflow: hidden;
+        page-break-after: always; /* 強制每一頁結束後換頁 */
+        /* overflow: hidden; <-- 兇手是這一行！一定要拿掉 */
         background: white;
         border-top: 10px solid #2563eb;
     }
@@ -1521,76 +1523,103 @@ async function finishTest() {
     document.getElementById("resCount").textContent = `(${correct}/${total})`;
     document.getElementById("resScore100").textContent = score100;
 
-    // ===== 錯題列表（Web + PDF）=====
+    // ===== 錯題列表處理 =====
     const wList = document.getElementById("resWrongList");
-    const pdfWList = document.getElementById("pdf-wrong-container");
+    const pdfReportContent = document.getElementById("pdf-report-content");
+    const pdfFirstPageContainer = document.getElementById("pdf-wrong-container"); 
+    
+    // 1. 清空舊內容
     wList.innerHTML = "";
-    pdfWList.innerHTML = "";
+    pdfFirstPageContainer.innerHTML = "";
+    document.querySelectorAll(".dynamic-wrong-page").forEach(el => el.remove());
 
     const wrongItems = Array.isArray(json.wrong_items) ? json.wrong_items : [];
 
     if (!wrongItems.length) {
-  wList.innerHTML = "<div class='text-emerald-400 text-center font-bold text-xl py-4'>恭喜！全對，沒有錯題。</div>";
-  pdfWList.innerHTML = "<div style='padding:30px; text-align:center; color:#10b981; font-weight:bold; border:1px dashed #cbd5e1; border-radius:8px;'>表現優異，本單元無錯題！</div>";
-} else {
-  wrongItems.forEach((w, i) => {
-    const qNum = w.index || (i + 1);
+      // 全對的情況
+      wList.innerHTML = "<div class='text-emerald-400 text-center font-bold text-xl py-4'>恭喜！全對，沒有錯題。</div>";
+      pdfFirstPageContainer.innerHTML = "<div style='padding:30px; text-align:center; color:#10b981; font-weight:bold; border:1px dashed #cbd5e1; border-radius:8px;'>表現優異，本單元無錯題！</div>";
+    } else {
+      
+      // ★★★ 智慧高度偵測分頁邏輯 ★★★
+      
+      // A4 像素高度約為 1123px (96dpi)。扣掉上下 padding 和頁尾保留空間
+      // 設定一個安全高度閥值，超過這個高度就換頁
+      const PAGE_SAFE_HEIGHT = 950; 
 
-    const sKey = String(w.student_answer || w.response_option || "").trim() || "？";
-    const cKey = String(w.correct_answer || w.correct_key || "").trim() || "？";
+      // 先把第一頁視為「當前頁面」
+      let currentPageBody = pdfFirstPageContainer; 
+      let currentPageNum = 1;
+      
+      // 依序處理每一題
+      for (let i = 0; i < wrongItems.length; i++) {
+         const w = wrongItems[i];
+         const realIndex = w.index || (i + 1);
 
-    const sText = getOptionTextFromWrongItem(w, sKey);
-    const cText = getOptionTextFromWrongItem(w, cKey);
+         // 1. 產生 HTML
+         const pdfHtml = generateWrongItemHtml(w, realIndex);
+         const webHtml = generateWebWrongItemHtml(w, realIndex);
 
-    const sLine = sText ? sText : "（未取得該選項內容）";
-    const cLine = cText ? cText : "（未取得該選項內容）";
+         // 2. Web 版：直接全部塞進去 (不分頁)
+         wList.insertAdjacentHTML("beforeend", webHtml);
 
-    const stemHtml = processStem(w.stem);
+         // 3. PDF 版：試著塞進當前頁面
+         // 建立一個暫時的 div 來塞 HTML，方便操作 DOM
+         const tempDiv = document.createElement("div");
+         tempDiv.innerHTML = pdfHtml;
+         const itemElement = tempDiv.firstElementChild;
+         
+         currentPageBody.appendChild(itemElement);
 
-    wList.insertAdjacentHTML("beforeend", `
-      <div class="bg-slate-900/50 p-5 rounded-xl border border-red-500/20">
-        <div class="flex items-start gap-3 mb-3">
-           <span class="inline-flex items-center justify-center bg-red-500/20 text-red-400 font-bold px-3 py-1 rounded-lg text-sm shrink-0">
-             Q${qNum}
-           </span>
-        </div>
-        <div class="mb-4 text-white text-lg">${stemHtml}</div>
+         // ★ 關鍵判斷：檢查現在這一頁的高度是否爆了？
+         // 抓取包含這一頁所有內容的 .pdf-page 容器
+         const currentPdfPage = currentPageBody.closest(".pdf-page");
+         
+         // 如果目前高度超過安全值 (且這一頁不是只有剛放進去的這一題)
+         // (currentPdfPage.scrollHeight 代表內容撐開的實際高度)
+         if (currentPdfPage.scrollHeight > PAGE_SAFE_HEIGHT) {
+             
+             // 拿掉剛剛放進去的題目 (因為太擠了)
+             currentPageBody.removeChild(itemElement);
 
-        <div class="text-base text-slate-200 bg-slate-800/60 border border-slate-700 rounded-lg p-3 leading-relaxed mb-4">
-          <div><span class="font-black text-red-300">誤選 ${sKey}：</span>${sLine}</div>
-          <div><span class="font-black text-emerald-300">正解 ${cKey}：</span>${cLine}</div>
-        </div>
+             // --- 建立新的一頁 (A4) ---
+             currentPageNum++;
+             const newPageDiv = document.createElement("div");
+             newPageDiv.className = "pdf-page dynamic-wrong-page"; 
 
-        <div class="text-lg text-slate-200 bg-slate-800 p-4 rounded-lg border border-slate-700 leading-relaxed text-justify">
-          <strong class="text-blue-400 block mb-2">診斷解析：</strong>
-          ${w.remedial_text || ""}
-        </div>
-      </div>
-    `);
+             newPageDiv.innerHTML = `
+                  <div class="pdf-header">
+                       <div>
+                           <div class="ph-title">診斷結果詳析 (續)</div>
+                           <div class="ph-sub">DIAGNOSTIC REPORT (CONT.)</div>
+                       </div>
+                       <div class="ph-title" style="color:#cbd5e1;">01-${currentPageNum}</div>
+                  </div>
+                  <div class="pdf-wrong-next-container" style="margin-top: 10px;">
+                      </div>
+                  <div class="pdf-footer-fixed">Page 1-${currentPageNum}</div>
+             `;
 
-    pdfWList.insertAdjacentHTML("beforeend", `
-      <div class="wrong-item">
-        <div class="wi-header">
-          <div class="wi-index">${qNum}</div>
-          <div class="wi-stem" style="width:100%;">${stemHtml}</div>
-        </div>
+             // 插入到 DOM (在 Advice 頁之前)
+             const adviceContainer = document.getElementById("pdf-advice-container");
+             const advicePage = adviceContainer ? adviceContainer.closest(".pdf-page") : null;
+             
+             if(advicePage && advicePage.parentNode) {
+                 advicePage.parentNode.insertBefore(newPageDiv, advicePage);
+             } else {
+                 pdfReportContent.appendChild(newPageDiv);
+             }
 
-        <div class="wi-body">
-          <div style="margin:8px 0 10px 0; font-size:12px; line-height:1.6; color:#334155;">
-            <div><span style="font-weight:900; color:#ef4444;">誤選 ${sKey}：</span>${sLine}</div>
-            <div><span style="font-weight:900; color:#16a34a;">正解 ${cKey}：</span>${cLine}</div>
-          </div>
+             // 更新「當前頁面容器」指向新的一頁
+             currentPageBody = newPageDiv.querySelector(".pdf-wrong-next-container");
 
-          <div class="wi-footer">
-            <strong>診斷解析：</strong>${w.remedial_text || ""}
-          </div>
-        </div>
-      </div>
-    `);
-  });
-}
+             // 把剛剛拿出來的題目，重新塞到新頁面
+             currentPageBody.appendChild(itemElement);
+         }
+      }
+    }
 
-    // ===== AI 學習診斷：固定三塊（總體評估 / 迷思分析 / 學習建議）=====
+    // ... (後續 AI 分析部分保持不變) ...
     const aiObj = normalizeAiFeedback(json.feedback_student);
     const webAiBox = document.getElementById("resAiFeedback");
     const pdfAiBox = document.getElementById("pdf-advice-container");
@@ -1600,8 +1629,6 @@ async function finishTest() {
     let actions = Array.isArray(aiObj.action_plan) ? aiObj.action_plan.map(x => String(x || "").trim()).filter(Boolean) : [];
 
     const secAll = splitWeaknessSections(weakness);
-
-    // ✅把「總體評估/整體評估/總體表現」都視為 overview，避免你現在那種「overview 抓不到」的情況
     let overviewFromSection = "";
     const restSections = [];
     for (const sec of secAll) {
@@ -1615,7 +1642,6 @@ async function finishTest() {
 
     const overviewText = (summary || overviewFromSection || "").trim() || "（未取得總體評估內容）";
 
-    // 迷思分析：優先抓標題含「迷思/重點迷思」，否則把剩下段落合併
     let misconceptionText = "";
     const mis = restSections.find(s => /迷思|重點迷思|misconception/i.test(String(s.title || "")));
     if (mis) {
@@ -1633,22 +1659,19 @@ async function finishTest() {
       misconceptionText = weakness || "（未取得迷思分析內容）";
     }
 
-    // 學習建議：action_plan
-    if (!actions.length) actions = ["（未取得學習建議：請檢查後台回傳是否含 action_plan 陣列）"];
+    if (!actions.length) actions = ["（未取得學習建議）"];
 
-    // Web（✅只三塊；✅「總體表現」改名成「總體評估」；✅「重點迷思歸納」概念統一呈現為「迷思分析」）
+    // Web Output
     webAiBox.innerHTML = `
       <div class="grid gap-4">
         <div class="rounded-2xl border border-blue-500/30 bg-blue-500/10 p-5">
           <div class="text-base font-black text-blue-300 mb-2">總體評估</div>
           <div class="text-sm leading-relaxed text-slate-200 whitespace-pre-line">${overviewText}</div>
         </div>
-
         <div class="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5">
           <div class="text-base font-black text-amber-300 mb-2">迷思分析</div>
           <div class="text-sm leading-relaxed text-slate-200 whitespace-pre-line">${misconceptionText}</div>
         </div>
-
         <div class="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5">
           <div class="text-base font-black text-emerald-300 mb-2">學習建議</div>
           <ul class="list-disc pl-5 space-y-2 text-sm leading-relaxed text-slate-200">
@@ -1658,18 +1681,16 @@ async function finishTest() {
       </div>
     `;
 
-    // PDF（同樣只三塊）
+    // PDF Output
     pdfAiBox.innerHTML = `
       <div class="advice-card advice-blue">
         <div class="advice-title">總體評估 OVERVIEW</div>
         <div class="advice-content">${overviewText.replace(/\n/g, "<br>")}</div>
       </div>
-
       <div class="advice-card advice-yellow">
         <div class="advice-title">迷思分析 MISCONCEPTIONS</div>
         <div class="advice-content">${misconceptionText.replace(/\n/g, "<br>")}</div>
       </div>
-
       <div class="advice-card advice-green">
         <div class="advice-title">學習建議 RECOMMENDATIONS</div>
         <div class="advice-content">
@@ -1682,13 +1703,16 @@ async function finishTest() {
 
     updatePdfInfo(score100, correct, total);
 
+    if(typeof isZhuyinActive !== 'undefined' && isZhuyinActive) {
+       setTimeout(applyZhuyinToPage, 100);
+    }
+
   } catch (e) {
     UI.toast("錯誤", "結算失敗: " + e.message, "bad");
   } finally {
     hideLoading();
   }
 }
-
 
 
 
