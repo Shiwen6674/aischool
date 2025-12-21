@@ -1760,19 +1760,35 @@ function initQuestionCountStepper(){
    遺失的注音工具函式包 (補在這裡)
    ========================================= */
 
-// 1. 核心轉換函式
+// 1. 核心轉換函式：強制輸出台灣注音
 function convertToRubyHtml(text) {
+    // 如果 pinyinPro 沒載入成功，就直接回傳原文，避免報錯
     if (typeof pinyinPro === 'undefined') return text;
+    
     const { pinyin } = pinyinPro;
-    const tokens = pinyin(text, { pattern: 'zhuyin', toneType: 'symbol', type: 'all', multiple: false });
+    
+    // ★★★ 關鍵修改在這裡 ★★★
+    // pattern: 'zhuyin' -> 確保輸出 ㄅㄆㄇ
+    // toneType: 'symbol' -> 確保輸出 聲調符號
+    const tokens = pinyin(text, { 
+        pattern: 'zhuyin',    
+        toneType: 'symbol',   
+        type: 'all',          
+        multiple: false       
+    });
+
     let html = '';
     tokens.forEach(t => {
-        if (t.isZh) html += `<ruby>${t.origin}<rt>${t.pinyin}</rt></ruby>`;
-        else html += t.origin;
+        // 如果是中文字，就包上注音標籤
+        if (t.isZh) {
+            html += `<ruby>${t.origin}<rt>${t.pinyin}</rt></ruby>`;
+        } else {
+            // 標點符號或英文，直接顯示原本的字
+            html += t.origin;
+        }
     });
     return html;
 }
-
 // 2. 將頁面上的指定區塊加上注音
 function applyZhuyinToPage() {
     const targets = [
