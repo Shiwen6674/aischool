@@ -190,10 +190,10 @@ input[type="number"] {
     @media print { .no-print { display: none !important; } }
 
 /* =========================================
-   3. Google Translate 客製化樣式 (暴力隱藏版 2.0)
+   3. Google Translate 客製化樣式 (暴力隱藏版 3.0 - 終極乾淨版)
    ========================================= */
 
-/* 1. 隱藏 Google 翻譯的頂部橫幅 (包含 iframe 和 div 兩種模式) */
+/* 1. 隱藏 Google 翻譯的頂部橫幅 (iframe 和 div) */
 .goog-te-banner-frame.skiptranslate, 
 .goog-te-banner-frame,
 iframe.goog-te-banner-frame {
@@ -201,40 +201,61 @@ iframe.goog-te-banner-frame {
     visibility: hidden !important;
     height: 0 !important;
     width: 0 !important;
+    pointer-events: none !important;
 }
 
-/* 2. 關鍵：隱藏 Body 直屬的 skiptranslate 區塊 (這是新版橫幅的藏身處) */
+/* 2. 隱藏 Body 直屬的 skiptranslate 區塊 */
 body > .skiptranslate {
     display: none !important;
 }
 
-/* 3. 強制將 Body 貼回頂部 (修正橫幅造成的 40px 位移) */
+/* 3. ★ 關鍵：隱藏左上角的 G Icon 圖示 ★ */
+.goog-te-gadget-icon {
+    display: none !important;
+    background: none !important;
+}
+img.goog-te-gadget-icon {
+    display: none !important;
+}
+.goog-te-gadget-simple {
+    display: none !important;
+}
+
+/* 4. 隱藏掛載點 (但保留 DOM 結構讓 JS 可以運作) */
+#google_translate_element {
+    display: none !important; /* 視覺隱藏 */
+    visibility: hidden !important;
+    position: absolute !important;
+    top: -9999px !important;
+    left: -9999px !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+/* 5. 強制將 Body 貼回頂部 */
 body {
     top: 0px !important;
     position: static !important;
     margin-top: 0px !important;
 }
 
-/* 4. 隱藏原本的選單掛載點 */
-#google_translate_element {
-    display: none !important;
-}
-
-/* 5. 隱藏滑鼠指上去的翻譯提示框 (Tooltip) */
+/* 6. 隱藏滑鼠指上去的提示框 (Tooltip) */
 #goog-gt-tt, 
-.goog-te-balloon-frame,
+.goog-te-balloon-frame, 
 .goog-tooltip {
     display: none !important;
+    visibility: hidden !important;
 }
 
-/* 6. 去除翻譯後文字的背景色與框線 */
+/* 7. 去除翻譯後文字的背景色 */
 .goog-text-highlight {
     background-color: transparent !important;
     border: none !important;
     box-shadow: none !important;
 }
 
-/* 7. 修正 PDF 匯出時的干擾 */
+/* 8. 修正 PDF 匯出時的干擾 */
 @media print {
     font {
         background-color: transparent !important;
