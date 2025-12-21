@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+TC:wght@300;400;700;900&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-
+<script src="https://unpkg.com/pinyin-pro"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -218,6 +218,12 @@ body {
         box-shadow: none !important;
     }
 }
+
+    /* 注音模式專用樣式 */
+ruby { display: inline-flex; flex-direction: column; align-items: center; vertical-align: bottom; margin: 0 2px; }
+rt { font-family: "Bopomofo", sans-serif; font-size: 0.6em; line-height: 1; margin-bottom: -0.2em; color: #cbd5e1; font-weight: normal; }
+/* 開啟注音時拉高行距，避免重疊 */
+body.zhuyin-mode .leading-relaxed { line-height: 2.5 !important; }
     
   </style>
 </head>
@@ -252,7 +258,11 @@ body {
         </select>
         <div class="flex items-center gap-2 pl-2 border-l border-white/20">
              <div id="user-info" class="text-sm font-bold text-cyan-400">訪客</div>
-        </div>
+        <button id="btnZhuyinToggle" onclick="toggleZhuyinMode()" class="hidden items-center gap-1 px-3 py-1 ml-2 rounded-full border border-indigo-500/40 text-indigo-300 text-xs font-bold hover:bg-indigo-500/20 transition" style="display:none;">
+      <span class="text-[10px] border border-current rounded px-0.5 leading-none">ㄅ</span>
+      <span>注音</span>
+  </button>
+  </div>
         <div id="connBadge" class="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold">
           <i class="fa-solid fa-wifi"></i> <span>Online</span>
         </div>
@@ -983,143 +993,180 @@ function _parseCSV(text){
         return `${p.stage}${p.grade}年級 ${p.semester} ${p.textbook_version} 「${p.unit_name}」`;
     }
 
-    async function startTest() {
-        const uVal = document.getElementById("selUnit").value;
-        if(!uVal) { UI.toast("提示", "請先完成單元選擇", "warn"); return; }
+/* =========================================
+   自動注音邏輯變數 (請放在這兩個 function 上方)
+   ========================================= */
+let isZhuyinActive = false;
 
-        const sid = await ensureStudentId();
-        const n = parseInt(document.getElementById("inpN").value, 10) || 15;
+// 1. 啟動測驗 (整合了您的 API 邏輯 + 注音判斷)
+async function startTest() {
+    const uVal = document.getElementById("selUnit").value;
+    if(!uVal) { UI.toast("提示", "請先完成單元選擇", "warn"); return; }
 
-        showLoading("GENERATING", "AI 正在生成素養試題...");
+    // --- ★ 新增：精準注音判斷邏輯 Start ★ ---
+    const grade = document.getElementById("selGrade").value;     // 取得年級
+    const lang = document.getElementById("language-selector").value; // 取得語言
+    const btnZhuyin = document.getElementById("btnZhuyinToggle");
+
+    // 邏輯：只有「3年級 或 4年級」且「繁體中文」才開啟
+    if ( (String(grade) === "3" || String(grade) === "4") && lang === "zh-TW" ) {
+        isZhuyinActive = true; 
+        document.body.classList.add("zhuyin-mode"); 
+
+        // 顯示按鈕 (讓學生還能手動關掉)
+        if(btnZhuyin) {
+            btnZhuyin.style.display = "flex";
+            // 更新按鈕樣式為開啟
+            btnZhuyin.classList.add("bg-indigo-500", "text-white", "border-transparent");
+            btnZhuyin.classList.remove("bg-transparent", "text-indigo-300", "border-indigo-500/40");
+        }
+        console.log("已偵測到國小中年級，自動開啟注音模式");
+    } else {
+        // 其他情況 -> 強制關閉並隱藏按鈕
+        isZhuyinActive = false;
+        document.body.classList.remove("zhuyin-mode");
+        if(btnZhuyin) btnZhuyin.style.display = "none";
+    }
+    // --- ★ 新增：精準注音判斷邏輯 End ★ ---
+
+    const sid = await ensureStudentId();
+    const n = parseInt(document.getElementById("inpN").value, 10) || 15;
+
+    showLoading("GENERATING", "AI 正在生成素養試題...");
+
+    try {
+        const payload = {
+            action: ACTION.START_CAT,
+
+            // 1) 明確告訴後端：教材在哪張表
+            sheet_name: CONTENT_SHEET_NAME,     
+
+            // 2) 明確告訴後端：題庫要寫到哪張表
+            item_bank_sheet: "CATItemBank",
+            itembank_sheet: "CATItemBank",
+            item_bank_sheet_name: "CATItemBank",
+
+            // 3) 必要識別
+            content_db_id: CONTENT_DB_ID,       
+            student_id: sid,
+            student: { student_id: sid },
+            unit: getUnitPayload(),
+            settings: { max_items: n },
+            max_items: n,
+            n: n,
+            num_items: n,
+            n_items: n,
+            maxItems: n,
+            settings2: { n: n, num_items: n }, 
+            
+            // 4) Debug 模式
+            debug: true
+        };
+
+        const json = await api(payload);
+
+        // ✅ 兼容不同後端回傳欄位
+        const firstItem =
+            json.item ||
+            (json.data && json.data.item) ||
+            (Array.isArray(json.items) ? json.items[0] : null) ||
+            (json.data && Array.isArray(json.data.items) ? json.data.items[0] : null);
+
+        if (!firstItem) throw new Error("命題成功但無題目資料");
+
+        CAT.started = true;
+        CAT.test_id = json.test_id || "";
+        CAT.student_id = sid;
+        CAT.n = n;
+        CAT.step = 0;
+
+        document.getElementById("secConfig").classList.add("hidden");
+        document.getElementById("secQuiz").classList.remove("hidden");
+        document.getElementById("quizHeaderInfo").textContent = getUnitInfoString();
+
+        renderQuestion(firstItem);
+        UI.setProgress(0, n);
+
+    } catch(e) {
+        UI.toast("錯誤", "命題失敗: " + e.message, "bad");
+    } finally {
+        hideLoading();
+    }
+}
+
+// 2. 渲染題目 (整合了原本邏輯 + 自動套用注音)
+function renderQuestion(item) {
+    CAT.current = item;
+    if(item && item.item_id) CAT.itemMap[item.item_id] = item; // ✅記住題目
+    CAT.selected = "";
+
+    // ✅只保留一次 qNo 宣告
+    const qNo = Math.min(CAT.step + 1, CAT.n);
+    const badge = document.getElementById("qNoBadge");
+    if (badge) badge.textContent = `Q${qNo}`;
+
+    document.getElementById("qWrap").classList.remove("hidden");
+
+    let displayStem = String((item && item.stem) ? item.stem : "");
+    let stimulusHtml = "";
+
+    // 1. 檢查並處理 [STIMULUS_JSON]
+    if (displayStem.includes("[STIMULUS_JSON]")) {
+        const parts = displayStem.split("[STIMULUS_JSON]");
+        const textPart = parts[0];
+        const jsonPart = parts[1];
 
         try {
-            const payload = {
-  action: ACTION.START_CAT,
+            const stimData = JSON.parse(jsonPart);
+            stimulusHtml = renderStimulus(stimData);
 
-  // 1) 明確告訴後端：教材在哪張表（避免後端找不到課文來源）
-  sheet_name: CONTENT_SHEET_NAME,     // "Sheet1"
-
-  // 2) 明確告訴後端：題庫要寫到哪張表（你原本只送 item_bank_sheet，現在補齊常見別名）
-  item_bank_sheet: "CATItemBank",
-  itembank_sheet: "CATItemBank",
-  item_bank_sheet_name: "CATItemBank",
-
-  // 3) 必要識別
-  content_db_id: CONTENT_DB_ID,       // 直接送，別只靠 api() 補（避免後端大小寫/欄位名不同）
-  student_id: sid,
-  student: { student_id: sid },
-  unit: getUnitPayload(),
-  settings: { max_items: n },
-  max_items: n,
-  n: n,
-  num_items: n,
-  n_items: n,
-  maxItems: n,
-  settings2: { n: n, num_items: n }, //（可有可無，但很保險）
-  // 4) 建議加：方便你在 Network 看後端有沒有真的寫入
-  debug: true
-};
-
-
-
-           const json = await api(payload);
-
-// ✅ 修正2：兼容不同後端回傳欄位（item / data.item / items[0] / data.items[0]）
-const firstItem =
-  json.item ||
-  (json.data && json.data.item) ||
-  (Array.isArray(json.items) ? json.items[0] : null) ||
-  (json.data && Array.isArray(json.data.items) ? json.data.items[0] : null);
-
-if (!firstItem) throw new Error("命題成功但無題目資料");
-
-CAT.started = true;
-CAT.test_id = json.test_id || "";
-CAT.student_id = sid;
-CAT.n = n;
-CAT.step = 0;
-
-document.getElementById("secConfig").classList.add("hidden");
-document.getElementById("secQuiz").classList.remove("hidden");
-document.getElementById("quizHeaderInfo").textContent = getUnitInfoString();
-
-renderQuestion(firstItem);
-UI.setProgress(0, n);
-;
-
-        } catch(e) {
-            UI.toast("錯誤", "命題失敗: " + e.message, "bad");
-        } finally {
-            hideLoading();
+            if (textPart.includes("【題目】")) {
+                displayStem = textPart.split("【題目】")[1].trim();
+            } else {
+                displayStem = textPart.trim();
+            }
+        } catch (e) {
+            console.error("JSON Parse Error", e);
+            displayStem = textPart;
         }
     }
 
-function renderQuestion(item) {
-  CAT.current = item;
-  if(item && item.item_id) CAT.itemMap[item.item_id] = item; // ✅記住題目（含 options）
-  CAT.selected = "";
-
-  // ✅只保留一次 qNo 宣告
-  const qNo = Math.min(CAT.step + 1, CAT.n);
-  const badge = document.getElementById("qNoBadge");
-  if (badge) badge.textContent = `Q${qNo}`;
-
-  document.getElementById("qWrap").classList.remove("hidden");
-
-  let displayStem = String((item && item.stem) ? item.stem : "");
-  let stimulusHtml = "";
-
-  // 1. 檢查並處理 [STIMULUS_JSON]
-  if (displayStem.includes("[STIMULUS_JSON]")) {
-    const parts = displayStem.split("[STIMULUS_JSON]");
-    const textPart = parts[0];
-    const jsonPart = parts[1];
-
-    try {
-      const stimData = JSON.parse(jsonPart);
-      stimulusHtml = renderStimulus(stimData);
-
-      if (textPart.includes("【題目】")) {
-        displayStem = textPart.split("【題目】")[1].trim();
-      } else {
-        displayStem = textPart.trim();
-      }
-    } catch (e) {
-      console.error("JSON Parse Error", e);
-      displayStem = textPart;
-    }
-  }
-
-  // ✅不要再宣告第二個 qNo，直接用上面的 qNo
-  const finalHtml = `
-    ${stimulusHtml}
-    <div class="mt-2 leading-relaxed text-lg">${displayStem.replace(/\n/g, "<br>")}</div>
-  `;
-
-  document.getElementById("qStem").innerHTML = finalHtml;
-
-  const optWrap = document.getElementById("optWrap");
-  optWrap.innerHTML = "";
-
-  ["A","B","C","D"].forEach(key => {
-    const btn = document.createElement("button");
-    btn.className = "option-btn text-left w-full px-5 py-4 rounded-xl flex items-center gap-4 group";
-    btn.onclick = () => selectOption(key, btn);
-    btn.innerHTML = `
-      <div class="opt-badge w-8 h-8 rounded-lg bg-white/10 text-slate-300 font-bold flex items-center justify-center shrink-0">${key}</div>
-      <div class="flex-1 text-slate-100 font-bold text-lg leading-relaxed">${getOptionTextFromWrongItem(item, key) || ""}</div>
+    // ✅ 使用 processStem (如果你有定義) 或直接組合 HTML
+    // 這裡為了保險，直接用您原本的邏輯組合
+    const finalHtml = `
+        ${stimulusHtml}
+        <div class="mt-2 leading-relaxed text-lg">${displayStem.replace(/\n/g, "<br>")}</div>
     `;
-    optWrap.appendChild(btn);
-  });
 
-  document.getElementById("btnSubmit").disabled = true;
+    document.getElementById("qStem").innerHTML = finalHtml;
 
-  const btnNext = document.getElementById("btnNext");
-  btnNext.disabled = true;
-  btnNext.classList.add("opacity-50", "bg-slate-700", "text-slate-500");
-  btnNext.classList.remove("bg-emerald-500", "hover:bg-emerald-400", "text-white", "animate-bounce", "shadow-lg", "shadow-emerald-500/50");
+    const optWrap = document.getElementById("optWrap");
+    optWrap.innerHTML = "";
 
-  document.getElementById("hint").innerHTML = '<i class="fa-solid fa-circle-info text-blue-400"></i> 請選擇一個選項';
+    ["A","B","C","D"].forEach(key => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn text-left w-full px-5 py-4 rounded-xl flex items-center gap-4 group";
+        btn.onclick = () => selectOption(key, btn);
+        btn.innerHTML = `
+            <div class="opt-badge w-8 h-8 rounded-lg bg-white/10 text-slate-300 font-bold flex items-center justify-center shrink-0">${key}</div>
+            <div class="flex-1 text-slate-100 font-bold text-lg leading-relaxed">${getOptionTextFromWrongItem(item, key) || ""}</div>
+        `;
+        optWrap.appendChild(btn);
+    });
+
+    document.getElementById("btnSubmit").disabled = true;
+
+    const btnNext = document.getElementById("btnNext");
+    btnNext.disabled = true;
+    btnNext.classList.add("opacity-50", "bg-slate-700", "text-slate-500");
+    btnNext.classList.remove("bg-emerald-500", "hover:bg-emerald-400", "text-white", "animate-bounce", "shadow-lg", "shadow-emerald-500/50");
+
+    document.getElementById("hint").innerHTML = '<i class="fa-solid fa-circle-info text-blue-400"></i> 請選擇一個選項';
+
+    // --- ★ 新增：如果注音模式開啟，延遲一下自動套用注音 ★ ---
+    if(typeof isZhuyinActive !== 'undefined' && isZhuyinActive) { 
+        setTimeout(applyZhuyinToPage, 50); 
+    }
 }
 
 
