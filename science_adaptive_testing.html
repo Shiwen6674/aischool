@@ -265,38 +265,43 @@ body {
     }
 }
 /* =========================================
-       4. 注音模式樣式 (台灣直排注音版) - 修改這裡
-       ========================================= */
+   4. 注音模式樣式 (台灣直排注音 3.0 - 修正版)
+   ========================================= */
+
+/* 1. 全局行距調整：避免注音跟上一行打架 */
+body.zhuyin-mode .leading-relaxed {
+    line-height: 2.2 !important; 
+}
+
+/* 2. Ruby 容器 */
+ruby {
+    display: inline-flex;       /* ★ 關鍵：讓「字」與「注音」變成左右並排 */
+    /* flex-direction: column;  <--- 兇手就是這行，我把它拿掉了！ */
+    align-items: center;        /* 垂直置中對齊 */
+    vertical-align: text-bottom;/* 對齊基線 */
+    margin: 0 2px;              /* 字與字之間的間距 */
+}
+
+/* 3. 注音本體 (rt) */
+rt {
+    display: block;             /* 讓它變成區塊，才能設定寬高 */
+    font-family: "Bopomofo", sans-serif; 
+    font-size: 0.5em;           /* 注音大小 (約本字的 50%) */
+    line-height: 1.1;           /* 注音符號之間的距離 */
+    color: #cbd5e1;             /* 注音顏色 */
+    font-weight: normal;
     
-    /* 開啟注音時拉高行距，避免注音打架 */
-    body.zhuyin-mode .leading-relaxed {
-        line-height: 2.8 !important; 
-    }
+    /* ★ 關鍵：讓注音符號直排 ★ */
+    writing-mode: vertical-rl;  /* 文字流向：從上到下，從右到左 */
+    text-orientation: upright;  /* 符號轉正 */
+    
+    margin-left: 3px;           /* 注音跟國字的距離 */
+    padding: 0;
+    text-align: center;
+}
 
-    /* Ruby 容器 */
-    ruby {
-        display: inline-flex;
-        flex-direction: column; 
-        align-items: center;
-        margin: 0 2px;
-        vertical-align: text-bottom;
-    }
-
-    /* 注音符號本體 (rt) */
-    rt {
-        font-family: "Bopomofo", sans-serif; /* 優先使用注音字型 */
-        font-size: 0.4em; /* 字體大小 */
-        line-height: 1;
-        color: #cbd5e1; /* 淺灰色 */
-        font-weight: normal;
-        
-        /* ★ 關鍵：強制注音直排顯示在右側 ★ */
-        writing-mode: vertical-rl; /* 直排 */
-        text-orientation: upright; /* 字轉正 */
-        letter-spacing: 0.1em;     /* 聲調與符號的間距 */
-        margin-left: 4px;          /* 與國字的距離 */
-        transform: translateY(-2px); /* 微調位置 */
-    }
+/* 4. 隱藏不支援 ruby 時的括號 (rp) */
+rp { display: none; }
     
   </style>
 </head>
@@ -377,7 +382,7 @@ body {
       <i class="fa-solid fa-minus"></i>
     </button>
 
-    <input id="inpN" type="number" min="20" max="40" value="25" inputmode="numeric"
+    <input id="inpN" type="number" min="5" max="40" value="10" inputmode="numeric"
       class="w-16 bg-transparent text-center font-mono font-black text-lg text-cyan-400 focus:outline-none"
       aria-label="題數" />
 
@@ -1159,7 +1164,21 @@ async function startTest() {
 
         renderQuestion(firstItem);
         UI.setProgress(0, n);
+// ★★★ 新增：在這裡控制注音按鈕顯示 ★★★
+        const grade = document.getElementById("selGrade").value;
+        const lang = document.getElementById("language-selector").value;
+        const btnZhuyin = document.getElementById("btnZhuyinToggle");
 
+        // 邏輯：只要進入測驗，且是繁體中文，就顯示按鈕
+        if (lang === "zh-TW" && btnZhuyin) {
+            btnZhuyin.style.display = "flex"; // 顯示按鈕
+            btnZhuyin.classList.remove("hidden");
+            
+            // 如果是 3、4 年級，自動幫他按下去 (開啟模式)
+            if (String(grade) === "3" || String(grade) === "4") {
+                if (!isZhuyinActive) toggleZhuyinMode(); // 自動開
+            }
+        }
     } catch(e) {
         UI.toast("錯誤", "命題失敗: " + e.message, "bad");
     } finally {
