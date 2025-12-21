@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+TC:wght@300;400;700;900&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<script src="https://unpkg.com/pinyin-pro"></script>
+<script src="https://unpkg.com/pinyin-pro@3.18.2/dist/index.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -282,23 +282,27 @@ ruby {
     margin: 0 4px !important;             /* 字與字之間稍微寬鬆一點 */
 }
 
-/* 3. 注音本體 (rt)：直排設定 */
+/* 貼在 <style> 標籤裡面 */
 rt {
     display: block !important;
-    font-family: "Bopomofo", "DFKai-SB", "BiauKai", serif !important; /* 指定標楷體，最像課本 */
-    font-size: 0.5em !important;          /* 注音大小是國字的一半 */
-    line-height: 1.2 !important;          /* 注音符號之間的行高 */
-    color: #555 !important;               /* 深灰色，閱讀較舒適 */
-    font-weight: normal !important;
+    font-family: "Bopomofo", "DFKai-SB", serif !important;
+    font-size: 0.5em !important;
+    line-height: 1.1 !important;
+    color: #555 !important;
     
-    /* ★ 核心魔法：直排注音 ★ */
-    writing-mode: vertical-rl !important; /* 由上往下排 */
-    text-orientation: upright !important; /* 符號轉正 (ㄅ不要躺著) */
+    /* ★ 核心魔法：把注音轉成直排 ★ */
+    writing-mode: vertical-rl !important;
+    text-orientation: upright !important;
     
-    margin-left: 2px !important;          /* 注音跟國字的距離 */
-    padding: 0 !important;
+    margin-left: 2px !important;
     text-align: center !important;
-    width: 1em !important;                /* 固定注音欄位寬度，避免歪掉 */
+    letter-spacing: 0 !important;
+}
+/* 記得加上 ruby 的設定，讓它跟國字左右排 */
+ruby {
+    display: inline-flex !important;
+    align-items: center !important;
+    margin: 0 2px !important;
 }
 
 /* 隱藏括號 */
@@ -1901,29 +1905,33 @@ function initQuestionCountStepper(){
    遺失的注音工具函式包 (補在這裡)
    ========================================= */
 
-/* =========================================
-   修正 JS：強制輸出教科書標準注音 (ㄅㄆㄇ)
-   ========================================= */
+/* ===================================================
+   修正核心：強制 pinyin-pro 輸出「注音符號」而非拼音
+   =================================================== */
 function convertToRubyHtml(text) {
-    if (typeof pinyinPro === 'undefined') return text;
+    // 防呆：如果沒抓到函式庫，直接回傳原字
+    if (typeof pinyinPro === 'undefined') { 
+        console.error("pinyin-pro not loaded"); 
+        return text; 
+    }
     
     const { pinyin } = pinyinPro;
     
-    // ★★★ 核心修改：pattern: 'zhuyin' ★★★
+    // ★★★ 這裡是最重要的地方 ★★★
+    // pattern: 'zhuyin' -> 這行沒寫或寫錯，它就會吐拼音 (abc)
     const tokens = pinyin(text, { 
-        pattern: 'zhuyin',    // <--- 這裡一定要是 zhuyin，絕對不能是 pinyin
-        toneType: 'symbol',   // 顯示聲調符號 (ˊˇˋ˙)
-        type: 'all',          
-        multiple: false       
+        pattern: 'zhuyin',    // 強制指定為注音符號
+        toneType: 'symbol',   // 顯示聲調
+        type: 'all',          // 包含文字與注音資訊
+        multiple: false       // 避免多音字輸出陣列
     });
 
     let html = '';
     tokens.forEach(t => {
+        // t.origin 是國字， t.pinyin 在這裡是注音
         if (t.isZh) {
-            // 生成 ruby 結構
             html += `<ruby>${t.origin}<rt>${t.pinyin}</rt></ruby>`;
         } else {
-            // 標點符號或英文直接顯示
             html += t.origin;
         }
     });
