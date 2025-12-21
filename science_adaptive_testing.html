@@ -38,6 +38,9 @@
         }
       }
     };
+
+
+    
   </script>
 
   <style>
@@ -1725,7 +1728,95 @@ function initQuestionCountStepper(){
   setValue(inp.value);
 }
 
-      
+ /* =========================================
+   遺失的注音工具函式包 (補在這裡)
+   ========================================= */
+
+// 1. 核心轉換函式
+function convertToRubyHtml(text) {
+    if (typeof pinyinPro === 'undefined') return text;
+    const { pinyin } = pinyinPro;
+    const tokens = pinyin(text, { pattern: 'zhuyin', toneType: 'symbol', type: 'all', multiple: false });
+    let html = '';
+    tokens.forEach(t => {
+        if (t.isZh) html += `<ruby>${t.origin}<rt>${t.pinyin}</rt></ruby>`;
+        else html += t.origin;
+    });
+    return html;
+}
+
+// 2. 將頁面上的指定區塊加上注音
+function applyZhuyinToPage() {
+    const targets = [
+        ...document.querySelectorAll("#qStem .mt-2"), 
+        ...document.querySelectorAll(".option-btn .flex-1"),
+        ...document.querySelectorAll("#resAiFeedback div"), 
+        ...document.querySelectorAll("#resAiFeedback li"), 
+        ...document.querySelectorAll(".advice-content")
+    ];
+
+    targets.forEach(el => {
+        if (el.getAttribute("data-has-zhuyin") === "true") return;
+        if (!el.getAttribute("data-original-html")) {
+            el.setAttribute("data-original-html", el.innerHTML);
+        }
+        traverseAndConvert(el);
+        el.setAttribute("data-has-zhuyin", "true");
+    });
+}
+
+// 3. 還原回沒有注音的狀態
+function removeZhuyinFromPage() {
+    const targets = document.querySelectorAll("[data-has-zhuyin='true']");
+    targets.forEach(el => {
+        const original = el.getAttribute("data-original-html");
+        if (original) {
+            el.innerHTML = original;
+        }
+        el.removeAttribute("data-has-zhuyin");
+    });
+}
+
+// 4. 遞迴遍歷 DOM
+function traverseAndConvert(node) {
+    if (node.nodeType === 3) { // Text Node
+        const text = node.nodeValue.trim();
+        if (text) {
+            const span = document.createElement("span");
+            span.innerHTML = convertToRubyHtml(text);
+            node.parentNode.replaceChild(span, node);
+        }
+    } else if (node.nodeType === 1) { // Element Node
+        if (['RUBY', 'RT', 'SCRIPT', 'STYLE', 'TABLE', 'SVG'].includes(node.tagName)) return;
+        Array.from(node.childNodes).forEach(child => traverseAndConvert(child));
+    }
+}
+
+// 5. 切換按鈕樣式
+function updateZhuyinBtnStyle(active) {
+    const btn = document.getElementById("btnZhuyinToggle");
+    if(!btn) return;
+    if(active) {
+        btn.classList.add("bg-indigo-500", "text-white", "border-transparent");
+        btn.classList.remove("bg-transparent", "text-indigo-300", "border-indigo-500/40");
+    } else {
+        btn.classList.remove("bg-indigo-500", "text-white", "border-transparent");
+        btn.classList.add("bg-transparent", "text-indigo-300", "border-indigo-500/40");
+    }
+}
+
+// 6. 手動切換開關
+function toggleZhuyinMode() {
+    isZhuyinActive = !isZhuyinActive;
+    if(isZhuyinActive) {
+        document.body.classList.add("zhuyin-mode");
+        applyZhuyinToPage();
+    } else {
+        document.body.classList.remove("zhuyin-mode");
+        removeZhuyinFromPage();
+    }
+    updateZhuyinBtnStyle(isZhuyinActive);
+}     
 
     /* INIT */
     document.addEventListener("DOMContentLoaded", () => {
