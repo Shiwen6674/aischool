@@ -187,31 +187,45 @@ input[type="number"] {
     @media print { .no-print { display: none !important; } }
 
 /* =========================================
-   3. Google Translate 客製化樣式 (新增)
+   3. Google Translate 客製化樣式 (暴力隱藏版)
    ========================================= */
-/* 隱藏 Google 頂部橫幅 */
+
+/* 1. 隱藏 Google 翻譯產生的頂部橫幅 iframe */
 .goog-te-banner-frame.skiptranslate {
     display: none !important;
 }
-body {
-    top: 0px !important;
+iframe.goog-te-banner-frame {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
 }
 
-/* 隱藏 Google 翻譯的原始 UI 容器，我們用自己的選單控制它 */
+/* 2. 強制將 Body 推回頂部 (修正 Google 造成的位移) */
+body {
+    top: 0px !important;
+    position: static !important; /* 避免 Google 強制設為 relative */
+    margin-top: 0px !important;  /* 確保沒有外邊距 */
+}
+
+/* 3. 隱藏原本的 Google 翻譯選單容器 (我們已經自製選單了) */
 #google_translate_element {
     display: none;
 }
 
-/* 隱藏滑鼠指上去時顯示的原文提示框 */
+/* 4. 隱藏滑鼠指上去時的翻譯提示框 (Tooltip) */
 .goog-tooltip {
+    display: none !important;
+}
+.goog-tooltip:hover {
     display: none !important;
 }
 .goog-text-highlight {
     background-color: transparent !important;
+    border: none !important;
     box-shadow: none !important;
 }
 
-/* 修正 PDF 匯出時可能出現的 Google 注入標籤 */
+/* 5. 修正 PDF 匯出時可能出現的 Google 垃圾標籤 */
 @media print {
     font {
         background-color: transparent !important;
