@@ -6,12 +6,13 @@
   <title>AI Science Adaptive Testing | AI 適性診斷中心</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/pinyin-pro@3.19.6/dist/index.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+TC:wght@300;400;700;900&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<script src="https://unpkg.com/pinyin-pro@3.18.2/dist/index.js"></script>
+
   <script>
     tailwind.config = {
       theme: {
@@ -265,49 +266,44 @@ body {
     }
 }
 /* =========================================
-   4. 注音模式樣式 (台灣教科書擬真版)
+   注音模式樣式 (教科書標準：左字右注音)
    ========================================= */
 
-/* 1. 調整行高，給注音足夠的空間 */
+/* 1. 調整全域行高，避免注音跟上一行字打架 */
 body.zhuyin-mode .leading-relaxed {
-    line-height: 2.6 !important; /* 拉大行距，避免上下行注音打架 */
+    line-height: 2.8 !important; 
 }
 
-/* 2. Ruby 容器：讓「字」與「注音」並排 */
+/* 2. Ruby 容器：整合設定 */
 ruby {
-    display: inline-flex !important;      /* 關鍵：讓 rt 跑到右邊去 */
-    flex-direction: row !important;       /* 水平排列：左邊國字，右邊注音 */
-    align-items: center !important;       /* 垂直置中 */
-    vertical-align: text-bottom !important; 
-    margin: 0 4px !important;             /* 字與字之間稍微寬鬆一點 */
+    display: inline-flex !important;      /* 讓字與注音變成左右並排 */
+    flex-direction: row !important;       /* ★關鍵：左邊國字，右邊注音 */
+    align-items: center !important;       /* 垂直置中對齊 */
+    vertical-align: text-bottom !important; /* 對齊文字基線 */
+    margin: 0 2px !important;             /* 字與字之間的間距 */
 }
 
-/* 貼在 <style> 標籤裡面 */
+/* 3. 注音本體 (rt) */
 rt {
     display: block !important;
-    font-family: "Bopomofo", "DFKai-SB", serif !important;
-    font-size: 0.5em !important;
-    line-height: 1.1 !important;
-    color: #555 !important;
+    /* 字體設定：優先找標準楷體 */
+    font-family: "Bopomofo", "DFKai-SB", "BiauKai", serif !important;
+    font-size: 0.5em !important;          /* 大小約為國字的一半 */
+    line-height: 1.2 !important;
+    color: #555 !important;               /* 深灰色 */
     
-    /* ★ 核心魔法：把注音轉成直排 ★ */
-    writing-mode: vertical-rl !important;
-    text-orientation: upright !important;
+    /* ★ 核心魔法：讓注音符號直排且轉正 ★ */
+    writing-mode: vertical-rl !important; /* 文字流向：由上往下 */
+    text-orientation: upright !important; /* 符號轉正 */
     
-    margin-left: 2px !important;
+    margin-left: 0px !important;          /* 緊貼國字右側 (可依喜好改成 2px) */
     text-align: center !important;
+    width: 1em !important;                /* 固定寬度，避免歪掉 */
     letter-spacing: 0 !important;
 }
-/* 記得加上 ruby 的設定，讓它跟國字左右排 */
-ruby {
-    display: inline-flex !important;
-    align-items: center !important;
-    margin: 0 2px !important;
-}
 
-/* 隱藏括號 */
+/* 4. 隱藏不支援時的括號 */
 rp { display: none !important; }
-
 /* =========================================
    5. PDF 學習建議清單樣式修正 (強制顯示分點)
    ========================================= */
