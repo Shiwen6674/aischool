@@ -1714,7 +1714,64 @@ async function finishTest() {
   }
 }
 
+/* =========================================
+   請貼在 finishTest() 的正下方 (不要貼在裡面喔)
+   ========================================= */
 
+// 產生 PDF 用的錯題 HTML 字串
+function generateWrongItemHtml(w, qNum) {
+    const sKey = String(w.student_answer || "").trim() || "？";
+    const cKey = String(w.correct_answer || "").trim() || "？";
+    const sText = getOptionTextFromWrongItem(w, sKey) || "（內容不明）";
+    const cText = getOptionTextFromWrongItem(w, cKey) || "（內容不明）";
+    const stemHtml = processStem(w.stem); 
+
+    return `
+      <div class="wrong-item">
+        <div class="wi-header">
+          <div class="wi-index">${qNum}</div>
+          <div class="wi-stem" style="width:100%;">${stemHtml}</div>
+        </div>
+        <div class="wi-body">
+          <div style="margin:8px 0 10px 0; font-size:12px; line-height:1.6; color:#334155;">
+            <div><span style="font-weight:900; color:#ef4444;">誤選 ${sKey}：</span>${sText}</div>
+            <div><span style="font-weight:900; color:#16a34a;">正解 ${cKey}：</span>${cText}</div>
+          </div>
+          <div class="wi-footer">
+            <strong>診斷解析：</strong>${w.remedial_text || "請複習相關概念。"}
+          </div>
+        </div>
+      </div>
+    `;
+}
+
+// 產生 Web 網頁用的錯題 HTML 字串
+function generateWebWrongItemHtml(w, qNum) {
+    const sKey = String(w.student_answer || "").trim() || "？";
+    const cKey = String(w.correct_answer || "").trim() || "？";
+    const sText = getOptionTextFromWrongItem(w, sKey) || "（內容不明）";
+    const cText = getOptionTextFromWrongItem(w, cKey) || "（內容不明）";
+    const stemHtml = processStem(w.stem);
+
+    return `
+      <div class="bg-slate-900/50 p-5 rounded-xl border border-red-500/20">
+        <div class="flex items-start gap-3 mb-3">
+           <span class="inline-flex items-center justify-center bg-red-500/20 text-red-400 font-bold px-3 py-1 rounded-lg text-sm shrink-0">
+             Q${qNum}
+           </span>
+        </div>
+        <div class="mb-4 text-white text-lg">${stemHtml}</div>
+        <div class="text-base text-slate-200 bg-slate-800/60 border border-slate-700 rounded-lg p-3 leading-relaxed mb-4">
+          <div><span class="font-black text-red-300">誤選 ${sKey}：</span>${sText}</div>
+          <div><span class="font-black text-emerald-300">正解 ${cKey}：</span>${cText}</div>
+        </div>
+        <div class="text-lg text-slate-200 bg-slate-800 p-4 rounded-lg border border-slate-700 leading-relaxed text-justify">
+          <strong class="text-blue-400 block mb-2">診斷解析：</strong>
+          ${w.remedial_text || ""}
+        </div>
+      </div>
+    `;
+}
 
     function updatePdfInfo(score, correct, total) {
         document.getElementById("pdf-unit-title").textContent = getUnitInfoString();
