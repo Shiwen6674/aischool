@@ -265,38 +265,40 @@ body {
     }
 }
 /* =========================================
-   4. 注音模式樣式 (台灣直排注音 - 暴力強制版)
+   4. 注音模式樣式 (台灣教科書擬真版)
    ========================================= */
 
-/* 1. 調整行高，給注音空間 */
+/* 1. 調整行高，給注音足夠的空間 */
 body.zhuyin-mode .leading-relaxed {
-    line-height: 2.5 !important;
+    line-height: 2.6 !important; /* 拉大行距，避免上下行注音打架 */
 }
 
-/* 2. Ruby 容器：強制左右排列 */
+/* 2. Ruby 容器：讓「字」與「注音」並排 */
 ruby {
-    display: inline-flex !important;      /* 強制字與注音左右排 */
-    flex-direction: row !important;       /* 確保是橫向 (左字 右注音) */
+    display: inline-flex !important;      /* 關鍵：讓 rt 跑到右邊去 */
+    flex-direction: row !important;       /* 水平排列：左邊國字，右邊注音 */
     align-items: center !important;       /* 垂直置中 */
-    vertical-align: text-bottom !important;
-    margin: 0 2px !important;
+    vertical-align: text-bottom !important; 
+    margin: 0 4px !important;             /* 字與字之間稍微寬鬆一點 */
 }
 
-/* 3. 注音本體：強制直排且轉正 */
+/* 3. 注音本體 (rt)：直排設定 */
 rt {
     display: block !important;
-    font-family: "Bopomofo", sans-serif !important;
-    font-size: 0.5em !important;          /* 字體大小 */
-    line-height: 1.1 !important;
-    color: #cbd5e1 !important;            /* 淺灰色 */
+    font-family: "Bopomofo", "DFKai-SB", "BiauKai", serif !important; /* 指定標楷體，最像課本 */
+    font-size: 0.5em !important;          /* 注音大小是國字的一半 */
+    line-height: 1.2 !important;          /* 注音符號之間的行高 */
+    color: #555 !important;               /* 深灰色，閱讀較舒適 */
     font-weight: normal !important;
     
-    /* ★ 核心：直排魔法 ★ */
-    writing-mode: vertical-rl !important; /* 從上到下 */
-    text-orientation: upright !important; /* 符號轉正 (不倒過來) */
+    /* ★ 核心魔法：直排注音 ★ */
+    writing-mode: vertical-rl !important; /* 由上往下排 */
+    text-orientation: upright !important; /* 符號轉正 (ㄅ不要躺著) */
     
-    margin-left: 4px !important;          /* 稍微遠離國字 */
+    margin-left: 2px !important;          /* 注音跟國字的距離 */
+    padding: 0 !important;
     text-align: center !important;
+    width: 1em !important;                /* 固定注音欄位寬度，避免歪掉 */
 }
 
 /* 隱藏括號 */
@@ -1900,22 +1902,17 @@ function initQuestionCountStepper(){
    ========================================= */
 
 /* =========================================
-   修正後的 JS：強制輸出注音 (ㄅㄆㄇ)
+   修正 JS：強制輸出教科書標準注音 (ㄅㄆㄇ)
    ========================================= */
 function convertToRubyHtml(text) {
-    // 檢查函式庫是否載入
-    if (typeof pinyinPro === 'undefined') {
-        console.error("pinyin-pro library not loaded!");
-        return text; 
-    }
+    if (typeof pinyinPro === 'undefined') return text;
     
     const { pinyin } = pinyinPro;
     
-    // ★★★ 關鍵修改：pattern: 'zhuyin' ★★★
-    // 這會強制它吐出 ㄅㄆㄇ，而不是 abc
+    // ★★★ 核心修改：pattern: 'zhuyin' ★★★
     const tokens = pinyin(text, { 
-        pattern: 'zhuyin',    // <--- 絕對不能是 'pinyin'
-        toneType: 'symbol',   // 顯示聲調符號
+        pattern: 'zhuyin',    // <--- 這裡一定要是 zhuyin，絕對不能是 pinyin
+        toneType: 'symbol',   // 顯示聲調符號 (ˊˇˋ˙)
         type: 'all',          
         multiple: false       
     });
@@ -1923,9 +1920,10 @@ function convertToRubyHtml(text) {
     let html = '';
     tokens.forEach(t => {
         if (t.isZh) {
-            // 生成 ruby 標籤
+            // 生成 ruby 結構
             html += `<ruby>${t.origin}<rt>${t.pinyin}</rt></ruby>`;
         } else {
+            // 標點符號或英文直接顯示
             html += t.origin;
         }
     });
