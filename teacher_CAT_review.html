@@ -1,1 +1,27 @@
+/* =========================
+ * 修改後的 doGet
+ * ========================= */
+function doGet(e) {
+  try {
+    const q = e && e.parameter ? e.parameter : {};
+    
+    // ★ 新增：如果網址有 ?page=teacher，就回傳 teacher.html
+    if (q.page === "teacher") {
+      return HtmlService.createTemplateFromFile('teacher')
+        .evaluate()
+        .setTitle('教師後台系統')
+        .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    }
 
+    // ... (原本的 API 判斷邏輯) ...
+
+    // 預設回傳學生首頁
+    return HtmlService.createTemplateFromFile('index')
+      .evaluate()
+      .setTitle('AI 適性診斷中心')
+      // ...
+  } catch (err) {
+      // ...
+  }
+}
