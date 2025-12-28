@@ -1,27 +1,230 @@
-/* =========================
- * 修改後的 doGet
- * ========================= */
-function doGet(e) {
-  try {
-    const q = e && e.parameter ? e.parameter : {};
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>教師後台｜AI 診斷報表</title>
+  <style>
+    /* === 1. 基本樣式 (CSS) === */
+    body { font-family: "Microsoft JhengHei", sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
+    .container { max-width: 1000px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     
-    // ★ 新增：如果網址有 ?page=teacher，就回傳 teacher.html
-    if (q.page === "teacher") {
-      return HtmlService.createTemplateFromFile('teacher')
-        .evaluate()
-        .setTitle('教師後台系統')
-        .addMetaTag('viewport', 'width=device-width, initial-scale=1')
-        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-    }
+    h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
 
-    // ... (原本的 API 判斷邏輯) ...
+    /* 登入區塊 */
+    .login-box { text-align: center; margin-bottom: 20px; padding: 20px; background: #ecf0f1; border-radius: 8px; }
+    input[type="password"] { padding: 10px; width: 200px; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 16px; }
+    button.btn-primary { padding: 10px 20px; background: #3498db; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; transition: 0.3s; }
+    button.btn-primary:hover { background: #2980b9; }
 
-    // 預設回傳學生首頁
-    return HtmlService.createTemplateFromFile('index')
-      .evaluate()
-      .setTitle('AI 適性診斷中心')
-      // ...
-  } catch (err) {
-      // ...
+    /* 表格區塊 */
+    #dashboard { display: none; } /* 預設隱藏，登入後顯示 */
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
+    th { background-color: #34495e; color: #fff; white-space: nowrap; }
+    tr:hover { background-color: #f1f1f1; cursor: pointer; }
+    .score-badge { display: inline-block; padding: 4px 8px; border-radius: 12px; color: #fff; font-weight: bold; font-size: 0.9em; }
+    .high { background-color: #27ae60; }
+    .mid { background-color: #f39c12; }
+    .low { background-color: #e74c3c; }
+
+    /* 彈出視窗 (Modal) */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+    .modal-content { background: #fff; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; padding: 25px; border-radius: 8px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+    .close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #aaa; }
+    .close-btn:hover { color: #333; }
+    .modal-header { font-size: 1.2em; font-weight: bold; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px; color: #2c3e50; }
+    
+    /* 診斷內容樣式 */
+    .diag-section { margin-bottom: 20px; }
+    .diag-title { font-weight: bold; color: #e67e22; margin-bottom: 8px; font-size: 1.1em; }
+    .action-list { padding-left: 20px; }
+    .action-list li { margin-bottom: 8px; line-height: 1.6; }
+    .loading { text-align: center; color: #7f8c8d; font-style: italic; display: none; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>👨‍🏫 教師後台：AI 學習診斷儀表板</h1>
+
+  <div class="login-box" id="loginSection">
+    <p>請輸入教師通關密碼</p>
+    <input type="password" id="teacherPwd" placeholder="輸入密碼 (預設: admin)">
+    <button class="btn-primary" onclick="fetchTeacherData()">登入查詢</button>
+    <div id="loadingText" class="loading">資料讀取中，請稍候...</div>
+  </div>
+
+  <div id="dashboard">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h3>學生測驗紀錄列表</h3>
+      <button class="btn-primary" onclick="location.reload()" style="background:#95a5a6; font-size:14px;">重新整理</button>
+    </div>
+    <table id="reportTable">
+      <thead>
+        <tr>
+          <th>時間</th>
+          <th>座號/ID</th>
+          <th>得分</th>
+          <th>能力值(θ)</th>
+          <th>AI 總結摘要</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        </tbody>
+    </table>
+  </div>
+</div>
+
+<div id="detailModal" class="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeModal(event)">&times;</span>
+    <div class="modal-header" id="modalTitle">學生詳情</div>
+    <div id="modalBody">
+      </div>
+  </div>
+</div>
+
+<script>
+  /* === 2. JavaScript 邏輯 === */
+  
+  // ★★★ 請務必修改這裡：換成你發布後的 Web App 網址 ★★★
+  const GAS_URL = "https://script.google.com/macros/s/你的發布ID/exec"; 
+
+  // 1. 獲取資料
+  function fetchTeacherData() {
+    const pwd = document.getElementById('teacherPwd').value.trim();
+    if(!pwd) { alert("請輸入密碼！"); return; }
+
+    // 顯示 Loading
+    document.getElementById('loadingText').style.display = 'block';
+    
+    // 發送請求
+    const apiUrl = `${GAS_URL}?action=get_teacher_data&password=${encodeURIComponent(pwd)}`;
+
+    fetch(apiUrl)
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('loadingText').style.display = 'none';
+        
+        if (!data.ok) {
+          alert("錯誤：" + (data.error || "無法讀取資料"));
+          return;
+        }
+
+        if (data.reports.length === 0) {
+          alert("目前尚無學生測驗資料。");
+          return;
+        }
+
+        // 登入成功，切換畫面
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        
+        renderTable(data.reports);
+      })
+      .catch(err => {
+        document.getElementById('loadingText').style.display = 'none';
+        alert("連線失敗，請檢查網址或網路狀態。\n" + err);
+      });
   }
-}
+
+  // 2. 渲染表格
+  function renderTable(reports) {
+    const tbody = document.querySelector("#reportTable tbody");
+    tbody.innerHTML = ""; // 清空舊資料
+
+    reports.forEach(row => {
+      const tr = document.createElement("tr");
+      
+      // 時間格式化
+      const date = new Date(row.timestamp);
+      const timeStr = date.toLocaleString('zh-TW', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
+
+      // 分數顏色標記
+      let badgeClass = "low";
+      if(row.score >= 80) badgeClass = "high";
+      else if(row.score >= 60) badgeClass = "mid";
+
+      tr.innerHTML = `
+        <td>${timeStr}</td>
+        <td><strong>${row.student_id}</strong></td>
+        <td><span class="score-badge ${badgeClass}">${row.score}</span></td>
+        <td>${row.theta}</td>
+        <td style="color:#555; max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+          ${row.summary || "(無摘要)"}
+        </td>
+        <td><button style="padding:5px 10px; cursor:pointer;" onclick="showDetail(${rowsJson(row)})">查看處方籤</button></td>
+      `;
+      
+      // 點擊整行也可以開
+      tr.addEventListener('click', (e) => {
+        // 避免點到按鈕時觸發兩次
+        if(e.target.tagName !== 'BUTTON') showDetail(row);
+      });
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  // 輔助：將物件轉為 JSON 字串傳遞 (需處理跳脫字元)
+  function rowsJson(row) {
+    // 這裡為了簡單，直接在 onclick 傳遞物件索引會比較安全，
+    // 但因為我們是生成 HTML，直接用閉包概念在 renderTable 裡的 addEventListener 處理最好 (如上方的 tr.addEventListener)
+    // 這裡只是為了 button onclick 語法相容，實際上 tr.addEventListener 已足夠。
+    return ""; 
+  }
+
+  // 3. 顯示彈窗詳情
+  function showDetail(row) {
+    const modal = document.getElementById('detailModal');
+    const title = document.getElementById('modalTitle');
+    const body = document.getElementById('modalBody');
+
+    title.innerText = `學生：${row.student_id} (得分:${row.score})`;
+
+    // 取出完整 AI 回饋
+    const ai = row.full_feedback || {};
+    const weak = ai.weakness_analysis || "無弱點分析";
+    const plans = Array.isArray(ai.action_plan) ? ai.action_plan : ["無具體建議"];
+
+    // 組裝 HTML
+    let html = "";
+
+    // 弱點分析區塊
+    html += `
+      <div class="diag-section">
+        <div class="diag-title">🔍 弱點診斷與迷思概念</div>
+        <div style="white-space: pre-line; color:#34495e; background:#f9f9f9; padding:10px; border-radius:5px;">
+          ${weak}
+        </div>
+      </div>
+    `;
+
+    // 處方籤區塊
+    html += `
+      <div class="diag-section">
+        <div class="diag-title">💊 AI 學習處方籤 (Action Plan)</div>
+        <ul class="action-list">
+          ${plans.map(p => `<li>${p}</li>`).join('')}
+        </ul>
+      </div>
+    `;
+
+    body.innerHTML = html;
+    modal.style.display = 'flex';
+  }
+
+  // 4. 關閉彈窗
+  function closeModal(e) {
+    // 點擊遮罩或 X 按鈕才關閉
+    if (e.target.id === 'detailModal' || e.target.classList.contains('close-btn')) {
+      document.getElementById('detailModal').style.display = 'none';
+    }
+  }
+</script>
+
+</body>
+</html>
