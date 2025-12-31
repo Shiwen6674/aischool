@@ -482,9 +482,26 @@
             </div>
         </div>
 
-        <div id="loading-view" class="hidden flex-col items-center justify-center py-20 loading-screen">
-  <div class="loader mb-4"></div>
-  <h3 class="text-xl font-bold loading-text">AI 單元重點整理中...</h3>
+        <div id="loading-view" class="hidden fixed inset-0 z-[9999] bg-[#0B1121] flex flex-col items-center justify-center">
+    <div class="absolute top-10 text-center w-full px-4">
+        <h3 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 mb-2 animate-pulse">
+            AI 正在幫你整理重點，請耐心等候！
+        </h3>
+        <p class="text-slate-400 text-sm mb-4">等待時來玩個遊戲吧！<br>電腦：左右鍵移動 / 手機：點擊螢幕左右側</p>
+        <div class="inline-block bg-slate-800/80 border border-slate-600 px-4 py-2 rounded-lg">
+            <span class="text-slate-300 text-xs uppercase tracking-wider">Score</span>
+            <span id="game-score" class="text-xl font-mono font-bold text-yellow-400 ml-2">0</span>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas" width="320" height="480" class="border border-slate-700 bg-slate-900 rounded-xl shadow-2xl max-w-full touch-none"></canvas>
+
+    <div id="game-over-msg" class="hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center bg-black/80 p-6 rounded-xl border border-red-500 backdrop-blur-sm">
+        <div class="text-red-500 font-bold text-xl mb-2">GAME OVER</div>
+        <button onclick="resetGame()" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-sm font-bold transition">
+            點擊重新開始
+        </button>
+    </div>
 </div>
 
 
@@ -900,13 +917,18 @@ sessionStorage.setItem("currentUser", JSON.stringify(user));
         el.disabled=false;
     }
 
-    async function startGeneration() {
+async function startGeneration() {
         const selPanel = document.getElementById("selection-panel");
         const loading = document.getElementById("loading-view");
+        
         if (selPanel) selPanel.classList.add("hidden");
+        
         if (loading) {
             loading.classList.remove("hidden");
             loading.classList.add("flex");
+            
+            // ★★★ 3.1 新增這行：顯示 Loading 時，同時啟動遊戲 ★★★
+            initSpaceGame();
         }
 
         try {
@@ -931,24 +953,29 @@ sessionStorage.setItem("currentUser", JSON.stringify(user));
             if(json.status === "success") { 
                 currentResultData = json.data; 
                 renderResult(json.data); 
+                // 注意：renderResult 裡面我們已經加了 stopSpaceGame()，所以這裡不用加
             } else {
                 throw new Error(json.message || "API 返回狀態為失敗");
             }
-        } catch(e) { 
+} catch(e) { 
             alert("AI 生成失敗！請檢查 API 或重試。\n錯誤訊息: " + e.message); 
             
             const selPanelAgain = document.getElementById("selection-panel");
             if (selPanelAgain) selPanelAgain.classList.remove("hidden");
+            
             const loadingAgain = document.getElementById("loading-view");
             if (loadingAgain) {
                 loadingAgain.classList.add("hidden");
                 loadingAgain.classList.remove("flex");
+                stopSpaceGame();
             }
             
             const btn = document.getElementById("btn-generate");
             if (btn) btn.disabled = false;
         }
     }
+
+        
 function normalizeMermaidCode(code) {
     if (!code || typeof code !== "string") return "";
 
@@ -1236,15 +1263,18 @@ if (chartDiv) {
             }
         }
 
-        const quizRaw = data.quiz || (data.summary && data.summary.quiz) || [];
+       const quizRaw = data.quiz || (data.summary && data.summary.quiz) || [];
         initQuiz(quizRaw);
 
         const loadingView = document.getElementById('loading-view');
         const contentView = document.getElementById('content-view');
+        
         if (loadingView) {
             loadingView.classList.add('hidden');
             loadingView.classList.remove('flex');
+            stopSpaceGame();
         }
+        
         if (contentView) {
             contentView.classList.remove('hidden');
         }
@@ -2470,6 +2500,147 @@ function requestQuizAISummary(score, concepts, conceptScores, correctCount, tota
     });
 }
     window.addEventListener('resize', syncVocabHeight);  
+
+// ... (前面是你原本的程式碼) ...
+    window.addEventListener('resize', syncVocabHeight); 
+
+// ★★★ 第二步：把下面這一大段遊戲程式碼貼在這裡 ★★★
+
+// ==========================================
+//  太空隕石閃避小遊戲 (Space Dodge Game)
+// ==========================================
+let gameAnimFrame;
+let gameRunning = false;
+let score = 0;
+let player = { x: 160, y: 400, width: 30, height: 30, speed: 5 };
+let meteors = [];
+let keys = {};
+let canvas, ctx;
+
+function initSpaceGame() {
+    canvas = document.getElementById('gameCanvas');
+    if (!canvas) return;
+    ctx = canvas.getContext('2d');
+    score = 0;
+    document.getElementById('game-score').innerText = "0";
+    meteors = [];
+    player.x = canvas.width / 2 - player.width / 2;
+    gameRunning = true;
+    document.getElementById('game-over-msg').classList.add('hidden');
+    
+    // 移除舊事件避免重複綁定 (保險起見)
+    window.removeEventListener('keydown', handleKeyDown);
+    window.removeEventListener('keyup', handleKeyUp);
+    canvas.removeEventListener('touchstart', handleTouch);
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    canvas.addEventListener('touchstart', handleTouch, {passive: false});
+
+    if (gameAnimFrame) cancelAnimationFrame(gameAnimFrame);
+    gameLoop();
+}
+
+function handleKeyDown(e) { keys[e.code] = true; }
+function handleKeyUp(e) { keys[e.code] = false; }
+
+function handleTouch(e) {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const touchX = e.touches[0].clientX - rect.left;
+    if (touchX < canvas.width / 2) player.x -= 20;
+    else player.x += 20;
+    if (player.x < 0) player.x = 0;
+    if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
+}
+
+function stopSpaceGame() {
+    gameRunning = false;
+    if (gameAnimFrame) cancelAnimationFrame(gameAnimFrame);
+    // 移除事件監聽
+    window.removeEventListener('keydown', handleKeyDown);
+    window.removeEventListener('keyup', handleKeyUp);
+}
+
+function resetGame() {
+    score = 0;
+    document.getElementById('game-score').innerText = "0";
+    meteors = [];
+    player.x = canvas.width / 2 - player.width / 2;
+    gameRunning = true;
+    document.getElementById('game-over-msg').classList.add('hidden');
+    gameLoop();
+}
+
+function gameLoop() {
+    if (!gameRunning) return;
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    if (keys['ArrowLeft']) player.x -= player.speed;
+    if (keys['ArrowRight']) player.x += player.speed;
+    if (player.x < 0) player.x = 0;
+    if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
+
+    ctx.fillStyle = '#38bdf8';
+    ctx.beginPath();
+    ctx.moveTo(player.x + player.width / 2, player.y);
+    ctx.lineTo(player.x + player.width, player.y + player.height);
+    ctx.lineTo(player.x, player.y + player.height);
+    ctx.fill();
+    
+    ctx.fillStyle = '#f59e0b';
+    ctx.beginPath();
+    ctx.moveTo(player.x + 10, player.y + player.height);
+    ctx.lineTo(player.x + 20, player.y + player.height);
+    ctx.lineTo(player.x + 15, player.y + player.height + (Math.random() * 10 + 5));
+    ctx.fill();
+
+    if (Math.random() < 0.03) {
+        meteors.push({
+            x: Math.random() * (canvas.width - 20),
+            y: -20,
+            size: Math.random() * 15 + 10,
+            speed: Math.random() * 3 + 2
+        });
+    }
+
+    for (let i = 0; i < meteors.length; i++) {
+        let m = meteors[i];
+        m.y += m.speed;
+        ctx.fillStyle = '#94a3b8';
+        ctx.beginPath();
+        ctx.arc(m.x + m.size/2, m.y + m.size/2, m.size/2, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (
+            player.x < m.x + m.size &&
+            player.x + player.width > m.x &&
+            player.y < m.y + m.size &&
+            player.y + player.height > m.y
+        ) {
+            gameOver();
+            return;
+        }
+
+        if (m.y > canvas.height) {
+            meteors.splice(i, 1);
+            i--;
+            score += 10;
+            document.getElementById('game-score').innerText = score;
+        }
+    }
+    gameAnimFrame = requestAnimationFrame(gameLoop);
+}
+
+function gameOver() {
+    gameRunning = false;
+    document.getElementById('game-over-msg').classList.remove('hidden');
+}
+// ★★★ 第二步結束 ★★★
+
+</script> </body>
+        
     </script>
 </body>
 </html>
