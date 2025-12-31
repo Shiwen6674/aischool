@@ -2501,38 +2501,56 @@ function requestQuizAISummary(score, concepts, conceptScores, correctCount, tota
 }
     window.addEventListener('resize', syncVocabHeight);  
 
-// ... (前面是你原本的程式碼) ...
-    window.addEventListener('resize', syncVocabHeight); 
-
-// ★★★ 第二步：把下面這一大段遊戲程式碼貼在這裡 ★★★
-
 // ==========================================
-//  太空隕石閃避小遊戲 (Space Dodge Game)
+//  太空隕石閃避小遊戲 (PRO版：星空、精準判定、動態難度)
 // ==========================================
 let gameAnimFrame;
 let gameRunning = false;
 let score = 0;
-let player = { x: 160, y: 400, width: 30, height: 30, speed: 5 };
+// 調整飛機尺寸與速度
+let player = { x: 160, y: 400, width: 40, height: 48, speed: 6 }; 
 let meteors = [];
+let stars = []; // 背景星星
 let keys = {};
 let canvas, ctx;
+let difficultyLevel = 1;
 
+// 初始化遊戲
 function initSpaceGame() {
     canvas = document.getElementById('gameCanvas');
     if (!canvas) return;
     ctx = canvas.getContext('2d');
+
+    // 重置變數
     score = 0;
+    difficultyLevel = 1;
     document.getElementById('game-score').innerText = "0";
+    
+    // 初始化物件
     meteors = [];
+    stars = [];
     player.x = canvas.width / 2 - player.width / 2;
+    player.y = canvas.height - player.height - 20; // 固定在下方
+    
+    // 初始化背景星空 (製造速度感)
+    for(let i=0; i<50; i++){
+        stars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() * 2,
+            speed: Math.random() * 3 + 1
+        });
+    }
+
     gameRunning = true;
     document.getElementById('game-over-msg').classList.add('hidden');
-    
-    // 移除舊事件避免重複綁定 (保險起見)
+
+    // 移除舊事件避免重複 (清理內存)
     window.removeEventListener('keydown', handleKeyDown);
     window.removeEventListener('keyup', handleKeyUp);
     canvas.removeEventListener('touchstart', handleTouch);
 
+    // 重新綁定
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     canvas.addEventListener('touchstart', handleTouch, {passive: false});
@@ -2544,12 +2562,24 @@ function initSpaceGame() {
 function handleKeyDown(e) { keys[e.code] = true; }
 function handleKeyUp(e) { keys[e.code] = false; }
 
+// 手機觸控
 function handleTouch(e) {
     e.preventDefault();
     const rect = canvas.getBoundingClientRect();
     const touchX = e.touches[0].clientX - rect.left;
-    if (touchX < canvas.width / 2) player.x -= 20;
-    else player.x += 20;
+    
+    // 簡單的左右控制：點擊左側往左，點擊右側往右
+    // 為了更順手，加大移動步幅
+    if (touchX < canvas.width / 2) {
+        player.x -= 25;
+    } else {
+        player.x += 25;
+    }
+    clampPlayer();
+}
+
+// 限制飛機不出界
+function clampPlayer() {
     if (player.x < 0) player.x = 0;
     if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
 }
@@ -2557,90 +2587,184 @@ function handleTouch(e) {
 function stopSpaceGame() {
     gameRunning = false;
     if (gameAnimFrame) cancelAnimationFrame(gameAnimFrame);
-    // 移除事件監聽
     window.removeEventListener('keydown', handleKeyDown);
     window.removeEventListener('keyup', handleKeyUp);
 }
 
 function resetGame() {
-    score = 0;
-    document.getElementById('game-score').innerText = "0";
-    meteors = [];
-    player.x = canvas.width / 2 - player.width / 2;
-    gameRunning = true;
-    document.getElementById('game-over-msg').classList.add('hidden');
-    gameLoop();
+    initSpaceGame(); // 直接呼叫初始化即可
 }
 
+// 繪製科幻戰機 (HTML5 Canvas Path)
+function drawPlayer(x, y, w, h) {
+    ctx.save();
+    ctx.translate(x + w/2, y + h/2);
+    
+    // 機身顏色
+    ctx.fillStyle = '#38bdf8'; // 亮藍
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = '#0ea5e9';
+
+    // 繪製主體 (三角形戰機)
+    ctx.beginPath();
+    ctx.moveTo(0, -h/2); // 機頭
+    ctx.lineTo(w/2, h/2); // 右翼底
+    ctx.lineTo(0, h/2 - 10); // 機尾凹槽
+    ctx.lineTo(-w/2, h/2); // 左翼底
+    ctx.closePath();
+    ctx.fill();
+
+    // 駕駛艙
+    ctx.fillStyle = '#bae6fd';
+    ctx.beginPath();
+    ctx.moveTo(0, -h/4);
+    ctx.ellipse(0, -h/6, 4, 8, 0, 0, Math.PI*2);
+    ctx.fill();
+
+    // 噴射火焰 (動態閃爍)
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = '#f59e0b';
+    ctx.fillStyle = `rgba(245, 158, 11, ${Math.random() * 0.5 + 0.5})`;
+    ctx.beginPath();
+    ctx.moveTo(-5, h/2 - 5);
+    ctx.lineTo(5, h/2 - 5);
+    ctx.lineTo(0, h/2 + (Math.random() * 15 + 10)); // 火焰長度隨機
+    ctx.fill();
+
+    ctx.restore();
+}
+
+// 繪製不規則隕石
+function drawMeteor(m) {
+    ctx.save();
+    ctx.translate(m.x, m.y);
+    ctx.rotate(m.angle); // 隕石旋轉
+
+    ctx.fillStyle = '#64748b'; // 石頭灰
+    // 增加一點立體感
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+    // 繪製多邊形 (根據預先生成的頂點)
+    m.vertices.forEach((v, i) => {
+        if (i === 0) ctx.moveTo(v.x, v.y);
+        else ctx.lineTo(v.x, v.y);
+    });
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.restore();
+}
+
+// 生成隨機多邊形頂點
+function createMeteorShape(radius) {
+    const vertices = [];
+    const numPoints = Math.floor(Math.random() * 4) + 5; // 5~8邊形
+    for (let i = 0; i < numPoints; i++) {
+        const angle = (i / numPoints) * Math.PI * 2;
+        // 半徑隨機變化，製造不規則感
+        const r = radius * (0.6 + Math.random() * 0.4); 
+        vertices.push({
+            x: Math.cos(angle) * r,
+            y: Math.sin(angle) * r
+        });
+    }
+    return vertices;
+}
+
+// 遊戲主迴圈
 function gameLoop() {
     if (!gameRunning) return;
-    ctx.fillStyle = '#0f172a';
+
+    // 1. 繪製背景 (帶有殘影效果，讓畫面更順滑)
+    ctx.fillStyle = '#0f172a'; 
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    // 2. 繪製與移動星空 (製造速度感)
+    ctx.fillStyle = '#ffffff';
+    stars.forEach(star => {
+        star.y += star.speed;
+        if(star.y > canvas.height) {
+            star.y = 0;
+            star.x = Math.random() * canvas.width;
+        }
+        ctx.globalAlpha = Math.random() * 0.5 + 0.3;
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.size, 0, Math.PI*2);
+        ctx.fill();
+    });
+    ctx.globalAlpha = 1.0;
+
+    // 3. 移動玩家
     if (keys['ArrowLeft']) player.x -= player.speed;
     if (keys['ArrowRight']) player.x += player.speed;
-    if (player.x < 0) player.x = 0;
-    if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
-
-    ctx.fillStyle = '#38bdf8';
-    ctx.beginPath();
-    ctx.moveTo(player.x + player.width / 2, player.y);
-    ctx.lineTo(player.x + player.width, player.y + player.height);
-    ctx.lineTo(player.x, player.y + player.height);
-    ctx.fill();
+    clampPlayer();
     
-    ctx.fillStyle = '#f59e0b';
-    ctx.beginPath();
-    ctx.moveTo(player.x + 10, player.y + player.height);
-    ctx.lineTo(player.x + 20, player.y + player.height);
-    ctx.lineTo(player.x + 15, player.y + player.height + (Math.random() * 10 + 5));
-    ctx.fill();
+    // 繪製玩家
+    drawPlayer(player.x, player.y, player.width, player.height);
 
-    if (Math.random() < 0.03) {
+    // 4. 動態難度調整 (每 100 分變快一點)
+    difficultyLevel = 1 + (score / 300); 
+
+    // 生成隕石 (機率隨難度增加)
+    if (Math.random() < 0.02 * difficultyLevel) {
+        const size = Math.random() * 15 + 12; // 大小
         meteors.push({
-            x: Math.random() * (canvas.width - 20),
-            y: -20,
-            size: Math.random() * 15 + 10,
-            speed: Math.random() * 3 + 2
+            x: Math.random() * (canvas.width - 40) + 20,
+            y: -40,
+            size: size,
+            speed: (Math.random() * 2 + 2) * difficultyLevel, // 速度隨難度增加
+            angle: 0,
+            rotationSpeed: (Math.random() - 0.5) * 0.1,
+            vertices: createMeteorShape(size) // 預先生成形狀
         });
     }
 
+    // 5. 更新隕石狀態
     for (let i = 0; i < meteors.length; i++) {
         let m = meteors[i];
         m.y += m.speed;
-        ctx.fillStyle = '#94a3b8';
-        ctx.beginPath();
-        ctx.arc(m.x + m.size/2, m.y + m.size/2, m.size/2, 0, Math.PI * 2);
-        ctx.fill();
+        m.angle += m.rotationSpeed;
 
-        if (
-            player.x < m.x + m.size &&
-            player.x + player.width > m.x &&
-            player.y < m.y + m.size &&
-            player.y + player.height > m.y
-        ) {
+        drawMeteor(m);
+
+        // ★★★ 核心修正：精準碰撞判定 (Hitbox) ★★★
+        // 飛機中心點
+        const px = player.x + player.width / 2;
+        const py = player.y + player.height / 2;
+        // 判定框半徑 (只用飛機寬度的 30% 作為判定，非常寬容，擦到機翼不會死)
+        const hitRadius = player.width * 0.3; 
+        
+        // 隕石中心與飛機中心的距離
+        const dx = m.x - px;
+        const dy = m.y - py;
+        const distance = Math.sqrt(dx*dx + dy*dy);
+
+        // 如果距離 < (隕石半徑 + 飛機判定半徑)，才算撞到
+        if (distance < (m.size * 0.8 + hitRadius)) {
             gameOver();
             return;
         }
 
-        if (m.y > canvas.height) {
+        // 超出邊界移除並加分
+        if (m.y > canvas.height + 50) {
             meteors.splice(i, 1);
             i--;
             score += 10;
             document.getElementById('game-score').innerText = score;
         }
     }
+
     gameAnimFrame = requestAnimationFrame(gameLoop);
 }
 
 function gameOver() {
     gameRunning = false;
     document.getElementById('game-over-msg').classList.remove('hidden');
-}
-// ★★★ 第二步結束 ★★★
-
-</script> </body>
-        
+}        
     </script>
 </body>
 </html>
