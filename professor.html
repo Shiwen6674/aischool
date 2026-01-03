@@ -1,1 +1,2460 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>AI School | Professor Hub</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@300;500;700&family=Noto+Sans+TC:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter','Noto Sans TC','system-ui','sans-serif'],
+            heading: ['Outfit','Inter','Noto Sans TC','sans-serif'],
+            mono: ['ui-monospace','SFMono-Regular','Menlo','Monaco','Consolas','Liberation Mono','Courier New','monospace']
+          },
+          colors: {
+            ai: {
+              dark: '#020617',
+              panel: 'rgba(15, 23, 42, 0.60)',
+              card: 'rgba(30, 41, 59, 0.68)',
+              border: 'rgba(148, 163, 184, 0.14)'
+            },
+            professor: {
+              light: '#a78bfa',
+              DEFAULT: '#8b5cf6',
+              deep: '#6d28d9',
+              glow: 'rgba(167, 139, 250, 0.55)'
+            }
+          },
+          animation: {
+            "fade-in": "fadeIn .6s cubic-bezier(0.16, 1, 0.3, 1)",
+            "float": "float 7s ease-in-out infinite",
+            "pulse-glow": "pulseGlow 3s infinite"
+          },
+          keyframes: {
+            fadeIn: { from: { opacity: 0, transform: "translateY(18px)" }, to: { opacity: 1, transform: "translateY(0)" } },
+            float: { "0%,100%": { transform: "translateY(0)" }, "50%": { transform: "translateY(-10px)" } },
+            pulseGlow: { "0%,100%": { boxShadow: "0 0 16px rgba(139,92,246,0.18)" }, "50%": { boxShadow: "0 0 34px rgba(139,92,246,0.45)" } }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body { background:#020617; color:#e2e8f0; overflow-x:hidden; }
+    .glass-panel{
+      background: rgba(15,23,42,0.62);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+    }
+    .glass-card{
+      background: rgba(30,41,59,0.68);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(148,163,184,0.14);
+      box-shadow: 0 10px 26px rgba(0,0,0,0.25);
+      transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease, background .25s ease;
+    }
+    .glass-card:hover{
+      transform: translateY(-8px);
+      border-color: rgba(167,139,250,0.38);
+      box-shadow: 0 18px 44px rgba(139,92,246,0.16);
+      background: rgba(30,41,59,0.82);
+    }
+    .text-gradient{
+      background: linear-gradient(135deg, #c4b5fd 0%, #8b5cf6 45%, #60a5fa 100%);
+      -webkit-background-clip:text;
+      background-clip:text;
+      color: transparent;
+    }
+    .input-ai{
+      background: rgba(2,6,23,0.55);
+      border: 1px solid rgba(148,163,184,0.18);
+      color: #fff;
+      transition: all .25s ease;
+    }
+    .input-ai:focus{
+      outline: none;
+      border-color: rgba(139,92,246,0.9);
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.20);
+      background: rgba(2,6,23,0.78);
+    }
+    #canvas-container{
+      position: fixed; inset: 0; z-index: -10;
+      background: radial-gradient(circle at center, #1e1b4b 0%, #020617 70%);
+    }
+    .hidden { display:none !important; }
+    ::-webkit-scrollbar { width: 10px; }
+    ::-webkit-scrollbar-track { background: #0b1224; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+    /* micro badge */
+    .badge{
+      border: 1px solid rgba(167,139,250,0.22);
+      background: rgba(139,92,246,0.10);
+      color: #c4b5fd;
+    }
+
+    /* rating faces */
+    .face-radio input { display:none; }
+    .face-radio label{
+      display:flex; align-items:center; justify-content:center;
+      width: 44px; height: 44px; border-radius: 14px;
+      border: 1px solid rgba(148,163,184,0.20);
+      background: rgba(2,6,23,0.40);
+      cursor:pointer;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+      user-select:none;
+    }
+    .face-radio label:hover{ transform: translateY(-2px); border-color: rgba(167,139,250,0.45); }
+    .face-radio input:checked + label{
+      background: rgba(139,92,246,0.18);
+      border-color: rgba(167,139,250,0.75);
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.15);
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col font-sans selection:bg-purple-500/30 selection:text-purple-200">
+
+  <!-- Background Canvas -->
+  <div id="canvas-container"><canvas id="network-canvas"></canvas></div>
+
+  <!-- Top Nav -->
+  <nav class="glass-panel sticky top-0 z-50 border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+      <div class="flex items-center gap-4 cursor-pointer group" onclick="goAISchoolHome()">
+        <div class="relative w-10 h-10 flex items-center justify-center">
+          <i class="fa-solid fa-graduation-cap text-professor text-3xl group-hover:text-professor-light transition-colors"></i>
+          <div class="absolute inset-0 bg-professor/20 blur-lg rounded-full animate-pulse"></div>
+        </div>
+        <div class="leading-tight">
+          <div class="text-white font-heading font-bold text-xl tracking-wide">AI School</div>
+          <div class="text-slate-400 text-xs font-semibold tracking-wider uppercase" data-i18n="nav_subtitle">Professor Hub</div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 md:gap-5">
+        <select id="language-selector" class="bg-slate-800/80 border border-slate-600 text-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-professor focus:border-professor outline-none cursor-pointer transition text-sm hover:bg-slate-700">
+          <option value="zh-TW">繁體中文</option>
+          <option value="en">English</option>
+          <option value="ja">日本語</option>
+          <option value="zh-CN">简体中文</option>
+        </select>
+
+        <div id="user-chip" class="hidden md:flex items-center gap-3 px-3 py-1.5 rounded-full border border-professor/30 bg-purple-900/20">
+          <div class="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500/25 to-slate-900 text-purple-200 flex items-center justify-center font-black border border-professor/30" id="user-avatar">P</div>
+          <div class="leading-tight">
+            <div class="text-sm font-bold text-purple-200" id="user-name">Professor</div>
+            <div class="text-[11px] text-slate-400 font-semibold" id="user-unit">—</div>
+          </div>
+        </div>
+
+        <button id="logout-btn" onclick="openLogoutSurvey()" class="hidden text-rose-300 hover:text-rose-200 font-bold text-sm transition px-3 py-2 rounded-lg hover:bg-rose-500/10">
+          <i class="fa-solid fa-right-from-bracket mr-1"></i><span data-i18n="logout">登出</span>
+        </button>
+
+        <button id="login-btn" onclick="openLoginModal()" class="relative overflow-hidden group bg-professor text-white px-6 py-2 rounded-full font-black shadow-[0_0_18px_rgba(139,92,246,0.45)] transition hover:shadow-[0_0_26px_rgba(139,92,246,0.65)]">
+          <span class="relative z-10" data-i18n="btn_login">登入</span>
+          <div class="absolute inset-0 bg-gradient-to-r from-professor to-indigo-600 opacity-0 group-hover:opacity-100 transition duration-300"></div>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="max-w-7xl mx-auto w-full px-6 py-8 relative z-10 flex-1">
+    <!-- Header -->
+    <section class="animate-fade-in">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+        <div>
+          <div class="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-purple-900/25 border border-professor/25 text-purple-200 text-xs font-black tracking-wider uppercase animate-float">
+            <i class="fa-solid fa-microscope"></i>
+            <span data-i18n="tagline">Academic-grade Tooling</span>
+          </div>
+          <h1 class="mt-4 font-heading text-4xl md:text-6xl font-black tracking-tight text-white drop-shadow-2xl">
+            <span class="text-gradient" data-i18n="hero_title">科學文本研究中心</span>
+          </h1>
+          <p class="mt-3 text-slate-400 text-base md:text-lg max-w-3xl leading-relaxed" data-i18n="hero_subtitle">
+            教授端高階工具：文本挖掘、教學評量與 SSCI 論文寫作協作，一站式整合。
+          </p>
+        </div>
+
+        <!-- Session quick stats -->
+        <div class="glass-panel rounded-2xl p-4 md:p-5 border border-white/5 min-w-[280px]">
+          <div class="flex items-center justify-between">
+            <div class="text-xs text-slate-400 font-black uppercase tracking-wider" data-i18n="session_panel">Session</div>
+            <span class="badge text-[11px] px-2 py-1 rounded-full font-black" id="session-status">—</span>
+          </div>
+          <div class="mt-3 grid grid-cols-2 gap-3">
+            <div class="rounded-xl p-3 bg-slate-900/40 border border-slate-700/40">
+              <div class="text-[11px] text-slate-400 font-black uppercase" data-i18n="login_count">登入次數</div>
+              <div class="text-2xl font-black text-white mt-1" id="login-count">—</div>
+            </div>
+            <div class="rounded-xl p-3 bg-slate-900/40 border border-slate-700/40">
+              <div class="text-[11px] text-slate-400 font-black uppercase" data-i18n="time_spent">使用時間</div>
+              <div class="text-2xl font-black text-white mt-1" id="time-spent">00:00</div>
+            </div>
+          </div>
+          <div class="mt-3">
+            <div class="text-[11px] text-slate-400 font-black uppercase mb-2" data-i18n="features_used">已使用功能</div>
+            <div class="flex flex-wrap gap-2" id="features-used">
+              <span class="text-xs text-slate-500 font-bold">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dashboard -->
+    <section id="dashboard" class="mt-10 animate-fade-in">
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="text-lg md:text-xl font-black text-white flex items-center gap-2">
+          <i class="fa-solid fa-grid-2 text-professor"></i>
+          <span data-i18n="toolkit_title">教授端工具箱</span>
+        </h2>
+        <div class="flex items-center gap-3">
+          <button class="text-xs font-black text-slate-200 bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700/50 px-3 py-2 rounded-lg transition"
+                  onclick="openTool('whatsnew')">
+            <i class="fa-solid fa-sparkles mr-1 text-purple-200"></i><span data-i18n="whatsnew">快速導覽</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+        <!-- 1 -->
+        <div class="glass-card rounded-3xl p-5 cursor-pointer group" onclick="openExternalFeature('segmentation','text_segmentation.html')">
+          <div class="flex items-start justify-between">
+            <div class="w-11 h-11 rounded-2xl bg-purple-500/15 border border-professor/25 flex items-center justify-center">
+              <i class="fa-solid fa-scissors text-professor text-xl"></i>
+            </div>
+            <span class="badge text-[11px] px-2 py-1 rounded-full font-black">NLP</span>
+          </div>
+          <h3 class="mt-4 text-white font-black group-hover:text-purple-200 transition" data-i18n="feat_1">科學文本斷詞</h3>
+          <p class="mt-2 text-xs text-slate-400 leading-relaxed" data-i18n="feat_1_desc">CKIP / Jieba 斷詞、詞性與可視化。</p>
+        </div>
+
+        <!-- 2 -->
+        <div class="glass-card rounded-3xl p-5 cursor-pointer group" onclick="openExternalFeature('query','science_text_query.html')">
+          <div class="flex items-start justify-between">
+            <div class="w-11 h-11 rounded-2xl bg-purple-500/15 border border-professor/25 flex items-center justify-center">
+              <i class="fa-solid fa-magnifying-glass text-professor text-xl"></i>
+            </div>
+            <span class="badge text-[11px] px-2 py-1 rounded-full font-black">DB</span>
+          </div>
+          <h3 class="mt-4 text-white font-black group-hover:text-purple-200 transition" data-i18n="feat_2">科學文本查詢</h3>
+          <p class="mt-2 text-xs text-slate-400 leading-relaxed" data-i18n="feat_2_desc">教材資料庫檢索與結構化篩選。</p>
+        </div>
+
+        <!-- 3 -->
+        <div class="glass-card rounded-3xl p-5 cursor-pointer group" onclick="openExternalFeature('vocab','textvocabularycomparison.html')">
+          <div class="flex items-start justify-between">
+            <div class="w-11 h-11 rounded-2xl bg-purple-500/15 border border-professor/25 flex items-center justify-center">
+              <i class="fa-solid fa-scale-balanced text-professor text-xl"></i>
+            </div>
+            <span class="badge text-[11px] px-2 py-1 rounded-full font-black">Compare</span>
+          </div>
+          <h3 class="mt-4 text-white font-black group-hover:text-purple-200 transition" data-i18n="feat_3">文本詞彙比較</h3>
+          <p class="mt-2 text-xs text-slate-400 leading-relaxed" data-i18n="feat_3_desc">跨文本詞彙分佈、關鍵詞與差異剖析。</p>
+        </div>
+
+        <!-- 4 -->
+        <div class="glass-card rounded-3xl p-5 cursor-pointer group" onclick="openExternalFeature('readability','text_readability.html')">
+          <div class="flex items-start justify-between">
+            <div class="w-11 h-11 rounded-2xl bg-purple-500/15 border border-professor/25 flex items-center justify-center">
+              <i class="fa-solid fa-book-open-reader text-professor text-xl"></i>
+            </div>
+            <span class="badge text-[11px] px-2 py-1 rounded-full font-black">Index</span>
+          </div>
+          <h3 class="mt-4 text-white font-black group-hover:text-purple-200 transition" data-i18n="feat_4">文本可讀性分析</h3>
+          <p class="mt-2 text-xs text-slate-400 leading-relaxed" data-i18n="feat_4_desc">難易度指標、句法複雜度與可讀性評估。</p>
+        </div>
+
+        <!-- 5 -->
+        <div class="glass-card rounded-3xl p-5 cursor-pointer group" onclick="openExternalFeature('conceptnet','concept_network.html')">
+          <div class="flex items-start justify-between">
+            <div class="w-11 h-11 rounded-2xl bg-purple-500/15 border border-professor/25 flex items-center justify-center">
+              <i class="fa-solid fa-circle-nodes text-professor text-xl"></i>
+            </div>
+            <span class="badge text-[11px] px-2 py-1 rounded-full font-black">Graph</span>
+          </div>
+          <h3 class="mt-4 text-white font-black group-hover:text-purple-200 transition" data-i18n="feat_5">概念網絡分析</h3>
+          <p class="mt-2 text-xs text-slate-400 leading-relaxed" data-i18n="feat_5_desc">知識圖譜、節點權重與關係網絡視覺化。</p>
+        </div>
+
+        <!-- 6 -->
+        <div class="glass-card rounded-3xl p-5 cursor-pointer group opacity-90" onclick="openTool('sfl')">
+          <div class="flex items-start justify-between">
+            <div class="w-11 h-11 rounded-2xl bg-purple-500/15 border border-professor/25 flex items-center justify-center">
+              <i class="fa-solid fa-spell-check text-professor text-xl"></i>
+            </div>
+            <span class="badge text-[11px] px-2 py-1 rounded-full font-black">SFL</span>
+          </div>
+          <h3 class="mt-4 text-white font-black group-hover:text-purple-200 transition" data-i18n="feat_6">系統功能語言分析</h3>
+          <p class="mt-2 text-xs text-slate-400 leading-relaxed" data-i18n="feat_6_desc">教科書語篇功能分析入口（可接你後續模組）。</p>
+        </div>
+
+        <!-- 7 -->
+        <div class="glass-card rounded-3xl p-5 cursor-pointer group" onclick="openExternalFeature('wordcloud','word_cloud.html')">
+          <div class="flex items-start justify-between">
+            <div class="w-11 h-11 rounded-2xl bg-purple-500/15 border border-professor/25 flex items-center justify-center">
+              <i class="fa-solid fa-cloud text-professor text-xl"></i>
+            </div>
+            <span class="badge text-[11px] px-2 py-1 rounded-full font-black">Viz</span>
+          </div>
+          <h3 class="mt-4 text-white font-black group-hover:text-purple-200 transition" data-i18n="feat_7">文本文字雲系統</h3>
+          <p class="mt-2 text-xs text-slate-400 leading-relaxed" data-i18n="feat_7_desc">關鍵詞權重、詞頻與主題視覺化。</p>
+        </div>
+
+        <!-- 8 -->
+        <div class="glass-card rounded-3xl p-5 cursor-pointer group border border-professor/35 bg-purple-900/15 animate-pulse-glow" onclick="openTool('similarity')">
+          <div class="flex items-start justify-between">
+            <div class="w-11 h-11 rounded-2xl bg-purple-500/20 border border-professor/35 flex items-center justify-center">
+              <i class="fa-solid fa-layer-group text-purple-200 text-xl"></i>
+            </div>
+            <span class="badge text-[11px] px-2 py-1 rounded-full font-black">AI</span>
+          </div>
+          <h3 class="mt-4 text-white font-black group-hover:text-purple-200 transition" data-i18n="feat_8">文本相似性分析</h3>
+          <p class="mt-2 text-xs text-slate-300 leading-relaxed font-semibold" data-i18n="feat_8_desc">結構・語意・概念三層比對與可解釋報告。</p>
+        </div>
+
+        <!-- 9 -->
+        <div class="glass-card rounded-3xl p-5 cursor-pointer group" onclick="openTool('teval')">
+          <div class="flex items-start justify-between">
+            <div class="w-11 h-11 rounded-2xl bg-purple-500/15 border border-professor/25 flex items-center justify-center">
+              <i class="fa-solid fa-clipboard-check text-professor text-xl"></i>
+            </div>
+            <span class="badge text-[11px] px-2 py-1 rounded-full font-black">Eval</span>
+          </div>
+          <h3 class="mt-4 text-white font-black group-hover:text-purple-200 transition" data-i18n="feat_9">教學評量系統</h3>
+          <p class="mt-2 text-xs text-slate-400 leading-relaxed" data-i18n="feat_9_desc">課程評量表單設計、結果統計與回饋摘要。</p>
+        </div>
+
+        <!-- 10 -->
+        <div class="glass-card rounded-3xl p-5 cursor-pointer group" onclick="openTool('ssci')">
+          <div class="flex items-start justify-between">
+            <div class="w-11 h-11 rounded-2xl bg-purple-500/15 border border-professor/25 flex items-center justify-center">
+              <i class="fa-solid fa-pen-nib text-professor text-xl"></i>
+            </div>
+            <span class="badge text-[11px] px-2 py-1 rounded-full font-black">Write</span>
+          </div>
+          <h3 class="mt-4 text-white font-black group-hover:text-purple-200 transition" data-i18n="feat_10">AI 輔助 SSCI 論文寫作</h3>
+          <p class="mt-2 text-xs text-slate-400 leading-relaxed" data-i18n="feat_10_desc">段落優化、審稿回覆框架與寫作一致性檢核。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tool Container -->
+    <section id="tool-container" class="hidden mt-10 animate-fade-in">
+      <div class="flex items-center justify-between mb-5">
+        <button onclick="backToDashboard()" class="text-slate-300 hover:text-white font-black bg-slate-800/50 border border-slate-700/40 px-4 py-2.5 rounded-xl transition">
+          <i class="fa-solid fa-arrow-left mr-2"></i><span data-i18n="back_dashboard">返回研究中心</span>
+        </button>
+
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-slate-400 font-black uppercase" data-i18n="privacy_note">資料僅用於研究/改進（可追溯）</span>
+          <span class="badge text-[11px] px-2 py-1 rounded-full font-black" id="tool-badge">—</span>
+        </div>
+      </div>
+
+      <!-- Whats New -->
+      <div id="tool-whatsnew" class="hidden glass-panel rounded-3xl p-6 md:p-8">
+        <h3 class="text-xl md:text-2xl font-black text-white flex items-center gap-2">
+          <i class="fa-solid fa-sparkles text-purple-200"></i>
+          <span data-i18n="whatsnew_title">快速導覽（教授端）</span>
+        </h3>
+        <div class="mt-4 grid md:grid-cols-3 gap-4">
+          <div class="glass-card rounded-2xl p-5">
+            <div class="text-sm font-black text-white" data-i18n="guide_1_title">1. 先登入</div>
+            <p class="mt-2 text-sm text-slate-400 leading-relaxed" data-i18n="guide_1_desc">系統會對接 Users_researcher 驗證身份並記錄登入次數。</p>
+          </div>
+          <div class="glass-card rounded-2xl p-5">
+            <div class="text-sm font-black text-white" data-i18n="guide_2_title">2. 使用工具</div>
+            <p class="mt-2 text-sm text-slate-400 leading-relaxed" data-i18n="guide_2_desc">每次點擊功能會被記錄（不含敏感內容），用於優化 UX 與功能排程。</p>
+          </div>
+          <div class="glass-card rounded-2xl p-5">
+            <div class="text-sm font-black text-white" data-i18n="guide_3_title">3. 登出問卷</div>
+            <p class="mt-2 text-sm text-slate-400 leading-relaxed" data-i18n="guide_3_desc">登出時會跳出滿意度問卷；送出後顯示感謝訊息並完成登出。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Similarity Tool -->
+      <div id="tool-similarity" class="hidden glass-panel rounded-3xl overflow-hidden">
+        <div class="grid lg:grid-cols-12">
+          <!-- Left config -->
+          <aside class="lg:col-span-3 border-r border-white/5 p-6 bg-slate-900/35">
+            <h3 class="text-sm font-black text-white mb-4 flex items-center gap-2">
+              <i class="fa-solid fa-sliders text-purple-200"></i>
+              <span data-i18n="sim_config">分析模型設定</span>
+            </h3>
+
+            <div class="space-y-4">
+              <div class="rounded-2xl p-4 bg-slate-900/40 border border-slate-700/40">
+                <div class="text-xs font-black text-slate-300 uppercase tracking-wider mb-3" data-i18n="sim_structure">結構層</div>
+                <div class="space-y-2 text-sm text-slate-300">
+                  <label class="flex items-center gap-2"><input type="checkbox" class="accent-purple-500" id="sim-jaccard" checked> Jaccard</label>
+                  <label class="flex items-center gap-2"><input type="checkbox" class="accent-purple-500" id="sim-cosine" checked> Cosine (TF)</label>
+                  <label class="flex items-center gap-2"><input type="checkbox" class="accent-purple-500" id="sim-edit"> Edit Distance</label>
+                </div>
+              </div>
+
+              <div class="rounded-2xl p-4 bg-slate-900/40 border border-slate-700/40">
+                <div class="text-xs font-black text-slate-300 uppercase tracking-wider mb-3" data-i18n="sim_concept">概念層</div>
+                <div class="space-y-2 text-sm text-slate-300">
+                  <label class="flex items-center gap-2"><input type="checkbox" class="accent-purple-500" id="sim-overlap" checked> Concept Overlap</label>
+                  <label class="flex items-center gap-2"><input type="checkbox" class="accent-purple-500" id="sim-curriculum" checked> Curriculum Coverage</label>
+                </div>
+              </div>
+
+              <div class="rounded-2xl p-4 bg-slate-900/40 border border-slate-700/40">
+                <div class="text-xs font-black text-slate-300 uppercase tracking-wider mb-3" data-i18n="sim_semantic">語意層</div>
+                <div class="space-y-2 text-sm text-slate-300">
+                  <label class="flex items-center gap-2"><input type="checkbox" class="accent-purple-500" id="sim-embedding"> AI Embedding (後台)</label>
+                  <label class="flex items-center gap-2"><input type="checkbox" class="accent-purple-500" id="sim-llm"> LLM Insight (後台)</label>
+                </div>
+                <div class="mt-3 text-[11px] text-slate-400 leading-relaxed" data-i18n="sim_backend_note">
+                  勾選 Embedding/LLM 需後台 API 支援；未勾選則使用本地可解釋算法。
+                </div>
+              </div>
+            </div>
+
+            <button id="sim-run" onclick="runSimilarity()" class="mt-6 w-full bg-professor hover:bg-professor-deep text-white py-3 rounded-xl font-black transition shadow-[0_0_18px_rgba(139,92,246,0.35)]">
+              <i class="fa-solid fa-microscope mr-2"></i><span data-i18n="run">執行分析</span>
+            </button>
+          </aside>
+
+          <!-- Right workspace -->
+          <div class="lg:col-span-9">
+            <div class="grid md:grid-cols-2 border-b border-white/5">
+              <div class="p-6 border-r border-white/5">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="text-xs text-slate-400 font-black uppercase tracking-wider">Text A</div>
+                  <button class="text-xs font-black text-purple-200 hover:text-white" onclick="loadSimExample()">
+                    <i class="fa-solid fa-flask mr-1"></i><span data-i18n="load_example">載入範例</span>
+                  </button>
+                </div>
+                <textarea id="sim-a" class="input-ai w-full rounded-2xl p-4 min-h-[220px] font-mono text-sm"
+                          data-i18n-placeholder="sim_placeholder_a" placeholder="文本 A（例如：教科書定義、標準答案…）"></textarea>
+              </div>
+              <div class="p-6">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="text-xs text-slate-400 font-black uppercase tracking-wider">Text B</div>
+                  <button class="text-xs font-black text-slate-400 hover:text-white" onclick="clearSimText()">
+                    <i class="fa-solid fa-trash-can mr-1"></i><span data-i18n="clear">清空</span>
+                  </button>
+                </div>
+                <textarea id="sim-b" class="input-ai w-full rounded-2xl p-4 min-h-[220px] font-mono text-sm"
+                          data-i18n-placeholder="sim_placeholder_b" placeholder="文本 B（例如：學生回答、比較文本…）"></textarea>
+              </div>
+            </div>
+
+            <div class="grid lg:grid-cols-12">
+              <div class="lg:col-span-4 p-6 border-r border-white/5 bg-slate-900/20">
+                <div class="flex items-center justify-between">
+                  <div class="text-xs text-slate-400 font-black uppercase" data-i18n="overall">總體相似度</div>
+                  <span class="badge text-[11px] px-2 py-1 rounded-full font-black" id="sim-quality">—</span>
+                </div>
+
+                <div class="mt-4 flex items-center gap-4">
+                  <div class="relative w-28 h-28">
+                    <canvas id="simGauge"></canvas>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                      <div class="text-3xl font-black text-white" id="sim-total">--</div>
+                    </div>
+                  </div>
+                  <div class="flex-1 space-y-2">
+                    <div class="rounded-xl p-3 bg-slate-900/40 border border-slate-700/40">
+                      <div class="text-[11px] text-slate-400 font-black uppercase" data-i18n="structure">結構</div>
+                      <div class="text-xl font-black text-white" id="sim-structure">--</div>
+                    </div>
+                    <div class="rounded-xl p-3 bg-slate-900/40 border border-slate-700/40">
+                      <div class="text-[11px] text-slate-400 font-black uppercase" data-i18n="concept">概念</div>
+                      <div class="text-xl font-black text-white" id="sim-concept">--</div>
+                    </div>
+                    <div class="rounded-xl p-3 bg-slate-900/40 border border-slate-700/40">
+                      <div class="text-[11px] text-slate-400 font-black uppercase" data-i18n="semantic">語意</div>
+                      <div class="text-xl font-black text-white" id="sim-semantic">--</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-5">
+                  <div class="text-xs text-slate-400 font-black uppercase mb-2" data-i18n="radar">多維雷達</div>
+                  <div class="rounded-2xl bg-slate-950/30 border border-slate-700/30 p-3">
+                    <canvas id="simRadar" style="height:220px;"></canvas>
+                  </div>
+                </div>
+              </div>
+
+              <div class="lg:col-span-8 p-6">
+                <div class="flex items-center justify-between mb-3">
+                  <h4 class="text-white font-black flex items-center gap-2">
+                    <i class="fa-solid fa-robot text-purple-200"></i>
+                    <span data-i18n="report">可解釋報告</span>
+                  </h4>
+                  <button class="text-xs font-black text-slate-300 hover:text-white" onclick="copySimReport()">
+                    <i class="fa-solid fa-copy mr-1"></i><span data-i18n="copy">複製</span>
+                  </button>
+                </div>
+                <div id="sim-report" class="rounded-3xl bg-slate-950/25 border border-slate-700/35 p-6 text-sm text-slate-200 leading-relaxed">
+                  <div class="text-slate-400" data-i18n="sim_empty">請輸入兩段文本並執行分析。</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Teaching Evaluation Tool -->
+      <div id="tool-teval" class="hidden glass-panel rounded-3xl overflow-hidden">
+        <div class="grid lg:grid-cols-12">
+          <aside class="lg:col-span-4 border-r border-white/5 p-6 bg-slate-900/35">
+            <h3 class="text-sm font-black text-white mb-4 flex items-center gap-2">
+              <i class="fa-solid fa-clipboard-check text-purple-200"></i>
+              <span data-i18n="teval_builder">評量表單設計</span>
+            </h3>
+
+            <div class="space-y-4">
+              <div class="rounded-2xl p-4 bg-slate-900/40 border border-slate-700/40">
+                <label class="block text-xs text-slate-400 font-black uppercase mb-2" data-i18n="course_name">課程名稱</label>
+                <input id="teval-course" class="input-ai w-full rounded-xl px-4 py-3 text-sm" data-i18n-placeholder="course_ph" placeholder="例如：國中理化（八上）" />
+              </div>
+
+              <div class="rounded-2xl p-4 bg-slate-900/40 border border-slate-700/40">
+                <label class="block text-xs text-slate-400 font-black uppercase mb-2" data-i18n="teval_items">10 題功能/教學滿意度題項</label>
+                <div class="text-[11px] text-slate-400 mb-3" data-i18n="teval_items_note">可直接改題目文字；送出時一併紀錄。</div>
+                <div class="space-y-2 max-h-[320px] overflow-auto pr-1" id="teval-items"></div>
+              </div>
+            </div>
+
+            <div class="mt-5 flex gap-3">
+              <button onclick="resetTevalItems()" class="w-1/2 text-sm font-black text-slate-200 bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700/50 px-3 py-3 rounded-xl transition">
+                <i class="fa-solid fa-rotate-left mr-1"></i><span data-i18n="reset">重設</span>
+              </button>
+              <button onclick="publishTeval()" class="w-1/2 text-sm font-black text-white bg-professor hover:bg-professor-deep px-3 py-3 rounded-xl transition shadow-[0_0_18px_rgba(139,92,246,0.35)]">
+                <i class="fa-solid fa-paper-plane mr-1"></i><span data-i18n="publish">發布</span>
+              </button>
+            </div>
+
+            <div class="mt-4 text-[11px] text-slate-400 leading-relaxed" data-i18n="teval_publish_note">
+              發布會將表單定義寫入試算表（後台）。未發布仍可用「預覽」進行示範。
+            </div>
+          </aside>
+
+          <div class="lg:col-span-8 p-6">
+            <div class="flex items-center justify-between">
+              <h4 class="text-white font-black flex items-center gap-2">
+                <i class="fa-solid fa-eye text-purple-200"></i><span data-i18n="preview">預覽</span>
+              </h4>
+              <button class="text-xs font-black text-slate-300 hover:text-white" onclick="simulateOneTevalResponse()">
+                <i class="fa-solid fa-flask mr-1"></i><span data-i18n="simulate">模擬一筆回覆</span>
+              </button>
+            </div>
+
+            <div class="mt-4 grid gap-4">
+              <div class="glass-card rounded-3xl p-6">
+                <div class="flex items-center justify-between">
+                  <div class="text-sm font-black text-white" data-i18n="teval_overall">整體教學滿意度</div>
+                  <span class="badge text-[11px] px-2 py-1 rounded-full font-black">5-point</span>
+                </div>
+
+                <div class="mt-4 flex gap-2 flex-wrap" id="teval-overall-faces"></div>
+              </div>
+
+              <div class="glass-card rounded-3xl p-6">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="text-sm font-black text-white" data-i18n="teval_10">10 題評量（示範版）</div>
+                  <span class="text-xs text-slate-400 font-bold" id="teval-demo-count">0</span>
+                </div>
+                <div class="space-y-3 max-h-[320px] overflow-auto pr-1" id="teval-preview-items"></div>
+              </div>
+
+              <div class="glass-card rounded-3xl p-6">
+                <div class="flex items-center justify-between">
+                  <div class="text-sm font-black text-white" data-i18n="teval_analytics">快速統計（示範）</div>
+                  <span class="badge text-[11px] px-2 py-1 rounded-full font-black" id="teval-avg">AVG —</span>
+                </div>
+                <div class="mt-3 rounded-2xl bg-slate-950/25 border border-slate-700/35 p-4">
+                  <canvas id="tevalChart" style="height:240px;"></canvas>
+                </div>
+                <div class="mt-3 text-[11px] text-slate-400" data-i18n="teval_analytics_note">
+                  此頁提供前台完整 UX；若要真正收集學生回覆，建議後台提供「學生端表單頁」與寫入試算表。
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SSCI Writing Tool -->
+      <div id="tool-ssci" class="hidden glass-panel rounded-3xl overflow-hidden">
+        <div class="grid lg:grid-cols-12">
+          <aside class="lg:col-span-4 border-r border-white/5 p-6 bg-slate-900/35">
+            <h3 class="text-sm font-black text-white mb-4 flex items-center gap-2">
+              <i class="fa-solid fa-pen-nib text-purple-200"></i>
+              <span data-i18n="ssci_panel">寫作設定</span>
+            </h3>
+
+            <div class="space-y-4">
+              <div class="rounded-2xl p-4 bg-slate-900/40 border border-slate-700/40">
+                <label class="block text-xs text-slate-400 font-black uppercase mb-2" data-i18n="ssci_section">段落類型</label>
+                <select id="ssci-section" class="input-ai w-full rounded-xl px-4 py-3 text-sm">
+                  <option value="title">Title</option>
+                  <option value="abstract">Abstract</option>
+                  <option value="introduction">Introduction</option>
+                  <option value="methods">Methods</option>
+                  <option value="results">Results</option>
+                  <option value="discussion">Discussion</option>
+                  <option value="coverletter">Cover Letter</option>
+                  <option value="rebuttal">Response to Reviewers</option>
+                </select>
+              </div>
+
+              <div class="rounded-2xl p-4 bg-slate-900/40 border border-slate-700/40">
+                <label class="block text-xs text-slate-400 font-black uppercase mb-2" data-i18n="ssci_journal">目標期刊/風格</label>
+                <input id="ssci-journal" class="input-ai w-full rounded-xl px-4 py-3 text-sm" data-i18n-placeholder="ssci_journal_ph" placeholder="例如：Asia-Pacific Education Researcher (TAPER)" />
+              </div>
+
+              <div class="rounded-2xl p-4 bg-slate-900/40 border border-slate-700/40">
+                <label class="block text-xs text-slate-400 font-black uppercase mb-2" data-i18n="ssci_mode">輸出模式</label>
+                <select id="ssci-mode" class="input-ai w-full rounded-xl px-4 py-3 text-sm">
+                  <option value="polish" data-i18n="ssci_polish">學術潤飾</option>
+                  <option value="structure" data-i18n="ssci_structure">結構強化</option>
+                  <option value="clarity" data-i18n="ssci_clarity">清晰度提升</option>
+                  <option value="review" data-i18n="ssci_review">審稿意見回覆框架</option>
+                </select>
+              </div>
+
+              <button id="ssci-run" onclick="runSSCI()" class="w-full bg-professor hover:bg-professor-deep text-white py-3 rounded-xl font-black transition shadow-[0_0_18px_rgba(139,92,246,0.35)]">
+                <i class="fa-solid fa-wand-magic-sparkles mr-2"></i><span data-i18n="generate">生成建議</span>
+              </button>
+
+              <div class="text-[11px] text-slate-400 leading-relaxed" data-i18n="ssci_backend_note">
+                若要真正呼叫 AI（Gemini/OpenAI），需後台代呼叫並回傳結果；前台已備妥 UX 與資料結構。
+              </div>
+            </div>
+          </aside>
+
+          <div class="lg:col-span-8 p-6">
+            <div class="grid md:grid-cols-2 gap-4">
+              <div class="glass-card rounded-3xl p-6">
+                <div class="flex items-center justify-between">
+                  <div class="text-sm font-black text-white" data-i18n="ssci_input">輸入文字</div>
+                  <button class="text-xs font-black text-slate-300 hover:text-white" onclick="loadSSCIExample()">
+                    <i class="fa-solid fa-flask mr-1"></i><span data-i18n="load_example">載入範例</span>
+                  </button>
+                </div>
+                <textarea id="ssci-input" class="input-ai w-full rounded-2xl p-4 mt-3 min-h-[340px] text-sm leading-relaxed"
+                          data-i18n-placeholder="ssci_input_ph" placeholder="貼上你要潤飾/強化的段落（可中英混合）"></textarea>
+              </div>
+
+              <div class="glass-card rounded-3xl p-6">
+                <div class="flex items-center justify-between">
+                  <div class="text-sm font-black text-white" data-i18n="ssci_output">輸出建議</div>
+                  <button class="text-xs font-black text-slate-300 hover:text-white" onclick="copySSCIOutput()">
+                    <i class="fa-solid fa-copy mr-1"></i><span data-i18n="copy">複製</span>
+                  </button>
+                </div>
+                <div id="ssci-output" class="rounded-2xl bg-slate-950/25 border border-slate-700/35 p-5 mt-3 text-sm text-slate-200 leading-relaxed min-h-[340px]">
+                  <div class="text-slate-400" data-i18n="ssci_empty">請輸入文字並點擊「生成建議」。</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 glass-panel rounded-3xl p-5 border border-white/5">
+              <div class="flex items-center justify-between">
+                <div class="text-xs text-slate-400 font-black uppercase" data-i18n="ssci_trace">可追溯紀錄</div>
+                <span class="badge text-[11px] px-2 py-1 rounded-full font-black" id="ssci-trace">local</span>
+              </div>
+              <p class="mt-2 text-sm text-slate-400 leading-relaxed" data-i18n="ssci_trace_desc">
+                此頁已內建「使用功能記錄」與「會話時間」統計；若後台啟用，將可把寫作請求與輸出摘要寫入試算表供研究追蹤。
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SFL placeholder -->
+      <div id="tool-sfl" class="hidden glass-panel rounded-3xl p-7">
+        <h3 class="text-xl md:text-2xl font-black text-white flex items-center gap-2">
+          <i class="fa-solid fa-spell-check text-purple-200"></i>
+          <span data-i18n="sfl_title">系統功能語言分析</span>
+        </h3>
+        <p class="mt-3 text-slate-400 leading-relaxed" data-i18n="sfl_desc">
+          此入口已預留（UI/UX 完整）。你後續只要把 SFL 模組掛入此容器即可；所有使用行為與登出問卷會自動統計。
+        </p>
+        <div class="mt-6 grid md:grid-cols-3 gap-4">
+          <div class="glass-card rounded-2xl p-5">
+            <div class="text-sm font-black text-white" data-i18n="sfl_box_1">語篇功能</div>
+            <p class="mt-2 text-sm text-slate-400" data-i18n="sfl_box_1_desc">概念／人際／語篇三大元功能。</p>
+          </div>
+          <div class="glass-card rounded-2xl p-5">
+            <div class="text-sm font-black text-white" data-i18n="sfl_box_2">可解釋報告</div>
+            <p class="mt-2 text-sm text-slate-400" data-i18n="sfl_box_2_desc">教科書語言特徵與教學意涵摘要。</p>
+          </div>
+          <div class="glass-card rounded-2xl p-5">
+            <div class="text-sm font-black text-white" data-i18n="sfl_box_3">資料追蹤</div>
+            <p class="mt-2 text-sm text-slate-400" data-i18n="sfl_box_3_desc">支援研究資料稽核與使用紀錄。</p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Footer (固定保留) -->
+  <footer class="text-center py-8 text-slate-500 text-sm mt-auto glass-panel border-t-0 relative z-10">
+    <div class="flex flex-col gap-2">
+      <p>© 2024 AI School. All rights reserved.</p>
+      <p class="font-medium text-slate-400">Institute of Science Education, NDHU, Taiwan</p>
+      <p>
+        <a href="mailto:shiwen@gms.ndhu.edu.tw" class="text-purple-300 hover:text-purple-200 transition inline-flex justify-center items-center gap-2">
+          <i class="fa-regular fa-envelope"></i> shiwen@gms.ndhu.edu.tw
+        </a>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Login Modal -->
+  <div id="login-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[70] flex items-center justify-center px-4">
+    <div class="w-full max-w-md glass-panel rounded-3xl p-7 border border-white/5 animate-fade-in">
+      <div class="flex items-start justify-between">
+        <div>
+          <div class="text-xs text-slate-400 font-black uppercase tracking-wider" data-i18n="login_tip">Professor Access</div>
+          <h3 class="text-2xl font-black text-white mt-1" data-i18n="login_title">教授登入</h3>
+          <p class="text-sm text-slate-400 mt-2" data-i18n="login_desc">連線至 Users_researcher 驗證身份並記錄使用統計。</p>
+        </div>
+        <button class="text-slate-400 hover:text-white transition" onclick="closeLoginModal()"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+
+      <form class="mt-6 space-y-4" onsubmit="handleLogin(event)">
+        <div>
+          <label class="block text-slate-300 text-sm font-black mb-2" data-i18n="email">Email</label>
+          <input id="login-email" class="input-ai w-full px-4 py-3 rounded-xl" autocomplete="username"
+                 data-i18n-placeholder="email_ph" placeholder="name@example.com" required />
+        </div>
+        <div>
+          <label class="block text-slate-300 text-sm font-black mb-2" data-i18n="password">密碼</label>
+          <div class="relative">
+            <input id="login-password" type="password" class="input-ai w-full px-4 py-3 rounded-xl pr-12" autocomplete="current-password"
+                   data-i18n-placeholder="password_ph" placeholder="••••••••" required />
+            <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white" onclick="togglePwd('login-password', this)">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <button id="btn-login-submit" class="w-full bg-professor hover:bg-professor-deep text-white font-black py-3.5 rounded-xl transition shadow-[0_0_18px_rgba(139,92,246,0.35)]">
+          <i class="fa-solid fa-arrow-right-to-bracket mr-2"></i><span data-i18n="btn_login_action">登入系統</span>
+        </button>
+
+        <div class="text-xs text-slate-500 leading-relaxed mt-2" data-i18n="login_security">
+          建議後台儲存 SHA-256 密碼雜湊；前台會先雜湊再送出。
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Logout Survey Modal -->
+  <div id="survey-modal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-sm z-[80] overflow-auto">
+    <div class="min-h-full flex items-center justify-center px-4 py-10">
+      <div class="w-full max-w-3xl glass-panel rounded-3xl p-7 md:p-9 border border-white/5 animate-fade-in">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <div class="text-xs text-slate-400 font-black uppercase tracking-wider" data-i18n="survey_title_top">Logout Survey</div>
+            <h3 class="text-2xl md:text-3xl font-black text-white mt-1" data-i18n="survey_title">使用滿意度問卷</h3>
+            <p class="text-sm text-slate-400 mt-2" data-i18n="survey_desc">請協助評估教授端功能，填寫後即完成登出。</p>
+          </div>
+          <button class="text-slate-400 hover:text-white transition" onclick="closeSurveyModal()" title="Close">
+            <i class="fa-solid fa-xmark text-xl"></i>
+          </button>
+        </div>
+
+        <!-- Form -->
+        <form id="survey-form" class="mt-7 space-y-7" onsubmit="submitSurvey(event)">
+          <!-- Q1 -->
+          <div class="glass-card rounded-3xl p-6">
+            <div class="flex items-center justify-between">
+              <div class="text-white font-black" data-i18n="q1">1. 教授端的整體使用滿意度</div>
+              <span class="badge text-[11px] px-2 py-1 rounded-full font-black" data-i18n="five_scale">五點量表</span>
+            </div>
+            <div class="mt-4 flex gap-3 flex-wrap" id="q1-faces"></div>
+          </div>
+
+          <!-- Q2 -->
+          <div class="glass-card rounded-3xl p-6">
+            <div class="flex items-center justify-between">
+              <div class="text-white font-black" data-i18n="q2">2. 10 個功能的使用滿意度</div>
+              <span class="badge text-[11px] px-2 py-1 rounded-full font-black" data-i18n="five_scale">五點量表</span>
+            </div>
+            <div class="mt-4 grid md:grid-cols-2 gap-4" id="q2-grid"></div>
+          </div>
+
+          <!-- Q3 -->
+          <div class="glass-card rounded-3xl p-6">
+            <div class="text-white font-black" data-i18n="q3">3. 是否需要改進？</div>
+            <div class="mt-4 flex gap-4 flex-wrap">
+              <label class="flex items-center gap-2 text-slate-200 font-bold">
+                <input type="radio" name="needImprove" value="yes" class="accent-purple-500" required />
+                <span data-i18n="yes">有</span>
+              </label>
+              <label class="flex items-center gap-2 text-slate-200 font-bold">
+                <input type="radio" name="needImprove" value="no" class="accent-purple-500" required />
+                <span data-i18n="no">沒有</span>
+              </label>
+            </div>
+            <div class="mt-4">
+              <label class="block text-slate-300 text-sm font-black mb-2" data-i18n="comment">建議文字</label>
+              <textarea id="improve-text" class="input-ai w-full rounded-2xl p-4 min-h-[110px] text-sm"
+                        data-i18n-placeholder="comment_ph" placeholder="不論勾選有/沒有，都歡迎留下具體建議"></textarea>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-3">
+            <button type="button" onclick="closeSurveyModal()" class="px-5 py-3 rounded-xl font-black text-slate-200 bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700/50 transition" data-i18n="cancel">
+              取消
+            </button>
+            <button type="submit" class="px-6 py-3 rounded-xl font-black text-white bg-professor hover:bg-professor-deep transition shadow-[0_0_18px_rgba(139,92,246,0.35)]" data-i18n="submit">
+              送出
+            </button>
+          </div>
+        </form>
+
+        <!-- Thank You -->
+        <div id="survey-thanks" class="hidden mt-6 glass-card rounded-3xl p-7 text-center">
+          <div class="w-14 h-14 rounded-2xl bg-purple-500/15 border border-professor/30 flex items-center justify-center mx-auto">
+            <i class="fa-solid fa-heart text-purple-200 text-2xl"></i>
+          </div>
+          <h4 class="mt-4 text-2xl font-black text-white" data-i18n="thanks_title">感謝您的使用</h4>
+          <p class="mt-2 text-slate-400" data-i18n="thanks_desc">歡迎再度光臨。</p>
+          <button class="mt-5 px-6 py-3 rounded-xl font-black text-white bg-slate-800/70 hover:bg-slate-700/70 border border-slate-700/50 transition" onclick="finishLogout()" data-i18n="finish_logout">
+            完成登出
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /***********************
+     * 0) CONFIG
+     ***********************/
+    // 你的既有 Web App URL（保留同一條；後台新增 action 路由即可）
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzcDKkz8Tilzb3qbx0_fDR7QoG4-c2JCtsa4p9V8_1gBjZaEMlvQHd72OD0kZq_jW8H/exec";
+
+    // 功能 ID -> 用於追蹤與問卷
+    const FEATURE_CATALOG = [
+      { id:"segmentation", key:"feat_1" },
+      { id:"query",        key:"feat_2" },
+      { id:"vocab",        key:"feat_3" },
+      { id:"readability",  key:"feat_4" },
+      { id:"conceptnet",   key:"feat_5" },
+      { id:"sfl",          key:"feat_6" },
+      { id:"wordcloud",    key:"feat_7" },
+      { id:"similarity",   key:"feat_8" },
+      { id:"teval",        key:"feat_9" },
+      { id:"ssci",         key:"feat_10" }
+    ];
+
+    const FACE_SET = [
+      { v:1, icon:"fa-face-frown",        labelKey:"rate_1" },
+      { v:2, icon:"fa-face-frown-open",   labelKey:"rate_2" },
+      { v:3, icon:"fa-face-meh",          labelKey:"rate_3" },
+      { v:4, icon:"fa-face-smile",        labelKey:"rate_4" },
+      { v:5, icon:"fa-face-laugh-beam",   labelKey:"rate_5" },
+    ];
+
+    /***********************
+     * 1) i18n
+     ***********************/
+    const translations = {
+      "zh-TW": {
+        nav_subtitle:"Professor Hub",
+        tagline:"Academic-grade Tooling",
+        hero_title:"科學文本研究中心",
+        hero_subtitle:"教授端高階工具：文本挖掘、教學評量與 SSCI 論文寫作協作，一站式整合。",
+        session_panel:"Session",
+        login_count:"登入次數",
+        time_spent:"使用時間",
+        features_used:"已使用功能",
+        toolkit_title:"教授端工具箱",
+        whatsnew:"快速導覽",
+        privacy_note:"資料僅用於研究/改進（可追溯）",
+        whatsnew_title:"快速導覽（教授端）",
+        guide_1_title:"1. 先登入",
+        guide_1_desc:"系統會對接 Users_researcher 驗證身份並記錄登入次數。",
+        guide_2_title:"2. 使用工具",
+        guide_2_desc:"每次點擊功能會被記錄（不含敏感內容），用於優化 UX 與功能排程。",
+        guide_3_title:"3. 登出問卷",
+        guide_3_desc:"登出時會跳出滿意度問卷；送出後顯示感謝訊息並完成登出。",
+        back_dashboard:"返回研究中心",
+        btn_login:"登入",
+        logout:"登出",
+        login_tip:"Professor Access",
+        login_title:"教授登入",
+        login_desc:"連線至 Users_researcher 驗證身份並記錄使用統計。",
+        email:"Email",
+        password:"密碼",
+        email_ph:"name@example.com",
+        password_ph:"••••••••",
+        btn_login_action:"登入系統",
+        login_security:"建議後台儲存 SHA-256 密碼雜湊；前台會先雜湊再送出。",
+        cancel:"取消",
+        submit:"送出",
+        survey_title_top:"Logout Survey",
+        survey_title:"使用滿意度問卷",
+        survey_desc:"請協助評估教授端功能，填寫後即完成登出。",
+        five_scale:"五點量表",
+        q1:"1. 教授端的整體使用滿意度",
+        q2:"2. 10 個功能的使用滿意度",
+        q3:"3. 是否需要改進？",
+        yes:"有",
+        no:"沒有",
+        comment:"建議文字",
+        comment_ph:"不論勾選有/沒有，都歡迎留下具體建議",
+        thanks_title:"感謝您的使用",
+        thanks_desc:"歡迎再度光臨。",
+        finish_logout:"完成登出",
+
+        rate_1:"1",
+        rate_2:"2",
+        rate_3:"3",
+        rate_4:"4",
+        rate_5:"5",
+
+        feat_1:"科學文本斷詞",
+        feat_1_desc:"CKIP / Jieba 斷詞、詞性與可視化。",
+        feat_2:"科學文本查詢",
+        feat_2_desc:"教材資料庫檢索與結構化篩選。",
+        feat_3:"文本詞彙比較",
+        feat_3_desc:"跨文本詞彙分佈、關鍵詞與差異剖析。",
+        feat_4:"文本可讀性分析",
+        feat_4_desc:"難易度指標、句法複雜度與可讀性評估。",
+        feat_5:"概念網絡分析",
+        feat_5_desc:"知識圖譜、節點權重與關係網絡視覺化。",
+        feat_6:"系統功能語言分析",
+        feat_6_desc:"教科書語篇功能分析入口（可接你後續模組）。",
+        feat_7:"文本文字雲系統",
+        feat_7_desc:"關鍵詞權重、詞頻與主題視覺化。",
+        feat_8:"文本相似性分析",
+        feat_8_desc:"結構・語意・概念三層比對與可解釋報告。",
+        feat_9:"教學評量系統",
+        feat_9_desc:"課程評量表單設計、結果統計與回饋摘要。",
+        feat_10:"AI 輔助 SSCI 論文寫作",
+        feat_10_desc:"段落優化、審稿回覆框架與寫作一致性檢核。",
+
+        sim_config:"分析模型設定",
+        sim_structure:"結構層",
+        sim_concept:"概念層",
+        sim_semantic:"語意層",
+        sim_backend_note:"勾選 Embedding/LLM 需後台 API 支援；未勾選則使用本地可解釋算法。",
+        run:"執行分析",
+        load_example:"載入範例",
+        clear:"清空",
+        sim_placeholder_a:"文本 A（例如：教科書定義、標準答案…）",
+        sim_placeholder_b:"文本 B（例如：學生回答、比較文本…）",
+        overall:"總體相似度",
+        structure:"結構",
+        concept:"概念",
+        semantic:"語意",
+        radar:"多維雷達",
+        report:"可解釋報告",
+        sim_empty:"請輸入兩段文本並執行分析。",
+        copy:"複製",
+
+        teval_builder:"評量表單設計",
+        course_name:"課程名稱",
+        course_ph:"例如：國中理化（八上）",
+        teval_items:"10 題功能/教學滿意度題項",
+        teval_items_note:"可直接改題目文字；送出時一併紀錄。",
+        reset:"重設",
+        publish:"發布",
+        teval_publish_note:"發布會將表單定義寫入試算表（後台）。未發布仍可用「預覽」進行示範。",
+        preview:"預覽",
+        simulate:"模擬一筆回覆",
+        teval_overall:"整體教學滿意度",
+        teval_10:"10 題評量（示範版）",
+        teval_analytics:"快速統計（示範）",
+        teval_analytics_note:"此頁提供前台完整 UX；若要真正收集學生回覆，建議後台提供「學生端表單頁」與寫入試算表。",
+
+        ssci_panel:"寫作設定",
+        ssci_section:"段落類型",
+        ssci_journal:"目標期刊/風格",
+        ssci_journal_ph:"例如：Asia-Pacific Education Researcher (TAPER)",
+        ssci_mode:"輸出模式",
+        ssci_polish:"學術潤飾",
+        ssci_structure:"結構強化",
+        ssci_clarity:"清晰度提升",
+        ssci_review:"審稿意見回覆框架",
+        generate:"生成建議",
+        ssci_backend_note:"若要真正呼叫 AI（Gemini/OpenAI），需後台代呼叫並回傳結果；前台已備妥 UX 與資料結構。",
+        ssci_input:"輸入文字",
+        ssci_input_ph:"貼上你要潤飾/強化的段落（可中英混合）",
+        ssci_output:"輸出建議",
+        ssci_empty:"請輸入文字並點擊「生成建議」。",
+        ssci_trace:"可追溯紀錄",
+        ssci_trace_desc:"此頁已內建「使用功能記錄」與「會話時間」統計；若後台啟用，將可把寫作請求與輸出摘要寫入試算表供研究追蹤。",
+
+        sfl_title:"系統功能語言分析",
+        sfl_desc:"此入口已預留（UI/UX 完整）。你後續只要把 SFL 模組掛入此容器即可；所有使用行為與登出問卷會自動統計。",
+        sfl_box_1:"語篇功能",
+        sfl_box_1_desc:"概念／人際／語篇三大元功能。",
+        sfl_box_2:"可解釋報告",
+        sfl_box_2_desc:"教科書語言特徵與教學意涵摘要。",
+        sfl_box_3:"資料追蹤",
+        sfl_box_3_desc:"支援研究資料稽核與使用紀錄。",
+
+        err_need_login:"請先登入教授帳號。",
+        err_input_two:"請輸入兩段文本。",
+        api_down:"後台未回應或未啟用 action。已以前台模式繼續。",
+      },
+
+      "en": {
+        nav_subtitle:"Professor Hub",
+        tagline:"Academic-grade Tooling",
+        hero_title:"Science Text Research Center",
+        hero_subtitle:"Professor-grade tools for text mining, teaching evaluation, and SSCI writing collaboration—integrated in one place.",
+        session_panel:"Session",
+        login_count:"Login Count",
+        time_spent:"Time Spent",
+        features_used:"Features Used",
+        toolkit_title:"Professor Toolkit",
+        whatsnew:"Quick Tour",
+        privacy_note:"Data used for improvement (auditable)",
+        whatsnew_title:"Quick Tour (Professor)",
+        guide_1_title:"1. Login",
+        guide_1_desc:"Validate via Users_researcher and record login count.",
+        guide_2_title:"2. Use Tools",
+        guide_2_desc:"Feature clicks are recorded (no sensitive text) to improve UX.",
+        guide_3_title:"3. Logout Survey",
+        guide_3_desc:"Survey appears before logout; submit to finish logout.",
+        back_dashboard:"Back to Hub",
+        btn_login:"Login",
+        logout:"Logout",
+        login_tip:"Professor Access",
+        login_title:"Professor Login",
+        login_desc:"Connect to Users_researcher to validate and log usage metrics.",
+        email:"Email",
+        password:"Password",
+        email_ph:"name@example.com",
+        password_ph:"••••••••",
+        btn_login_action:"Login",
+        login_security:"Recommended: store SHA-256 password hashes on the server.",
+        cancel:"Cancel",
+        submit:"Submit",
+        survey_title_top:"Logout Survey",
+        survey_title:"Satisfaction Survey",
+        survey_desc:"Please rate the professor hub. Submit to complete logout.",
+        five_scale:"5-point scale",
+        q1:"1. Overall satisfaction (Professor Hub)",
+        q2:"2. Satisfaction for 10 features",
+        q3:"3. Needs improvement?",
+        yes:"Yes",
+        no:"No",
+        comment:"Comments",
+        comment_ph:"Feel free to leave suggestions regardless of Yes/No",
+        thanks_title:"Thank you",
+        thanks_desc:"Hope to see you again.",
+        finish_logout:"Finish Logout",
+        rate_1:"1",rate_2:"2",rate_3:"3",rate_4:"4",rate_5:"5",
+        feat_1:"Segmentation",
+        feat_1_desc:"CKIP/Jieba tokenization, POS, visualization.",
+        feat_2:"Text Query",
+        feat_2_desc:"Database retrieval with structured filters.",
+        feat_3:"Vocabulary Comparison",
+        feat_3_desc:"Cross-text distributions and contrastive keywords.",
+        feat_4:"Readability",
+        feat_4_desc:"Difficulty indices, syntax complexity, readability.",
+        feat_5:"Concept Network",
+        feat_5_desc:"Knowledge graph, node weights, relation visualization.",
+        feat_6:"SFL Analysis",
+        feat_6_desc:"Entry point for discourse-functional analysis.",
+        feat_7:"Word Cloud",
+        feat_7_desc:"Keyword weights, frequency, topic visualization.",
+        feat_8:"Similarity Analysis",
+        feat_8_desc:"Structure/semantic/concept alignment with explanations.",
+        feat_9:"Teaching Evaluation",
+        feat_9_desc:"Build surveys, summarize results, quick analytics.",
+        feat_10:"AI-assisted SSCI Writing",
+        feat_10_desc:"Polish, structure, rebuttal templates, consistency.",
+        sim_config:"Model Config",
+        sim_structure:"Structure",
+        sim_concept:"Concept",
+        sim_semantic:"Semantic",
+        sim_backend_note:"Embedding/LLM requires backend; otherwise local interpretable methods.",
+        run:"Run",
+        load_example:"Example",
+        clear:"Clear",
+        sim_placeholder_a:"Text A (definition / reference answer...)",
+        sim_placeholder_b:"Text B (student response / comparison...)",
+        overall:"Overall",
+        structure:"Structure",
+        concept:"Concept",
+        semantic:"Semantic",
+        radar:"Radar",
+        report:"Explainable Report",
+        sim_empty:"Enter both texts and run analysis.",
+        copy:"Copy",
+        teval_builder:"Survey Builder",
+        course_name:"Course Name",
+        course_ph:"e.g., Junior High Science (G8)",
+        teval_items:"10 evaluation items",
+        teval_items_note:"Edit items freely; definitions can be logged on publish.",
+        reset:"Reset",
+        publish:"Publish",
+        teval_publish_note:"Publish writes survey definition to Sheets (backend).",
+        preview:"Preview",
+        simulate:"Simulate one response",
+        teval_overall:"Overall teaching satisfaction",
+        teval_10:"10 items (demo)",
+        teval_analytics:"Quick analytics (demo)",
+        teval_analytics_note:"Front-end UX ready. Student collection needs a student page + backend write.",
+        ssci_panel:"Writing Config",
+        ssci_section:"Section Type",
+        ssci_journal:"Target Journal/Style",
+        ssci_journal_ph:"e.g., TAPER",
+        ssci_mode:"Output Mode",
+        ssci_polish:"Academic polish",
+        ssci_structure:"Structure strengthening",
+        ssci_clarity:"Clarity improvement",
+        ssci_review:"Rebuttal framing",
+        generate:"Generate",
+        ssci_backend_note:"To call real AI, backend proxy is needed; UX/data schema are ready.",
+        ssci_input:"Input",
+        ssci_input_ph:"Paste your paragraph here",
+        ssci_output:"Output",
+        ssci_empty:"Enter text and click Generate.",
+        ssci_trace:"Traceability",
+        ssci_trace_desc:"Usage/time tracking is built-in; backend can persist prompts & summaries.",
+        sfl_title:"SFL Analysis",
+        sfl_desc:"Container ready. Plug your SFL module here later; tracking stays consistent.",
+        sfl_box_1:"Meta-functions",
+        sfl_box_1_desc:"Ideational / interpersonal / textual.",
+        sfl_box_2:"Explainable report",
+        sfl_box_2_desc:"Linguistic patterns and pedagogical implications.",
+        sfl_box_3:"Tracking",
+        sfl_box_3_desc:"Auditable usage records.",
+        err_need_login:"Please login first.",
+        err_input_two:"Please input both texts.",
+        api_down:"Backend not available; continuing in front-end mode."
+      },
+
+      "ja": {
+        nav_subtitle:"Professor Hub",
+        tagline:"Academic-grade Tooling",
+        hero_title:"科学テキスト研究センター",
+        hero_subtitle:"教授向け：テキスト分析、授業評価、SSCI 論文執筆支援を一括統合。",
+        session_panel:"Session",
+        login_count:"ログイン回数",
+        time_spent:"利用時間",
+        features_used:"使用機能",
+        toolkit_title:"教授ツールキット",
+        whatsnew:"クイックガイド",
+        privacy_note:"改善目的のログ（監査可能）",
+        whatsnew_title:"クイックガイド（教授）",
+        guide_1_title:"1. ログイン",
+        guide_1_desc:"Users_researcher で認証し回数を記録。",
+        guide_2_title:"2. 機能利用",
+        guide_2_desc:"機能クリックを記録（機密本文は除外）。",
+        guide_3_title:"3. ログアウト調査",
+        guide_3_desc:"ログアウト前に満足度調査→送信で完了。",
+        back_dashboard:"戻る",
+        btn_login:"ログイン",
+        logout:"ログアウト",
+        login_tip:"Professor Access",
+        login_title:"教授ログイン",
+        login_desc:"Users_researcher に接続して認証・利用統計を記録。",
+        email:"メール",
+        password:"パスワード",
+        email_ph:"name@example.com",
+        password_ph:"••••••••",
+        btn_login_action:"ログイン",
+        login_security:"推奨：サーバ側で SHA-256 ハッシュ保存。",
+        cancel:"キャンセル",
+        submit:"送信",
+        survey_title_top:"Logout Survey",
+        survey_title:"満足度アンケート",
+        survey_desc:"教授端の評価にご協力ください。送信後ログアウト完了。",
+        five_scale:"5段階",
+        q1:"1. 全体満足度（教授端）",
+        q2:"2. 10機能の満足度",
+        q3:"3. 改善は必要ですか？",
+        yes:"はい",
+        no:"いいえ",
+        comment:"コメント",
+        comment_ph:"はい/いいえに関わらず具体的な提案を歓迎します",
+        thanks_title:"ご利用ありがとうございました",
+        thanks_desc:"またのご利用をお待ちしています。",
+        finish_logout:"ログアウト完了",
+        rate_1:"1",rate_2:"2",rate_3:"3",rate_4:"4",rate_5:"5",
+        feat_1:"分かち書き",
+        feat_1_desc:"CKIP/Jieba、品詞、可視化。",
+        feat_2:"テキスト検索",
+        feat_2_desc:"教材DB検索とフィルタ。",
+        feat_3:"語彙比較",
+        feat_3_desc:"分布・キーワード差分。",
+        feat_4:"可読性",
+        feat_4_desc:"難易度指標と構文複雑度。",
+        feat_5:"概念ネットワーク",
+        feat_5_desc:"知識グラフと関係可視化。",
+        feat_6:"SFL分析",
+        feat_6_desc:"語篇機能分析の入口。",
+        feat_7:"ワードクラウド",
+        feat_7_desc:"頻度・重みの可視化。",
+        feat_8:"類似度分析",
+        feat_8_desc:"構造/意味/概念の説明可能レポート。",
+        feat_9:"授業評価",
+        feat_9_desc:"アンケート設計、集計、要約。",
+        feat_10:"SSCI執筆支援",
+        feat_10_desc:"推敲、構造、リバッタル、整合性。",
+        sim_config:"設定",
+        sim_structure:"構造",
+        sim_concept:"概念",
+        sim_semantic:"意味",
+        sim_backend_note:"Embedding/LLM は後台が必要。未選択ならローカル解析。",
+        run:"実行",
+        load_example:"例",
+        clear:"クリア",
+        sim_placeholder_a:"Text A（定義／模範解答…）",
+        sim_placeholder_b:"Text B（学生回答／比較…）",
+        overall:"総合",
+        structure:"構造",
+        concept:"概念",
+        semantic:"意味",
+        radar:"レーダー",
+        report:"説明可能レポート",
+        sim_empty:"2つのテキストを入力して実行してください。",
+        copy:"コピー",
+        teval_builder:"評価設計",
+        course_name:"授業名",
+        course_ph:"例：中学理科（8年）",
+        teval_items:"10項目",
+        teval_items_note:"項目文は自由に編集可能。",
+        reset:"リセット",
+        publish:"公開",
+        teval_publish_note:"公開はシートへ保存（後台）。",
+        preview:"プレビュー",
+        simulate:"1件を模擬",
+        teval_overall:"全体満足度",
+        teval_10:"10項目（デモ）",
+        teval_analytics:"簡易集計（デモ）",
+        teval_analytics_note:"学生回収は学生ページ＋後台書込みが必要。",
+        ssci_panel:"執筆設定",
+        ssci_section:"セクション",
+        ssci_journal:"対象誌/スタイル",
+        ssci_journal_ph:"例：TAPER",
+        ssci_mode:"モード",
+        ssci_polish:"学術推敲",
+        ssci_structure:"構造強化",
+        ssci_clarity:"明確化",
+        ssci_review:"リバッタル",
+        generate:"生成",
+        ssci_backend_note:"実AI呼出は後台が必要（UX/スキーマは準備済）。",
+        ssci_input:"入力",
+        ssci_input_ph:"段落を貼り付け",
+        ssci_output:"出力",
+        ssci_empty:"入力して生成を押してください。",
+        ssci_trace:"追跡",
+        ssci_trace_desc:"利用時間/機能ログは内蔵。後台で永続化可能。",
+        sfl_title:"SFL分析",
+        sfl_desc:"後でモジュールを接続できます。ログは継続。",
+        sfl_box_1:"機能",
+        sfl_box_1_desc:"3つの元機能。",
+        sfl_box_2:"レポート",
+        sfl_box_2_desc:"言語特徴と含意。",
+        sfl_box_3:"記録",
+        sfl_box_3_desc:"監査可能。",
+        err_need_login:"先にログインしてください。",
+        err_input_two:"両方のテキストを入力してください。",
+        api_down:"後台未接続のため前台モードで継続します。"
+      },
+
+      "zh-CN": {
+        nav_subtitle:"Professor Hub",
+        tagline:"Academic-grade Tooling",
+        hero_title:"科学文本研究中心",
+        hero_subtitle:"教授端高阶工具：文本挖掘、教学评量与 SSCI 论文写作协作，一站式整合。",
+        session_panel:"Session",
+        login_count:"登录次数",
+        time_spent:"使用时间",
+        features_used:"已使用功能",
+        toolkit_title:"教授端工具箱",
+        whatsnew:"快速导览",
+        privacy_note:"数据仅用于改进（可追溯）",
+        whatsnew_title:"快速导览（教授端）",
+        guide_1_title:"1. 先登录",
+        guide_1_desc:"对接 Users_researcher 验证并记录次数。",
+        guide_2_title:"2. 使用工具",
+        guide_2_desc:"记录功能点击（不含敏感内容）用于优化 UX。",
+        guide_3_title:"3. 登出问卷",
+        guide_3_desc:"登出前弹出满意度问卷；提交后完成登出。",
+        back_dashboard:"返回研究中心",
+        btn_login:"登录",
+        logout:"退出",
+        login_tip:"Professor Access",
+        login_title:"教授登录",
+        login_desc:"连接 Users_researcher 验证身份并记录使用统计。",
+        email:"Email",
+        password:"密码",
+        email_ph:"name@example.com",
+        password_ph:"••••••••",
+        btn_login_action:"登录系统",
+        login_security:"建议后端存 SHA-256 密码哈希；前端会先哈希再送出。",
+        cancel:"取消",
+        submit:"提交",
+        survey_title_top:"Logout Survey",
+        survey_title:"使用满意度问卷",
+        survey_desc:"请协助评估教授端功能，提交后即完成登出。",
+        five_scale:"五点量表",
+        q1:"1. 教授端整体满意度",
+        q2:"2. 10 个功能的满意度",
+        q3:"3. 是否需要改进？",
+        yes:"有",
+        no:"没有",
+        comment:"建议文字",
+        comment_ph:"不论勾选有/没有，都欢迎留下具体建议",
+        thanks_title:"感谢您的使用",
+        thanks_desc:"欢迎再度光临。",
+        finish_logout:"完成登出",
+        rate_1:"1",rate_2:"2",rate_3:"3",rate_4:"4",rate_5:"5",
+        feat_1:"科学文本断词",
+        feat_1_desc:"CKIP/Jieba 分词、词性与可视化。",
+        feat_2:"科学文本查询",
+        feat_2_desc:"教材数据库检索与筛选。",
+        feat_3:"文本词汇比较",
+        feat_3_desc:"跨文本分布、关键词差异。",
+        feat_4:"文本可读性分析",
+        feat_4_desc:"难易度指标与可读性评估。",
+        feat_5:"概念网络分析",
+        feat_5_desc:"知识图谱与关系可视化。",
+        feat_6:"系统功能语言分析",
+        feat_6_desc:"语篇功能分析入口（可接后续模块）。",
+        feat_7:"文本词云系统",
+        feat_7_desc:"关键词权重与主题可视化。",
+        feat_8:"文本相似性分析",
+        feat_8_desc:"结构/语意/概念三层比对与报告。",
+        feat_9:"教学评量系统",
+        feat_9_desc:"表单设计、统计与反馈摘要。",
+        feat_10:"AI 辅助 SSCI 写作",
+        feat_10_desc:"段落优化、审稿回覆框架与一致性。",
+        sim_config:"分析设置",
+        sim_structure:"结构层",
+        sim_concept:"概念层",
+        sim_semantic:"语义层",
+        sim_backend_note:"Embedding/LLM 需后端支持；否则使用本地可解释算法。",
+        run:"执行分析",
+        load_example:"载入范例",
+        clear:"清空",
+        sim_placeholder_a:"文本 A（定义/标准答案…）",
+        sim_placeholder_b:"文本 B（学生回答/比较文本…）",
+        overall:"总体相似度",
+        structure:"结构",
+        concept:"概念",
+        semantic:"语义",
+        radar:"雷达图",
+        report:"可解释报告",
+        sim_empty:"请输入两段文本并执行分析。",
+        copy:"复制",
+        teval_builder:"评量表单设计",
+        course_name:"课程名称",
+        course_ph:"例如：初中理化（八上）",
+        teval_items:"10 题评量题项",
+        teval_items_note:"可直接修改题目文字。",
+        reset:"重设",
+        publish:"发布",
+        teval_publish_note:"发布会写入试算表（后端）。",
+        preview:"预览",
+        simulate:"模拟一笔回覆",
+        teval_overall:"整体教学满意度",
+        teval_10:"10 题评量（示范）",
+        teval_analytics:"快速统计（示范）",
+        teval_analytics_note:"学生回收需学生端表单页与后端写入。",
+        ssci_panel:"写作设置",
+        ssci_section:"段落类型",
+        ssci_journal:"目标期刊/风格",
+        ssci_journal_ph:"例如：TAPER",
+        ssci_mode:"输出模式",
+        ssci_polish:"学术润饰",
+        ssci_structure:"结构强化",
+        ssci_clarity:"清晰度提升",
+        ssci_review:"审稿回覆框架",
+        generate:"生成建议",
+        ssci_backend_note:"真实 AI 需后端代理调用；前端 UX/结构已就绪。",
+        ssci_input:"输入文字",
+        ssci_input_ph:"贴上要润饰/强化的段落",
+        ssci_output:"输出建议",
+        ssci_empty:"请输入文字并点击生成。",
+        ssci_trace:"可追溯记录",
+        ssci_trace_desc:"已内建使用记录与会话时间；后端可持久化。",
+        sfl_title:"系统功能语言分析",
+        sfl_desc:"入口已预留；后续接入模块即可。",
+        sfl_box_1:"语篇功能",
+        sfl_box_1_desc:"三大元功能。",
+        sfl_box_2:"可解释报告",
+        sfl_box_2_desc:"语言特征与教学习得。",
+        sfl_box_3:"资料追踪",
+        sfl_box_3_desc:"可稽核。",
+        err_need_login:"请先登录。",
+        err_input_two:"请输入两段文本。",
+        api_down:"后端未响应，已以前端模式继续。"
+      }
+    };
+
+    let currentLang = localStorage.getItem("AI_SCHOOL_LANG") || "zh-TW";
+
+    function applyI18n() {
+      const t = translations[currentLang] || translations["zh-TW"];
+      document.documentElement.lang = currentLang;
+      document.getElementById("language-selector").value = currentLang;
+
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const k = el.getAttribute("data-i18n");
+        if (t[k] != null) el.textContent = t[k];
+      });
+
+      document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+        const k = el.getAttribute("data-i18n-placeholder");
+        if (t[k] != null) el.setAttribute("placeholder", t[k]);
+      });
+
+      // rebuild survey faces labels (they are icon-only but we keep aria)
+      buildSurveyUI();
+      buildTevalUI();
+    }
+
+    document.getElementById("language-selector").addEventListener("change", () => {
+      currentLang = document.getElementById("language-selector").value;
+      localStorage.setItem("AI_SCHOOL_LANG", currentLang);
+      applyI18n();
+    });
+
+    /***********************
+     * 2) Session & User
+     ***********************/
+    let currentUser = null;
+    let sessionStartMs = null;
+    let sessionTimer = null;
+    let activeMs = 0;
+    let lastTickMs = null;
+    let usedFeatures = new Set();
+    let loginCount = null;
+
+    function safeJsonParse(s) {
+      try { return JSON.parse(s); } catch { return null; }
+    }
+
+    function getStoredUser() {
+      const raw = sessionStorage.getItem("currentUser");
+      const obj = safeJsonParse(raw);
+      if (!obj) return null;
+      // normalize
+      return {
+        email: obj.Email || obj.email || "",
+        name: obj.Name || obj.name || "Professor",
+        role: obj.Role || obj.role || "professor",
+        unit: obj.Unit || obj.unit || obj.SchoolName || obj.school || "—",
+        field: obj.Field || obj.field || "",
+      };
+    }
+
+    function setStoredUser(u) {
+      sessionStorage.setItem("currentUser", JSON.stringify(u));
+    }
+
+    function uiSetLoggedIn(u) {
+      currentUser = u;
+      document.getElementById("login-btn").classList.add("hidden");
+      document.getElementById("logout-btn").classList.remove("hidden");
+      document.getElementById("user-chip").classList.remove("hidden");
+
+      document.getElementById("user-name").textContent = u.name || "Professor";
+      document.getElementById("user-unit").textContent = u.unit || "—";
+      document.getElementById("user-avatar").textContent = (u.name || "P").trim().charAt(0).toUpperCase();
+
+      document.getElementById("session-status").textContent = "online";
+      document.getElementById("session-status").classList.add("badge");
+
+      startSessionTimer();
+      logEvent("prof.session.start", {});
+    }
+
+    function uiSetLoggedOut() {
+      currentUser = null;
+      document.getElementById("login-btn").classList.remove("hidden");
+      document.getElementById("logout-btn").classList.add("hidden");
+      document.getElementById("user-chip").classList.add("hidden");
+      document.getElementById("session-status").textContent = "offline";
+      document.getElementById("login-count").textContent = "—";
+      document.getElementById("time-spent").textContent = "00:00";
+      renderUsedFeatures();
+      stopSessionTimer();
+    }
+
+    function startSessionTimer() {
+      if (sessionTimer) return;
+      sessionStartMs = Date.now();
+      lastTickMs = Date.now();
+      sessionTimer = setInterval(() => {
+        const now = Date.now();
+        activeMs += (now - lastTickMs);
+        lastTickMs = now;
+        document.getElementById("time-spent").textContent = fmtMMSS(activeMs);
+      }, 1000);
+    }
+
+    function stopSessionTimer() {
+      if (sessionTimer) clearInterval(sessionTimer);
+      sessionTimer = null;
+    }
+
+    function fmtMMSS(ms) {
+      const s = Math.floor(ms / 1000);
+      const mm = String(Math.floor(s/60)).padStart(2,"0");
+      const ss = String(s%60).padStart(2,"0");
+      return `${mm}:${ss}`;
+    }
+
+    function renderUsedFeatures() {
+      const box = document.getElementById("features-used");
+      box.innerHTML = "";
+      const t = translations[currentLang] || translations["zh-TW"];
+      if (!usedFeatures.size) {
+        const sp = document.createElement("span");
+        sp.className = "text-xs text-slate-500 font-bold";
+        sp.textContent = "—";
+        box.appendChild(sp);
+        return;
+      }
+      [...usedFeatures].slice(0, 8).forEach(fid => {
+        const meta = FEATURE_CATALOG.find(x=>x.id===fid);
+        const pill = document.createElement("span");
+        pill.className = "badge text-[11px] px-2 py-1 rounded-full font-black";
+        pill.textContent = meta ? (t[meta.key] || meta.id) : fid;
+        box.appendChild(pill);
+      });
+      if (usedFeatures.size > 8) {
+        const more = document.createElement("span");
+        more.className = "text-[11px] text-slate-400 font-black";
+        more.textContent = `+${usedFeatures.size-8}`;
+        box.appendChild(more);
+      }
+    }
+
+    /***********************
+     * 3) API (POST JSON)
+     ***********************/
+    async function sha256Hex(str) {
+      const enc = new TextEncoder().encode(str);
+      const buf = await crypto.subtle.digest("SHA-256", enc);
+      return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,"0")).join("");
+    }
+
+    async function api(action, data) {
+      // Always try CORS JSON first
+      try {
+        const res = await fetch(GAS_URL, {
+          method: "POST",
+          mode: "cors",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify({ action, ...data })
+        });
+        const txt = await res.text();
+        const js = safeJsonParse(txt);
+        if (!js) throw new Error("Non-JSON response");
+        return js;
+      } catch (e) {
+        // fallback: fire-and-forget (no-cors) for logging only
+        if (String(action || "").startsWith("log.")) {
+          try {
+            await fetch(GAS_URL, {
+              method:"POST",
+              mode:"no-cors",
+              headers:{ "Content-Type":"application/json" },
+              body: JSON.stringify({ action, ...data })
+            });
+          } catch {}
+          return { ok:true, mode:"no-cors" };
+        }
+        const t = translations[currentLang] || translations["zh-TW"];
+        toast(t.api_down || "Backend unavailable");
+        return { ok:false, error:"backend_unavailable" };
+      }
+    }
+
+    function toast(msg) {
+      // minimal premium toast
+      const el = document.createElement("div");
+      el.className = "fixed bottom-6 left-1/2 -translate-x-1/2 z-[90] px-4 py-3 rounded-2xl bg-slate-950/80 border border-slate-700/50 text-slate-100 font-black text-sm shadow-2xl";
+      el.innerHTML = `<i class="fa-solid fa-circle-info text-purple-200 mr-2"></i>${escapeHtml(msg)}`;
+      document.body.appendChild(el);
+      setTimeout(()=>{ el.style.opacity="0"; el.style.transform="translate(-50%, 12px)"; el.style.transition="all .35s ease"; }, 1800);
+      setTimeout(()=> el.remove(), 2300);
+    }
+
+    function escapeHtml(s){ return String(s||"").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+    /***********************
+     * 4) Login / Logout
+     ***********************/
+    function openLoginModal() { document.getElementById("login-modal").classList.remove("hidden"); }
+    function closeLoginModal() { document.getElementById("login-modal").classList.add("hidden"); }
+
+    function togglePwd(inputId, btn) {
+      const el = document.getElementById(inputId);
+      const icon = btn.querySelector("i");
+      el.type = (el.type === "password") ? "text" : "password";
+      icon.className = (el.type === "password") ? "fa-solid fa-eye" : "fa-solid fa-eye-slash";
+    }
+
+    async function handleLogin(ev) {
+      ev.preventDefault();
+      const t = translations[currentLang] || translations["zh-TW"];
+
+      const email = document.getElementById("login-email").value.trim();
+      const pwd = document.getElementById("login-password").value;
+      const btn = document.getElementById("btn-login-submit");
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i>${t.msg_loading || "Loading..."}`;
+
+      const passwordHash = await sha256Hex(pwd);
+
+      const resp = await api("user.loginProfessor", { email, passwordHash });
+      btn.disabled = false;
+      btn.innerHTML = `<i class="fa-solid fa-arrow-right-to-bracket mr-2"></i>${t.btn_login_action || "Login"}`;
+
+      if (!resp.ok) {
+        toast(resp.message || "Login failed");
+        return;
+      }
+
+      // store normalized user
+      const u = resp.user || {};
+      const normalized = {
+        email: u.Email || u.email || email,
+        name: u.Name || u.name || "Professor",
+        role: "professor",
+        unit: u.Unit || u.unit || "—",
+        field: u.Field || u.field || ""
+      };
+      setStoredUser(normalized);
+      uiSetLoggedIn(normalized);
+
+      loginCount = resp.loginCount ?? null;
+      document.getElementById("login-count").textContent = (loginCount != null) ? String(loginCount) : "—";
+
+      closeLoginModal();
+      logEvent("prof.login.success", { email: normalized.email });
+    }
+
+    function openLogoutSurvey() {
+      if (!currentUser) {
+        const t = translations[currentLang] || translations["zh-TW"];
+        toast(t.err_need_login);
+        return;
+      }
+      document.getElementById("survey-modal").classList.remove("hidden");
+      document.getElementById("survey-form").classList.remove("hidden");
+      document.getElementById("survey-thanks").classList.add("hidden");
+      logEvent("prof.logout.survey.open", {});
+    }
+
+    function closeSurveyModal() {
+      document.getElementById("survey-modal").classList.add("hidden");
+    }
+
+    async function submitSurvey(ev) {
+      ev.preventDefault();
+      const t = translations[currentLang] || translations["zh-TW"];
+
+      const q1 = getRadioValue("q1");
+      const q2 = {};
+      FEATURE_CATALOG.forEach(f => { q2[f.id] = getRadioValue(`q2_${f.id}`); });
+
+      // validate
+      if (!q1) { toast("Q1 required"); return; }
+      for (const f of FEATURE_CATALOG) { if (!q2[f.id]) { toast("Q2 required"); return; } }
+
+      const needImprove = getRadioValue("needImprove");
+      const comment = document.getElementById("improve-text").value || "";
+
+      // session summary
+      const summary = {
+        activeMs,
+        features: [...usedFeatures],
+        lang: currentLang
+      };
+
+      // send
+      await api("log.logoutSurvey", {
+        user: currentUser,
+        q1, q2,
+        needImprove,
+        comment,
+        summary
+      });
+
+      document.getElementById("survey-form").classList.add("hidden");
+      document.getElementById("survey-thanks").classList.remove("hidden");
+      logEvent("prof.logout.survey.submit", { q1, needImprove });
+    }
+
+    function finishLogout() {
+      // persist session end
+      logEvent("prof.session.end", { activeMs, features:[...usedFeatures] });
+
+      sessionStorage.removeItem("currentUser");
+      usedFeatures = new Set();
+      activeMs = 0;
+      loginCount = null;
+      uiSetLoggedOut();
+
+      closeSurveyModal();
+      // redirect
+      window.location.href = "index.html";
+    }
+
+    function getRadioValue(name) {
+      const el = document.querySelector(`input[name="${name}"]:checked`);
+      return el ? el.value : "";
+    }
+
+    /***********************
+     * 5) Feature open / Tracking
+     ***********************/
+    function ensureLoginOrToast() {
+      if (currentUser) return true;
+      const t = translations[currentLang] || translations["zh-TW"];
+      toast(t.err_need_login);
+      openLoginModal();
+      return false;
+    }
+
+    function markFeatureUsed(featureId) {
+      usedFeatures.add(featureId);
+      renderUsedFeatures();
+      logEvent("log.feature", { featureId });
+    }
+
+    function openExternalFeature(featureId, url) {
+      if (!ensureLoginOrToast()) return;
+      markFeatureUsed(featureId);
+      // keep session data
+      window.location.href = url;
+    }
+
+    function openTool(toolId) {
+      if (!ensureLoginOrToast()) return;
+      markFeatureUsed(toolId);
+
+      document.getElementById("dashboard").classList.add("hidden");
+      document.getElementById("tool-container").classList.remove("hidden");
+
+      // hide all tools
+      ["tool-similarity","tool-teval","tool-ssci","tool-sfl","tool-whatsnew"].forEach(id => document.getElementById(id).classList.add("hidden"));
+
+      const map = {
+        similarity: ["tool-similarity","AI"],
+        teval: ["tool-teval","Eval"],
+        ssci: ["tool-ssci","Write"],
+        sfl: ["tool-sfl","SFL"],
+        whatsnew: ["tool-whatsnew","Guide"]
+      };
+      const pair = map[toolId] || map["whatsnew"];
+      document.getElementById(pair[0]).classList.remove("hidden");
+      document.getElementById("tool-badge").textContent = pair[1];
+    }
+
+    function backToDashboard() {
+      document.getElementById("tool-container").classList.add("hidden");
+      document.getElementById("dashboard").classList.remove("hidden");
+    }
+
+    async function logEvent(type, meta) {
+      if (!currentUser) return;
+      await api("log.event", {
+        type,
+        meta: meta || {},
+        user: currentUser,
+        activeMs,
+        features: [...usedFeatures],
+        page: location.pathname.split("/").pop() || "professor"
+      });
+    }
+
+    function goAISchoolHome() {
+      window.location.href = "index.html";
+    }
+
+    /***********************
+     * 6) Similarity Tool (local explainable)
+     ***********************/
+    let simRadarChart = null;
+    let simGaugeChart = null;
+
+    function tokenize(s) {
+      // lightweight tokenization: Chinese chars + words
+      const str = String(s||"")
+        .replace(/[“”"’'、，。！？；：()\[\]{}<>《》【】\n\r\t]/g, " ")
+        .replace(/\s+/g," ")
+        .trim();
+      if (!str) return [];
+      const tokens = [];
+      const parts = str.split(" ");
+      for (const p of parts) {
+        if (!p) continue;
+        // split mixed Chinese sequences into chars to stabilize overlaps
+        if (/[\u4e00-\u9fff]/.test(p) && p.length > 2) {
+          // keep as chunk + characters
+          tokens.push(p);
+          for (const ch of p) tokens.push(ch);
+        } else tokens.push(p);
+      }
+      return tokens.filter(x=>x.length>=1);
+    }
+
+    function jaccard(a,b){
+      const A = new Set(a), B = new Set(b);
+      const inter = [...A].filter(x=>B.has(x)).length;
+      const union = new Set([...A,...B]).size || 1;
+      return inter/union;
+    }
+
+    function cosineTF(a,b){
+      const tf = (arr)=>{
+        const m = new Map();
+        arr.forEach(x=>m.set(x,(m.get(x)||0)+1));
+        return m;
+      };
+      const A = tf(a), B=tf(b);
+      const keys = new Set([...A.keys(),...B.keys()]);
+      let dot=0, na=0, nb=0;
+      keys.forEach(k=>{
+        const va=A.get(k)||0, vb=B.get(k)||0;
+        dot += va*vb; na += va*va; nb += vb*vb;
+      });
+      const denom = Math.sqrt(na)*Math.sqrt(nb) || 1;
+      return dot/denom;
+    }
+
+    function levenshtein(a,b){
+      const s=String(a||""), t=String(b||"");
+      const n=s.length, m=t.length;
+      if (!n) return m;
+      if (!m) return n;
+      const dp = Array.from({length:n+1},()=>Array(m+1).fill(0));
+      for (let i=0;i<=n;i++) dp[i][0]=i;
+      for (let j=0;j<=m;j++) dp[0][j]=j;
+      for (let i=1;i<=n;i++){
+        for (let j=1;j<=m;j++){
+          const cost = s[i-1]===t[j-1] ? 0 : 1;
+          dp[i][j]=Math.min(dp[i-1][j]+1, dp[i][j-1]+1, dp[i-1][j-1]+cost);
+        }
+      }
+      return dp[n][m];
+    }
+
+    function normScore01(x){ return Math.max(0, Math.min(1, x)); }
+
+    function loadSimExample(){
+      document.getElementById("sim-a").value = "細胞是生物體結構和功能的基本單位。細胞膜控制物質進出，細胞核含有遺傳物質 DNA。";
+      document.getElementById("sim-b").value = "生物體由細胞組成，細胞是生命的基本單位。外層有細胞膜負責物質運輸，核心有 DNA 負責遺傳。";
+    }
+
+    function clearSimText(){
+      document.getElementById("sim-a").value = "";
+      document.getElementById("sim-b").value = "";
+      document.getElementById("sim-report").innerHTML = `<div class="text-slate-400">${translations[currentLang]?.sim_empty || "—"}</div>`;
+    }
+
+    function initSimCharts(){
+      // Gauge (doughnut)
+      const g = document.getElementById("simGauge");
+      simGaugeChart = new Chart(g, {
+        type: "doughnut",
+        data: {
+          labels:["score","rest"],
+          datasets:[{
+            data:[0,100],
+            borderWidth:0
+          }]
+        },
+        options: {
+          cutout:"78%",
+          plugins:{ legend:{display:false}, tooltip:{enabled:false} }
+        }
+      });
+
+      const r = document.getElementById("simRadar");
+      simRadarChart = new Chart(r, {
+        type: "radar",
+        data: {
+          labels:["Structure","Semantic","Concept"],
+          datasets:[{
+            label:"Score",
+            data:[0,0,0],
+            backgroundColor:"rgba(139,92,246,0.18)",
+            borderColor:"rgba(167,139,250,0.85)",
+            pointBackgroundColor:"rgba(167,139,250,0.95)",
+            pointBorderColor:"#fff",
+            borderWidth:2
+          }]
+        },
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{ legend:{display:false} },
+          scales:{
+            r:{
+              beginAtZero:true,
+              max:100,
+              ticks:{ display:false },
+              grid:{ color:"rgba(148,163,184,0.12)" },
+              angleLines:{ color:"rgba(148,163,184,0.14)" },
+              pointLabels:{ color:"rgba(226,232,240,0.75)", font:{ size:11, weight:"700" } }
+            }
+          }
+        }
+      });
+    }
+
+    function updateGauge(pct){
+      if (!simGaugeChart) return;
+      simGaugeChart.data.datasets[0].data = [pct, 100-pct];
+      simGaugeChart.update();
+    }
+
+    async function runSimilarity(){
+      const t = translations[currentLang] || translations["zh-TW"];
+      const A = document.getElementById("sim-a").value.trim();
+      const B = document.getElementById("sim-b").value.trim();
+      if (!A || !B) { toast(t.err_input_two); return; }
+
+      const useJ = document.getElementById("sim-jaccard").checked;
+      const useC = document.getElementById("sim-cosine").checked;
+      const useE = document.getElementById("sim-edit").checked;
+      const useOverlap = document.getElementById("sim-overlap").checked;
+      const useCurr = document.getElementById("sim-curriculum").checked;
+      const useEmb = document.getElementById("sim-embedding").checked;
+      const useLLM = document.getElementById("sim-llm").checked;
+
+      const tokA = tokenize(A);
+      const tokB = tokenize(B);
+
+      // Structure score
+      let sParts = [];
+      if (useJ) sParts.push(jaccard(tokA, tokB));
+      if (useC) sParts.push(cosineTF(tokA, tokB));
+      if (useE) {
+        const d = levenshtein(A, B);
+        const maxLen = Math.max(A.length, B.length) || 1;
+        sParts.push(1 - (d / maxLen));
+      }
+      const structure01 = sParts.length ? sParts.reduce((x,y)=>x+y,0)/sParts.length : 0;
+
+      // Concept score (simple overlap + "coverage" proxy)
+      let cParts = [];
+      if (useOverlap) cParts.push(jaccard(tokA, tokB));
+      if (useCurr) {
+        // proxy: coverage of shared key terms weighted by length
+        const shared = [...new Set(tokA)].filter(x=>new Set(tokB).has(x));
+        const coverage = shared.join("").length / (new Set([...tokA,...tokB]).size + 20);
+        cParts.push(normScore01(coverage));
+      }
+      const concept01 = cParts.length ? cParts.reduce((x,y)=>x+y,0)/cParts.length : 0;
+
+      // Semantic score
+      let semantic01 = 0;
+      if (useEmb || useLLM) {
+        // backend optional
+        const resp = await api("nlp.similarity", { textA:A, textB:B, useEmb, useLLM });
+        if (resp.ok && resp.scores) {
+          semantic01 = normScore01((resp.scores.semantic || 0)/100);
+        } else {
+          semantic01 = cosineTF(tokA, tokB); // fallback
+        }
+      } else {
+        semantic01 = cosineTF(tokA, tokB);
+      }
+
+      // Total (weighted)
+      const total01 = (structure01*0.34) + (concept01*0.33) + (semantic01*0.33);
+
+      const structure = Math.round(structure01*100);
+      const concept = Math.round(concept01*100);
+      const semantic = Math.round(semantic01*100);
+      const total = Math.round(total01*100);
+
+      document.getElementById("sim-structure").textContent = `${structure}%`;
+      document.getElementById("sim-concept").textContent = `${concept}%`;
+      document.getElementById("sim-semantic").textContent = `${semantic}%`;
+      document.getElementById("sim-total").textContent = `${total}`;
+
+      // quality badge
+      const q = document.getElementById("sim-quality");
+      q.textContent = (total>=85) ? "High" : (total>=65) ? "Mid" : "Low";
+
+      updateGauge(total);
+      if (simRadarChart) {
+        simRadarChart.data.datasets[0].data = [structure, semantic, concept];
+        simRadarChart.update();
+      }
+
+      // Explainable report (local)
+      const shared = [...new Set(tokA)].filter(x=>new Set(tokB).has(x)).slice(0, 20);
+      const uniqueA = [...new Set(tokA)].filter(x=>!new Set(tokB).has(x)).slice(0, 12);
+      const uniqueB = [...new Set(tokB)].filter(x=>!new Set(tokA).has(x)).slice(0, 12);
+
+      const report = `
+        <div class="space-y-4">
+          <div>
+            <div class="text-white font-black text-base mb-1">${escapeHtml(t.report || "Report")}</div>
+            <div class="text-slate-300">
+              <span class="text-purple-200 font-black">Total:</span> ${total}%　
+              <span class="text-slate-400">/</span>
+              <span class="text-purple-200 font-black">${escapeHtml(t.structure||"Structure")}:</span> ${structure}%　
+              <span class="text-purple-200 font-black">${escapeHtml(t.semantic||"Semantic")}:</span> ${semantic}%　
+              <span class="text-purple-200 font-black">${escapeHtml(t.concept||"Concept")}:</span> ${concept}%
+            </div>
+          </div>
+
+          <div class="rounded-2xl bg-slate-900/35 border border-slate-700/35 p-4">
+            <div class="text-sm font-black text-white mb-2">Key Overlap</div>
+            <div class="text-sm text-slate-200 leading-relaxed">
+              ${shared.length ? shared.map(x=>`<span class="inline-block badge text-[11px] px-2 py-1 rounded-full font-black mr-2 mb-2">${escapeHtml(x)}</span>`).join("") : `<span class="text-slate-400">—</span>`}
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="rounded-2xl bg-slate-900/35 border border-slate-700/35 p-4">
+              <div class="text-sm font-black text-white mb-2">Only in A</div>
+              <div class="text-sm text-slate-200 leading-relaxed">
+                ${uniqueA.length ? uniqueA.map(x=>`<span class="inline-block border border-slate-700/50 bg-slate-950/25 text-slate-200 text-[11px] px-2 py-1 rounded-full font-black mr-2 mb-2">${escapeHtml(x)}</span>`).join("") : `<span class="text-slate-400">—</span>`}
+              </div>
+            </div>
+            <div class="rounded-2xl bg-slate-900/35 border border-slate-700/35 p-4">
+              <div class="text-sm font-black text-white mb-2">Only in B</div>
+              <div class="text-sm text-slate-200 leading-relaxed">
+                ${uniqueB.length ? uniqueB.map(x=>`<span class="inline-block border border-slate-700/50 bg-slate-950/25 text-slate-200 text-[11px] px-2 py-1 rounded-full font-black mr-2 mb-2">${escapeHtml(x)}</span>`).join("") : `<span class="text-slate-400">—</span>`}
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-2xl bg-purple-900/15 border border-professor/25 p-4">
+            <div class="text-sm font-black text-white mb-2">Teaching / Research Notes</div>
+            <ul class="list-disc pl-5 text-sm text-slate-200 space-y-1">
+              <li>若 <b>結構</b> 高但 <b>概念</b> 低，常見於「句型相近但概念對應不完整」。</li>
+              <li>若 <b>語意</b> 高但 <b>結構</b> 低，常見於「同義轉述/口語化改寫」。</li>
+              <li>可將「Only in B」視為學生新增或偏移概念的候選線索。</li>
+            </ul>
+          </div>
+        </div>
+      `;
+      document.getElementById("sim-report").innerHTML = report;
+
+      markFeatureUsed("similarity");
+    }
+
+    function copySimReport(){
+      const txt = document.getElementById("sim-report").innerText;
+      navigator.clipboard.writeText(txt).then(()=>toast("Copied"));
+    }
+
+    /***********************
+     * 7) Teaching Evaluation (front-end UX demo)
+     ***********************/
+    let tevalDemoResponses = []; // demo storage
+    let tevalChart = null;
+
+    function defaultTevalItems(){
+      const t = translations[currentLang] || translations["zh-TW"];
+      const names = FEATURE_CATALOG.map(f => (t[f.key] || f.id));
+      return names.map((n,i)=> `${i+1}. ${n}`);
+    }
+
+    function buildTevalUI(){
+      // builder inputs
+      const list = document.getElementById("teval-items");
+      if (!list) return;
+
+      const items = (window.__tevalItems || defaultTevalItems());
+      window.__tevalItems = items;
+
+      list.innerHTML = "";
+      items.forEach((s, idx) => {
+        const row = document.createElement("div");
+        row.className = "flex gap-2";
+        row.innerHTML = `
+          <input class="input-ai w-full rounded-xl px-3 py-2 text-sm" value="${escapeHtml(s)}" data-idx="${idx}" />
+        `;
+        list.appendChild(row);
+      });
+
+      // overall faces
+      const overall = document.getElementById("teval-overall-faces");
+      if (overall) {
+        overall.innerHTML = "";
+        FACE_SET.forEach(f=>{
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "w-12 h-12 rounded-2xl border border-slate-700/50 bg-slate-950/25 hover:bg-purple-500/10 hover:border-professor/40 transition flex items-center justify-center";
+          btn.innerHTML = `<i class="fa-solid ${f.icon} text-purple-200 text-xl"></i>`;
+          btn.onclick = ()=> toast(`Overall: ${f.v}`);
+          overall.appendChild(btn);
+        });
+      }
+
+      // preview items
+      const preview = document.getElementById("teval-preview-items");
+      if (preview) {
+        preview.innerHTML = "";
+        items.forEach((s, idx)=>{
+          const card = document.createElement("div");
+          card.className = "rounded-2xl bg-slate-950/25 border border-slate-700/35 p-4";
+          card.innerHTML = `
+            <div class="text-sm font-black text-white mb-3">${escapeHtml(s)}</div>
+            <div class="flex gap-2 flex-wrap">
+              ${FACE_SET.map(f=>`
+                <button type="button" class="w-11 h-11 rounded-2xl border border-slate-700/50 bg-slate-950/25 hover:bg-purple-500/10 hover:border-professor/40 transition flex items-center justify-center"
+                        onclick="tevalPick(${idx},${f.v})"
+                        aria-label="${f.v}">
+                  <i class="fa-solid ${f.icon} text-purple-200"></i>
+                </button>
+              `).join("")}
+            </div>
+          `;
+          preview.appendChild(card);
+        });
+      }
+
+      // chart init once
+      setTimeout(initTevalChart, 30);
+    }
+
+    function tevalPick(i,v){
+      toast(`Q${i+1}: ${v}`);
+    }
+
+    function resetTevalItems(){
+      window.__tevalItems = defaultTevalItems();
+      tevalDemoResponses = [];
+      updateTevalStats();
+      buildTevalUI();
+    }
+
+    function initTevalChart(){
+      const c = document.getElementById("tevalChart");
+      if (!c || tevalChart) return;
+      tevalChart = new Chart(c, {
+        type:"bar",
+        data:{
+          labels:[...Array(10)].map((_,i)=>`Q${i+1}`),
+          datasets:[{ label:"Avg", data:Array(10).fill(0), borderWidth:0 }]
+        },
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{ legend:{display:false} },
+          scales:{
+            y:{ beginAtZero:true, max:5, ticks:{ stepSize:1, color:"rgba(226,232,240,0.7)", font:{weight:"700"} }, grid:{ color:"rgba(148,163,184,0.12)" } },
+            x:{ ticks:{ color:"rgba(226,232,240,0.7)", font:{weight:"700"} }, grid:{ display:false } }
+          }
+        }
+      });
+      updateTevalStats();
+    }
+
+    function simulateOneTevalResponse(){
+      // create demo response of 10 items (1..5)
+      const resp = Array.from({length:10}, ()=> 1 + Math.floor(Math.random()*5));
+      tevalDemoResponses.push(resp);
+      updateTevalStats();
+      markFeatureUsed("teval");
+    }
+
+    function updateTevalStats(){
+      const n = tevalDemoResponses.length;
+      const countEl = document.getElementById("teval-demo-count");
+      if (countEl) countEl.textContent = `${n}`;
+
+      const avg = Array(10).fill(0);
+      if (n>0){
+        for (const r of tevalDemoResponses){
+          r.forEach((v,i)=> avg[i]+=v);
+        }
+        for (let i=0;i<10;i++) avg[i] = +(avg[i]/n).toFixed(2);
+      }
+      if (tevalChart){
+        tevalChart.data.datasets[0].data = avg;
+        tevalChart.update();
+      }
+      const overallAvg = (n>0) ? +(avg.reduce((a,b)=>a+b,0)/10).toFixed(2) : null;
+      const tag = document.getElementById("teval-avg");
+      if (tag) tag.textContent = `AVG ${overallAvg ?? "—"}`;
+    }
+
+    async function publishTeval(){
+      // collect current items from builder
+      const inputs = [...document.querySelectorAll("#teval-items input[data-idx]")];
+      const items = inputs.map(i=>i.value.trim()).filter(Boolean);
+      window.__tevalItems = items.length ? items : defaultTevalItems();
+
+      const course = document.getElementById("teval-course").value.trim();
+      const payload = {
+        course,
+        items: window.__tevalItems,
+        createdAt: new Date().toISOString()
+      };
+
+      const resp = await api("teval.publish", { user: currentUser, payload });
+      if (resp.ok) toast(`Published: ${resp.formId || "OK"}`);
+      else toast(resp.message || "Publish failed");
+      markFeatureUsed("teval");
+    }
+
+    /***********************
+     * 8) SSCI Writing (UX ready, backend optional)
+     ***********************/
+    function loadSSCIExample(){
+      document.getElementById("ssci-input").value =
+        "本研究旨在探討生成式 AI 融入問題導向學習（PBL）對國中生在 SSI 議題論證能力之影響，並分析學生在論證結構與證據使用上的變化。";
+    }
+
+    async function runSSCI(){
+      const txt = document.getElementById("ssci-input").value.trim();
+      if (!txt) { toast("Input required"); return; }
+
+      const section = document.getElementById("ssci-section").value;
+      const journal = document.getElementById("ssci-journal").value.trim();
+      const mode = document.getElementById("ssci-mode").value;
+
+      // attempt backend
+      const resp = await api("write.ssciAssist", {
+        user: currentUser,
+        section, journal, mode,
+        text: txt,
+        lang: currentLang
+      });
+
+      if (resp.ok && resp.outputHtml) {
+        document.getElementById("ssci-output").innerHTML = resp.outputHtml;
+        document.getElementById("ssci-trace").textContent = "server";
+      } else {
+        // premium local fallback: structured suggestion template
+        const fallback = `
+          <div class="space-y-4">
+            <div class="text-white font-black">Local Draft Suggestions</div>
+            <div class="text-slate-200 text-sm leading-relaxed">
+              <ul class="list-disc pl-5 space-y-1">
+                <li><b>Clarity:</b> 明確定義核心變項（GAI 融入方式、PBL 設計要素、論證指標）。</li>
+                <li><b>Contribution:</b> 指出理論與實務貢獻（SSI 論證、形成性診斷、教學支架）。</li>
+                <li><b>Method Fit:</b> 補足研究設計與資料來源（前後測、Rubric、互動歷程）。</li>
+              </ul>
+            </div>
+            <div class="rounded-2xl bg-slate-900/35 border border-slate-700/35 p-4 text-sm">
+              <div class="text-white font-black mb-2">Rewrite (Template)</div>
+              <div class="text-slate-200">
+                建議以「研究缺口 → 研究目的/問題 → 方法簡述 → 預期貢獻」四句完成一段摘要式導入，並避免過度形容詞。
+              </div>
+            </div>
+          </div>
+        `;
+        document.getElementById("ssci-output").innerHTML = fallback;
+        document.getElementById("ssci-trace").textContent = "local";
+        const t = translations[currentLang] || translations["zh-TW"];
+        toast(t.api_down);
+      }
+
+      markFeatureUsed("ssci");
+    }
+
+    function copySSCIOutput(){
+      const txt = document.getElementById("ssci-output").innerText;
+      navigator.clipboard.writeText(txt).then(()=>toast("Copied"));
+    }
+
+    /***********************
+     * 9) Survey UI build
+     ***********************/
+    function buildFaces(containerId, name){
+      const box = document.getElementById(containerId);
+      if (!box) return;
+      box.innerHTML = "";
+      FACE_SET.forEach(f=>{
+        const wrap = document.createElement("div");
+        wrap.className = "face-radio";
+        const id = `${name}_${f.v}_${Math.random().toString(16).slice(2)}`;
+        wrap.innerHTML = `
+          <input id="${id}" type="radio" name="${name}" value="${f.v}" />
+          <label for="${id}" title="${f.v}">
+            <i class="fa-solid ${f.icon} text-purple-200 text-xl"></i>
+          </label>
+        `;
+        box.appendChild(wrap);
+      });
+    }
+
+    function buildSurveyUI(){
+      // Q1 faces
+      buildFaces("q1-faces", "q1");
+
+      // Q2 grid
+      const grid = document.getElementById("q2-grid");
+      if (!grid) return;
+      grid.innerHTML = "";
+      const t = translations[currentLang] || translations["zh-TW"];
+
+      FEATURE_CATALOG.forEach(f=>{
+        const card = document.createElement("div");
+        card.className = "rounded-2xl bg-slate-950/25 border border-slate-700/35 p-4";
+        const title = t[f.key] || f.id;
+        card.innerHTML = `
+          <div class="text-sm font-black text-white mb-3">${escapeHtml(title)}</div>
+          <div class="flex gap-2 flex-wrap" id="q2_${f.id}"></div>
+        `;
+        grid.appendChild(card);
+        // faces inside
+        const inner = card.querySelector(`#q2_${f.id}`);
+        FACE_SET.forEach(face=>{
+          const wrap = document.createElement("div");
+          wrap.className = "face-radio";
+          const id = `q2_${f.id}_${face.v}_${Math.random().toString(16).slice(2)}`;
+          wrap.innerHTML = `
+            <input id="${id}" type="radio" name="q2_${f.id}" value="${face.v}" />
+            <label for="${id}" title="${face.v}">
+              <i class="fa-solid ${face.icon} text-purple-200"></i>
+            </label>
+          `;
+          inner.appendChild(wrap);
+        });
+      });
+    }
+
+    /***********************
+     * 10) Canvas background
+     ***********************/
+    (function(){
+      const canvas = document.getElementById('network-canvas');
+      const ctx = canvas.getContext('2d');
+      let particles = [];
+      function resize(){
+        canvas.width = innerWidth; canvas.height = innerHeight;
+        init();
+      }
+      class P {
+        constructor(){
+          this.x = Math.random()*canvas.width;
+          this.y = Math.random()*canvas.height;
+          this.vx = (Math.random()-0.5)*0.55;
+          this.vy = (Math.random()-0.5)*0.55;
+          this.r = 1 + Math.random()*1.6;
+        }
+        step(){
+          this.x += this.vx; this.y += this.vy;
+          if (this.x<0||this.x>canvas.width) this.vx*=-1;
+          if (this.y<0||this.y>canvas.height) this.vy*=-1;
+        }
+        draw(){
+          ctx.beginPath();
+          ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+          ctx.fillStyle = "rgba(167,139,250,0.35)";
+          ctx.fill();
+        }
+      }
+      function init(){
+        particles = [];
+        const n = Math.floor((canvas.width*canvas.height)/14000);
+        for (let i=0;i<n;i++) particles.push(new P());
+      }
+      function connect(){
+        for (let i=0;i<particles.length;i++){
+          for (let j=i+1;j<particles.length;j++){
+            const a=particles[i], b=particles[j];
+            const dx=a.x-b.x, dy=a.y-b.y;
+            const d=dx*dx+dy*dy;
+            if (d < 140*140){
+              const alpha = 1 - d/(140*140);
+              ctx.strokeStyle = `rgba(139,92,246,${alpha*0.14})`;
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(a.x,a.y);
+              ctx.lineTo(b.x,b.y);
+              ctx.stroke();
+            }
+          }
+        }
+      }
+      function loop(){
+        requestAnimationFrame(loop);
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        particles.forEach(p=>{p.step();p.draw()});
+        connect();
+      }
+      window.addEventListener("resize", resize);
+      resize(); loop();
+    })();
+
+    /***********************
+     * 11) Boot
+     ***********************/
+    function openLogoutSurvey(){ return openLogoutSurvey(); } // keep name stable
+
+    function boot(){
+      applyI18n();
+      initSimCharts();
+      buildSurveyUI();
+      buildTevalUI();
+      renderUsedFeatures();
+
+      const stored = getStoredUser();
+      if (stored) {
+        uiSetLoggedIn(stored);
+        // optionally ping backend to fetch login count
+        api("user.pingProfessor", { email: stored.email }).then(r=>{
+          if (r && r.ok) {
+            loginCount = r.loginCount ?? loginCount;
+            document.getElementById("login-count").textContent = (loginCount != null) ? String(loginCount) : "—";
+          }
+        });
+      } else {
+        uiSetLoggedOut();
+        // professor page should require login
+        openLoginModal();
+      }
+    }
+
+    window.addEventListener("beforeunload", () => {
+      if (!currentUser) return;
+      // try to flush session summary (best-effort)
+      navigator.sendBeacon?.(GAS_URL, JSON.stringify({
+        action:"log.sessionSummary",
+        user: currentUser,
+        activeMs,
+        features: [...usedFeatures],
+        page: location.pathname.split("/").pop() || "professor"
+      }));
+    });
+
+    window.onload = boot;
+  </script>
+</body>
+</html>
 
