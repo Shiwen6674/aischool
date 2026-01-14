@@ -67,7 +67,6 @@
             border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
         }
-
         /* 輸入框美化 */
         .input-ai {
             background: rgba(2, 6, 23, 0.5);
@@ -81,6 +80,16 @@
             background: rgba(2, 6, 23, 0.8);
         }
 
+/* 讓 select 的下拉選單在多數瀏覽器呈現深色（Chrome/Edge 最有效） */
+select.input-ai { 
+  color-scheme: dark; 
+}
+select.input-ai option { 
+  background: #0f172a; 
+  color: #e2e8f0; 
+}
+
+        
         /* Canvas 背景設定 */
         #canvas-container {
             position: fixed;
@@ -91,6 +100,17 @@
             z-index: -10;
             background: radial-gradient(circle at center, #1e1b4b 0%, #020617 100%);
         }
+
+        /* 修 Chrome 的自動填入（autofill）白底問題，讓它回到深色風格 */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+select:-webkit-autofill {
+  -webkit-text-fill-color: #e2e8f0;
+  -webkit-box-shadow: 0 0 0px 1000px rgba(2, 6, 23, 0.85) inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 
         /* 漸層文字 */
         .text-gradient {
@@ -275,13 +295,28 @@
                         <span class="inline-block bg-blue-500/10 text-blue-300 border border-blue-500/20 px-6 py-2 rounded-full text-lg font-bold tracking-wide" id="reg-role-display-text">註冊學生帳號</span>
                     </div>
 
-                    <div id="role-select-block" class="hidden">
-                        <select id="input-role-select" onchange="syncRoleFromSelector()" class="w-full">
-                            <option value="student" data-i18n="role_student">我是學生</option>
-                            <option value="teacher" data-i18n="role_teacher">我是教師</option>
-                            <option value="researcher" data-i18n="role_researcher">我是教授</option>
-                        </select>
-                    </div>
+<div id="role-select-block" class="hidden mb-6">
+  <label class="block text-slate-300 text-sm font-semibold mb-2">註冊身分</label>
+
+  <div class="relative">
+    <select
+      id="input-role-select"
+      onchange="syncRoleFromSelector()"
+      class="input-ai w-full px-4 py-3 rounded-xl outline-none appearance-none
+             bg-slate-900/70 text-slate-100 border border-slate-600/50
+             hover:border-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+    >
+      <option value="student">學生</option>
+      <option value="teacher">教師</option>
+      <option value="researcher">教授</option>
+    </select>
+
+    <i class="fa-solid fa-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+  </div>
+
+  <p class="mt-2 text-xs text-slate-400">選擇身分後，系統會自動顯示該身分需要填寫的欄位。</p>
+</div>
+
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
@@ -772,32 +807,54 @@ function changeLanguage() {
             document.getElementById('section-home').classList.add('fade-in'); 
         }
         
-        function preSelectRole(role) { 
-            roleLocked = true;
-            targetRole = role; 
-            document.getElementById('section-home').classList.add('hidden-section'); 
-            document.getElementById('section-auth').classList.remove('hidden-section'); 
-            
-            switchAuthMode('login'); 
-            
-            const roleSelect = document.getElementById('input-role-select'); 
-            roleSelect.value = role; 
-            syncRoleFromSelector(); 
-        }
+function preSelectRole(role) {
+  roleLocked = true;
+  role = normalizeRole(role);
+
+  targetRole = role;
+  document.getElementById("section-home").classList.add("hidden-section");
+  document.getElementById("section-auth").classList.remove("hidden-section");
+
+  switchAuthMode("login");
+
+  const roleSelect = document.getElementById("input-role-select");
+  if (roleSelect) roleSelect.value = role;
+
+  syncRoleFromSelector();
+}
+
+
+function normalizeRole(role) {
+  return (role === "professor") ? "researcher" : role;
+}
         
-        function syncRoleFromSelector() { 
-            const role = document.getElementById('input-role-select').value; 
-            targetRole = role; 
-            document.getElementById('input-role').value = role; 
-            const t = translations[document.getElementById('language-selector').value] || translations['en']; 
-            // Dynamic Title Update
-            const roleName = t[`role_${role}`] || role; 
-            const tabRegText = t['tab_register'] || "Register";
-            document.getElementById('reg-role-display-text').textContent = tabRegText + " - " + roleName; 
-            
-            document.querySelectorAll('.role-fields').forEach(el => el.classList.add('hidden-section')); 
-            document.getElementById(`fields-${role}`).classList.remove('hidden-section'); 
-        }
+function syncRoleFromSelector() {
+  const roleSel = document.getElementById("input-role-select");
+  if (!roleSel) return;
+
+  const role = normalizeRole(roleSel.value || "student");
+
+  // hidden input 給註冊用
+  const hiddenRole = document.getElementById("input-role");
+  if (hiddenRole) hiddenRole.value = role;
+
+  // 標題文字
+  const langSel = document.getElementById("language-selector");
+  const lang = langSel ? langSel.value : "en";
+  const t = translations[lang] || translations["en"];
+
+  const roleName = t[`role_${role}`] || role;
+  const tabRegText = t["tab_register"] || "Register";
+  const titleEl = document.getElementById("reg-role-display-text");
+  if (titleEl) titleEl.textContent = tabRegText + " - " + roleName;
+
+  // 顯示對應欄位
+  document.querySelectorAll(".role-fields").forEach(el => el.classList.add("hidden-section"));
+
+  const fields = document.getElementById(`fields-${role}`);
+  if (fields) fields.classList.remove("hidden-section");
+}
+
         
 function switchAuthMode(mode) {
   const tabLogin = document.getElementById("tab-login");
@@ -810,6 +867,9 @@ function switchAuthMode(mode) {
   const roleDisplay = document.getElementById("role-display-block");
   const roleSelectBlock = document.getElementById("role-select-block");
   const roleSelect = document.getElementById("input-role-select");
+
+  // ✅ F：最重要的防呆（任何一個不存在就直接結束，避免爆掉）
+  if (!tabLogin || !tabRegister || !formLogin || !formRegister) return;
 
   // 不管切去哪個模式，先把 forgot 隱藏（避免狀態卡住）
   if (formForgot) formForgot.classList.add("hidden-section");
@@ -837,8 +897,8 @@ function switchAuthMode(mode) {
   formLogin.classList.add("hidden-section");
   formRegister.classList.remove("hidden-section");
 
-  // ★ 關鍵：用 roleLocked 決定「鎖定角色」或「給下拉選」
-  if (window.roleLocked) {
+  // 用 roleLocked 決定「鎖定角色」或「給下拉選」
+  if (roleLocked) {
     if (roleDisplay) roleDisplay.classList.remove("hidden");
     if (roleSelectBlock) roleSelectBlock.classList.add("hidden");
   } else {
@@ -848,13 +908,16 @@ function switchAuthMode(mode) {
 
   // 預設值：沒鎖定就以目前下拉值為準；有鎖定就用 targetRole
   if (roleSelect) {
-    roleSelect.value = (window.roleLocked && targetRole) ? targetRole : (roleSelect.value || "student");
+    roleSelect.value = (roleLocked && targetRole) ? targetRole : (roleSelect.value || "student");
   }
 
- // 同步角色與下拉：只有在 auth 區出現時才同步（避免首頁就鎖角色）
-const authVisible = !document.getElementById("section-auth").classList.contains("hidden-section");
-if (authVisible) syncRoleFromSelector();
+  // ✅ F：section-auth 也要防呆，避免 getElementById 取不到爆掉
+  const authSection = document.getElementById("section-auth");
+  const authVisible = authSection ? !authSection.classList.contains("hidden-section") : false;
+
+  if (authVisible) syncRoleFromSelector();
 }
+
         
         function togglePassword(inputId, icon) { 
             const input = document.getElementById(inputId); 
@@ -883,7 +946,7 @@ if (authVisible) syncRoleFromSelector();
                     type: 'login',
                     email: email,
                     password: password,
-                    targetRole: targetRole || null
+                    targetRole: roleLocked ? (targetRole || null) : null
                 };
 
                 const response = await fetch(GAS_URL, {
