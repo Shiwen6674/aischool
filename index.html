@@ -469,34 +469,41 @@
             }
         }
 
-        function animate() {
-            requestAnimationFrame(animate);
-            ctx.clearRect(0, 0, innerWidth, innerHeight);
+function animate() {
+  requestAnimationFrame(animate);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            for (let i = 0; i < particlesArray.length; i++) {
-                particlesArray[i].update();
-            }
-            connect();
-        }
+  for (let i = 0; i < particlesArray.length; i++) {
+    particlesArray[i].update();
+  }
+  connect();
+}
 
-        function connect() {
-            let opacityValue = 1;
-            for (let a = 0; a < particlesArray.length; a++) {
-                for (let b = a; b < particlesArray.length; b++) {
-                    let distance = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x)) + 
-                                   ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
-                    if (distance < (canvas.width / 7) * (canvas.height / 7)) {
-                        opacityValue = 1 - (distance / 20000);
-                        ctx.strokeStyle = 'rgba(66, 153, 225,' + opacityValue * 0.2 + ')'; // 連線顏色
-                        ctx.lineWidth = 1;
-                        ctx.beginPath();
-                        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
-                        ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
-                        ctx.stroke();
-                    }
-                }
-            }
-        }
+
+function connect() {
+  const maxDist = (canvas.width / 7) * (canvas.height / 7);
+
+  for (let a = 0; a < particlesArray.length; a++) {
+    for (let b = a + 1; b < particlesArray.length; b++) {
+      const dx = particlesArray[a].x - particlesArray[b].x;
+      const dy = particlesArray[a].y - particlesArray[b].y;
+      const distance = dx * dx + dy * dy;
+
+      if (distance < maxDist) {
+        let opacityValue = 1 - (distance / 20000);
+        opacityValue = Math.max(0, Math.min(1, opacityValue)); // clamp 0~1
+
+        ctx.strokeStyle = "rgba(66, 153, 225," + (opacityValue * 0.2) + ")";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+        ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+        ctx.stroke();
+      }
+    }
+  }
+}
+
 
         window.addEventListener('resize', function() {
             canvas.width = innerWidth;
@@ -512,6 +519,7 @@
         // *** 1. 全域變數宣告 ***
         let currentUser = null;
         let targetRole = null;
+        let roleLocked = false;
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzcDKkz8Tilzb3qbx0_fDR7QoG4-c2JCtsa4p9V8_1gBjZaEMlvQHd72OD0kZq_jW8H/exec"; 
 
         // *** 2. 資料庫 ***
@@ -639,32 +647,46 @@
 
         let currentLang = 'zh-TW';
 
-        function changeLanguage() {
-            const langSelector = document.getElementById("language-selector");
-            if (!langSelector) return;
-            const lang = langSelector.value;
-            currentLang = lang;
-            const t = translations[lang] || translations['en'];
+function changeLanguage() {
+  const langSelector = document.getElementById("language-selector");
+  if (!langSelector) return;
 
-            document.querySelectorAll("[data-i18n]").forEach(el => {
-                const key = el.getAttribute("data-i18n");
-                if (t[key]) {
-                    if(el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-                        // placeholder
-                    } else {
-                        el.innerText = t[key];
-                    }
-                }
-            });
-            
-            syncRoleFromSelector(); 
-            
-            populateCountries('student', lang);
-            populateCountries('teacher', lang);
-            populateCountries('researcher', lang);
-            updateGrades('student', true);
-            updateGrades('teacher', true);
-        }
+  const lang = langSelector.value;
+  currentLang = lang;
+
+  const t = translations[lang] || translations["en"];
+
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    if (!key || !t[key]) return;
+
+    // 1) 如果是 input / textarea：先不動 placeholder（你原本也沒做）
+    if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") return;
+
+    // 2) 如果是按鈕，而且裡面有 span：只改 span，保住 icon/漸層結構
+    if (el.tagName === "BUTTON") {
+      const span = el.querySelector("span");
+      if (span) {
+        span.textContent = t[key];
+        return;
+      }
+    }
+
+    // 3) 其他一般元素：安全用 textContent
+    el.textContent = t[key];
+  });
+
+  // 同步角色與下拉
+  syncRoleFromSelector();
+
+  populateCountries("student", lang);
+  populateCountries("teacher", lang);
+  populateCountries("researcher", lang);
+
+  updateGrades("student", true);
+  updateGrades("teacher", true);
+}
+
         
         function populateCountries(role, lang) {
             const selectId = `input-country-${role}`;
@@ -743,12 +765,15 @@
 });
 
         function goHome() { 
+            roleLocked = false; // ★ 新增
+  targetRole = null;  // ★ 新增
             document.getElementById('section-home').classList.remove('hidden-section'); 
             document.getElementById('section-auth').classList.add('hidden-section'); 
             document.getElementById('section-home').classList.add('fade-in'); 
         }
         
         function preSelectRole(role) { 
+            roleLocked = true;
             targetRole = role; 
             document.getElementById('section-home').classList.add('hidden-section'); 
             document.getElementById('section-auth').classList.remove('hidden-section'); 
@@ -774,32 +799,62 @@
             document.getElementById(`fields-${role}`).classList.remove('hidden-section'); 
         }
         
-       function switchAuthMode(mode) { 
-            const tabLogin = document.getElementById('tab-login'); 
-            const tabRegister = document.getElementById('tab-register'); 
-            const formLogin = document.getElementById('form-login'); 
-            const formRegister = document.getElementById('form-register'); 
-            const roleDisplay = document.getElementById('role-display-block'); 
-            const roleSelect = document.getElementById('role-select-block'); 
-            
-            if (mode === 'login') { 
-                tabLogin.className = "w-1/2 py-4 text-lg font-bold text-blue-400 border-b-2 border-blue-500 focus:outline-none transition-all"; 
-                tabRegister.className = "w-1/2 py-4 text-lg font-bold text-slate-500 hover:text-slate-300 focus:outline-none transition-all"; 
-                formLogin.classList.remove('hidden-section'); 
-                formRegister.classList.add('hidden-section'); 
-                roleDisplay.classList.add('hidden'); 
-                roleSelect.classList.add('hidden'); 
-            } else { 
-                tabRegister.className = "w-1/2 py-4 text-lg font-bold text-emerald-400 border-b-2 border-emerald-500 focus:outline-none transition-all"; 
-                tabLogin.className = "w-1/2 py-4 text-lg font-bold text-slate-500 hover:text-slate-300 focus:outline-none transition-all"; 
-                formLogin.classList.add('hidden-section'); 
-                formRegister.classList.remove('hidden-section'); 
-                roleDisplay.classList.remove('hidden'); 
-                roleSelect.classList.add('hidden'); 
-                
-                if(!targetRole) preSelectRole('student'); else syncRoleFromSelector(); 
-            } 
-        }
+function switchAuthMode(mode) {
+  const tabLogin = document.getElementById("tab-login");
+  const tabRegister = document.getElementById("tab-register");
+
+  const formLogin = document.getElementById("form-login");
+  const formRegister = document.getElementById("form-register");
+  const formForgot = document.getElementById("form-forgot-password");
+
+  const roleDisplay = document.getElementById("role-display-block");
+  const roleSelectBlock = document.getElementById("role-select-block");
+  const roleSelect = document.getElementById("input-role-select");
+
+  // 不管切去哪個模式，先把 forgot 隱藏（避免狀態卡住）
+  if (formForgot) formForgot.classList.add("hidden-section");
+
+  if (mode === "login") {
+    tabLogin.className =
+      "w-1/2 py-4 text-lg font-bold text-blue-400 border-b-2 border-blue-500 focus:outline-none transition-all";
+    tabRegister.className =
+      "w-1/2 py-4 text-lg font-bold text-slate-500 hover:text-slate-300 focus:outline-none transition-all";
+
+    formLogin.classList.remove("hidden-section");
+    formRegister.classList.add("hidden-section");
+
+    if (roleDisplay) roleDisplay.classList.add("hidden");
+    if (roleSelectBlock) roleSelectBlock.classList.add("hidden");
+    return;
+  }
+
+  // register
+  tabRegister.className =
+    "w-1/2 py-4 text-lg font-bold text-emerald-400 border-b-2 border-emerald-500 focus:outline-none transition-all";
+  tabLogin.className =
+    "w-1/2 py-4 text-lg font-bold text-slate-500 hover:text-slate-300 focus:outline-none transition-all";
+
+  formLogin.classList.add("hidden-section");
+  formRegister.classList.remove("hidden-section");
+
+  // ★ 關鍵：用 roleLocked 決定「鎖定角色」或「給下拉選」
+  if (window.roleLocked) {
+    if (roleDisplay) roleDisplay.classList.remove("hidden");
+    if (roleSelectBlock) roleSelectBlock.classList.add("hidden");
+  } else {
+    if (roleDisplay) roleDisplay.classList.add("hidden");
+    if (roleSelectBlock) roleSelectBlock.classList.remove("hidden");
+  }
+
+  // 預設值：沒鎖定就以目前下拉值為準；有鎖定就用 targetRole
+  if (roleSelect) {
+    roleSelect.value = (window.roleLocked && targetRole) ? targetRole : (roleSelect.value || "student");
+  }
+
+ // 同步角色與下拉：只有在 auth 區出現時才同步（避免首頁就鎖角色）
+const authVisible = !document.getElementById("section-auth").classList.contains("hidden-section");
+if (authVisible) syncRoleFromSelector();
+}
         
         function togglePassword(inputId, icon) { 
             const input = document.getElementById(inputId); 
@@ -837,7 +892,15 @@
                 });
 
                 const text = await response.text();
-                const result = JSON.parse(text);
+                let result;
+try {
+  result = JSON.parse(text);
+} catch (err) {
+  console.error("GAS 回傳不是 JSON：", text);
+  alert("伺服器回傳格式不是 JSON，請開 F12 → Console 看回傳內容。");
+  return;
+}
+
 
                 if (result.result === 'success') {
                     const user = result.user;
@@ -931,7 +994,15 @@
                 });
 
                 const text = await response.text();
-                const result = JSON.parse(text);
+                let result;
+try {
+  result = JSON.parse(text);
+} catch (err) {
+  console.error("GAS 回傳不是 JSON：", text);
+  alert("伺服器回傳格式不是 JSON，請開 F12 → Console 看回傳內容。");
+  return;
+}
+
 
                 if (result.result === 'success') {
                     const user = result.user;
@@ -960,8 +1031,42 @@
             }
         }
 
-        function showForgotPassword() { alert("Please contact admin."); }
+function showForgotPassword() {
+  // 顯示 auth 區塊
+  document.getElementById("section-home").classList.add("hidden-section");
+  document.getElementById("section-auth").classList.remove("hidden-section");
+
+  // tab 樣式：以 login 為主（但先不顯示 login 表單）
+  document.getElementById("tab-login").className =
+    "w-1/2 py-4 text-lg font-bold text-blue-400 border-b-2 border-blue-500 focus:outline-none transition-all";
+  document.getElementById("tab-register").className =
+    "w-1/2 py-4 text-lg font-bold text-slate-500 hover:text-slate-300 focus:outline-none transition-all";
+
+  // 顯示 forgot 表單、隱藏 login/register
+  document.getElementById("form-login").classList.add("hidden-section");
+  document.getElementById("form-register").classList.add("hidden-section");
+  document.getElementById("form-forgot-password").classList.remove("hidden-section");
+
+  // role 顯示也先藏起來
+  document.getElementById("role-display-block").classList.add("hidden");
+  document.getElementById("role-select-block").classList.add("hidden");
+}
+
+// 你 forgot 表單的 onsubmit 需要這個函式，不然會報錯
+function handleForgotPassword(e) {
+  e.preventDefault();
+  const email = document.getElementById("forgot-email").value.trim();
+  if (!email) {
+    alert("請輸入 Email");
+    return;
+  }
+  alert("目前版本尚未開放自動寄信，請聯絡管理員協助重設密碼。\nEmail: " + email);
+  showLoginModal();
+}
+
         function showLoginModal() { 
+            roleLocked = false; // ★ 新增：右上角登入進來，不鎖定
+  targetRole = null;  // ★ 新增：避免被舊狀態鎖死
             document.getElementById('section-home').classList.add('hidden-section'); 
             document.getElementById('section-auth').classList.remove('hidden-section'); 
             switchAuthMode('login'); 
