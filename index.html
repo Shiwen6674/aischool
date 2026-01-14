@@ -233,7 +233,7 @@ select:-webkit-autofill {
                     </div>
                 </div>
 
-                <div onclick="preSelectRole('researcher')" class="glass-panel rounded-3xl overflow-hidden cursor-pointer group relative hover:-translate-y-2 transition duration-500 card-glow" style="--glow-color: #8b5cf6;">
+                <div onclick="preSelectRole('professor')" class="glass-panel rounded-3xl overflow-hidden cursor-pointer group relative hover:-translate-y-2 transition duration-500 card-glow" style="--glow-color: #8b5cf6;">
                     <div class="h-48 bg-gradient-to-b from-violet-900/40 to-transparent flex items-center justify-center relative overflow-hidden">
                         <div class="absolute inset-0 bg-violet-500/10 opacity-0 group-hover:opacity-100 transition duration-500"></div>
                         <i class="fa-solid fa-user-tie text-7xl text-violet-400 drop-shadow-[0_0_15px_rgba(139,92,246,0.6)] transform group-hover:scale-110 group-hover:rotate-3 transition duration-500"></i>
@@ -308,7 +308,7 @@ select:-webkit-autofill {
     >
       <option value="student">學生</option>
       <option value="teacher">教師</option>
-      <option value="researcher">教授</option>
+      <option value="professor">教授</option>
     </select>
 
     <i class="fa-solid fa-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
@@ -809,8 +809,7 @@ function changeLanguage() {
         
 function preSelectRole(role) {
   roleLocked = true;
-  role = normalizeRole(role);
-
+ 
   targetRole = role;
   document.getElementById("section-home").classList.add("hidden-section");
   document.getElementById("section-auth").classList.remove("hidden-section");
@@ -824,15 +823,22 @@ function preSelectRole(role) {
 }
 
 
-function normalizeRole(role) {
+function roleToDom(role) {
+  // DOM 仍沿用你原本的 fields-researcher / input-country-researcher
   return (role === "professor") ? "researcher" : role;
 }
+function roleToI18n(role) {
+  // 你的 translations 目前用 role_researcher 代表「教授」
+  return (role === "professor") ? "researcher" : role;
+}
+
         
 function syncRoleFromSelector() {
   const roleSel = document.getElementById("input-role-select");
   if (!roleSel) return;
 
-  const role = normalizeRole(roleSel.value || "student");
+  const role = (roleSel.value || "student");     // ✅ 送後端用 professor
+  const domRole = roleToDom(role);              // ✅ 操作畫面用 researcher
 
   // hidden input 給註冊用
   const hiddenRole = document.getElementById("input-role");
@@ -843,15 +849,16 @@ function syncRoleFromSelector() {
   const lang = langSel ? langSel.value : "en";
   const t = translations[lang] || translations["en"];
 
-  const roleName = t[`role_${role}`] || role;
+  const i18nRole = roleToI18n(role);        // ✅ professor → researcher
+  const roleName = t[`role_${i18nRole}`] || i18nRole;
+    
   const tabRegText = t["tab_register"] || "Register";
   const titleEl = document.getElementById("reg-role-display-text");
   if (titleEl) titleEl.textContent = tabRegText + " - " + roleName;
 
   // 顯示對應欄位
-  document.querySelectorAll(".role-fields").forEach(el => el.classList.add("hidden-section"));
-
-  const fields = document.getElementById(`fields-${role}`);
+document.querySelectorAll(".role-fields").forEach(el => el.classList.add("hidden-section"));
+  const fields = document.getElementById(`fields-${domRole}`);
   if (fields) fields.classList.remove("hidden-section");
 }
 
@@ -1033,12 +1040,14 @@ try {
                 registrationData.gradeLevel = document.getElementById('input-teaching-grade').value;
                 registrationData.subject = document.getElementById('input-subject').value.trim();
                 registrationData.seniority = document.getElementById('input-seniority').value;
-            } else if (role === 'researcher') {
-                registrationData.countryCode = document.getElementById('input-country-researcher').value;
-                registrationData.orgName = document.getElementById('input-unit').value.trim();
-                registrationData.position = document.getElementById('input-research-title').value.trim();
-                registrationData.researchField = document.getElementById('input-field').value.trim();
-            }
+} else if (role === 'professor') {
+  // DOM 還是 researcher
+  registrationData.countryCode = document.getElementById('input-country-researcher').value;
+  registrationData.orgName = document.getElementById('input-unit').value.trim();
+  registrationData.position = document.getElementById('input-research-title').value.trim();
+  registrationData.researchField = document.getElementById('input-field').value.trim();
+}
+
             
             if (!registrationData.name || !registrationData.email || !registrationData.password || !registrationData.countryCode) {
                 alert('請填寫所有基礎必填欄位 (Email, 密碼, 姓名, 國家/地區)。');
@@ -1080,7 +1089,7 @@ try {
                     // 修改處：若角色為 student，跳轉至 student_subject.html
                     let targetPage = 'student_subject.html';
                     if (user.role === 'teacher') targetPage = 'teacher.html';
-                    if (user.role === 'researcher' || user.role === 'professor') targetPage = 'professor.html';
+                    if (user.role === 'professor') targetPage = 'professor.html';
                     alert(result.message + "\n即將跳轉至您的專屬頁面。");
                     window.location.href = targetPage;
                 } else {
