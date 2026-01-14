@@ -2455,6 +2455,206 @@
 
     window.onload = boot;
   </script>
+<script>
+(() => {
+  // ====== 0) 之後再貼 GAS（先留空，HTML先跑通） ======
+  const GAS_URL = ""; // TODO: 你測完 HTML 後再貼 GAS Web App URL
+
+  // ====== 1) 只允許教授角色 ======
+  const ALLOWED_ROLES = new Set(["researcher", "professor"]); // 你的教授在 index 用 researcher
+  const PAGE_NAME = "professor.html";
+  const nowIso = () => new Date().toISOString();
+
+  function safeParseJSON(s) {
+    try { return JSON.parse(s); } catch { return null; }
+  }
+
+  function getCurrentUser() {
+    const raw = sessionStorage.getItem("currentUser");
+    const u = safeParseJSON(raw);
+    if (!u || !u.role || !u.email) return null;
+    return u;
+  }
+
+  function redirectToIndex(reason) {
+    if (reason) sessionStorage.setItem("redirectMsg", reason);
+    window.location.replace("index.html");
+  }
+
+  // ====== 2) 守門：沒有從 index 登入就直接擋回去 ======
+  function guardAndInitUI() {
+    const u = getCurrentUser();
+    if (!u || !ALLOWED_ROLES.has(u.role)) {
+      redirectToIndex("請先在首頁以「教授」身分登入後，才能進入 Professor Hub。");
+      return null;
+    }
+
+    // 通過後才顯示頁面
+    document.body.style.visibility = "visible";
+
+    // 顯示使用者資訊、顯示登出、隱藏登入（避免教授頁變成第二個入口）
+    const loginBtn = document.getElementById("login-btn");
+    const logoutBtn = document.getElementById("logout-btn");
+    const chip = document.getElementById("user-chip");
+    const userName = document.getElementById("user-name");
+    const userAvatar = document.getElementById("user-avatar");
+
+    if (loginBtn) loginBtn.classList.add("hidden");
+    if (logoutBtn) logoutBtn.classList.remove("hidden");
+    if (chip) chip.classList.remove("hidden");
+
+    if (userName) userName.textContent = u.name || "Professor";
+    if (userAvatar) {
+      const initial = (u.name || u.email || "P").trim().charAt(0).toUpperCase();
+      userAvatar.textContent = initial;
+    }
+
+    return u;
+  }
+
+  // ====== 3) 前端紀錄：時間 / 使用功能 ======
+  let sessionStartMs = Date.now();
+  let features = new Set();
+
+  function formatMMSS(ms) {
+    const totalSec = Math.floor(ms / 1000);
+    const m = String(Math.floor(totalSec / 60)).padStart(2, "0");
+    const s = String(totalSec % 60).padStart(2, "0");
+    return `${m}:${s}`;
+  }
+
+  async function postToGAS(payload) {
+    if (!GAS_URL) return; // 先不送，等你貼 GAS 再啟用
+    try {
+      await fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) });
+    } catch (e) {
+      console.warn("GAS log failed:", e);
+    }
+  }
+
+  function trackEvent(user, action, extra = {}) {
+    postToGAS({
+      type: "professor_log",
+      page: PAGE_NAME,
+      ts: nowIso(),
+      email: user.email,
+      role: user.role,
+      action,
+      ...extra
+    });
+  }
+
+  function startTimer() {
+    const el = document.getElementById("time-spent");
+    if (!el) return;
+    const tick = () => { el.textContent = formatMMSS(Date.now() - sessionStartMs); };
+    tick();
+    setInterval(tick, 1000);
+  }
+
+  function initLoginCount(user) {
+    // 這是「本 tab 的 sessionStorage 次數」，先給你 UI 用
+    const key = `professor_login_count_${user.email}`;
+    const n0 = Number(sessionStorage.getItem(key) || "0");
+    const n1 = n0 + 1;
+    sessionStorage.setItem(key, String(n1));
+    const el = document.getElementById("login-count");
+    if (el) el.textContent = String(n1);
+
+    const status = document.getElementById("session-status");
+    if (status) status.textContent = "Active";
+
+    trackEvent(user, "enter_page", { loginCount: n1 });
+  }
+
+  function renderFeaturesUsed() {
+    const box = document.getElementById("features-used");
+    if (!box) return;
+
+    box.innerHTML = "";
+    if (features.size === 0) {
+      const span = document.createElement("span");
+      span.className = "text-xs text-slate-500 font-bold";
+      span.textContent = "—";
+      box.appendChild(span);
+      return;
+    }
+
+    [...features].forEach(k => {
+      const tag = document.createElement("span");
+      tag.className = "badge text-xs px-2 py-1 rounded-full font-black";
+      tag.textContent = k;
+      box.appendChild(tag);
+    });
+  }
+
+  function markFeature(user, featureKey) {
+    if (!featureKey) return;
+    features.add(featureKey);
+    renderFeaturesUsed();
+    trackEvent(user, "feature_use", { feature: featureKey });
+  }
+
+  // ====== 4) 不改你 HTML onclick：用 patch 方式把點擊行為都記下來 ======
+  function patchFeatureHooks(user) {
+    // openExternalFeature('segmentation','text_segmentation.html')
+    const originalExternal = window.openExternalFeature;
+    window.openExternalFeature = function(...args) {
+      const key = (args && typeof args[0] === "string") ? args[0] : "external";
+      markFeature(user, key);
+      if (typeof originalExternal === "function") return originalExternal.apply(this, args);
+      // 若你原本沒寫，就用最小版本直接跳頁
+      const url = args && args[1];
+      if (url) window.location.href = url;
+    };
+
+    // openTool('similarity')
+    const originalTool = window.openTool;
+    window.openTool = function(...args) {
+      const key = (args && typeof args[0] === "string") ? args[0] : "tool";
+      markFeature(user, key);
+      if (typeof originalTool === "function") return originalTool.apply(this, args);
+      // 沒有原本函式也不報錯，至少 badge 會動
+      const badge = document.getElementById("tool-badge");
+      if (badge) badge.textContent = key;
+    };
+  }
+
+  // ====== 5) 登出 / 離開頁面：記錄停留時間 ======
+  function patchLogout(user) {
+    const original = window.openLogoutSurvey;
+
+    window.openLogoutSurvey = function(...args) {
+      const durationSec = Math.floor((Date.now() - sessionStartMs) / 1000);
+      trackEvent(user, "logout_click", { durationSec, featuresUsed: [...features] });
+
+      // 如果你原本有登出問卷流程，就照走；沒有就直接登出
+      if (typeof original === "function") return original.apply(this, args);
+
+      sessionStorage.removeItem("currentUser");
+      window.location.replace("index.html");
+    };
+
+    window.addEventListener("beforeunload", () => {
+      const durationSec = Math.floor((Date.now() - sessionStartMs) / 1000);
+      trackEvent(user, "leave_page", { durationSec, featuresUsed: [...features] });
+    });
+  }
+
+  // ====== boot ======
+  const user = guardAndInitUI();
+  if (!user) return;
+
+  initLoginCount(user);
+  startTimer();
+  renderFeaturesUsed();
+  patchFeatureHooks(user);
+  patchLogout(user);
+
+})();
+</script>
+
+  
 </body>
 </html>
 
