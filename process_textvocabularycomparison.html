@@ -1,1 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文本詞彙比較 | Science Learning Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        research: { 
+                            50: '#f5f3ff', 100: '#ede9fe', 200: '#ddd6fe', 
+                            500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9', 
+                            800: '#5b21b6', 900: '#4c1d95' 
+                        },
+                        glass: { 100: 'rgba(255, 255, 255, 0.1)', 700: 'rgba(255, 255, 255, 0.7)' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    animation: {
+                        "fade-in-up": "fadeInUp 0.5s ease-out forwards",
+                    },
+                    keyframes: {
+                        "fadeInUp": { "0%": { opacity: "0", transform: "translateY(10px)" }, "100%": { opacity: "1", transform: "translateY(0)" } }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f8fafc; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 8px 32px 0 rgba(109, 40, 217, 0.05);
+        }
+        .input-area {
+            transition: all 0.2s;
+            border: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+        }
+        .input-area:focus {
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+            border-color: #7c3aed;
+            outline: none;
+        }
+        .checkbox-wrapper label {
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+        }
+        .checkbox-wrapper input:checked + span {
+            background-color: #7c3aed;
+            color: white;
+            border-color: #7c3aed;
+        }
+        
+        #canvas-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -10;
+            background: linear-gradient(135deg, #f5f3ff 0%, #eef2ff 100%);
+        }
+        
+        /* 滾動條美化 */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
+
+        /* Toggle Switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #7c3aed;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #7c3aed;
+        }
+    </style>
+</head>
+<body class="text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <div id="canvas-container"></div>
+
+    <!-- 頂部導航 -->
+    <nav class="glass-panel sticky top-0 z-50 border-b-0">
+        <div class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3 cursor-pointer group" onclick="window.location.href='researcher.html'">
+                <div class="bg-research-100 p-2 rounded-xl text-research-700 shadow-sm transition group-hover:bg-research-600 group-hover:text-white">
+                    <i class="fa-solid fa-arrow-left text-lg"></i>
+                </div>
+                <span class="text-lg font-bold tracking-tight text-slate-700 group-hover:text-research-700 transition" data-i18n="back_btn">返回研究中心</span>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 px-3 py-1 bg-research-50 text-research-700 rounded-full border border-research-200 text-sm font-bold">
+                    <i class="fa-solid fa-scale-balanced"></i> <span data-i18n="tool_name">文本詞彙比較</span>
+                </div>
+                
+                <!-- 語言選擇器 -->
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-globe text-slate-400"></i>
+                    <select id="language-selector" onchange="changeLanguage()" class="bg-white/50 border border-slate-200 text-slate-600 text-sm rounded-lg focus:ring-research-500 focus:border-research-500 block p-1.5 outline-none hover:bg-white transition cursor-pointer">
+                        <option value="zh-TW">繁體中文</option>
+                        <option value="en">English</option>
+                        <option value="ja">日本語</option>
+                        <option value="ko">한국어</option>
+                        <option value="zh-CN">简体中文</option>
+                        <option value="es">Español</option>
+                        <option value="pt">Português</option>
+                        <option value="id">Bahasa Indonesia</option>
+                        <option value="th">ไทย</option>
+                        <option value="vi">Tiếng Việt</option>
+                        <option value="hi">हिन्दी</option>
+                        <option value="ms">Bahasa Melayu</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-1 overflow-hidden flex flex-col md:flex-row">
+        
+        <!-- 左側：輸入與設定 (30%) -->
+        <aside class="w-full md:w-1/3 bg-white border-r border-slate-200 flex flex-col overflow-y-auto z-10 shadow-lg">
+            <div class="p-6 space-y-6">
+                
+                <!-- 設定區塊 -->
+                <div class="bg-research-50/50 p-5 rounded-2xl border border-research-100">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-sm font-bold text-research-800 flex items-center">
+                            <i class="fa-solid fa-filter mr-2"></i> <span data-i18n="label_pos_filter">詞性篩選</span>
+                        </h3>
+                        <!-- 顯示 POS 開關 -->
+                        <div class="flex items-center">
+                            <label for="show-pos-toggle" class="flex items-center cursor-pointer">
+                                <div class="relative">
+                                    <input type="checkbox" id="show-pos-toggle" class="sr-only">
+                                    <div class="w-10 h-6 bg-slate-200 rounded-full shadow-inner transition-colors duration-300" id="toggle-bg"></div>
+                                    <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow transition-transform duration-300" id="toggle-dot"></div>
+                                </div>
+                                <span class="ml-2 text-xs font-bold text-slate-600" data-i18n="label_show_pos">顯示 POS</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="checkbox-wrapper grid grid-cols-2 gap-2">
+                        <!-- 預設勾選 -->
+                        <label class="flex items-center">
+                            <input type="checkbox" class="hidden pos-check" value="N" checked>
+                            <span class="w-full text-center px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-500 hover:bg-white transition" data-i18n="pos_n">名詞 (N)</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="hidden pos-check" value="V" checked>
+                            <span class="w-full text-center px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-500 hover:bg-white transition" data-i18n="pos_v">動詞 (V)</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="hidden pos-check" value="A" checked>
+                            <span class="w-full text-center px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-500 hover:bg-white transition" data-i18n="pos_a">形容詞 (A)</span>
+                        </label>
+                        
+                        <!-- 預設不勾選 -->
+                        <label class="flex items-center">
+                            <input type="checkbox" class="hidden pos-check" value="D">
+                            <span class="w-full text-center px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-500 hover:bg-white transition" data-i18n="pos_d">副詞 (D)</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="hidden pos-check" value="C">
+                            <span class="w-full text-center px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-500 hover:bg-white transition" data-i18n="pos_c">連接詞 (C)</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="hidden pos-check" value="O">
+                            <span class="w-full text-center px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-500 hover:bg-white transition" data-i18n="pos_o">其他</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 輸入框 A -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-sm font-bold text-slate-700 flex items-center gap-2">
+                            <span class="w-6 h-6 rounded bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs">A</span> <span data-i18n="label_text_a">文本 A</span>
+                        </label>
+                        <div class="flex gap-2">
+                            <button onclick="loadExample()" class="text-xs text-indigo-600 hover:text-indigo-800 transition font-bold border border-indigo-200 rounded px-2 py-1 bg-indigo-50 flex items-center gap-1">
+                                <i class="fa-solid fa-file-import"></i> <span data-i18n="btn_example">載入範例</span>
+                            </button>
+                            <button onclick="clearInput('text-a')" class="text-xs text-slate-400 hover:text-red-500 transition flex items-center gap-1">
+                                <i class="fa-solid fa-trash-can"></i> <span data-i18n="btn_clear">清空</span>
+                            </button>
+                        </div>
+                    </div>
+                    <textarea id="text-a" class="input-area w-full h-40 p-4 rounded-xl resize-none text-sm font-mono leading-relaxed" placeholder="..."></textarea>
+                </div>
+
+                <!-- 輸入框 B -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-sm font-bold text-slate-700 flex items-center gap-2">
+                            <span class="w-6 h-6 rounded bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs">B</span> <span data-i18n="label_text_b">文本 B</span>
+                        </label>
+                        <button onclick="clearInput('text-b')" class="text-xs text-slate-400 hover:text-red-500 transition flex items-center gap-1">
+                            <i class="fa-solid fa-trash-can"></i> <span data-i18n="btn_clear">清空</span>
+                        </button>
+                    </div>
+                    <textarea id="text-b" class="input-area w-full h-40 p-4 rounded-xl resize-none text-sm font-mono leading-relaxed" placeholder="..."></textarea>
+                </div>
+
+                <button onclick="compareTexts()" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition transform active:scale-95 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-arrow-right-arrow-left"></i> <span data-i18n="btn_analyze">開始比對分析</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- 右側：分析結果 (70%) -->
+        <main class="flex-1 bg-slate-50 p-6 md:p-8 overflow-y-auto custom-scrollbar">
+            
+            <!-- 狀態提示 -->
+            <div id="empty-state" class="h-full flex flex-col items-center justify-center text-slate-300 select-none">
+                <i class="fa-solid fa-chart-venn text-6xl mb-4 opacity-50"></i>
+                <p class="text-lg font-medium" data-i18n="msg_start">輸入文本並開始比對</p>
+                <p class="text-sm opacity-70 mt-2" data-i18n="msg_hint">支援自動過濾標點與詞性篩選</p>
+            </div>
+
+            <!-- 結果面板 -->
+            <div id="result-panel" class="hidden grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 animate-fade-in-up">
+                
+                <!-- 1. A 獨有 -->
+                <div class="flex flex-col h-[calc(100vh-140px)] glass-panel rounded-2xl overflow-hidden border-t-4 border-indigo-500">
+                    <div class="p-4 bg-white border-b border-slate-100 flex justify-between items-center">
+                        <h3 class="font-bold text-indigo-700 flex items-center gap-2"><i class="fa-solid fa-circle-minus"></i> <span data-i18n="header_only_a">A 獨有</span></h3>
+                        <span class="bg-indigo-50 text-indigo-700 text-xs px-2 py-1 rounded-md font-bold" id="count-only-a">0</span>
+                    </div>
+                    <textarea id="res-only-a" readonly class="flex-1 p-4 bg-transparent resize-none outline-none text-slate-600 font-mono text-sm leading-relaxed custom-scrollbar"></textarea>
+                    <div class="p-3 bg-slate-50 border-t border-slate-100">
+                        <button onclick="copyText('res-only-a')" class="w-full py-2 rounded-lg text-xs font-bold text-slate-500 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition border border-transparent hover:border-slate-200 flex items-center justify-center gap-2">
+                            <i class="fa-regular fa-copy"></i> <span data-i18n="btn_copy">複製內容</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. 交集 -->
+                <div class="flex flex-col h-[calc(100vh-140px)] glass-panel rounded-2xl overflow-hidden border-t-4 border-teal-500">
+                    <div class="p-4 bg-white border-b border-slate-100 flex justify-between items-center">
+                        <h3 class="font-bold text-teal-700 flex items-center gap-2"><i class="fa-solid fa-link"></i> <span data-i18n="header_common">AB 交集</span></h3>
+                        <span class="bg-teal-50 text-teal-700 text-xs px-2 py-1 rounded-md font-bold" id="count-common">0</span>
+                    </div>
+                    <textarea id="res-common" readonly class="flex-1 p-4 bg-transparent resize-none outline-none text-slate-600 font-mono text-sm leading-relaxed custom-scrollbar"></textarea>
+                    <div class="p-3 bg-slate-50 border-t border-slate-100">
+                        <button onclick="copyText('res-common')" class="w-full py-2 rounded-lg text-xs font-bold text-slate-500 hover:bg-white hover:text-teal-600 hover:shadow-sm transition border border-transparent hover:border-slate-200 flex items-center justify-center gap-2">
+                             <i class="fa-regular fa-copy"></i> <span data-i18n="btn_copy">複製內容</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. 聯集 -->
+                <div class="flex flex-col h-[calc(100vh-140px)] glass-panel rounded-2xl overflow-hidden border-t-4 border-fuchsia-500">
+                    <div class="p-4 bg-white border-b border-slate-100 flex justify-between items-center">
+                        <h3 class="font-bold text-fuchsia-700 flex items-center gap-2"><i class="fa-solid fa-layer-group"></i> <span data-i18n="header_union">AB 聯集</span></h3>
+                        <span class="bg-fuchsia-50 text-fuchsia-700 text-xs px-2 py-1 rounded-md font-bold" id="count-union">0</span>
+                    </div>
+                    <textarea id="res-union" readonly class="flex-1 p-4 bg-transparent resize-none outline-none text-slate-600 font-mono text-sm leading-relaxed custom-scrollbar"></textarea>
+                    <div class="p-3 bg-slate-50 border-t border-slate-100">
+                        <button onclick="copyText('res-union')" class="w-full py-2 rounded-lg text-xs font-bold text-slate-500 hover:bg-white hover:text-fuchsia-600 hover:shadow-sm transition border border-transparent hover:border-slate-200 flex items-center justify-center gap-2">
+                             <i class="fa-regular fa-copy"></i> <span data-i18n="btn_copy">複製內容</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4. B 獨有 -->
+                <div class="flex flex-col h-[calc(100vh-140px)] glass-panel rounded-2xl overflow-hidden border-t-4 border-emerald-500">
+                    <div class="p-4 bg-white border-b border-slate-100 flex justify-between items-center">
+                        <h3 class="font-bold text-emerald-700 flex items-center gap-2"><i class="fa-solid fa-circle-plus"></i> <span data-i18n="header_only_b">B 獨有</span></h3>
+                        <span class="bg-emerald-50 text-emerald-700 text-xs px-2 py-1 rounded-md font-bold" id="count-only-b">0</span>
+                    </div>
+                    <textarea id="res-only-b" readonly class="flex-1 p-4 bg-transparent resize-none outline-none text-slate-600 font-mono text-sm leading-relaxed custom-scrollbar"></textarea>
+                    <div class="p-3 bg-slate-50 border-t border-slate-100">
+                        <button onclick="copyText('res-only-b')" class="w-full py-2 rounded-lg text-xs font-bold text-slate-500 hover:bg-white hover:text-emerald-600 hover:shadow-sm transition border border-transparent hover:border-slate-200 flex items-center justify-center gap-2">
+                             <i class="fa-regular fa-copy"></i> <span data-i18n="btn_copy">複製內容</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Toggle Switch Logic
+        document.getElementById('show-pos-toggle').addEventListener('change', function() {
+            const bg = document.getElementById('toggle-bg');
+            const dot = document.getElementById('toggle-dot');
+            if(this.checked) {
+                bg.classList.replace('bg-slate-200', 'bg-research-500');
+                dot.style.transform = 'translateX(100%)';
+            } else {
+                bg.classList.replace('bg-research-500', 'bg-slate-200');
+                dot.style.transform = 'translateX(0)';
+            }
+            // Re-run comparison if data exists
+            const textA = document.getElementById('text-a').value;
+            if(textA) compareTexts();
+        });
+
+        // i18n
+        const translations = {
+            "zh-TW": {
+                "back_btn": "返回研究中心", "tool_name": "文本詞彙比較", 
+                "label_pos_filter": "詞性篩選", "label_show_pos": "顯示 POS",
+                "pos_n": "名詞 (N)", "pos_v": "動詞 (V)", "pos_a": "形容詞 (A)", "pos_d": "副詞 (D)", "pos_c": "連接詞 (C)", "pos_o": "其他",
+                "label_text_a": "文本 A", "label_text_b": "文本 B", "btn_example": "載入範例", "btn_clear": "清空",
+                "btn_analyze": "開始比對分析", "msg_start": "輸入文本並開始比對", "msg_hint": "支援自動過濾標點與詞性篩選",
+                "header_only_a": "A 獨有", "header_common": "AB 交集", "header_union": "AB 聯集", "header_only_b": "B 獨有",
+                "btn_copy": "複製內容", "msg_copied": "已複製", "err_input": "請至少輸入一段文本！",
+                "ph_text": "請貼上斷詞後的文本..."
+            },
+            "en": {
+                "back_btn": "Back to Research", "tool_name": "Vocab Comparison", 
+                "label_pos_filter": "POS Filter", "label_show_pos": "Show POS",
+                "pos_n": "Noun (N)", "pos_v": "Verb (V)", "pos_a": "Adj (A)", "pos_d": "Adv (D)", "pos_c": "Conj (C)", "pos_o": "Other",
+                "label_text_a": "Text A", "label_text_b": "Text B", "btn_example": "Example", "btn_clear": "Clear",
+                "btn_analyze": "Start Analysis", "msg_start": "Input text to start comparison", "msg_hint": "Auto-filter punctuation & POS",
+                "header_only_a": "Unique to A", "header_common": "Intersection", "header_union": "Union", "header_only_b": "Unique to B",
+                "btn_copy": "Copy Content", "msg_copied": "Copied", "err_input": "Please input text!",
+                "ph_text": "Paste tokenized text here..."
+            },
+            "ja": {
+                "back_btn": "研究センターへ", "tool_name": "語彙比較ツール", 
+                "label_pos_filter": "品詞フィルタ", "label_show_pos": "POS表示",
+                "pos_n": "名詞 (N)", "pos_v": "動詞 (V)", "pos_a": "形容詞 (A)", "pos_d": "副詞 (D)", "pos_c": "接続詞 (C)", "pos_o": "その他",
+                "label_text_a": "テキスト A", "label_text_b": "テキスト B", "btn_example": "例文", "btn_clear": "クリア",
+                "btn_analyze": "比較開始", "msg_start": "テキストを入力して比較", "msg_hint": "句読点と品詞を自動フィルタリング",
+                "header_only_a": "A のみ", "header_common": "共通 (交差)", "header_union": "和集合", "header_only_b": "B のみ",
+                "btn_copy": "コピー", "msg_copied": "コピーしました", "err_input": "テキストを入力してください！",
+                "ph_text": "分かち書きされたテキストを貼り付け..."
+            },
+            "zh-CN": {
+                "back_btn": "返回研究中心", "tool_name": "文本词汇比较", 
+                "label_pos_filter": "词性筛选", "label_show_pos": "显示 POS",
+                "pos_n": "名词 (N)", "pos_v": "动词 (V)", "pos_a": "形容词 (A)", "pos_d": "副词 (D)", "pos_c": "连词 (C)", "pos_o": "其他",
+                "label_text_a": "文本 A", "label_text_b": "文本 B", "btn_example": "载入范例", "btn_clear": "清空",
+                "btn_analyze": "开始比对分析", "msg_start": "输入文本并开始比对", "msg_hint": "支持自动过滤标点与词性筛选",
+                "header_only_a": "A 独有", "header_common": "AB 交集", "header_union": "AB 并集", "header_only_b": "B 独有",
+                "btn_copy": "复制内容", "msg_copied": "已复制", "err_input": "请至少输入一段文本！",
+                "ph_text": "请贴上断词后的文本..."
+            },
+            "ko": { "back_btn": "연구 센터로", "tool_name": "어휘 비교", "label_pos_filter": "품사 필터", "label_show_pos": "POS 표시", "pos_n": "명사 (N)", "pos_v": "동사 (V)", "pos_a": "형용사 (A)", "pos_d": "부사 (D)", "pos_c": "접속사 (C)", "pos_o": "기타", "label_text_a": "텍스트 A", "label_text_b": "텍스트 B", "btn_example": "예시", "btn_clear": "지우기", "btn_analyze": "분석 시작", "msg_start": "텍스트를 입력하여 비교 시작", "msg_hint": "구두점 및 품사 자동 필터링", "header_only_a": "A 고유", "header_common": "교집합", "header_union": "합집합", "header_only_b": "B 고유", "btn_copy": "복사", "msg_copied": "복사됨", "err_input": "텍스트를 입력하세요!", "ph_text": "토큰화된 텍스트 붙여넣기..." },
+            "es": { "back_btn": "Volver", "tool_name": "Comp. Vocabulario", "label_pos_filter": "Filtro POS", "label_show_pos": "Mostrar POS", "pos_n": "Sustantivo", "pos_v": "Verbo", "pos_a": "Adj", "pos_d": "Adv", "pos_c": "Conj", "pos_o": "Otro", "label_text_a": "Texto A", "label_text_b": "Texto B", "btn_example": "Ejemplo", "btn_clear": "Borrar", "btn_analyze": "Analizar", "msg_start": "Entrada de texto", "msg_hint": "Filtro automático", "header_only_a": "Solo A", "header_common": "Intersección", "header_union": "Unión", "header_only_b": "Solo B", "btn_copy": "Copiar", "msg_copied": "Copiado", "err_input": "¡Entrada requerida!", "ph_text": "Pegar texto..." },
+            "pt": { "back_btn": "Voltar", "tool_name": "Comp. Vocabulário", "label_pos_filter": "Filtro POS", "label_show_pos": "Mostrar POS", "pos_n": "Substantivo", "pos_v": "Verbo", "pos_a": "Adj", "pos_d": "Adv", "pos_c": "Conj", "pos_o": "Outro", "label_text_a": "Texto A", "label_text_b": "Texto B", "btn_example": "Exemplo", "btn_clear": "Limpar", "btn_analyze": "Analisar", "msg_start": "Entrada de texto", "msg_hint": "Filtro automático", "header_only_a": "Só A", "header_common": "Interseção", "header_union": "União", "header_only_b": "Só B", "btn_copy": "Copiar", "msg_copied": "Copiado", "err_input": "Entrada necessária!", "ph_text": "Colar texto..." },
+            "id": { "back_btn": "Kembali", "tool_name": "Komp. Kosakata", "label_pos_filter": "Filter POS", "label_show_pos": "Tampil POS", "pos_n": "Nomina", "pos_v": "Verba", "pos_a": "Adjektiva", "pos_d": "Adverbia", "pos_c": "Konjungsi", "pos_o": "Lainnya", "label_text_a": "Teks A", "label_text_b": "Teks B", "btn_example": "Contoh", "btn_clear": "Hapus", "btn_analyze": "Analisis", "msg_start": "Mulai analisis", "msg_hint": "Filter otomatis", "header_only_a": "Hanya A", "header_common": "Irisan", "header_union": "Gabungan", "header_only_b": "Hanya B", "btn_copy": "Salin", "msg_copied": "Disalin", "err_input": "Input teks!", "ph_text": "Tempel teks..." },
+            "th": { "back_btn": "กลับ", "tool_name": "เปรียบเทียบคำศัพท์", "label_pos_filter": "ตัวกรอง POS", "label_show_pos": "แสดง POS", "pos_n": "คำนาม", "pos_v": "คำกริยา", "pos_a": "คำคุณศัพท์", "pos_d": "คำวิเศษณ์", "pos_c": "คำสันธาน", "pos_o": "อื่นๆ", "label_text_a": "ข้อความ A", "label_text_b": "ข้อความ B", "btn_example": "ตัวอย่าง", "btn_clear": "ล้าง", "btn_analyze": "วิเคราะห์", "msg_start": "เริ่มการวิเคราะห์", "msg_hint": "กรองอัตโนมัติ", "header_only_a": "เฉพาะ A", "header_common": "จุดตัด", "header_union": "ยูเนียน", "header_only_b": "เฉพาะ B", "btn_copy": "คัดลอก", "msg_copied": "คัดลอกแล้ว", "err_input": "กรุณาใส่ข้อความ!", "ph_text": "วางข้อความ..." },
+            "vi": { "back_btn": "Trở lại", "tool_name": "So sánh Từ vựng", "label_pos_filter": "Bộ lọc POS", "label_show_pos": "Hiện POS", "pos_n": "Danh từ", "pos_v": "Động từ", "pos_a": "Tính từ", "pos_d": "Trạng từ", "pos_c": "Liên từ", "pos_o": "Khác", "label_text_a": "Văn bản A", "label_text_b": "Văn bản B", "btn_example": "Ví dụ", "btn_clear": "Xóa", "btn_analyze": "Phân tích", "msg_start": "Bắt đầu", "msg_hint": "Lọc tự động", "header_only_a": "Chỉ A", "header_common": "Giao nhau", "header_union": "Hợp nhất", "header_only_b": "Chỉ B", "btn_copy": "Sao chép", "msg_copied": "Đã sao chép", "err_input": "Vui lòng nhập văn bản!", "ph_text": "Dán văn bản..." },
+            "hi": { "back_btn": "वापस", "tool_name": "शब्दावली तुलना", "label_pos_filter": "POS फ़िल्टर", "label_show_pos": "POS दिखाएं", "pos_n": "संज्ञा", "pos_v": "क्रिया", "pos_a": "विशेषण", "pos_d": "क्रिया विशेषण", "pos_c": "संयोजक", "pos_o": "अन्य", "label_text_a": "पाठ A", "label_text_b": "पाठ B", "btn_example": "उदाहरण", "btn_clear": "साफ़ करें", "btn_analyze": "विश्लेषण करें", "msg_start": "विश्लेषण शुरू करें", "msg_hint": "स्वतः फ़िल्टर", "header_only_a": "केवल A", "header_common": "उभयनिष्ठ", "header_union": "संघ", "header_only_b": "केवल B", "btn_copy": "कॉपी करें", "msg_copied": "कॉपी किया गया", "err_input": "कृपया पाठ दर्ज करें!", "ph_text": "पाठ पेस्ट करें..." },
+            "ms": { "back_btn": "Kembali", "tool_name": "Perbandingan Kosa Kata", "label_pos_filter": "Penapis POS", "label_show_pos": "Tunjuk POS", "pos_n": "Kata Nama", "pos_v": "Kata Kerja", "pos_a": "Kata Adjektif", "pos_d": "Kata Adverba", "pos_c": "Kata Hubung", "pos_o": "Lain", "label_text_a": "Teks A", "label_text_b": "Teks B", "btn_example": "Contoh", "btn_clear": "Padam", "btn_analyze": "Analisis", "msg_start": "Mula analisis", "msg_hint": "Penapis automatik", "header_only_a": "Hanya A", "header_common": "Persilangan", "header_union": "Kesatuan", "header_only_b": "Hanya B", "btn_copy": "Salin", "msg_copied": "Disalin", "err_input": "Sila masukkan teks!", "ph_text": "Tampal teks..." }
+        };
+
+        function changeLanguage() {
+            const langSelector = document.getElementById("language-selector");
+            if(!langSelector) return;
+            const lang = langSelector.value;
+            const t = translations[lang] || translations['en'];
+
+            document.querySelectorAll("[data-i18n]").forEach(el => {
+                const key = el.getAttribute("data-i18n");
+                if (t[key]) el.innerText = t[key];
+            });
+
+            const ph = t.ph_text || "Paste text...";
+            document.getElementById('text-a').placeholder = ph;
+            document.getElementById('text-b').placeholder = ph;
+        }
+
+        // 載入範例功能
+        function loadExample() {
+            const textA = "細胞(Na) 是(SHI) 生物體(Na) 結構(Na) 和(Caa) 功能(Na) 的(DE) 基本(Na) 單位(Na) 。(PERIODCATEGORY) 細胞膜(Na) 控制(VC) 物質(Na) 進出(VA) ，(COMMACATEGORY) 細胞核(Na) 含有(VJ) 遺傳(Na) 物質(Na) DNA(FW) 。(PERIODCATEGORY)";
+            const textB = "生物體(Na) 由(P) 細胞(Na) 組成(VG) ，(COMMACATEGORY) 細胞(Na) 是(SHI) 生命(Na) 的(DE) 基本(Na) 單位(Na) 。(PERIODCATEGORY) 外層(Nc) 有(V_2) 細胞膜(Na) 負責(VJ) 物質(Na) 運輸(VC) ，(COMMACATEGORY) 核心(Na) 有(V_2) DNA(FW) 負責(VJ) 遺傳(Na) 。(PERIODCATEGORY)";
+            
+            document.getElementById('text-a').value = textA;
+            document.getElementById('text-b').value = textB;
+        }
+
+        function clearInput(id) {
+            document.getElementById(id).value = '';
+            document.getElementById(id).focus();
+        }
+
+        function copyText(id) {
+            const el = document.getElementById(id);
+            el.select();
+            document.execCommand('copy');
+            // 簡單的按鈕反饋
+            const btn = el.nextElementSibling.querySelector('button');
+            const originalHTML = btn.innerHTML;
+            const t = translations[document.getElementById("language-selector").value] || translations['en'];
+            btn.innerHTML = `<i class="fa-solid fa-check"></i> ${t.msg_copied}`;
+            setTimeout(() => btn.innerHTML = originalHTML, 1500);
+        }
+
+        // 解析詞性並過濾 (關鍵修正：如果沒有標記，無條件保留)
+        function parseAndFilter(text, activePos) {
+            const rawTokens = text.trim().split(/\s+/);
+            const resultMap = new Map(); // key: word, value: pos
+
+            // 定義標點符號正則 (排除)
+            const punctuationRegex = /[^\u4e00-\u9fa5a-zA-Z0-9]/; 
+
+            rawTokens.forEach(token => {
+                if (!token) return;
+
+                // 嘗試解析 Word(Pos)
+                const match = token.match(/^(.+)\((.+)\)$/);
+                let word = token;
+                let pos = 'Unk'; // Default Unknown POS
+
+                // *** 關鍵修正邏輯 ***
+                if (match) {
+                    // 1. 有詞性標記 -> 進行詞性過濾
+                    word = match[1];
+                    pos = match[2];
+
+                    // 過濾標點標記 (CKIP)
+                    if (['PERIODCATEGORY', 'COMMACATEGORY', 'PARENTHESISCATEGORY', 'COLONCATEGORY', 'SEMICOLONCATEGORY', 'EXCLAMATIONCATEGORY', 'QUESTIONCATEGORY'].includes(pos)) {
+                        return;
+                    }
+
+                    // 詞性對應與篩選
+                    let category = 'O';
+                    if (pos.startsWith('N')) category = 'N';
+                    else if (pos.startsWith('V')) category = 'V';
+                    else if (pos.startsWith('A') || pos === 'VH') category = 'A'; 
+                    else if (pos.startsWith('D')) category = 'D';
+                    else if (pos.startsWith('C')) category = 'C';
+                    
+                    if (!activePos.has(category)) {
+                        return; // 被篩選掉
+                    }
+                } else {
+                    // 2. 無詞性標記 -> 無條件保留 (除非是純標點)
+                    if (punctuationRegex.test(word) && word.length === 1) {
+                        return; // 跳過標點
+                    }
+                    // 視為有效詞彙，不進行 activePos 檢查
+                }
+
+                // 儲存
+                if (!resultMap.has(word)) {
+                    resultMap.set(word, pos);
+                }
+            });
+            
+            return resultMap;
+        }
+
+        function compareTexts() {
+            const textA = document.getElementById('text-a').value;
+            const textB = document.getElementById('text-b').value;
+            const t = translations[document.getElementById("language-selector").value] || translations['en'];
+
+            if (!textA && !textB) {
+                alert(t.err_input);
+                return;
+            }
+
+            // 取得勾選的詞性
+            const activePos = new Set();
+            document.querySelectorAll('.pos-check:checked').forEach(cb => activePos.add(cb.value));
+            
+            // 取得是否顯示 POS
+            const showPos = document.getElementById('show-pos-toggle').checked;
+
+            const mapA = parseAndFilter(textA, activePos);
+            const mapB = parseAndFilter(textB, activePos);
+
+            const setA = new Set(mapA.keys());
+            const setB = new Set(mapB.keys());
+
+            // 排序
+            const locale = document.getElementById("language-selector").value === 'en' ? 'en' : 'zh-TW';
+            
+            // 輔助：格式化輸出 (word 或 word (pos))
+            // 如果 POS 是 'Unk' (未標記來源)，即使 Show POS 開啟也不顯示 Unk，保持版面乾淨
+            const format = (word, sourceMap) => {
+                if (showPos) {
+                    const p = sourceMap.get(word);
+                    if (p && p !== 'Unk') return `${word} (${p})`;
+                }
+                return word;
+            };
+
+            // 1. Only A
+            const onlyA = [...setA].filter(x => !setB.has(x)).sort((a, b) => a.localeCompare(b, locale))
+                .map(w => format(w, mapA));
+
+            // 2. Only B
+            const onlyB = [...setB].filter(x => !setA.has(x)).sort((a, b) => a.localeCompare(b, locale))
+                .map(w => format(w, mapB));
+
+            // 3. Common (Intersection) - prefer POS from A
+            const common = [...setA].filter(x => setB.has(x)).sort((a, b) => a.localeCompare(b, locale))
+                .map(w => format(w, mapA));
+
+            // 4. Union - mix POS from A then B
+            const unionKeys = new Set([...setA, ...setB]);
+            const union = [...unionKeys].sort((a, b) => a.localeCompare(b, locale))
+                .map(w => {
+                    // 優先用 A 的 POS，沒有則用 B
+                    const mapToUse = mapA.has(w) ? mapA : mapB;
+                    return format(w, mapToUse);
+                });
+
+            // 渲染結果
+            document.getElementById('empty-state').classList.add('hidden');
+            document.getElementById('result-panel').classList.remove('hidden');
+
+            updateCard('res-only-a', 'count-only-a', onlyA);
+            updateCard('res-only-b', 'count-only-b', onlyB);
+            updateCard('res-common', 'count-common', common);
+            updateCard('res-union', 'count-union', union);
+        }
+
+        function updateCard(textareaId, countId, data) {
+            document.getElementById(textareaId).value = data.join('\n');
+            document.getElementById(countId).innerText = data.length;
+        }
+
+        // Init
+        changeLanguage();
+    </script>
+</body>
+</html>
 
