@@ -1,1 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teaching Hub | Science Learning Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        teacher: { light: '#bbf7d0', DEFAULT: '#22c55e', dark: '#15803d' },
+                        glass: {
+                            100: 'rgba(255, 255, 255, 0.1)',
+                            200: 'rgba(255, 255, 255, 0.2)',
+                            700: 'rgba(255, 255, 255, 0.7)',
+                            900: 'rgba(255, 255, 255, 0.9)',
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['ui-serif', 'Georgia', 'Cambria', "Times New Roman", 'Times', 'serif'],
+                        sans: ['ui-sans-serif', 'system-ui', '-apple-system', "Segoe UI", 'Roboto', "Helvetica Neue", 'Arial', 'sans-serif'],
+                    },
+                    animation: {
+                        "spin-slow": "spin 10s linear infinite",
+                        "gradient-x": "gradient-x 15s ease infinite",
+                        "float": "float 6s ease-in-out infinite",
+                    },
+                    keyframes: {
+                        "gradient-x": {
+                            "0%, 100%": { "background-size": "200% 200%", "background-position": "left center" },
+                            "50%": { "background-size": "200% 200%", "background-position": "right center" }
+                        },
+                        "float": {
+                            "0%, 100%": { transform: "translateY(0)" },
+                            "50%": { transform: "translateY(-10px)" }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .hidden-section { display: none !important; }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(31, 135, 38, 0.1);
+        }
 
+        .glass-card {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            transition: all 0.3s ease;
+        }
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 50px -10px rgba(34, 197, 94, 0.3);
+            border-color: rgba(34, 197, 94, 0.4);
+        }
+
+        .title-3d {
+            background: linear-gradient(135deg, #064e3b 0%, #059669 50%, #047857 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            filter: drop-shadow(2px 2px 0px rgba(34, 197, 94, 0.3)) 
+                    drop-shadow(4px 4px 0px rgba(6, 78, 59, 0.2));
+        }
+        
+        select, button, input, textarea { font-size: 1rem !important; }
+        
+        #canvas-container {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%; z-index: -10;
+            overflow: hidden;
+            background: linear-gradient(-45deg, #f0fdf4, #ecfdf5, #f0f9ff, #f8fafc);
+            background-size: 400% 400%;
+            animation: gradientBG 20s ease infinite;
+        }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+    </style>
+</head>
+<body class="min-h-screen font-sans flex flex-col text-slate-800 relative overflow-x-hidden selection:bg-green-200 selection:text-green-900">
+
+    <div id="canvas-container">
+        <canvas id="network-canvas"></canvas>
+    </div>
+
+    <nav class="glass-panel sticky top-0 z-50 border-b-0">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="backToDashboard()">
+                <div class="bg-green-100/80 p-2 rounded-xl text-green-600 shadow-inner">
+                    <i class="fa-solid fa-chalkboard-user text-xl"></i>
+                </div>
+                <span class="text-xl font-bold tracking-tight text-slate-800 hidden md:block">Teaching Hub</span>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <select id="language-selector" onchange="changeLanguage()" class="glass-card rounded-xl py-2 px-4 text-sm font-medium outline-none focus:ring-2 focus:ring-green-400/50 cursor-pointer text-slate-700">
+                    <option value="zh-TW">繁體中文</option>
+                    <option value="en">English</option>
+                    <option value="ja">日本語</option>
+                    <option value="zh-CN">简体中文</option>
+                </select>
+                
+                <div class="flex items-center gap-3 pl-4 border-l border-slate-300/50">
+                    <div class="flex items-center gap-2">
+                        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-green-100 to-emerald-50 text-green-600 flex items-center justify-center text-sm font-bold border border-green-200 shadow-sm" id="user-avatar">T</div>
+                        <span class="text-sm font-bold text-slate-700 hidden md:block" id="user-name-display">Teacher</span>
+                    </div>
+                    <button onclick="logout()" class="text-slate-400 hover:text-rose-500 transition p-2 rounded-full hover:bg-rose-50" title="登出">
+                        <i class="fa-solid fa-right-from-bracket text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-1 overflow-y-auto p-6 md:p-10 relative z-10">
+        <div class="max-w-7xl mx-auto">
+            
+            <!-- 1. 儀表板視圖 (Dashboard) -->
+            <div id="dashboard-view" class="fade-in">
+                <div class="text-center mb-20 mt-8">
+                    <span class="text-green-600 font-bold tracking-wider text-base uppercase mb-3 block opacity-80" data-i18n="role_teacher">教師專區</span>
+                    <h1 class="title-3d text-5xl md:text-7xl font-black mb-6 tracking-tight leading-tight" data-i18n="welcome_teacher">歡迎來到科學教學中心</h1>
+                    <p class="text-slate-500 text-xl md:text-2xl max-w-3xl mx-auto font-medium" data-i18n="select_tool">請選擇下方的教學輔助工具以提升教學成效</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-10 px-4 mb-12">
+                    <!-- 卡片 1：命題用語檢核 (外層卡片直接跳轉) -->
+                    <div onclick="window.location.href='itemvocabularyexamination.html'" class="glass-card p-10 rounded-[2.5rem] cursor-pointer group relative overflow-hidden flex flex-col items-center text-center">
+                        <div class="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-green-400/10 rounded-full blur-3xl group-hover:bg-green-400/20 transition"></div>
+                        <div class="w-28 h-28 bg-gradient-to-br from-green-50 to-white rounded-3xl flex items-center justify-center mb-8 shadow-lg shadow-green-100 group-hover:scale-110 transition duration-300 border border-green-100 group-hover:border-green-200">
+                            <i class="fa-solid fa-check-double text-6xl text-green-600"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-800 mb-4 group-hover:text-green-600 transition" data-i18n="feat_t_1">命題用語檢核</h3>
+                        <p class="text-slate-500 text-base leading-relaxed" data-i18n="feat_t_1_desc">智慧分析試題詞彙難易度，確保用語符合學生認知發展。</p>
+                    </div>
+
+                    <!-- 卡片 2 -->
+                    <div onclick="openTool('lesson-plan')" class="glass-card p-10 rounded-[2.5rem] cursor-pointer group relative overflow-hidden flex flex-col items-center text-center">
+                        <div class="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-emerald-400/10 rounded-full blur-3xl group-hover:bg-emerald-400/20 transition"></div>
+                        <div class="w-28 h-28 bg-gradient-to-br from-emerald-50 to-white rounded-3xl flex items-center justify-center mb-8 shadow-lg shadow-emerald-100 group-hover:scale-110 transition duration-300 border border-emerald-100 group-hover:border-emerald-200">
+                            <i class="fa-solid fa-book-open text-6xl text-emerald-600"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-800 mb-4 group-hover:text-emerald-600 transition" data-i18n="feat_t_2">單元備課重點</h3>
+                        <p class="text-slate-500 text-base leading-relaxed" data-i18n="feat_t_2_desc">自動生成單元核心概念架構與教學建議，縮短備課時間。</p>
+                    </div>
+
+                    <!-- 卡片 3 -->
+                    <div onclick="openTool('diagnosis')" class="glass-card p-10 rounded-[2.5rem] cursor-pointer group relative overflow-hidden flex flex-col items-center text-center">
+                        <div class="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-teal-400/10 rounded-full blur-3xl group-hover:bg-teal-400/20 transition"></div>
+                        <div class="w-28 h-28 bg-gradient-to-br from-teal-50 to-white rounded-3xl flex items-center justify-center mb-8 shadow-lg shadow-teal-100 group-hover:scale-110 transition duration-300 border border-teal-100 group-hover:border-teal-200">
+                            <i class="fa-solid fa-stethoscope text-6xl text-teal-600"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-800 mb-4 group-hover:text-teal-600 transition" data-i18n="feat_t_3">學習狀況診斷</h3>
+                        <p class="text-slate-500 text-base leading-relaxed" data-i18n="feat_t_3_desc">視覺化分析班級學習成效，精準定位迷思概念。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 功能視窗容器 -->
+            <div id="tool-container" class="hidden-section fade-in">
+                <button onclick="backToDashboard()" class="mb-6 flex items-center gap-2 text-slate-500 hover:text-green-600 transition font-bold bg-white/50 px-4 py-2 rounded-full w-fit backdrop-blur-sm hover:bg-white">
+                    <i class="fa-solid fa-arrow-left"></i> <span data-i18n="back_dashboard">返回儀表板</span>
+                </button>
+
+                <!-- 工具內容區塊 -->
+                <div class="glass-panel p-8 rounded-3xl min-h-[500px]">
+                    
+                    <!-- 1. 命題檢核 (內層按鈕也加上跳轉) -->
+                    <div id="tool-term-check" class="tool-view hidden-section">
+                        <h2 class="text-2xl font-bold text-green-800 mb-6 flex items-center gap-3 border-b border-slate-200/50 pb-4">
+                            <i class="fa-solid fa-check-double"></i> <span data-i18n="feat_t_1">命題用語檢核</span>
+                        </h2>
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div class="lg:col-span-2 flex flex-col">
+                                <label class="block font-bold mb-3 text-slate-700 flex justify-between">
+                                    <span>考題內容輸入</span>
+                                    <span class="text-xs text-slate-400 font-normal">支援純文字貼上</span>
+                                </label>
+                                <textarea class="w-full flex-1 min-h-[400px] p-6 border border-white/60 rounded-2xl focus:ring-4 focus:ring-green-200 focus:border-green-400 focus:outline-none transition resize-none bg-white/80 text-slate-700 leading-relaxed text-lg shadow-inner" placeholder="請貼上您設計的自然科試題，系統將自動分析詞彙難度..."></textarea>
+                            </div>
+                            <div class="flex flex-col gap-6">
+                                <div class="bg-white/80 p-6 rounded-2xl border border-white/60 shadow-sm">
+                                    <h3 class="font-bold text-green-800 mb-4 border-b pb-2">參數設定</h3>
+                                    <label class="block text-sm text-slate-500 mb-2">適用年級</label>
+                                    <select class="w-full border-slate-200 p-3 rounded-xl mb-4 focus:ring-2 focus:ring-green-500 outline-none bg-slate-50 text-slate-700">
+                                        <option>國小三年級</option>
+                                        <option>國小四年級</option>
+                                        <option>國小五年級</option>
+                                        <option>國小六年級</option>
+                                        <option>國中七年級</option>
+                                    </select>
+                                    <!-- 雙重保險：內層按鈕也導向正確頁面 -->
+                                    <button onclick="window.location.href='itemvocabularyexamination.html'" class="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 rounded-xl hover:shadow-lg hover:shadow-green-500/30 transition font-bold transform active:scale-95">
+                                        <i class="fa-solid fa-magnifying-glass mr-2"></i> 開始檢核
+                                    </button>
+                                </div>
+                                <div class="bg-yellow-50/80 p-6 rounded-2xl border border-yellow-100 text-yellow-800 text-sm leading-relaxed">
+                                    <i class="fa-solid fa-lightbulb mr-2"></i> 
+                                    <strong>提示：</strong> 系統會依據教育部課綱詞彙表，標示出可能超出該年級認知範圍的專有名詞。
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. 單元備課 -->
+                    <div id="tool-lesson-plan" class="tool-view hidden-section">
+                        <!-- 省略重複內容，保持原樣 -->
+                        <h2 class="text-2xl font-bold text-emerald-800 mb-6 flex items-center gap-3 border-b border-slate-200/50 pb-4">
+                            <i class="fa-solid fa-book-open"></i> <span data-i18n="feat_t_2">單元備課重點</span>
+                        </h2>
+                        <div class="max-w-3xl mx-auto space-y-8">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-bold mb-2 text-slate-600">科目</label>
+                                    <input type="text" class="w-full border border-slate-200 p-4 rounded-xl bg-slate-100/50 text-slate-500 cursor-not-allowed" value="自然科學" readonly>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold mb-2 text-slate-600">單元名稱關鍵字</label>
+                                    <input type="text" class="w-full border border-slate-200 p-4 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-white/80" placeholder="例如：電路與電流、植物構造...">
+                                </div>
+                            </div>
+                            <button class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-2xl hover:shadow-lg hover:shadow-emerald-500/30 transition transform active:scale-95 font-bold text-lg">
+                                <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> 生成 AI 備課建議
+                            </button>
+                            <div class="p-8 bg-white/60 rounded-3xl border-2 border-dashed border-slate-300 text-center text-slate-400 flex flex-col items-center justify-center h-64">
+                                <i class="fa-regular fa-file-lines text-4xl mb-4 opacity-50"></i>
+                                <p>備課內容將顯示於此處</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. 學習診斷 -->
+                    <div id="tool-diagnosis" class="tool-view hidden-section">
+                         <!-- 省略重複內容，保持原樣 -->
+                        <h2 class="text-2xl font-bold text-teal-800 mb-6 flex items-center gap-3 border-b border-slate-200/50 pb-4">
+                            <i class="fa-solid fa-stethoscope"></i> <span data-i18n="feat_t_3">學習狀況診斷</span>
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center h-full py-10">
+                            <div class="border-2 border-dashed border-teal-300 rounded-3xl h-80 flex flex-col items-center justify-center bg-teal-50/50 hover:bg-teal-50 hover:border-teal-500 transition cursor-pointer group relative overflow-hidden">
+                                <input type="file" class="absolute inset-0 opacity-0 cursor-pointer">
+                                <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-md mb-6 group-hover:scale-110 transition duration-300 text-teal-500 group-hover:text-teal-600">
+                                    <i class="fa-solid fa-cloud-arrow-up text-4xl"></i>
+                                </div>
+                                <p class="text-teal-800 font-bold text-lg">點擊上傳班級答題數據</p>
+                                <p class="text-teal-600/70 text-sm mt-2">支援格式: .csv, .xlsx</p>
+                            </div>
+                            <div class="space-y-6">
+                                <div class="bg-white/80 p-6 rounded-2xl border border-white/60 shadow-sm">
+                                    <h4 class="font-bold text-slate-700 mb-2 flex items-center"><i class="fa-solid fa-chart-pie mr-2 text-teal-500"></i> 預期分析結果</h4>
+                                    <ul class="space-y-3 text-slate-600 text-sm">
+                                        <li class="flex items-center"><span class="w-2 h-2 bg-teal-400 rounded-full mr-2"></span>班級答對率分佈圖</li>
+                                        <li class="flex items-center"><span class="w-2 h-2 bg-teal-400 rounded-full mr-2"></span>高頻率迷思概念偵測</li>
+                                        <li class="flex items-center"><span class="w-2 h-2 bg-teal-400 rounded-full mr-2"></span>個別學生輔導建議</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-blue-50/80 p-4 rounded-xl border border-blue-100 text-blue-800 text-sm">
+                                    <strong>隱私權說明：</strong> 上傳的學生成績數據僅用於即時分析，不會儲存於伺服器中。
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbzcDKkz8Tilzb3qbx0_fDR7QoG4-c2JCtsa4p9V8_1gBjZaEMlvQHd72OD0kZq_jW8H/exec";
+
+        const translations = {
+            "zh-TW": {
+                "role_teacher": "教師專區",
+                "welcome_teacher": "歡迎來到科學教學中心", 
+                "select_tool": "請選擇下方的教學輔助工具以提升教學成效", 
+                "back_dashboard": "返回Science Learning Hub",
+                "feat_t_1": "命題用語檢核", "feat_t_1_desc": "智慧分析試題詞彙難易度，確保用語符合學生認知發展。",
+                "feat_t_2": "單元備課重點", "feat_t_2_desc": "自動生成單元核心概念架構與教學建議，縮短備課時間。",
+                "feat_t_3": "學習狀況診斷", "feat_t_3_desc": "視覺化分析班級學習成效，精準定位迷思概念。",
+                "logout": "登出"
+            },
+            "en": {
+                "role_teacher": "Teacher Zone",
+                "welcome_teacher": "Welcome to Science Teaching Center", 
+                "select_tool": "Select a tool below to enhance your teaching effectiveness", 
+                "back_dashboard": "Back to Dashboard",
+                "feat_t_1": "Term Checker", "feat_t_1_desc": "Analyze vocabulary difficulty to ensure suitability for students.",
+                "feat_t_2": "Lesson Plan Helper", "feat_t_2_desc": "Generate core concepts and teaching suggestions automatically.",
+                "feat_t_3": "Student Diagnosis", "feat_t_3_desc": "Visualize class performance and pinpoint misconceptions.",
+                "logout": "Logout"
+            },
+            "ja": {
+                "role_teacher": "教師ゾーン",
+                "welcome_teacher": "科学教育センターへようこそ", 
+                "select_tool": "教育効果を高めるために、以下のツールを選択してください", 
+                "back_dashboard": "ダッシュボードに戻る",
+                "feat_t_1": "用語チェッカー", "feat_t_1_desc": "語彙の難易度を分析し、学生の認知発達に適合させます。",
+                "feat_t_2": "授業の要点", "feat_t_2_desc": "単元の核心概念と指導提案を自動生成し、準備時間を短縮します。",
+                "feat_t_3": "学習状況診断", "feat_t_3_desc": "クラスの学習成果を可視化し、誤解を正確に特定します。",
+                "logout": "ログアウト"
+            },
+            "zh-CN": {
+                "role_teacher": "教师专区",
+                "welcome_teacher": "欢迎来到科学教学中心", 
+                "select_tool": "请选择下方的教学辅助工具以提升教学成效", 
+                "back_dashboard": "返回仪表板",
+                "feat_t_1": "命题用语检核", "feat_t_1_desc": "智慧分析试题词汇难易度，确保用语符合学生认知发展。",
+                "feat_t_2": "单元备课重点", "feat_t_2_desc": "自动生成单元核心概念架构与教学建议，缩短备课时间。",
+                "feat_t_3": "学习状况诊断", "feat_t_3_desc": "视觉化分析班级学习成效，精准定位迷思概念。",
+                "logout": "登出"
+            }
+        };
+
+        // --- 1. 權限檢查 ---
+        const userJson = sessionStorage.getItem("currentUser");
+        // 為了開發方便暫時允許未登入 (實際上線可取消註解)
+        // if (!userJson) { alert("請先登入！"); window.location.href = "index.html"; }
+        
+        const currentUser = userJson ? JSON.parse(userJson) : { name: "訪客教師", role: "Teacher" };
+        document.getElementById("user-name-display").innerText = currentUser.name;
+        document.getElementById("user-avatar").innerText = currentUser.name.charAt(0).toUpperCase();
+
+        // --- 2. 語言邏輯 ---
+        function initLanguage() {
+            const savedLang = localStorage.getItem("slh_lang");
+            if (savedLang) {
+                document.getElementById("language-selector").value = savedLang;
+                changeLanguage();
+            }
+        }
+
+        function changeLanguage() {
+            const lang = document.getElementById("language-selector").value;
+            localStorage.setItem("slh_lang", lang);
+            const elements = document.querySelectorAll("[data-i18n]");
+            elements.forEach(el => {
+                const key = el.getAttribute("data-i18n");
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerText = translations[lang][key];
+                }
+            });
+        }
+        window.addEventListener('DOMContentLoaded', initLanguage);
+
+        // --- 3. 頁面切換 ---
+        function openTool(toolId) {
+            document.getElementById("dashboard-view").classList.add("hidden-section");
+            document.getElementById("tool-container").classList.remove("hidden-section");
+            
+            document.querySelectorAll(".tool-view").forEach(el => el.classList.add("hidden-section"));
+            document.getElementById("tool-" + toolId).classList.remove("hidden-section");
+            
+            logAction(toolId);
+        }
+
+        function backToDashboard() {
+            document.getElementById("tool-container").classList.add("hidden-section");
+            document.getElementById("dashboard-view").classList.remove("hidden-section");
+        }
+
+        function logAction(actionName) {
+            const payload = {
+                type: "log",
+                name: currentUser.name,
+                role: currentUser.role,
+                action: "use_tool",
+                page: actionName
+            };
+            fetch(GAS_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }).catch(e => console.log("Log ignored"));
+        }
+
+        function logout() {
+            if(confirm("確定要登出嗎？")) {
+                sessionStorage.removeItem("currentUser");
+                window.location.href = "index.html";
+            }
+        }
+
+        // *** Canvas 原子軌域動畫 (教師版配色 - 綠/青/黃) ***
+        (function() {
+            const canvas = document.getElementById('network-canvas');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let orbits = [];
+            let centerX, centerY, targetCenterX, targetCenterY;
+            let mouse = { x: null, y: null };
+
+            window.addEventListener('mousemove', function(e) { mouse.x = e.x; mouse.y = e.y; });
+
+            function resize() {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width;
+                canvas.height = height;
+                centerX = width / 2;
+                centerY = height / 2;
+                targetCenterX = centerX;
+                targetCenterY = centerY;
+                initOrbits();
+            }
+
+            class Orbit {
+                constructor(radiusX, radiusY, angle, color, shadowColor, speed, particleColor) {
+                    this.radiusX = radiusX; this.radiusY = radiusY; this.tilt = angle; this.rotation = 0;
+                    this.speed = speed * 0.5; this.color = color; this.shadowColor = shadowColor;
+                    this.electronAngle = Math.random() * Math.PI * 2;
+                    this.electronSpeed = 0.0015 + Math.random() * 0.001; 
+                    this.particleColor = particleColor || 'rgba(255, 255, 255, 0.8)';
+                }
+                draw(cx, cy) {
+                    ctx.save(); ctx.translate(cx, cy); ctx.rotate(this.tilt); 
+                    ctx.beginPath(); ctx.ellipse(0, 0, this.radiusX, this.radiusY, this.rotation, 0, Math.PI * 2);
+                    ctx.shadowBlur = 80; ctx.shadowColor = this.shadowColor;
+                    ctx.strokeStyle = this.color; ctx.lineWidth = 8; ctx.lineCap = 'round'; ctx.stroke();
+                    ctx.lineWidth = 4; ctx.stroke();
+                    const t = this.electronAngle;
+                    const electronX = this.radiusX * Math.cos(t);
+                    const electronY = this.radiusY * Math.sin(t);
+                    ctx.beginPath(); ctx.arc(electronX, electronY, 4, 0, Math.PI*2); 
+                    ctx.fillStyle = this.particleColor; ctx.shadowBlur = 20; ctx.shadowColor = this.particleColor; ctx.fill();
+                    ctx.restore();
+                }
+                update() { this.rotation += this.speed; this.electronAngle += this.electronSpeed; }
+            }
+
+            function drawNucleus(cx, cy) {
+                ctx.save(); ctx.translate(cx, cy);
+                // 核心光暈改為綠色系
+                const gradient = ctx.createRadialGradient(0, 0, 5, 0, 0, 30);
+                gradient.addColorStop(0, 'rgba(34, 197, 94, 0.2)'); gradient.addColorStop(1, 'rgba(34, 197, 94, 0)');
+                ctx.beginPath(); ctx.arc(0, 0, 30, 0, Math.PI * 2); ctx.fillStyle = gradient; ctx.fill();
+                ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.shadowBlur = 25; ctx.shadowColor = 'rgba(34, 197, 94, 0.3)'; ctx.fill();
+                ctx.restore();
+            }
+
+            function initOrbits() {
+                orbits = [];
+                const baseR = width < height ? width * 0.2 : height * 0.25;
+                // S 軌域 (淡綠色)
+                orbits.push(new Orbit(baseR * 2.2, baseR * 2.2, 0, 'rgba(34, 197, 94, 0.02)', 'rgba(134, 239, 172, 0.3)', 0.0005, 'rgba(167, 243, 208, 0.5)')); 
+                // P 軌域 (青色/藍綠色)
+                const pStroke = 'rgba(20, 184, 166, 0.05)'; const pShadow = 'rgba(94, 234, 212, 0.4)'; const pParticle = 'rgba(153, 246, 228, 0.6)';
+                orbits.push(new Orbit(baseR * 1.3, baseR * 0.5, Math.PI / 6, pStroke, pShadow, 0.001, pParticle));
+                orbits.push(new Orbit(baseR * 1.3, baseR * 0.5, Math.PI * 5 / 6, pStroke, pShadow, -0.0012, pParticle));
+                // D/F 軌域 (黃綠色/萊姆色)
+                const dStroke = 'rgba(132, 204, 22, 0.08)'; const dShadow = 'rgba(190, 242, 100, 0.5)'; const dParticle = 'rgba(217, 249, 157, 0.7)';
+                orbits.push(new Orbit(baseR * 0.9, baseR * 0.3, Math.PI / 4, dStroke, dShadow, 0.002, dParticle));
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                if (mouse.x != null) {
+                    targetCenterX = (width / 2) + (mouse.x - width / 2) * 0.03; 
+                    targetCenterY = (height / 2) + (mouse.y - height / 2) * 0.03;
+                } else {
+                    targetCenterX = width / 2; targetCenterY = height / 2;
+                }
+                centerX += (targetCenterX - centerX) * 0.05; centerY += (targetCenterY - centerY) * 0.05;
+                for (let orbit of orbits) { orbit.update(); orbit.draw(centerX, centerY); }
+                drawNucleus(centerX, centerY);
+                requestAnimationFrame(animate);
+            }
+            window.addEventListener('resize', resize); resize(); animate();
+        })();
+    </script>
+</body>
+</html>
