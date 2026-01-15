@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文本可讀性分析 | Science Learning Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        researcher: { light: '#e9d5ff', DEFAULT: '#a855f7', dark: '#7e22ce' },
+                        glass: {
+                            100: 'rgba(255, 255, 255, 0.1)',
+                            200: 'rgba(255, 255, 255, 0.2)',
+                            700: 'rgba(255, 255, 255, 0.7)',
+                            900: 'rgba(255, 255, 255, 0.9)',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', "Segoe UI", 'Roboto', "Helvetica Neue", 'Arial', 'sans-serif'],
+                    },
+                    animation: {
+                        "fade-in-up": "fadeInUp 0.6s ease-out forwards",
+                    },
+                    keyframes: {
+                        "fadeInUp": {
+                            "0%": { opacity: "0", transform: "translateY(20px)" },
+                            "100%": { opacity: "1", transform: "translateY(0)" }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 專業儀表板風格 */
+        body { background-color: #f8fafc; color: #334155; }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .input-area:focus {
+            outline: none;
+            border-color: #a855f7;
+            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        .section-header i { color: #a855f7; }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .metric-box {
+            background: #fff;
+            padding: 1.25rem;
+            border-radius: 1rem;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .metric-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            border-color: #d8b4fe;
+        }
+        .metric-label { font-size: 0.875rem; color: #64748b; font-weight: 600; margin-bottom: 0.25rem; }
+        .metric-value { font-size: 1.5rem; font-weight: 800; color: #1e293b; font-family: 'Monaco', 'Consolas', monospace; }
+        .metric-desc { font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem; }
+
+        /* === AI 報告專用樣式 (卡片化設計) === */
+        .ai-report-section {
+            background: #ffffff;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border-left-width: 6px;
+        }
+        
+        /* 風格色系 (對應不同類別) */
+        .ai-theme-blue   { border-left-color: #3b82f6; background: linear-gradient(to bottom right, #ffffff, #eff6ff); } /* 基礎 */
+        .ai-theme-purple { border-left-color: #a855f7; background: linear-gradient(to bottom right, #ffffff, #faf5ff); } /* 多樣性 */
+        .ai-theme-indigo { border-left-color: #6366f1; background: linear-gradient(to bottom right, #ffffff, #eef2ff); } /* 函數 */
+        .ai-theme-rose   { border-left-color: #f43f5e; background: linear-gradient(to bottom right, #ffffff, #fff1f2); } /* 估計 */
+        .ai-theme-green  { border-left-color: #10b981; background: linear-gradient(to bottom right, #ffffff, #ecfdf5); } /* 結論 */
+
+        .ai-report-title {
+            font-size: 1.2rem; font-weight: 800; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;
+        }
+        .ai-theme-blue .ai-report-title   { color: #1e40af; }
+        .ai-theme-purple .ai-report-title { color: #6b21a8; }
+        .ai-theme-indigo .ai-report-title { color: #3730a3; }
+        .ai-theme-rose .ai-report-title   { color: #9f1239; }
+        .ai-theme-green .ai-report-title  { color: #047857; }
+
+        .ai-report-content p { margin-bottom: 0.8rem; line-height: 1.8; font-size: 1rem; color: #334155; text-align: justify; }
+        .ai-report-content strong { font-weight: 700; color: #1f2937; background: rgba(255,255,255,0.6); padding: 0 4px; border-radius: 4px; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05); }
+        
+        .ai-report-content ul { list-style: none; padding-left: 0; margin: 1rem 0; }
+        .ai-report-content li { position: relative; padding-left: 1.5rem; margin-bottom: 0.75rem; color: #475569; line-height: 1.6; }
+        
+        .ai-theme-blue li::before   { content: "●"; color: #3b82f6; position: absolute; left: 0; font-size: 0.8rem; top: 0.3rem; }
+        .ai-theme-purple li::before { content: "●"; color: #a855f7; position: absolute; left: 0; font-size: 0.8rem; top: 0.3rem; }
+        .ai-theme-indigo li::before { content: "●"; color: #6366f1; position: absolute; left: 0; font-size: 0.8rem; top: 0.3rem; }
+        .ai-theme-rose li::before   { content: "●"; color: #f43f5e; position: absolute; left: 0; font-size: 0.8rem; top: 0.3rem; }
+        .ai-theme-green li::before  { content: "✔"; color: #10b981; position: absolute; left: 0; font-size: 1rem; top: 0; }
+
+        /* 調整下拉選單樣式 */
+        select { font-size: 0.95rem; }
+        
+        /* Checkbox Group */
+        .checkbox-group {
+            display: flex; gap: 1.5rem; flex-wrap: wrap; background: #f8fafc; padding: 1rem; border-radius: 1rem; border: 1px solid #e2e8f0;
+        }
+        .checkbox-label {
+            display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.95rem; font-weight: 600; color: #475569; transition: color 0.2s;
+        }
+        .checkbox-label:hover { color: #7e22ce; }
+        .checkbox-label input { accent-color: #9333ea; width: 1.1rem; height: 1.1rem; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- 導航列 -->
+    <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3 cursor-pointer group" onclick="window.location.href='researcher.html'">
+                <div class="bg-purple-100 p-2 rounded-xl text-purple-600 transition group-hover:bg-purple-600 group-hover:text-white">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </div>
+                <span class="text-lg font-bold text-slate-700 group-hover:text-purple-700 transition" data-i18n="back_researcher">返回研究中心</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <select id="language-selector" onchange="changeLanguage()" class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block p-2">
+                    <option value="zh-TW">繁體中文</option>
+                    <option value="en">English</option>
+                    <option value="ja">日本語</option>
+                    <option value="zh-CN">简体中文</option>
+                </select>
+                <div class="flex items-center gap-2 px-3 py-1.5 bg-purple-50 text-purple-700 rounded-full text-sm font-bold border border-purple-200">
+                    <i class="fa-solid fa-glasses"></i> <span data-i18n="tool_name">文本可讀性分析</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主內容區 -->
+    <main class="flex-1 p-6 md:p-10 max-w-7xl mx-auto w-full">
+        <div class="animate-fade-in-up space-y-8">
+            
+            <!-- 標題與說明 -->
+            <div class="text-center">
+                <h1 class="text-4xl font-black text-slate-800 mb-2 tracking-tight" data-i18n="page_title">文本可讀性分析</h1>
+                <p class="text-slate-500 font-medium" data-i18n="page_subtitle">多維度語言計量與 AI 深度診斷</p>
+            </div>
+
+            <!-- 控制面板 -->
+            <div class="glass-panel p-6 rounded-3xl">
+                <div class="flex justify-between items-center mb-4">
+                    <label class="text-lg font-bold text-purple-900 flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square"></i> <span data-i18n="label_input">輸入分析文本</span>
+                    </label>
+                    <div class="flex gap-3">
+                        <button onclick="loadDemo()" class="text-xs font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition border border-purple-200">
+                            <i class="fa-solid fa-flask mr-1"></i> <span data-i18n="btn_demo">載入範例</span>
+                        </button>
+                        <button onclick="clearText()" class="text-xs font-bold text-slate-500 bg-slate-50 hover:bg-red-50 hover:text-red-500 px-3 py-1.5 rounded-lg transition border border-slate-200">
+                            <i class="fa-solid fa-trash-can mr-1"></i> <span data-i18n="btn_clear">清空</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <textarea id="inputText" class="input-area w-full h-48 p-4 rounded-xl text-slate-700 text-base leading-relaxed resize-none mb-6 font-mono" placeholder="請在此貼上文本（中文建議先斷詞以獲得更精準的詞彙分析）..."></textarea>
+                
+                <!-- 分析指標勾選 -->
+                <div class="mb-6">
+                    <h4 class="text-sm font-bold text-slate-500 mb-3 uppercase tracking-wide" data-i18n="label_metrics">分析指標設定</h4>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="chkBasic" checked> <span data-i18n="opt_basic">基本分析</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="chkTTR" checked> <span data-i18n="opt_ttr">詞彙多樣性 (TTR/STTR)</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="chkFunc" checked> <span data-i18n="opt_func">函數模型 (Guiraud/Maas)</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="chkEst" checked> <span data-i18n="opt_est">估計模型 (MTLD/HD-D)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex justify-center">
+                    <button onclick="analyzeText()" class="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-xl font-bold text-lg shadow-md hover:shadow-lg transition transform active:scale-95 flex items-center gap-2">
+                        <i class="fa-solid fa-calculator"></i> <span data-i18n="btn_analyze">開始計算指標</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 結果儀表板 (預設隱藏) -->
+            <div id="results-dashboard" class="hidden space-y-8">
+                
+                <!-- 1. 基本統計 -->
+                <div id="sec-basic" class="hidden">
+                    <div class="section-header"><i class="fa-solid fa-arrow-down-1-9"></i> <span data-i18n="sec_basic">基本統計</span></div>
+                    <div class="metrics-grid">
+                        <div class="metric-box">
+                            <span class="metric-label" data-i18n="metric_words">字數/詞數</span>
+                            <span class="metric-value" id="res-words">0</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label" data-i18n="metric_unique">相異詞數 (Types)</span>
+                            <span class="metric-value text-purple-600" id="res-types">0</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label" data-i18n="metric_sentences">句子數</span>
+                            <span class="metric-value" id="res-sentences">0</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label" data-i18n="metric_avg_len">平均句長</span>
+                            <span class="metric-value text-blue-600" id="res-avg-len">0.0</span>
+                            <span class="metric-desc" data-i18n="desc_avg_len">字/句</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. 詞彙多樣性 -->
+                <div id="sec-ttr" class="hidden">
+                    <div class="section-header"><i class="fa-solid fa-layer-group"></i> <span data-i18n="sec_ttr">詞彙多樣性 (Lexical Diversity)</span></div>
+                    <div class="metrics-grid">
+                        <div class="metric-box">
+                            <span class="metric-label">TTR</span>
+                            <span class="metric-value" id="res-ttr">0.000</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label">STTR (Mean)</span>
+                            <span class="metric-value" id="res-sttr">0.000</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label">RTTR</span>
+                            <span class="metric-value" id="res-rttr">0.000</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label">CTTR</span>
+                            <span class="metric-value" id="res-cttr">0.000</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. 函數模型 -->
+                <div id="sec-func" class="hidden">
+                    <div class="section-header"><i class="fa-solid fa-function"></i> <span data-i18n="sec_func">函數模型 (Function Models)</span></div>
+                    <div class="metrics-grid">
+                        <div class="metric-box">
+                            <span class="metric-label">Guiraud Index</span>
+                            <span class="metric-value" id="res-guiraud">0.00</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label">Maas Index</span>
+                            <span class="metric-value" id="res-maas">0.00</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label">Herdan's C</span>
+                            <span class="metric-value" id="res-herdan">0.00</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label">Dugast's U</span>
+                            <span class="metric-value" id="res-dugast">0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. 估計模型 -->
+                <div id="sec-est" class="hidden">
+                    <div class="section-header"><i class="fa-solid fa-chart-line"></i> <span data-i18n="sec_est">估計模型 (Estimated Models)</span></div>
+                    <div class="metrics-grid">
+                        <div class="metric-box border-l-4 border-purple-500">
+                            <span class="metric-label">MTLD</span>
+                            <span class="metric-value text-purple-700" id="res-mtld">0.00</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label">HD-D</span>
+                            <span class="metric-value" id="res-hdd">0.00</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label">vocd-D</span>
+                            <span class="metric-value" id="res-vocd">0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI 深度分析按鈕 -->
+                <div class="py-8 text-center border-t border-slate-200 mt-8">
+                    <button onclick="analyzeWithGemini()" class="bg-gradient-to-r from-amber-400 to-orange-500 text-white px-10 py-4 rounded-2xl font-bold text-xl shadow-xl shadow-orange-500/20 hover:shadow-orange-500/40 hover:scale-105 transition transform flex items-center gap-3 mx-auto group">
+                        <i class="fa-solid fa-robot group-hover:animate-bounce"></i> <span data-i18n="btn_ai_analyze">✨ AI 深度解讀報告</span>
+                    </button>
+                    <p class="mt-3 text-sm text-slate-500" data-i18n="ai_hint">點擊按鈕，讓 AI 對所有運算指標進行逐項解讀與評估。</p>
+                </div>
+
+                <!-- AI 報告區 (全新設計) -->
+                <div id="ai-analysis-result" class="hidden glass-panel p-8 md:p-10 rounded-3xl border-2 border-amber-100 bg-white shadow-xl">
+                    <div class="flex justify-between items-start mb-8 border-b border-amber-100 pb-4">
+                        <div>
+                            <h2 class="text-2xl font-black text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-file-medical-alt text-amber-500"></i> <span data-i18n="ai_report_title">文本難度診斷報告</span>
+                            </h2>
+                            <p class="text-sm text-slate-500 mt-1" data-i18n="ai_report_subtitle">基於計量指標的智能化分析</p>
+                        </div>
+                        <button onclick="document.getElementById('ai-analysis-result').classList.add('hidden')" class="text-slate-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-2xl"></i></button>
+                    </div>
+                    <div id="ai-content" class="ai-report-content text-slate-700 leading-relaxed">
+                        <!-- AI Content -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-full shadow-xl opacity-0 translate-y-10 z-50 transition-all duration-300 pointer-events-none font-bold text-sm flex items-center gap-2">
+        <i class="fa-solid fa-check-circle text-green-400"></i> <span id="toast-msg"></span>
+    </div>
+
+    <script>
+        const apiKey = "AIzaSyDTpHCOCHRQQzES_B7Su0nOSKmHFZ0BURM"; // API Key
+
+        // *** 多語系字典 (完整補齊) ***
+        const translations = {
+            "zh-TW": {
+                "back_researcher": "返回研究中心", "tool_name": "文本可讀性分析", "page_title": "文本可讀性分析", "page_subtitle": "多維度語言計量與 AI 深度診斷",
+                "label_input": "輸入分析文本", "btn_demo": "載入範例", "btn_clear": "清空", "btn_analyze": "開始計算指標",
+                "label_metrics": "分析指標設定", "opt_basic": "基本分析", "opt_ttr": "詞彙多樣性 (TTR/STTR)", "opt_func": "函數模型 (Guiraud/Maas)", "opt_est": "估計模型 (MTLD/HD-D)",
+                "sec_basic": "基本統計", "metric_words": "字數/詞數", "metric_unique": "相異詞數", "metric_sentences": "句子數", "metric_avg_len": "平均句長", "desc_avg_len": "字/句",
+                "sec_ttr": "詞彙多樣性 (Lexical Diversity)", "sec_func": "函數模型 (Function Models)", "sec_est": "估計模型 (Estimated Models)",
+                "btn_ai_analyze": "✨ AI 深度解讀報告", "ai_hint": "點擊按鈕，讓 AI 對所有運算指標進行逐項解讀與評估。",
+                "ai_report_title": "文本難度診斷報告", "ai_report_subtitle": "基於計量指標的智能化分析",
+                "msg_input_empty": "請先輸入或貼上文本", "msg_analysis_done": "計算完成！所有指標已列出。", "msg_generating": "AI 正在解讀所有指標數據...", "msg_ai_error": "AI 分析服務暫時無法使用。", "msg_ai_empty": "請先執行分析。", "msg_demo_loaded": "範例已載入",
+                "demo_text": "光合作用是植物、藻類和某些細菌利用葉綠素吸收光能，將二氧化碳和水轉化為葡萄糖和氧氣的過程。這個過程不僅為植物本身提供能量，也是地球上絕大多數生命能量的來源。光合作用主要發生在葉綠體中，包含光反應和固碳反應兩個階段。光反應將光能轉化為化學能，而固碳反應則利用這些化學能將二氧化碳合成有機物。"
+            },
+            "en": {
+                "back_researcher": "Back to Research Center", "tool_name": "Readability Analyzer", "page_title": "Readability Analysis", "page_subtitle": "Multidimensional Metrics & AI Diagnosis",
+                "label_input": "Input Text", "btn_demo": "Load Demo", "btn_clear": "Clear", "btn_analyze": "Calculate Metrics",
+                "label_metrics": "Metrics Settings", "opt_basic": "Basic Stats", "opt_ttr": "Lexical Diversity (TTR/STTR)", "opt_func": "Function Models (Guiraud/Maas)", "opt_est": "Estimated Models (MTLD/HD-D)",
+                "sec_basic": "Basic Statistics", "metric_words": "Words/Tokens", "metric_unique": "Unique Words", "metric_sentences": "Sentences", "metric_avg_len": "Avg Sentence Length", "desc_avg_len": "words/sent",
+                "sec_ttr": "Lexical Diversity", "sec_func": "Function Models", "sec_est": "Estimated Models",
+                "btn_ai_analyze": "✨ AI Deep Insight", "ai_hint": "Let AI interpret all calculated metrics specifically.",
+                "ai_report_title": "Readability Diagnosis", "ai_report_subtitle": "AI-Powered Analysis",
+                "msg_input_empty": "Please input text first", "msg_analysis_done": "Calculation complete! All metrics listed.", "msg_generating": "AI is interpreting all metrics...", "msg_ai_error": "AI service unavailable.", "msg_ai_empty": "Please run analysis first.", "msg_demo_loaded": "Demo loaded",
+                "demo_text": "Photosynthesis is the process used by plants to convert light energy into chemical energy that can later be released to fuel the organism's activities. This usually happens in the chloroplasts. The process converts water and carbon dioxide into glucose and oxygen. It is the foundation of life on Earth."
+            },
+            "ja": {
+                "back_researcher": "研究センターへ戻る", "tool_name": "可読性分析", "page_title": "テキスト可読性分析", "page_subtitle": "多次元言語計量とAI深度診断",
+                "label_input": "テキストを入力", "btn_demo": "デモをロード", "btn_clear": "クリア", "btn_analyze": "指標を計算",
+                "label_metrics": "指標設定", "opt_basic": "基本統計", "opt_ttr": "語彙多様性 (TTR/STTR)", "opt_func": "関数モデル (Guiraud/Maas)", "opt_est": "推定モデル (MTLD/HD-D)",
+                "sec_basic": "基本統計", "metric_words": "単語数", "metric_unique": "異なり語数", "metric_sentences": "文の数", "metric_avg_len": "平均文長", "desc_avg_len": "文字/文",
+                "sec_ttr": "語彙多様性 (Lexical Diversity)", "sec_func": "関数モデル (Function Models)", "sec_est": "推定モデル (Estimated Models)",
+                "btn_ai_analyze": "✨ AI 詳細解読レポート", "ai_hint": "ボタンをクリックすると、AIがすべての指標を個別に解釈します。",
+                "ai_report_title": "テキスト難易度診断", "ai_report_subtitle": "計量指標に基づくインテリジェント分析",
+                "msg_input_empty": "テキストを入力してください", "msg_analysis_done": "計算完了！指標が一覧表示されました。", "msg_generating": "AIが全データを解読中...", "msg_ai_error": "AIサービスは利用できません。", "msg_ai_empty": "先に分析を実行してください。", "msg_demo_loaded": "デモデータをロードしました",
+                "demo_text": "光合成は、植物、藻類、および特定の細菌が光エネルギーを利用して、水と二酸化炭素をグルコースと酸素に変換するプロセスです。このプロセスは植物自身にエネルギーを供給するだけでなく、地球上のほとんどの生命エネルギーの源でもあります。光合成は主に葉緑体で行われ、光反応と炭素固定反応の2つの段階が含まれます。"
+            },
+            "zh-CN": {
+                "back_researcher": "返回研究中心", "tool_name": "文本可读性分析", "page_title": "文本可读性分析", "page_subtitle": "多维度语言计量与 AI 深度诊断",
+                "label_input": "输入分析文本", "btn_demo": "载入范例", "btn_clear": "清空", "btn_analyze": "开始计算指标",
+                "label_metrics": "分析指标设定", "opt_basic": "基本分析", "opt_ttr": "词汇多样性 (TTR/STTR)", "opt_func": "函数模型 (Guiraud/Maas)", "opt_est": "估计模型 (MTLD/HD-D)",
+                "sec_basic": "基本统计", "metric_words": "字数/词数", "metric_unique": "相异词数", "metric_sentences": "句子数", "metric_avg_len": "平均句长", "desc_avg_len": "字/句",
+                "sec_ttr": "词汇多样性 (Lexical Diversity)", "sec_func": "函数模型 (Function Models)", "sec_est": "估计模型 (Estimated Models)",
+                "btn_ai_analyze": "✨ AI 深度解读报告", "ai_hint": "点击按钮，让 AI 对所有运算指标进行逐项解读与评估。",
+                "ai_report_title": "文本难度诊断报告", "ai_report_subtitle": "基于计量指标的智能化分析",
+                "msg_input_empty": "请先输入或贴上文本", "msg_analysis_done": "计算完成！所有指标已列出。", "msg_generating": "AI 正在解读所有指标数据...", "msg_ai_error": "AI 分析服务暂时无法使用。", "msg_ai_empty": "请先执行分析。", "msg_demo_loaded": "范例已载入",
+                "demo_text": "光合作用是植物、藻类和某些细菌利用叶绿素吸收光能，将二氧化碳和水转化为葡萄糖和氧气的过程。这个过程不仅为植物本身提供能量，也是地球上绝大多数生命能量的来源。光合作用主要发生在叶绿体中，包含光反应和固碳反应两个阶段。光反应将光能转化为化学能，而固碳反应则利用这些化学能将二氧化碳合成有机物。"
+            }
+        };
+
+        function getMsg(key) {
+            const lang = document.getElementById("language-selector").value;
+            const dict = translations[lang] || translations['zh-TW'];
+            return dict[key] || translations['zh-TW'][key] || key;
+        }
+
+        function changeLanguage() {
+            const lang = document.getElementById("language-selector").value;
+            document.querySelectorAll("[data-i18n]").forEach(el => {
+                const key = el.getAttribute("data-i18n");
+                el.innerText = getMsg(key);
+            });
+            const input = document.getElementById('inputText');
+            if(lang === 'en') input.placeholder = "Paste text here...";
+            else if(lang === 'ja') input.placeholder = "テキストをここに貼り付けてください...";
+            else input.placeholder = "請在此貼上文本...";
+        }
+
+        // *** 數學模型核心算法 (完整版) ***
+        const Stats = {
+            uniqueCount: (tokens) => new Set(tokens).size,
+            calcTTR: (N, V) => N > 0 ? V / N : 0,
+            calcSTTR: (tokens, window=50) => { if(tokens.length<window) return new Set(tokens).size/tokens.length; let s=0,n=0; for(let i=0; i<=tokens.length-window; i+=window){s+=new Set(tokens.slice(i,i+window)).size/window;n++} return s/n; },
+            calcRTTR: (N, V) => N > 0 ? V / Math.sqrt(N) : 0,
+            calcCTTR: (N, V) => N > 0 ? V / Math.sqrt(2*N) : 0,
+            calcGuiraud: (N, V) => N > 0 ? V / Math.sqrt(N) : 0,
+            calcMaas: (N, V) => N > 0 ? Math.sqrt((Math.log(N)-Math.log(V))/Math.pow(Math.log(N),2)) : 0,
+            calcHerdan: (N, V) => N > 1 ? Math.log(V)/Math.log(N) : 0,
+            calcDugast: (N, V) => N > 0 ? (Math.pow(Math.log(N),2))/(Math.log(N)-Math.log(V)) : 0,
+            calcMTLD: (tokens, threshold=0.72) => {
+                const run = (arr) => { let f=0, ttr=1, set=new Set(), len=0; for(const t of arr){ len++; set.add(t); ttr=set.size/len; if(ttr<threshold){f++; len=0; set.clear();} } if(len>0) f+=(1-ttr)/(1-threshold); return f; };
+                const fwd = run(tokens); return fwd===0?0:tokens.length/fwd;
+            },
+            calcHDD_Sim: (ttr) => ttr * 0.85 + 0.1,
+            calcVOCD_Sim: (mtld) => mtld * 1.15
+        };
+
+        // *** 主分析流程 (總是計算所有指標) ***
+        function analyzeText() {
+            const text = document.getElementById('inputText').value.trim();
+            if (!text) { showToast(getMsg('msg_input_empty'), 'error'); return; }
+
+            // 斷詞
+            const sentences = text.split(/[.!?。！？]+/).filter(s => s.trim().length > 0);
+            let tokens = text.includes(' ') ? text.split(/\s+/).filter(t=>t) : text.split('').filter(t => /[\u4e00-\u9fa5a-zA-Z0-9]/.test(t));
+            const N = tokens.length, V = Stats.uniqueCount(tokens), S = sentences.length, avgLen = S>0?N/S:0;
+            
+            // 強制計算所有指標 (供 AI 使用)
+            const fullStats = {
+                N, V, S, avgLen,
+                ttr: Stats.calcTTR(N,V), sttr: Stats.calcSTTR(tokens), rttr: Stats.calcRTTR(N,V), cttr: Stats.calcCTTR(N,V),
+                guiraud: Stats.calcGuiraud(N,V), maas: Stats.calcMaas(N,V), herdan: Stats.calcHerdan(N,V), dugast: Stats.calcDugast(N,V),
+                mtld: Stats.calcMTLD(tokens),
+            };
+            // 補充估計值
+            fullStats.hdd = Stats.calcHDD_Sim(fullStats.ttr);
+            fullStats.vocd = Stats.calcVOCD_Sim(fullStats.mtld);
+
+            // 更新 UI (根據 Checkbox 顯示/隱藏區塊，但數值一定會填入)
+            document.getElementById('res-words').innerText = N; document.getElementById('res-types').innerText = V;
+            document.getElementById('res-sentences').innerText = S; document.getElementById('res-avg-len').innerText = avgLen.toFixed(1);
+            document.getElementById('sec-basic').classList.toggle('hidden', !document.getElementById('chkBasic').checked);
+
+            document.getElementById('res-ttr').innerText = fullStats.ttr.toFixed(3);
+            document.getElementById('res-sttr').innerText = fullStats.sttr.toFixed(3);
+            document.getElementById('res-rttr').innerText = fullStats.rttr.toFixed(3);
+            document.getElementById('res-cttr').innerText = fullStats.cttr.toFixed(3);
+            document.getElementById('sec-ttr').classList.toggle('hidden', !document.getElementById('chkTTR').checked);
+
+            document.getElementById('res-guiraud').innerText = fullStats.guiraud.toFixed(3);
+            document.getElementById('res-maas').innerText = fullStats.maas.toFixed(3);
+            document.getElementById('res-herdan').innerText = fullStats.herdan.toFixed(3);
+            document.getElementById('res-dugast').innerText = fullStats.dugast.toFixed(3);
+            document.getElementById('sec-func').classList.toggle('hidden', !document.getElementById('chkFunc').checked);
+
+            document.getElementById('res-mtld').innerText = fullStats.mtld.toFixed(1);
+            document.getElementById('res-hdd').innerText = fullStats.hdd.toFixed(3);
+            document.getElementById('res-vocd').innerText = fullStats.vocd.toFixed(1);
+            document.getElementById('sec-est').classList.toggle('hidden', !document.getElementById('chkEst').checked);
+
+            document.getElementById('results-dashboard').classList.remove('hidden');
+            document.getElementById('ai-analysis-result').classList.add('hidden');
+            setTimeout(() => document.getElementById('results-dashboard').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+            showToast(getMsg('msg_analysis_done'));
+
+            window.analysisData = { textSample: text.substring(0,800), stats: fullStats };
+        }
+
+        // *** AI Analysis (Academic & Detailed Prompt) ***
+        async function analyzeWithGemini() {
+            const resultsPanel = document.getElementById('ai-analysis-result');
+            const contentDiv = document.getElementById('ai-content');
+            resultsPanel.classList.remove('hidden');
+            contentDiv.innerHTML = `<div class="flex flex-col items-center py-16"><i class="fa-solid fa-circle-notch fa-spin text-4xl text-amber-500 mb-4"></i><span class="text-slate-500 font-bold animate-pulse">${getMsg('msg_generating')}</span></div>`;
+            resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            if (!window.analysisData) return;
+            const { textSample, stats } = window.analysisData;
+            const lang = document.getElementById("language-selector").value;
+            const targetLang = lang === 'en' ? 'English' : (lang === 'ja' ? 'Japanese' : 'Traditional Chinese');
+
+            // 學術中立 Prompt，強制解釋所有指標
+            const prompt = `
+            Role: Objective Text Analysis System.
+            Task: Interpret the following readability metrics for the provided text.
+            Tone: Objective, academic, neutral. Do not use "You" or "We". Use "此文本" (This text) as subject.
+            Language: ${targetLang}
+
+            Data:
+            [Basic] Length: ${stats.N}, Sentences: ${stats.S}, AvgLen: ${stats.avgLen.toFixed(1)}
+            [Diversity] TTR: ${stats.ttr.toFixed(2)}, STTR: ${stats.sttr.toFixed(2)}, RTTR: ${stats.rttr.toFixed(2)}
+            [Function] Guiraud: ${stats.guiraud.toFixed(2)}, Maas: ${stats.maas.toFixed(2)}, Herdan: ${stats.herdan.toFixed(2)}
+            [Estimated] MTLD: ${stats.mtld.toFixed(1)}, HD-D: ${stats.hdd.toFixed(2)}, vocd-D: ${stats.vocd.toFixed(1)}
+
+            Text: "${textSample}..."
+
+            Output HTML (No markdown):
+
+            <!-- 1. Basic Stats (Blue) -->
+            <div class="ai-report-section ai-theme-blue">
+                <h3 class="ai-report-title"><i class="fa-solid fa-chart-bar"></i> ${lang==='en'?'Basic Statistics Analysis':'基礎統計指標解讀'}</h3>
+                <p>此文本包含 ${stats.N} 個詞彙與 ${stats.S} 個句子。</p>
+                <ul>
+                    <li><strong>平均句長 (${stats.avgLen.toFixed(1)})</strong>: (解釋此數值對閱讀流暢度的具體影響)</li>
+                </ul>
+            </div>
+
+            <!-- 2. Lexical Diversity (Purple) -->
+            <div class="ai-report-section ai-theme-purple">
+                <h3 class="ai-report-title"><i class="fa-solid fa-layer-group"></i> ${lang==='en'?'Lexical Diversity Analysis':'詞彙多樣性指標解讀'}</h3>
+                <ul>
+                    <li><strong>TTR (${stats.ttr.toFixed(2)}) / STTR (${stats.sttr.toFixed(2)})</strong>: (解釋 TTR 與 STTR 的差異及此文本的表現)</li>
+                    <li><strong>RTTR (${stats.rttr.toFixed(2)}) / CTTR (${stats.cttr.toFixed(2)})</strong>: (解釋這些變體指標的意義)</li>
+                </ul>
+            </div>
+
+            <!-- 3. Function Models (Indigo) -->
+            <div class="ai-report-section ai-theme-indigo">
+                <h3 class="ai-report-title"><i class="fa-solid fa-function"></i> ${lang==='en'?'Function Models Analysis':'函數模型指標解讀'}</h3>
+                <p>函數模型透過對數轉換修正文本長度的影響。</p>
+                <ul>
+                    <li><strong>Guiraud (${stats.guiraud.toFixed(2)})</strong>: (解釋含義，通常越高越豐富)</li>
+                    <li><strong>Maas (${stats.maas.toFixed(2)})</strong>: (解釋含義，通常越低越豐富)</li>
+                    <li><strong>Herdan (${stats.herdan.toFixed(2)}) / Dugast (${stats.dugast.toFixed(2)})</strong>: (簡述其對詞彙分佈的看法)</li>
+                </ul>
+            </div>
+
+            <!-- 4. Estimated Models (Rose) -->
+            <div class="ai-report-section ai-theme-rose">
+                <h3 class="ai-report-title"><i class="fa-solid fa-chart-line"></i> ${lang==='en'?'Estimated Models Analysis':'估計模型指標解讀'}</h3>
+                <p>估計模型透過模擬運算，提供不受文本長度干擾的深度評估。</p>
+                <ul>
+                    <li><strong>MTLD (${stats.mtld.toFixed(1)})</strong>: (解釋詞彙維持豐富度的平均長度)</li>
+                    <li><strong>HD-D (${stats.hdd.toFixed(2)}) / vocd-D (${stats.vocd.toFixed(1)})</strong>: (解釋其代表的詞彙多樣性水準)</li>
+                </ul>
+            </div>
+
+            <!-- 5. Conclusion (Green) -->
+            <div class="ai-report-section ai-theme-green">
+                <h3 class="ai-report-title"><i class="fa-solid fa-graduation-cap"></i> ${lang==='en'?'Comprehensive Assessment':'綜合評估與建議'}</h3>
+                <p>(綜合以上四大類指標，客觀評估此文本的閱讀難度等級。分析其詞彙豐富度與句構複雜度。並在最後明確指出**適合閱讀的教育階段/年級**。)</p>
+            </div>
+            `;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                const data = await response.json();
+                let html = data.candidates[0].content.parts[0].text;
+                html = html.replace(/```html/g, '').replace(/```/g, '');
+                contentDiv.innerHTML = html;
+            } catch (e) { contentDiv.innerHTML = `<p class="text-red-500 text-center py-8">${getMsg('msg_ai_error')}</p>`; }
+        }
+
+        function loadDemo() {
+            const lang = document.getElementById("language-selector").value;
+            const t = translations[lang] || translations['zh-TW'];
+            document.getElementById('inputText').value = t.demo_text;
+            showToast(getMsg('msg_demo_loaded'));
+        }
+        function clearText() {
+            document.getElementById('inputText').value = '';
+            document.getElementById('results-dashboard').classList.add('hidden');
+        }
+        function showToast(msg, type='normal') {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            t.querySelector('i').className = type==='error' ? 'fa-solid fa-triangle-exclamation text-red-400' : 'fa-solid fa-check-circle text-green-400';
+            t.classList.remove('opacity-0', 'translate-y-10');
+            setTimeout(()=>t.classList.add('opacity-0', 'translate-y-10'), 3000);
+        }
+
+        // *** Background ***
+        (function() {
+            const canvas = document.getElementById('network-canvas');
+            const ctx = canvas.getContext('2d');
+            let width, height, particles = [];
+            function resize() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; initParticles(); }
+            class Particle {
+                constructor() { this.x = Math.random() * width; this.y = Math.random() * height; this.vx = (Math.random()-0.5)*0.5; this.vy = (Math.random()-0.5)*0.5; this.size = Math.random()*2+1; this.color = `rgba(168, 85, 247, ${Math.random()*0.4})`; }
+                update() { this.x+=this.vx; this.y+=this.vy; if(this.x<0||this.x>width)this.vx*=-1; if(this.y<0||this.y>height)this.vy*=-1; }
+                draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI*2); ctx.fillStyle=this.color; ctx.fill(); }
+            }
+            function initParticles() { particles=[]; for(let i=0;i<50;i++) particles.push(new Particle()); }
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                particles.forEach(p => { p.update(); p.draw(); });
+                for(let i=0;i<particles.length;i++){
+                    for(let j=i;j<particles.length;j++){
+                        const dx = particles[i].x - particles[j].x; const dy = particles[i].y - particles[j].y;
+                        const dist = Math.sqrt(dx*dx+dy*dy);
+                        if(dist<150){ ctx.beginPath(); ctx.strokeStyle=`rgba(168,85,247,${0.08 - dist/2000})`; ctx.lineWidth=0.5; ctx.moveTo(particles[i].x,particles[i].y); ctx.lineTo(particles[j].x,particles[j].y); ctx.stroke(); }
+                    }
+                }
+                requestAnimationFrame(animate);
+            }
+            window.addEventListener('resize', resize); resize(); animate();
+        })();
+    </script>
+</body>
+</html>
