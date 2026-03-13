@@ -1777,12 +1777,12 @@ async function sendChatMessage() {
   const chatBody = document.getElementById("chat-messages");
   const userTimeStr = getCurrentTimeString(); // 取得學生發問時間
 
-  if (chatBody) {
-    // 加上學生發問的時間標記
+if (chatBody) {
+    const userTimeStr = getCurrentTimeString();
     chatBody.innerHTML += `
-      <div class="self-end flex flex-col items-end max-w-[85%] ml-auto">
-        <span class="text-[10px] text-slate-400 mb-1 pr-1">${userTimeStr}</span>
-        <div class="bg-blue-600 text-white p-3 rounded-lg rounded-tr-none shadow-sm text-sm">
+      <div class="self-end max-w-[85%] ml-auto mb-2">
+        <div class="text-[11px] text-slate-400 text-right mb-1 pr-1">${userTimeStr}</div>
+        <div class="bg-blue-600 text-white p-3 rounded-2xl rounded-tr-none shadow-sm text-sm">
           ${msg}
         </div>
       </div>`;
@@ -1796,7 +1796,8 @@ async function sendChatMessage() {
   if (chatBody) {
     const wrap = document.createElement("div");
     wrap.className = "self-start bg-white border border-slate-100 p-3 rounded-lg rounded-tr-none shadow-sm max-w-[85%] text-sm";
-    wrap.innerHTML = `<span class="font-bold text-blue-600 block mb-1 text-xs">小科 AI 助手 <span class="text-slate-400 font-normal ml-1">${aiThinkTimeStr}</span></span>思考中…`;
+    const aiThinkTimeStr = getCurrentTimeString();
+    wrap.innerHTML = `<span class="font-bold text-blue-600 block mb-1 text-xs">小科 AI 助手 <span class="text-slate-400 font-normal text-[11px] ml-2">${aiThinkTimeStr}</span></span>思考中…`;
     chatBody.appendChild(wrap);
     chatBody.scrollTop = chatBody.scrollHeight;
     pendingEl = wrap;
@@ -1852,8 +1853,9 @@ async function sendChatMessage() {
     const aiReplyTimeStr = getCurrentTimeString();
 
     if (pendingEl) {
-      if (cleanReply) {
-        pendingEl.innerHTML = `<span class="font-bold text-blue-600 block mb-1 text-xs">小科 AI 助手 <span class="text-slate-400 font-normal ml-1">${aiReplyTimeStr}</span></span>${cleanReply}`;
+if (cleanReply) {
+        const aiReplyTimeStr = getCurrentTimeString();
+        pendingEl.innerHTML = `<span class="font-bold text-blue-600 block mb-1 text-xs">小科 AI 助手 <span class="text-slate-400 font-normal text-[11px] ml-2">${aiReplyTimeStr}</span></span>${cleanReply}`;
       } else {
         pendingEl.innerHTML = `
           <span class="font-bold text-blue-600 block mb-1 text-xs">小科 AI 助手 <span class="text-slate-400 font-normal ml-1">${aiReplyTimeStr}</span></span>
