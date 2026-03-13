@@ -649,7 +649,16 @@
 
     <script>
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbynf2DkhZ6V9lCLH3MH-Ud7DjTMPDKAu2DJm3OC22lTYaPJe5TiA8GRfyG0lihLUZxa/exec";
-    
+
+// 取得現在時間 (格式：22:01:34)
+function getCurrentTimeString() {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    const ss = String(now.getSeconds()).padStart(2, '0');
+    return `${hh}:${mm}:${ss}`;
+}
+        
     let allData = [];
     let filters = {};
     let currentResultData = null;
@@ -1668,8 +1677,8 @@ function buildMillionDollarTXT() {
                     currentUnitName = sel.options[sel.selectedIndex].text;
                 }
 
-                const greetMsg = `Hi，你好！我是小科，關於【${currentUnitName}】，你有什麼問題要問我？`;
-
+                casync function是小科，關於【${currentUnitName}】，你有什麼問題要問我？`;
+const timeStr = getCurrentTimeString(); // 取得時間
                 chatBody.innerHTML = `
                     <div class="self-start flex gap-2 max-w-[90%]">
                         <div class="w-8 h-8 rounded-full bg-white border border-slate-200 p-0.5 shrink-0 shadow-sm">
@@ -1766,34 +1775,39 @@ async function sendChatMessage() {
   if (!msg) return;
 
   const chatBody = document.getElementById("chat-messages");
+  const userTimeStr = getCurrentTimeString(); // 取得學生發問時間
+
   if (chatBody) {
+    // 加上學生發問的時間標記
     chatBody.innerHTML += `
-      <div class="self-end bg-blue-600 text-white p-3 rounded-lg rounded-tr-none shadow-sm max-w-[85%] ml-auto text-sm">
-        ${msg}
+      <div class="self-end flex flex-col items-end max-w-[85%] ml-auto">
+        <span class="text-[10px] text-slate-400 mb-1 pr-1">${userTimeStr}</span>
+        <div class="bg-blue-600 text-white p-3 rounded-lg rounded-tr-none shadow-sm text-sm">
+          ${msg}
+        </div>
       </div>`;
     chatBody.scrollTop = chatBody.scrollHeight;
   }
   input.value = "";
 
-  // 先放一個「思考中」訊息，避免使用者覺得沒反應
+  // 小科思考中的時間
+  const aiThinkTimeStr = getCurrentTimeString();
   let pendingEl = null;
   if (chatBody) {
     const wrap = document.createElement("div");
     wrap.className = "self-start bg-white border border-slate-100 p-3 rounded-lg rounded-tr-none shadow-sm max-w-[85%] text-sm";
-    wrap.innerHTML = `<span class="font-bold text-blue-600 block mb-1 text-xs">小科 AI 助手</span>思考中…`;
+    wrap.innerHTML = `<span class="font-bold text-blue-600 block mb-1 text-xs">小科 AI 助手 <span class="text-slate-400 font-normal ml-1">${aiThinkTimeStr}</span></span>思考中…`;
     chatBody.appendChild(wrap);
     chatBody.scrollTop = chatBody.scrollHeight;
     pendingEl = wrap;
   }
 
-  // 取 currentUser（你前面已做過正規化，這裡再保險一次）
   let currentUser = { name: "訪客" };
   try {
     const raw = sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser");
     if (raw) currentUser = JSON.parse(raw);
   } catch (e) {}
 
-  // 避免送太大導致 Apps Script/網路層失敗（最小截斷，不動你的資料結構）
   const contextTextFull  = currentResultData?.raw_content?.text || "";
   const contextVocabFull = currentResultData?.raw_content?.vocab_str || "";
   const contextText  = String(contextTextFull).slice(0, 6000);
@@ -1812,7 +1826,6 @@ async function sendChatMessage() {
     semester: filters.semester
   };
 
-  // timeout：避免卡住
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 20000);
 
@@ -1821,59 +1834,41 @@ async function sendChatMessage() {
       method: "POST",
       body: JSON.stringify(payload),
       signal: controller.signal
-      // 注意：不要加 headers: {'Content-Type':'application/json'}
-      // 以免觸發 preflight，導致 Apps Script 回不來
     });
 
     clearTimeout(timer);
-
-    if (!res.ok) {
-      throw new Error(`HTTP 錯誤：${res.status}`);
-    }
+    if (!res.ok) throw new Error(`HTTP 錯誤：${res.status}`);
 
     const text = await res.text();
-
-    // 安全解析 JSON
     let json = null;
-    try {
-      json = JSON.parse(text);
-    } catch (e) {
-      // 後端若回的是純文字/HTML，也不要讓前端沉默
-      json = { status: "error", message: "後端回傳非 JSON", raw: text };
-    }
+    try { json = JSON.parse(text); } 
+    catch (e) { json = { status: "error", message: "後端回傳非 JSON", raw: text }; }
 
-    // 兼容不同回傳欄位
     const ok = (json.status === "success");
-    const reply =
-      (ok ? (json.data || json.reply || json.answer || "") : "") ||
-      (!ok ? (json.message || json.error || "") : "");
-
+    const reply = (ok ? (json.data || json.reply || json.answer || "") : "") || (!ok ? (json.message || json.error || "") : "");
     const cleanReply = String(reply || "").replace(/\*\*/g, "").trim();
+    
+    // 小科回答完成的時間
+    const aiReplyTimeStr = getCurrentTimeString();
 
     if (pendingEl) {
       if (cleanReply) {
-        pendingEl.innerHTML = `<span class="font-bold text-blue-600 block mb-1 text-xs">小科 AI 助手</span>${cleanReply}`;
+        pendingEl.innerHTML = `<span class="font-bold text-blue-600 block mb-1 text-xs">小科 AI 助手 <span class="text-slate-400 font-normal ml-1">${aiReplyTimeStr}</span></span>${cleanReply}`;
       } else {
-        // 把可診斷資訊放出來，避免「看起來沒回」
-        const rawPreview = String(json.raw || text || "").slice(0, 200);
         pendingEl.innerHTML = `
-          <span class="font-bold text-blue-600 block mb-1 text-xs">小科 AI 助手</span>
-          <div class="text-slate-700">目前無法取得回覆。</div>
-          <div class="text-[11px] text-slate-400 mt-2">診斷：${ok ? "success 但 data 空白" : "status!=success"}；回傳片段：${rawPreview}</div>`;
+          <span class="font-bold text-blue-600 block mb-1 text-xs">小科 AI 助手 <span class="text-slate-400 font-normal ml-1">${aiReplyTimeStr}</span></span>
+          <div class="text-slate-700">目前無法取得回覆。</div>`;
       }
       chatBody.scrollTop = chatBody.scrollHeight;
     }
   } catch (e) {
     clearTimeout(timer);
-    console.error("小科對話失敗：", e);
-
+    const errorTimeStr = getCurrentTimeString();
     if (pendingEl) {
-      const msg = (e && e.name === "AbortError")
-        ? "連線逾時（20 秒）。請稍後再試，或縮短問題內容。"
-        : `連線/解析失敗：${e.message || e}`;
+      const errMsg = (e && e.name === "AbortError") ? "連線逾時（20 秒）。請稍後再試。" : `連線失敗：${e.message || e}`;
       pendingEl.innerHTML = `
-        <span class="font-bold text-blue-600 block mb-1 text-xs">小科 AI 助手</span>
-        <div class="text-slate-700">${msg}</div>`;
+        <span class="font-bold text-blue-600 block mb-1 text-xs">小科 AI 助手 <span class="text-slate-400 font-normal ml-1">${errorTimeStr}</span></span>
+        <div class="text-slate-700">${errMsg}</div>`;
       chatBody.scrollTop = chatBody.scrollHeight;
     }
   }
