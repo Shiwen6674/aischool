@@ -1670,15 +1670,15 @@ function buildMillionDollarTXT() {
             setTimeout(() => win.classList.remove("closed"), 10);
             
             const chatBody = document.getElementById("chat-messages");
-            if (chatBody && chatBody.innerHTML.trim() === "") {
+if (chatBody && chatBody.innerHTML.trim() === "") {
                 let currentUnitName = filters.unitName || "這個單元";
                 const sel = document.getElementById("sel-unit");
                 if (sel && sel.selectedIndex > -1 && !sel.disabled) {
                     currentUnitName = sel.options[sel.selectedIndex].text;
                 }
 
-                casync function是小科，關於【${currentUnitName}】，你有什麼問題要問我？`;
-const timeStr = getCurrentTimeString(); // 取得時間
+                const greetMsg = `Hi，你好！我是小科，關於【${currentUnitName}】，你有什麼問題要問我？`;
+                const timeStr = getCurrentTimeString(); // 取得時間
                 chatBody.innerHTML = `
                     <div class="self-start flex gap-2 max-w-[90%]">
                         <div class="w-8 h-8 rounded-full bg-white border border-slate-200 p-0.5 shrink-0 shadow-sm">
