@@ -197,7 +197,19 @@
                 </div>
                 
                 <textarea id="inputText" class="input-area w-full h-48 p-4 rounded-xl text-slate-700 text-base leading-relaxed resize-none mb-6 font-mono" placeholder="請在此貼上文本（中文建議先斷詞以獲得更精準的詞彙分析）..."></textarea>
-                
+                <div class="mb-6">
+    <h4 class="text-sm font-bold text-slate-500 mb-3 uppercase tracking-wide">輸入模式</h4>
+    <div class="checkbox-group">
+        <label class="checkbox-label">
+            <input type="radio" name="inputMode" id="modeRaw" value="raw" checked>
+            <span>原始文本（未斷詞）</span>
+        </label>
+        <label class="checkbox-label">
+            <input type="radio" name="inputMode" id="modeTokenized" value="tokenized">
+            <span>已斷詞文本（用空白分隔）</span>
+        </label>
+    </div>
+</div>
                 <!-- 分析指標勾選 -->
                 <div class="mb-6">
                     <h4 class="text-sm font-bold text-slate-500 mb-3 uppercase tracking-wide" data-i18n="label_metrics">顯示哪些分析結果</h4>
@@ -226,7 +238,16 @@
 
             <!-- 結果儀表板 (預設隱藏) -->
             <div id="results-dashboard" class="hidden space-y-8">
-                
+                 <div class="glass-panel p-5 rounded-2xl border border-slate-200">
+        <h3 class="text-lg font-bold text-slate-700 mb-3">如何閱讀這些指標</h3>
+        <ul class="list-disc pl-6 text-slate-600 leading-8">
+            <li>TTR、STTR、RTTR、CTTR：通常越高，代表詞彙越多樣。</li>
+            <li>Guiraud、Herdan：通常越高，代表詞彙使用越豐富。</li>
+            <li>Maas：通常越低，代表詞彙多樣性越高。</li>
+            <li>MTLD：通常越高，代表文本能維持詞彙多樣性的能力越好。</li>
+            <li>HD-D Estimate、vocd-D Estimate：目前僅為估計值，適合輔助參考，不宜單獨作正式判定。</li>
+        </ul>
+    </div>
                 <!-- 1. 基本統計 -->
                 <div id="sec-basic" class="hidden">
                     <div class="section-header"><i class="fa-solid fa-arrow-down-1-9"></i> <span data-i18n="sec_basic">基本統計</span></div>
@@ -444,9 +465,18 @@ calcVOCDEstimate: (mtld) => mtld * 1.15
             if (!text) { showToast(getMsg('msg_input_empty'), 'error'); return; }
 
             // 斷詞
-            const sentences = text.split(/[.!?。！？]+/).filter(s => s.trim().length > 0);
-            let tokens = text.includes(' ') ? text.split(/\s+/).filter(t=>t) : text.split('').filter(t => /[\u4e00-\u9fa5a-zA-Z0-9]/.test(t));
-            const N = tokens.length, V = Stats.uniqueCount(tokens), S = sentences.length, avgLen = S>0?N/S:0;
+const sentences = text.split(/[.!?。！？]+/).filter(s => s.trim().length > 0);
+const inputMode = document.querySelector('input[name="inputMode"]:checked').value;
+
+let tokens = [];
+if (inputMode === 'tokenized') {
+    tokens = text.split(/\s+/).filter(t => t);
+} else {
+    tokens = text.split('').filter(t => /[\u4e00-\u9fa5a-zA-Z0-9]/.test(t));
+}
+
+const N = tokens.length, V = Stats.uniqueCount(tokens), S = sentences.length, avgLen = S > 0 ? N / S : 0;
+
             
             // 強制計算所有指標 (供 AI 使用)
             const fullStats = {
