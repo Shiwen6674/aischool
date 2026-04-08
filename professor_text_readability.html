@@ -200,7 +200,7 @@
                 
                 <!-- 分析指標勾選 -->
                 <div class="mb-6">
-                    <h4 class="text-sm font-bold text-slate-500 mb-3 uppercase tracking-wide" data-i18n="label_metrics">分析指標設定</h4>
+                    <h4 class="text-sm font-bold text-slate-500 mb-3 uppercase tracking-wide" data-i18n="label_metrics">顯示哪些分析結果</h4>
                     <div class="checkbox-group">
                         <label class="checkbox-label">
                             <input type="checkbox" id="chkBasic" checked> <span data-i18n="opt_basic">基本分析</span>
@@ -246,7 +246,7 @@
                         <div class="metric-box">
                             <span class="metric-label" data-i18n="metric_avg_len">平均句長</span>
                             <span class="metric-value text-blue-600" id="res-avg-len">0.0</span>
-                            <span class="metric-desc" data-i18n="desc_avg_len">字/句</span>
+                            <span class="metric-desc" id="res-avg-unit" data-i18n="desc_avg_len">字/句</span>
                         </div>
                     </div>
                 </div>
@@ -306,11 +306,11 @@
                             <span class="metric-value text-purple-700" id="res-mtld">0.00</span>
                         </div>
                         <div class="metric-box">
-                            <span class="metric-label">HD-D</span>
+                            <span class="metric-label">HD-D Estimate</span>
                             <span class="metric-value" id="res-hdd">0.00</span>
                         </div>
                         <div class="metric-box">
-                            <span class="metric-label">vocd-D</span>
+                            <span class="metric-label">vocd-D Estimate</span>
                             <span class="metric-value" id="res-vocd">0.00</span>
                         </div>
                     </div>
@@ -318,7 +318,7 @@
 
                 <!-- AI 深度分析按鈕 -->
                 <div class="py-8 text-center border-t border-slate-200 mt-8">
-                    <button onclick="analyzeWithGemini()" class="bg-gradient-to-r from-amber-400 to-orange-500 text-white px-10 py-4 rounded-2xl font-bold text-xl shadow-xl shadow-orange-500/20 hover:shadow-orange-500/40 hover:scale-105 transition transform flex items-center gap-3 mx-auto group">
+                    <button id="ai-analyze-btn" onclick="analyzeWithGemini()" disabled class="bg-gradient-to-r from-amber-400 to-orange-500 text-white px-10 py-4 rounded-2xl font-bold text-xl shadow-xl shadow-orange-500/20 transition transform flex items-center gap-3 mx-auto group disabled:opacity-50 disabled:cursor-not-allowed">
                         <i class="fa-solid fa-robot group-hover:animate-bounce"></i> <span data-i18n="btn_ai_analyze">✨ AI 深度解讀報告</span>
                     </button>
                     <p class="mt-3 text-sm text-slate-500" data-i18n="ai_hint">點擊按鈕，讓 AI 對所有運算指標進行逐項解讀與評估。</p>
@@ -357,7 +357,7 @@
             "zh-TW": {
                 "back_researcher": "返回研究中心", "tool_name": "文本可讀性分析", "page_title": "文本可讀性分析", "page_subtitle": "多維度語言計量與 AI 深度診斷",
                 "label_input": "輸入分析文本", "btn_demo": "載入範例", "btn_clear": "清空", "btn_analyze": "開始計算指標",
-                "label_metrics": "分析指標設定", "opt_basic": "基本分析", "opt_ttr": "詞彙多樣性 (TTR/STTR)", "opt_func": "函數模型 (Guiraud/Maas)", "opt_est": "估計模型 (MTLD/HD-D)",
+                "label_metrics": "顯示哪些分析結果", "opt_basic": "基本分析", "opt_ttr": "詞彙多樣性 (TTR/STTR)", "opt_func": "函數模型 (Guiraud/Maas)", "opt_est": "估計模型 (MTLD/HD-D)",
                 "sec_basic": "基本統計", "metric_words": "字數/詞數", "metric_unique": "相異詞數", "metric_sentences": "句子數", "metric_avg_len": "平均句長", "desc_avg_len": "字/句",
                 "sec_ttr": "詞彙多樣性 (Lexical Diversity)", "sec_func": "函數模型 (Function Models)", "sec_est": "估計模型 (Estimated Models)",
                 "btn_ai_analyze": "✨ AI 深度解讀報告", "ai_hint": "點擊按鈕，讓 AI 對所有運算指標進行逐項解讀與評估。",
@@ -368,7 +368,7 @@
             "en": {
                 "back_researcher": "Back to Research Center", "tool_name": "Readability Analyzer", "page_title": "Readability Analysis", "page_subtitle": "Multidimensional Metrics & AI Diagnosis",
                 "label_input": "Input Text", "btn_demo": "Load Demo", "btn_clear": "Clear", "btn_analyze": "Calculate Metrics",
-                "label_metrics": "Metrics Settings", "opt_basic": "Basic Stats", "opt_ttr": "Lexical Diversity (TTR/STTR)", "opt_func": "Function Models (Guiraud/Maas)", "opt_est": "Estimated Models (MTLD/HD-D)",
+                "label_metrics": "Choose Which Results to Show", "opt_basic": "Basic Stats", "opt_ttr": "Lexical Diversity (TTR/STTR)", "opt_func": "Function Models (Guiraud/Maas)", "opt_est": "Estimated Models (MTLD/HD-D)",
                 "sec_basic": "Basic Statistics", "metric_words": "Words/Tokens", "metric_unique": "Unique Words", "metric_sentences": "Sentences", "metric_avg_len": "Avg Sentence Length", "desc_avg_len": "words/sent",
                 "sec_ttr": "Lexical Diversity", "sec_func": "Function Models", "sec_est": "Estimated Models",
                 "btn_ai_analyze": "✨ AI Deep Insight", "ai_hint": "Let AI interpret all calculated metrics specifically.",
@@ -379,7 +379,7 @@
             "ja": {
                 "back_researcher": "研究センターへ戻る", "tool_name": "可読性分析", "page_title": "テキスト可読性分析", "page_subtitle": "多次元言語計量とAI深度診断",
                 "label_input": "テキストを入力", "btn_demo": "デモをロード", "btn_clear": "クリア", "btn_analyze": "指標を計算",
-                "label_metrics": "指標設定", "opt_basic": "基本統計", "opt_ttr": "語彙多様性 (TTR/STTR)", "opt_func": "関数モデル (Guiraud/Maas)", "opt_est": "推定モデル (MTLD/HD-D)",
+                "label_metrics": "表示する分析結果", "opt_basic": "基本統計", "opt_ttr": "語彙多様性 (TTR/STTR)", "opt_func": "関数モデル (Guiraud/Maas)", "opt_est": "推定モデル (MTLD/HD-D)",
                 "sec_basic": "基本統計", "metric_words": "単語数", "metric_unique": "異なり語数", "metric_sentences": "文の数", "metric_avg_len": "平均文長", "desc_avg_len": "文字/文",
                 "sec_ttr": "語彙多様性 (Lexical Diversity)", "sec_func": "関数モデル (Function Models)", "sec_est": "推定モデル (Estimated Models)",
                 "btn_ai_analyze": "✨ AI 詳細解読レポート", "ai_hint": "ボタンをクリックすると、AIがすべての指標を個別に解釈します。",
@@ -390,7 +390,7 @@
             "zh-CN": {
                 "back_researcher": "返回研究中心", "tool_name": "文本可读性分析", "page_title": "文本可读性分析", "page_subtitle": "多维度语言计量与 AI 深度诊断",
                 "label_input": "输入分析文本", "btn_demo": "载入范例", "btn_clear": "清空", "btn_analyze": "开始计算指标",
-                "label_metrics": "分析指标设定", "opt_basic": "基本分析", "opt_ttr": "词汇多样性 (TTR/STTR)", "opt_func": "函数模型 (Guiraud/Maas)", "opt_est": "估计模型 (MTLD/HD-D)",
+                "label_metrics": "显示哪些分析结果", "opt_basic": "基本分析", "opt_ttr": "词汇多样性 (TTR/STTR)", "opt_func": "函数模型 (Guiraud/Maas)", "opt_est": "估计模型 (MTLD/HD-D)",
                 "sec_basic": "基本统计", "metric_words": "字数/词数", "metric_unique": "相异词数", "metric_sentences": "句子数", "metric_avg_len": "平均句长", "desc_avg_len": "字/句",
                 "sec_ttr": "词汇多样性 (Lexical Diversity)", "sec_func": "函数模型 (Function Models)", "sec_est": "估计模型 (Estimated Models)",
                 "btn_ai_analyze": "✨ AI 深度解读报告", "ai_hint": "点击按钮，让 AI 对所有运算指标进行逐项解读与评估。",
@@ -433,8 +433,9 @@
                 const run = (arr) => { let f=0, ttr=1, set=new Set(), len=0; for(const t of arr){ len++; set.add(t); ttr=set.size/len; if(ttr<threshold){f++; len=0; set.clear();} } if(len>0) f+=(1-ttr)/(1-threshold); return f; };
                 const fwd = run(tokens); return fwd===0?0:tokens.length/fwd;
             },
-            calcHDD_Sim: (ttr) => ttr * 0.85 + 0.1,
-            calcVOCD_Sim: (mtld) => mtld * 1.15
+calcHDDEstimate: (ttr) => ttr * 0.85 + 0.1,
+calcVOCDEstimate: (mtld) => mtld * 1.15
+
         };
 
         // *** 主分析流程 (總是計算所有指標) ***
@@ -455,12 +456,14 @@
                 mtld: Stats.calcMTLD(tokens),
             };
             // 補充估計值
-            fullStats.hdd = Stats.calcHDD_Sim(fullStats.ttr);
-            fullStats.vocd = Stats.calcVOCD_Sim(fullStats.mtld);
+fullStats.hddEstimate = Stats.calcHDDEstimate(fullStats.ttr);
+fullStats.vocdEstimate = Stats.calcVOCDEstimate(fullStats.mtld);
 
             // 更新 UI (根據 Checkbox 顯示/隱藏區塊，但數值一定會填入)
             document.getElementById('res-words').innerText = N; document.getElementById('res-types').innerText = V;
-            document.getElementById('res-sentences').innerText = S; document.getElementById('res-avg-len').innerText = avgLen.toFixed(1);
+            document.getElementById('res-sentences').innerText = S;
+document.getElementById('res-avg-len').innerText = avgLen.toFixed(1);
+document.getElementById('res-avg-unit').innerText = inputMode === 'tokenized' ? '詞/句' : '字/句';
             document.getElementById('sec-basic').classList.toggle('hidden', !document.getElementById('chkBasic').checked);
 
             document.getElementById('res-ttr').innerText = fullStats.ttr.toFixed(3);
@@ -476,14 +479,15 @@
             document.getElementById('sec-func').classList.toggle('hidden', !document.getElementById('chkFunc').checked);
 
             document.getElementById('res-mtld').innerText = fullStats.mtld.toFixed(1);
-            document.getElementById('res-hdd').innerText = fullStats.hdd.toFixed(3);
-            document.getElementById('res-vocd').innerText = fullStats.vocd.toFixed(1);
+document.getElementById('res-hdd').innerText = fullStats.hddEstimate.toFixed(3);
+document.getElementById('res-vocd').innerText = fullStats.vocdEstimate.toFixed(1);
             document.getElementById('sec-est').classList.toggle('hidden', !document.getElementById('chkEst').checked);
 
             document.getElementById('results-dashboard').classList.remove('hidden');
             document.getElementById('ai-analysis-result').classList.add('hidden');
             setTimeout(() => document.getElementById('results-dashboard').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
             showToast(getMsg('msg_analysis_done'));
+document.getElementById('ai-analyze-btn').disabled = false;
 
             window.analysisData = { textSample: text.substring(0,800), stats: fullStats };
         }
@@ -496,8 +500,12 @@
             contentDiv.innerHTML = `<div class="flex flex-col items-center py-16"><i class="fa-solid fa-circle-notch fa-spin text-4xl text-amber-500 mb-4"></i><span class="text-slate-500 font-bold animate-pulse">${getMsg('msg_generating')}</span></div>`;
             resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-            if (!window.analysisData) return;
-            const { textSample, stats } = window.analysisData;
+            if (!window.analysisData) {
+    showToast(getMsg('msg_ai_empty'), 'error');
+    resultsPanel.classList.add('hidden');
+    return;
+}
+           const { textSample, stats } = window.analysisData;
             const lang = document.getElementById("language-selector").value;
             const targetLang = lang === 'en' ? 'English' : (lang === 'ja' ? 'Japanese' : 'Traditional Chinese');
 
@@ -512,7 +520,7 @@
             [Basic] Length: ${stats.N}, Sentences: ${stats.S}, AvgLen: ${stats.avgLen.toFixed(1)}
             [Diversity] TTR: ${stats.ttr.toFixed(2)}, STTR: ${stats.sttr.toFixed(2)}, RTTR: ${stats.rttr.toFixed(2)}
             [Function] Guiraud: ${stats.guiraud.toFixed(2)}, Maas: ${stats.maas.toFixed(2)}, Herdan: ${stats.herdan.toFixed(2)}
-            [Estimated] MTLD: ${stats.mtld.toFixed(1)}, HD-D: ${stats.hdd.toFixed(2)}, vocd-D: ${stats.vocd.toFixed(1)}
+            [Estimated] MTLD: ${stats.mtld.toFixed(1)}, HD-D Estimate: ${stats.hddEstimate.toFixed(2)}, vocd-D Estimate: ${stats.vocdEstimate.toFixed(1)}
 
             Text: "${textSample}..."
 
@@ -550,11 +558,12 @@
             <!-- 4. Estimated Models (Rose) -->
             <div class="ai-report-section ai-theme-rose">
                 <h3 class="ai-report-title"><i class="fa-solid fa-chart-line"></i> ${lang==='en'?'Estimated Models Analysis':'估計模型指標解讀'}</h3>
-                <p>估計模型透過模擬運算，提供不受文本長度干擾的深度評估。</p>
-                <ul>
-                    <li><strong>MTLD (${stats.mtld.toFixed(1)})</strong>: (解釋詞彙維持豐富度的平均長度)</li>
-                    <li><strong>HD-D (${stats.hdd.toFixed(2)}) / vocd-D (${stats.vocd.toFixed(1)})</strong>: (解釋其代表的詞彙多樣性水準)</li>
-                </ul>
+               <p>此區包含一項正式指標與兩項估計值。MTLD 可作為主要參考；HD-D Estimate 與 vocd-D Estimate 目前僅作輔助說明。</p>
+<ul>
+    <li><strong>MTLD (${stats.mtld.toFixed(1)})</strong>: (解釋詞彙維持豐富度的平均長度)</li>
+    <li><strong>HD-D Estimate (${stats.hddEstimate.toFixed(2)}) / vocd-D Estimate (${stats.vocdEstimate.toFixed(1)})</strong>: (清楚說明這兩項目前為估計值，只可作輔助參考)</li>
+</ul>
+
             </div>
 
             <!-- 5. Conclusion (Green) -->
@@ -576,16 +585,21 @@
             } catch (e) { contentDiv.innerHTML = `<p class="text-red-500 text-center py-8">${getMsg('msg_ai_error')}</p>`; }
         }
 
-        function loadDemo() {
-            const lang = document.getElementById("language-selector").value;
-            const t = translations[lang] || translations['zh-TW'];
-            document.getElementById('inputText').value = t.demo_text;
-            showToast(getMsg('msg_demo_loaded'));
-        }
-        function clearText() {
-            document.getElementById('inputText').value = '';
-            document.getElementById('results-dashboard').classList.add('hidden');
-        }
+function loadDemo() {
+    const lang = document.getElementById("language-selector").value;
+    const t = translations[lang] || translations['zh-TW'];
+    document.getElementById('inputText').value = t.demo_text;
+    document.getElementById('modeRaw').checked = true;
+    showToast(getMsg('msg_demo_loaded'));
+}
+
+function clearText() {
+    document.getElementById('inputText').value = '';
+    document.getElementById('results-dashboard').classList.add('hidden');
+    document.getElementById('ai-analysis-result').classList.add('hidden');
+    document.getElementById('ai-analyze-btn').disabled = true;
+}
+
         function showToast(msg, type='normal') {
             const t = document.getElementById('toast');
             document.getElementById('toast-msg').innerText = msg;
