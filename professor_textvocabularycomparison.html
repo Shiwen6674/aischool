@@ -181,6 +181,9 @@
                     </div>
                 </div>
 
+                <div class="bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-xl px-4 py-3">
+  請貼上已斷詞文本，例如：細胞(Na) 是(SHI) 生物體(Na) 的(DE) 基本(Na) 單位(Na)
+</div>
                 <!-- 輸入框 A -->
                 <div>
                     <div class="flex justify-between items-center mb-2">
@@ -215,6 +218,7 @@
                 <button onclick="compareTexts()" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition transform active:scale-95 flex items-center justify-center gap-2">
                     <i class="fa-solid fa-arrow-right-arrow-left"></i> <span data-i18n="btn_analyze">開始比對分析</span>
                 </button>
+                <div id="input-error" class="hidden mt-3 text-sm font-bold text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2"></div>
             </div>
         </aside>
 
@@ -318,7 +322,7 @@
                 "btn_analyze": "開始比對分析", "msg_start": "輸入文本並開始比對", "msg_hint": "支援自動過濾標點與詞性篩選",
                 "header_only_a": "A 獨有", "header_common": "AB 交集", "header_union": "AB 聯集", "header_only_b": "B 獨有",
                 "btn_copy": "複製內容", "msg_copied": "已複製", "err_input": "請至少輸入一段文本！",
-                "ph_text": "請貼上斷詞後的文本..."
+                "ph_text": "請貼上已斷詞文本，例如：細胞(Na) 是(SHI) 生物體(Na)..."
             },
             "en": {
                 "back_btn": "Back to Research", "tool_name": "Vocab Comparison", 
@@ -462,10 +466,17 @@
             const textB = document.getElementById('text-b').value;
             const t = translations[document.getElementById("language-selector").value] || translations['en'];
 
-            if (!textA && !textB) {
-                alert(t.err_input);
-                return;
-            }
+const errorBox = document.getElementById('input-error');
+
+if (!textA && !textB) {
+    errorBox.textContent = t.err_input;
+    errorBox.classList.remove('hidden');
+    return;
+}
+
+errorBox.textContent = '';
+errorBox.classList.add('hidden');
+
 
             // 取得勾選的詞性
             const activePos = new Set();
