@@ -1,1 +1,1683 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>概念網絡分析 | Concept Network Studio</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+TC:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
+  <script src="https://unpkg.com/layout-base@2.0.1/layout-base.js"></script>
+  <script src="https://unpkg.com/cose-base@2.2.0/cose-base.js"></script>
+  <script src="https://unpkg.com/cytoscape-fcose@2.2.0/cytoscape-fcose.js"></script>
+
+  <style>
+    :root{
+      --bg:#f5f1e8;
+      --paper:#fffdf9;
+      --paper-2:#f7f1e7;
+      --line:#ddd3c3;
+      --line-soft:#ece4d8;
+      --text:#2f261d;
+      --muted:#726659;
+      --accent:#8a5a37;
+      --accent-2:#c47931;
+      --ok:#236d50;
+      --warn:#9b4635;
+      --shadow:0 18px 44px rgba(75,54,29,.08);
+
+      --na:#d39063;
+      --nb:#2aa8a0;
+      --nc:#5f9b68;
+      --va:#d973a7;
+      --vc:#6686e1;
+      --vh:#a66a5c;
+      --adj:#9aac59;
+      --other:#9b9184;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family:"IBM Plex Sans TC",system-ui,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,.9), transparent 25%),
+        radial-gradient(circle at right 15%, rgba(201,154,96,.14), transparent 20%),
+        linear-gradient(180deg, #faf6ef 0%, #f1ebdf 100%);
+    }
+
+    .app{
+      min-height:100%;
+      padding:24px;
+    }
+
+    .container{
+      max-width:1560px;
+      margin:0 auto;
+      display:grid;
+      gap:16px;
+    }
+
+    .hero,
+    .panel{
+      background:var(--paper);
+      border:1px solid var(--line-soft);
+      border-radius:28px;
+      box-shadow:var(--shadow);
+    }
+
+    .hero{
+      padding:26px 30px;
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 280px;
+      gap:24px;
+      align-items:start;
+    }
+
+    .hero h1{
+      margin:0 0 10px;
+      font-size:clamp(2rem,2.6vw,3.1rem);
+      line-height:1.06;
+      letter-spacing:-.02em;
+    }
+
+    .hero p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.82;
+      font-size:1rem;
+      max-width:880px;
+    }
+
+    .hero-card{
+      padding:16px 18px;
+      border:1px solid var(--line-soft);
+      border-radius:20px;
+      background:linear-gradient(180deg, #fff, #faf4ea);
+    }
+
+    .hero-card + .hero-card{
+      margin-top:10px;
+    }
+
+    .hero-card .k{
+      color:var(--muted);
+      font-size:.8rem;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+
+    .hero-card .v{
+      margin-top:6px;
+      font-weight:700;
+      font-size:1.08rem;
+    }
+
+    .workspace{
+      display:grid;
+      grid-template-columns:410px minmax(0,1fr) 320px;
+      gap:16px;
+      align-items:start;
+    }
+
+    .panel-head{
+      padding:18px 20px 12px;
+      border-bottom:1px solid var(--line-soft);
+      background:linear-gradient(180deg, rgba(255,255,255,.96), rgba(249,245,238,.88));
+    }
+
+    .panel-head h2{
+      margin:0;
+      font-size:1rem;
+      color:var(--accent);
+      letter-spacing:.02em;
+    }
+
+    .panel-head p{
+      margin:8px 0 0;
+      font-size:.92rem;
+      color:var(--muted);
+      line-height:1.65;
+    }
+
+    .panel-body{
+      padding:18px 20px 20px;
+      display:grid;
+      gap:16px;
+    }
+
+    .field{
+      display:grid;
+      gap:8px;
+    }
+
+    .field > label,
+    .field legend{
+      font-size:.88rem;
+      font-weight:700;
+      color:#4d4135;
+    }
+
+    textarea,
+    input[type="text"],
+    input[type="number"],
+    select{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:#fff;
+      color:var(--text);
+      font:inherit;
+      padding:12px 14px;
+      transition:border-color .2s, box-shadow .2s, transform .2s;
+    }
+
+    textarea{
+      min-height:260px;
+      resize:vertical;
+      line-height:1.72;
+    }
+
+    textarea:focus,
+    input:focus,
+    select:focus{
+      outline:none;
+      border-color:#ca8b57;
+      box-shadow:0 0 0 4px rgba(202,139,87,.13);
+    }
+
+    .hint{
+      color:var(--muted);
+      font-size:.84rem;
+      line-height:1.68;
+    }
+
+    .grid-2,
+    .grid-3,
+    .stats{
+      display:grid;
+      gap:12px;
+    }
+
+    .grid-2{
+      grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+    .grid-3{
+      grid-template-columns:repeat(3,minmax(0,1fr));
+    }
+
+    .chips,
+    .actions,
+    .legend,
+    .toolbar,
+    .pills{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+    }
+
+    .toolbar{
+      justify-content:space-between;
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:#fff;
+      font-size:.9rem;
+      cursor:pointer;
+      transition:.2s ease;
+      user-select:none;
+    }
+
+    .chip:hover{
+      transform:translateY(-1px);
+      background:#fffaf2;
+      border-color:#d8b38c;
+    }
+
+    .chip input{
+      margin:0;
+      width:auto;
+      accent-color:#9f6237;
+    }
+
+    .swatch{
+      width:12px;
+      height:12px;
+      border-radius:999px;
+      border:1px solid rgba(0,0,0,.08);
+      flex:none;
+    }
+
+    .btn{
+      appearance:none;
+      border:none;
+      border-radius:16px;
+      padding:11px 15px;
+      font:inherit;
+      font-weight:700;
+      cursor:pointer;
+      transition:.2s ease;
+      box-shadow:0 8px 18px rgba(75,50,24,.08);
+    }
+
+    .btn:hover{
+      transform:translateY(-1px);
+    }
+
+    .btn:active{
+      transform:translateY(0);
+    }
+
+    .btn.primary{
+      background:#2f2922;
+      color:#fff;
+    }
+
+    .btn.secondary{
+      background:#fff;
+      color:#2f2922;
+      border:1px solid var(--line);
+    }
+
+    .btn.accent{
+      background:linear-gradient(135deg, #ba6f36, #8f542f);
+      color:#fff;
+    }
+
+    .btn.ok{
+      background:linear-gradient(135deg, #2c8962, #235f46);
+      color:#fff;
+    }
+
+    .btn.warn{
+      background:linear-gradient(135deg, #b45a45, #8d4031);
+      color:#fff;
+    }
+
+    .search-input{
+      width:180px;
+    }
+
+    .stats{
+      grid-template-columns:repeat(5,minmax(0,1fr));
+    }
+
+    .stat{
+      padding:14px 15px;
+      border:1px solid var(--line-soft);
+      border-radius:18px;
+      background:linear-gradient(180deg, #fff, #faf3e8);
+    }
+
+    .stat .k{
+      color:var(--muted);
+      font-size:.78rem;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+    }
+
+    .stat .v{
+      margin-top:6px;
+      font-size:1.45rem;
+      font-weight:800;
+      line-height:1;
+      font-family:"IBM Plex Mono",monospace;
+      color:#211a14;
+    }
+
+    .stat .s{
+      margin-top:6px;
+      font-size:.8rem;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    #cy{
+      height:820px;
+      border-radius:24px;
+      border:1px solid var(--line-soft);
+      overflow:hidden;
+      position:relative;
+      background:
+        radial-gradient(circle at center, rgba(198,137,77,.08), transparent 38%),
+        linear-gradient(180deg, #fdfbf7, #f1eadf);
+    }
+
+    .empty-state{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:24px;
+      color:var(--muted);
+      line-height:1.82;
+      pointer-events:none;
+    }
+
+    .empty-state strong{
+      display:block;
+      color:#43372b;
+      font-size:1.16rem;
+      margin-bottom:6px;
+    }
+
+    .legend{
+      gap:8px;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:5px 10px;
+      border-radius:999px;
+      border:1px solid var(--line-soft);
+      background:#fff;
+      color:#605549;
+      font-size:.82rem;
+    }
+
+    .table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:.92rem;
+    }
+
+    .table th,
+    .table td{
+      text-align:left;
+      padding:9px 0;
+      border-bottom:1px solid var(--line-soft);
+      vertical-align:top;
+    }
+
+    .table th{
+      font-size:.8rem;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      color:#6b5f54;
+    }
+
+    .table tbody tr{
+      cursor:pointer;
+      transition:background .2s ease;
+    }
+
+    .table tbody tr:hover{
+      background:rgba(199,143,92,.06);
+    }
+
+    .mono{
+      font-family:"IBM Plex Mono",monospace;
+    }
+
+    .note{
+      padding:14px 15px;
+      border:1px solid var(--line-soft);
+      border-radius:18px;
+      background:linear-gradient(180deg, #fff, #fcf7ef);
+      color:#5c4f42;
+      font-size:.92rem;
+      line-height:1.72;
+    }
+
+    #tip{
+      position:fixed;
+      z-index:9999;
+      display:none;
+      pointer-events:none;
+      min-width:180px;
+      padding:10px 12px;
+      border-radius:16px;
+      border:1px solid rgba(94,74,49,.16);
+      background:rgba(255,255,255,.96);
+      color:#2d241c;
+      box-shadow:0 20px 40px rgba(39,26,13,.14);
+      backdrop-filter:blur(12px);
+      font-size:.84rem;
+      line-height:1.6;
+    }
+
+    #toast{
+      position:fixed;
+      left:50%;
+      bottom:24px;
+      transform:translateX(-50%) translateY(24px);
+      opacity:0;
+      transition:.28s ease;
+      background:#241d17;
+      color:#fff;
+      padding:12px 16px;
+      border-radius:999px;
+      box-shadow:0 18px 30px rgba(0,0,0,.14);
+      font-size:.92rem;
+      font-weight:700;
+      z-index:999;
+    }
+
+    #toast.show{
+      opacity:1;
+      transform:translateX(-50%) translateY(0);
+    }
+
+    @media (max-width:1360px){
+      .workspace{
+        grid-template-columns:380px minmax(0,1fr);
+      }
+      .side-right{
+        grid-column:1 / -1;
+      }
+      .stats{
+        grid-template-columns:repeat(3,minmax(0,1fr));
+      }
+    }
+
+    @media (max-width:980px){
+      .app{
+        padding:16px;
+      }
+      .hero,
+      .workspace,
+      .grid-2,
+      .grid-3,
+      .stats{
+        grid-template-columns:1fr;
+      }
+      #cy{
+        height:620px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="container">
+      <header class="hero">
+        <div>
+          <h1>概念網絡分析工作台</h1>
+          <p>
+            這一版把原本偏工程測試頁的概念網絡工具，改成更像視覺分析工作台。左邊專注在文本與參數，中間專注在圖形本身，
+            右邊專注在閱讀與解釋。節點大小不再只看詞頻，而是根據 Strength、Betweenness、Closeness 綜合加權。
+          </p>
+        </div>
+        <div>
+          <div class="hero-card">
+            <div class="k">Input</div>
+            <div class="v">詞(詞性) + 空白分隔</div>
+          </div>
+          <div class="hero-card">
+            <div class="k">Visual Direction</div>
+            <div class="v">Gephi-like Focus Map</div>
+          </div>
+        </div>
+      </header>
+
+      <div class="workspace">
+        <aside class="panel">
+          <div class="panel-head">
+            <h2>文本與分析設定</h2>
+            <p>先輸入斷詞文本，再決定節點保留範圍、共現強度、停用詞與節點加權方式。</p>
+          </div>
+          <div class="panel-body">
+            <div class="field">
+              <label for="text">輸入文本</label>
+              <textarea id="text" placeholder="例：電流(Na) 通過(VC) 線圈(Na) 會(VH) 產生(VC) 磁場(Na) 。(PERIODCATEGORY) 磁場(Na) 影響(VC) 指南針(Na) 偏轉(VC) 。(PERIODCATEGORY)"></textarea>
+              <div class="hint">格式建議：每個詞為 <span class="mono">詞(詞性)</span>，詞與詞之間用空白分隔。</div>
+            </div>
+
+            <div class="actions">
+              <button class="btn accent" id="loadDemo">載入示例</button>
+              <button class="btn secondary" id="clearText">清空</button>
+            </div>
+
+            <div class="grid-2">
+              <div class="field">
+                <label for="windowSize">共現窗口</label>
+                <input id="windowSize" type="number" min="2" max="12" value="5">
+              </div>
+              <div class="field">
+                <label for="maxNodes">最大節點數</label>
+                <input id="maxNodes" type="number" min="8" max="120" value="36">
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="field">
+                <label for="minPmi">最小 PMI</label>
+                <input id="minPmi" type="number" step="0.1" value="0.3">
+              </div>
+              <div class="field">
+                <label for="minCooc">最小共現次數</label>
+                <input id="minCooc" type="number" min="1" value="2">
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="field">
+                <label for="edgeDensity">每節點最大邊數</label>
+                <input id="edgeDensity" type="number" min="1" max="12" value="4">
+                <div class="hint">限制每個節點保留幾條最強邊，避免變成毛球。</div>
+              </div>
+              <div class="field">
+                <label for="layoutMode">版面配置</label>
+                <select id="layoutMode">
+                  <option value="fcose">fCoSE（推薦）</option>
+                  <option value="cose">CoSE</option>
+                  <option value="concentric">Concentric</option>
+                </select>
+              </div>
+            </div>
+
+            <fieldset class="field">
+              <legend>保留詞性</legend>
+              <div class="chips" id="posFilters"></div>
+              <div class="pills">
+                <span class="pill">預設忽略：DE / SHI / T / DI / P / Nep / Nh / Neqa / Cbb</span>
+              </div>
+            </fieldset>
+
+            <div class="field">
+              <label for="stopwords">停用詞</label>
+              <input id="stopwords" type="text" value="的,了,在,與,和,及,以及,可以,一個,這個,那個">
+              <div class="hint">用逗號分隔。適合排除泛用字、贅詞或教學口頭詞。</div>
+            </div>
+
+            <fieldset class="field">
+              <legend>節點權重公式</legend>
+              <div class="grid-3">
+                <div class="field">
+                  <label for="alpha">α Strength</label>
+                  <input id="alpha" type="number" step="0.05" value="0.65">
+                </div>
+                <div class="field">
+                  <label for="beta">β Betweenness</label>
+                  <input id="beta" type="number" step="0.05" value="0.25">
+                </div>
+                <div class="field">
+                  <label for="gamma">γ Closeness</label>
+                  <input id="gamma" type="number" step="0.05" value="0.10">
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="field">
+                  <label for="normMethod">標準化方式</label>
+                  <select id="normMethod">
+                    <option value="minmax">Min-Max [0,1]</option>
+                    <option value="z">Z-score</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="labelMode">標籤顯示</label>
+                  <select id="labelMode">
+                    <option value="all">全部節點</option>
+                    <option value="top">只顯示高權重節點</option>
+                  </select>
+                </div>
+              </div>
+            </fieldset>
+
+            <div class="actions">
+              <button class="btn primary" id="buildGraph">建構網絡</button>
+              <button class="btn ok" id="reweight">更新權重</button>
+              <button class="btn secondary" id="fitGraph">置中</button>
+              <button class="btn secondary" id="rerunLayout">重排</button>
+            </div>
+          </div>
+        </aside>
+
+        <main class="panel">
+          <div class="panel-head">
+            <div class="toolbar">
+              <div>
+                <h2>概念圖視覺化</h2>
+                <p>節點大小反映綜合權重，邊粗細與透明度反映關聯強度。搜尋、高亮與點擊都會同步改變閱讀焦點。</p>
+              </div>
+              <div class="toolbar">
+                <input id="searchNode" class="search-input" type="text" placeholder="搜尋節點...">
+                <button class="btn secondary" id="searchBtn">搜尋</button>
+                <button class="btn secondary" id="clearSearch">清除</button>
+              </div>
+            </div>
+
+            <div class="stats">
+              <div class="stat">
+                <span class="k">節點數</span>
+                <span class="v" id="statNodes">0</span>
+                <span class="s">保留進圖中的概念</span>
+              </div>
+              <div class="stat">
+                <span class="k">邊數</span>
+                <span class="v" id="statEdges">0</span>
+                <span class="s">經過過濾後的連線</span>
+              </div>
+              <div class="stat">
+                <span class="k">句子數</span>
+                <span class="v" id="statSentences">0</span>
+                <span class="s">成功解析的句子單位</span>
+              </div>
+              <div class="stat">
+                <span class="k">有效詞數</span>
+                <span class="v" id="statTokens">0</span>
+                <span class="s">過濾後保留的詞彙</span>
+              </div>
+              <div class="stat">
+                <span class="k">平均連線度</span>
+                <span class="v" id="statDensity">0.00</span>
+                <span class="s">每節點平均連到幾條邊</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-body">
+            <div class="legend" id="legend"></div>
+
+            <div id="cy">
+              <div class="empty-state" id="emptyState">
+                <div>
+                  <strong>尚未建構概念圖</strong>
+                  貼上已斷詞文本後，按下「建構網絡」。建議先用 20 到 40 個節點，圖會比較像分析圖，而不是毛線球。
+                </div>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="btn secondary" id="highlightStrength">標示高強度概念</button>
+              <button class="btn warn" id="highlightBridge">標示高橋樑概念</button>
+              <button class="btn secondary" id="clearHighlight">清除標示</button>
+              <button class="btn secondary" id="exportPng">匯出 PNG</button>
+              <button class="btn secondary" id="exportCsv">匯出 CSV</button>
+              <button class="btn secondary" id="exportJson">匯出 JSON</button>
+            </div>
+          </div>
+        </main>
+
+        <aside class="panel side-right">
+          <div class="panel-head">
+            <h2>閱讀面板</h2>
+            <p>右邊不只是數值，而是幫你快速看懂圖：誰是核心概念、誰是橋樑概念、目前選到的節點代表什麼。</p>
+          </div>
+          <div class="panel-body">
+            <div class="note">
+              <strong>怎麼看這張圖</strong><br>
+              Strength 高：通常是文本核心概念。<br>
+              Betweenness 高：通常是跨概念群的橋樑。<br>
+              Closeness 高：通常位在整體網絡的中心位置。
+            </div>
+
+            <div class="field">
+              <label>節點詳細資料</label>
+              <div class="note" id="nodeInfo">
+                尚未選取節點。點一下圖中的節點，這裡會顯示它的詞頻、中央性與相鄰概念。
+              </div>
+            </div>
+
+            <div>
+              <h3 style="margin:0 0 10px;color:#5a4a3a;">核心概念排名</h3>
+              <table class="table" id="strengthTable">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>概念</th>
+                    <th>Strength</th>
+                    <th>綜合權重</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+
+            <div>
+              <h3 style="margin:0 0 10px;color:#5a4a3a;">橋樑概念排名</h3>
+              <table class="table" id="bridgeTable">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>概念</th>
+                    <th>Betweenness</th>
+                    <th>Closeness</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <div id="tip"></div>
+  <div id="toast"></div>
+
+  <script>
+    if (window.cytoscapeFcose) {
+      cytoscape.use(window.cytoscapeFcose);
+    } else if (window.fcose) {
+      cytoscape.use(window.fcose);
+    }
+
+    const POS_LABELS = [
+      ["Na", "普通名詞"],
+      ["Nb", "專有名詞"],
+      ["Nc", "地方名詞"],
+      ["VA", "及物動詞"],
+      ["VC", "動作動詞"],
+      ["VH", "狀態動詞"],
+      ["A",  "形容詞"]
+    ];
+
+    const POS_COLORS = {
+      Na: "#d39063",
+      Nb: "#2aa8a0",
+      Nc: "#5f9b68",
+      VA: "#d973a7",
+      VC: "#6686e1",
+      VH: "#a66a5c",
+      A:  "#9aac59",
+      OTHER: "#9b9184"
+    };
+
+    const IGNORE_POS = new Set(["DE", "T", "SHI", "DI", "P", "Nep", "Nh", "Neqa", "Cbb"]);
+
+    const els = {
+      text: document.getElementById("text"),
+      windowSize: document.getElementById("windowSize"),
+      maxNodes: document.getElementById("maxNodes"),
+      minPmi: document.getElementById("minPmi"),
+      minCooc: document.getElementById("minCooc"),
+      edgeDensity: document.getElementById("edgeDensity"),
+      layoutMode: document.getElementById("layoutMode"),
+      stopwords: document.getElementById("stopwords"),
+      alpha: document.getElementById("alpha"),
+      beta: document.getElementById("beta"),
+      gamma: document.getElementById("gamma"),
+      normMethod: document.getElementById("normMethod"),
+      labelMode: document.getElementById("labelMode"),
+      legend: document.getElementById("legend"),
+      posFilters: document.getElementById("posFilters"),
+      emptyState: document.getElementById("emptyState"),
+      nodeInfo: document.getElementById("nodeInfo"),
+      strengthTable: document.querySelector("#strengthTable tbody"),
+      bridgeTable: document.querySelector("#bridgeTable tbody"),
+      searchNode: document.getElementById("searchNode"),
+      tip: document.getElementById("tip"),
+      toast: document.getElementById("toast")
+    };
+
+    const app = {
+      cy: null,
+      metrics: null,
+      posMap: new Map()
+    };
+
+    function showToast(message) {
+      els.toast.textContent = message;
+      els.toast.classList.add("show");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => {
+        els.toast.classList.remove("show");
+      }, 2200);
+    }
+
+    function renderPosFilters() {
+      els.posFilters.innerHTML = "";
+      POS_LABELS.forEach(([code, label]) => {
+        const chip = document.createElement("label");
+        chip.className = "chip";
+        chip.innerHTML = `
+          <input type="checkbox" class="pos-filter" value="${code}" checked>
+          <span class="swatch" style="background:${POS_COLORS[code]}"></span>
+          <span>${label} (${code})</span>
+        `;
+        els.posFilters.appendChild(chip);
+      });
+    }
+
+    function renderLegend() {
+      els.legend.innerHTML = "";
+      POS_LABELS.forEach(([code, label]) => {
+        const item = document.createElement("span");
+        item.className = "pill";
+        item.innerHTML = `<span class="swatch" style="background:${POS_COLORS[code]}"></span><span>${label} (${code})</span>`;
+        els.legend.appendChild(item);
+      });
+    }
+
+    function parseTaggedText(text) {
+      const normalized = text.replace(/\u3000/g, " ").replace(/\r/g, "").trim();
+      const chunks = normalized.split(/(?<=[。！？!?])/).map(x => x.trim()).filter(Boolean);
+      const tokenRe = /(\S+?)\(([^)]+)\)/g;
+      const sentences = [];
+
+      for (const chunk of chunks) {
+        const tokens = [];
+        for (const m of chunk.matchAll(tokenRe)) {
+          tokens.push({ word: m[1], pos: m[2] });
+        }
+        if (tokens.length) {
+          sentences.push({ raw: chunk, tokens });
+        }
+      }
+      return sentences;
+    }
+
+    function buildVocabulary(sentences) {
+      const keep = new Set([...document.querySelectorAll(".pos-filter:checked")].map(el => el.value));
+      const stop = new Set((els.stopwords.value || "").split(",").map(x => x.trim()).filter(Boolean));
+
+      const filtered = [];
+      const posMap = new Map();
+
+      for (const sentence of sentences) {
+        const kept = [];
+        for (const token of sentence.tokens) {
+          const pos = token.pos.replace(/\-.+$/, "");
+          if (IGNORE_POS.has(pos)) continue;
+          if (!keep.has(pos)) continue;
+          if (token.word.length < 2) continue;
+          if (stop.has(token.word)) continue;
+          if (/^[，。！？、,.!?；：]+$/.test(token.word)) continue;
+
+          kept.push({ word: token.word, pos });
+          if (!posMap.has(token.word)) posMap.set(token.word, pos);
+        }
+        if (kept.length) filtered.push(kept);
+      }
+
+      app.posMap = posMap;
+      return filtered;
+    }
+
+    function computeStats(sentences, windowSize) {
+      const freq = new Map();
+      const cooc = new Map();
+      let tokenTotal = 0;
+      let totalWindows = 0;
+
+      for (const sentence of sentences) {
+        sentence.forEach(token => {
+          tokenTotal += 1;
+          freq.set(token.word, (freq.get(token.word) || 0) + 1);
+        });
+
+        const n = sentence.length;
+        if (!n) continue;
+        const width = Math.max(2, Math.min(windowSize, n));
+
+        for (let i = 0; i <= n - width; i += 1) {
+          const win = sentence.slice(i, i + width);
+          totalWindows += 1;
+          for (let a = 0; a < win.length; a += 1) {
+            for (let b = a + 1; b < win.length; b += 1) {
+              const x = win[a].word;
+              const y = win[b].word;
+              const key = x < y ? `${x}\t${y}` : `${y}\t${x}`;
+              cooc.set(key, (cooc.get(key) || 0) + 1);
+            }
+          }
+        }
+      }
+
+      const probs = new Map();
+      for (const [word, count] of freq) {
+        probs.set(word, count / Math.max(1, tokenTotal));
+      }
+
+      const edges = [];
+      for (const [pair, count] of cooc) {
+        const [source, target] = pair.split("\t");
+        const pij = count / Math.max(1, totalWindows);
+        const pa = probs.get(source) || 1e-9;
+        const pb = probs.get(target) || 1e-9;
+        let pmi = Math.log2(pij / (pa * pb));
+        if (!Number.isFinite(pmi) || pmi < 0) pmi = 0;
+        edges.push({
+          source,
+          target,
+          cooc: count,
+          pmi,
+          weight: pmi * count
+        });
+      }
+
+      return { freq, edges, tokenTotal };
+    }
+
+    function normalizeMap(obj, method) {
+      const ids = Object.keys(obj);
+      if (!ids.length) return {};
+      const vals = ids.map(id => obj[id]);
+
+      if (method === "z") {
+        const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
+        const sd = Math.sqrt(vals.reduce((s, x) => s + (x - mean) * (x - mean), 0) / Math.max(1, vals.length)) || 1;
+        return Object.fromEntries(ids.map(id => [id, (obj[id] - mean) / sd]));
+      }
+
+      const min = Math.min(...vals);
+      const max = Math.max(...vals);
+      const range = max - min || 1;
+      return Object.fromEntries(ids.map(id => [id, (obj[id] - min) / range]));
+    }
+
+    function rank(obj) {
+      return Object.entries(obj).sort((a, b) => b[1] - a[1]);
+    }
+
+    function prepareGraph(stats) {
+      const minPmi = +els.minPmi.value || 0;
+      const minCooc = +els.minCooc.value || 1;
+      const maxNodes = +els.maxNodes.value || 36;
+      const edgeDensity = +els.edgeDensity.value || 4;
+
+      const topTerms = [...stats.freq.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, maxNodes)
+        .map(([word]) => word);
+
+      const topSet = new Set(topTerms);
+
+      const candidateEdges = stats.edges
+        .filter(e => e.pmi >= minPmi && e.cooc >= minCooc && topSet.has(e.source) && topSet.has(e.target))
+        .sort((a, b) => b.weight - a.weight);
+
+      const bucket = new Map();
+      for (const e of candidateEdges) {
+        if (!bucket.has(e.source)) bucket.set(e.source, []);
+        if (!bucket.has(e.target)) bucket.set(e.target, []);
+        bucket.get(e.source).push(e);
+        bucket.get(e.target).push(e);
+      }
+
+      const keepIds = new Set();
+      for (const list of bucket.values()) {
+        list
+          .sort((a, b) => b.weight - a.weight)
+          .slice(0, edgeDensity)
+          .forEach(e => {
+            const id = e.source < e.target ? `${e.source}__${e.target}` : `${e.target}__${e.source}`;
+            keepIds.add(id);
+          });
+      }
+
+      const edges = candidateEdges
+        .filter(e => {
+          const id = e.source < e.target ? `${e.source}__${e.target}` : `${e.target}__${e.source}`;
+          return keepIds.has(id);
+        })
+        .map(e => ({
+          data: {
+            id: e.source < e.target ? `${e.source}__${e.target}` : `${e.target}__${e.source}`,
+            source: e.source,
+            target: e.target,
+            cooc: e.cooc,
+            pmi: e.pmi,
+            weight: e.weight
+          }
+        }));
+
+      const active = new Set();
+      edges.forEach(e => {
+        active.add(e.data.source);
+        active.add(e.data.target);
+      });
+
+      if (!active.size) {
+        topTerms.slice(0, Math.min(12, topTerms.length)).forEach(term => active.add(term));
+      }
+
+      const nodes = [...active].map(id => ({
+        data: {
+          id,
+          label: id,
+          freq: stats.freq.get(id) || 0,
+          pos: app.posMap.get(id) || "OTHER",
+          size: 30,
+          displayLabel: id
+        }
+      }));
+
+      const weights = edges.map(e => e.data.weight);
+      const min = Math.min(...weights, 0);
+      const max = Math.max(...weights, 1);
+      const range = max - min || 1;
+
+      edges.forEach(e => {
+        const ratio = (e.data.weight - min) / range;
+        e.data.edgeWidth = 1.2 + ratio * 5.8;
+        e.data.edgeOpacity = 0.15 + ratio * 0.55;
+      });
+
+      return { nodes, edges };
+    }
+
+    function computeCentralities(cy) {
+      const ids = cy.nodes().map(n => n.id());
+      const idx = new Map(ids.map((id, i) => [id, i]));
+      const N = ids.length;
+      const adj = Array.from({ length: N }, () => []);
+      const strength = {};
+      const degree = {};
+
+      ids.forEach(id => {
+        strength[id] = 0;
+        degree[id] = 0;
+      });
+
+      cy.edges().forEach(e => {
+        const s = e.source().id();
+        const t = e.target().id();
+        const w = Math.max(1e-6, e.data("weight") || 1e-6);
+
+        adj[idx.get(s)].push({ to: idx.get(t), cost: 1 / w });
+        adj[idx.get(t)].push({ to: idx.get(s), cost: 1 / w });
+        strength[s] += w;
+        strength[t] += w;
+        degree[s] += 1;
+        degree[t] += 1;
+      });
+
+      const betweenness = Object.fromEntries(ids.map(id => [id, 0]));
+      const closeness = Object.fromEntries(ids.map(id => [id, 0]));
+      const INF = 1e18;
+
+      for (let s = 0; s < N; s += 1) {
+        const stack = [];
+        const pred = Array.from({ length: N }, () => []);
+        const sigma = Array(N).fill(0);
+        const dist = Array(N).fill(INF);
+        const delta = Array(N).fill(0);
+        const Q = new Set(ids.map((_, i) => i));
+
+        sigma[s] = 1;
+        dist[s] = 0;
+
+        while (Q.size) {
+          let u = -1;
+          let best = INF;
+
+          for (const i of Q) {
+            if (dist[i] < best) {
+              best = dist[i];
+              u = i;
+            }
+          }
+
+          if (u === -1 || best === INF) break;
+
+          Q.delete(u);
+          stack.push(u);
+
+          for (const edge of adj[u]) {
+            const alt = dist[u] + edge.cost;
+            if (alt < dist[edge.to] - 1e-12) {
+              dist[edge.to] = alt;
+              sigma[edge.to] = sigma[u];
+              pred[edge.to] = [u];
+            } else if (Math.abs(alt - dist[edge.to]) <= 1e-12) {
+              sigma[edge.to] += sigma[u];
+              pred[edge.to].push(u);
+            }
+          }
+        }
+
+        let reachable = 0;
+        let sum = 0;
+        for (let i = 0; i < N; i += 1) {
+          if (i !== s && dist[i] < INF / 2) {
+            reachable += 1;
+            sum += dist[i];
+          }
+        }
+        closeness[ids[s]] = reachable && sum ? reachable / sum : 0;
+
+        while (stack.length) {
+          const w = stack.pop();
+          for (const v of pred[w]) {
+            delta[v] += (sigma[v] / Math.max(1e-12, sigma[w])) * (1 + delta[w]);
+          }
+          if (w !== s) {
+            betweenness[ids[w]] += delta[w];
+          }
+        }
+      }
+
+      const factor = N > 2 ? 2 / ((N - 1) * (N - 2)) : 1;
+      ids.forEach(id => {
+        betweenness[id] *= factor;
+      });
+
+      return { strength, degree, betweenness, closeness };
+    }
+
+    function layoutConfig() {
+      if (els.layoutMode.value === "concentric") {
+        return {
+          name: "concentric",
+          animate: true,
+          fit: true,
+          padding: 40,
+          concentric: n => n.data("score") || n.data("freq") || 1,
+          levelWidth: () => 1
+        };
+      }
+
+      if (els.layoutMode.value === "cose") {
+        return {
+          name: "cose",
+          animate: true,
+          fit: true,
+          padding: 40,
+          nodeRepulsion: 180000,
+          idealEdgeLength: 140,
+          edgeElasticity: 0.12
+        };
+      }
+
+      return {
+        name: "fcose",
+        quality: "default",
+        randomize: false,
+        animate: true,
+        fit: true,
+        padding: 40,
+        nodeRepulsion: 220000,
+        idealEdgeLength: 160,
+        edgeElasticity: 0.08,
+        gravity: 0.12,
+        nestingFactor: 0.8,
+        numIter: 3000
+      };
+    }
+
+    function initCy(elements) {
+      if (!app.cy) {
+        app.cy = cytoscape({
+          container: document.getElementById("cy"),
+          elements,
+          minZoom: 0.22,
+          maxZoom: 3,
+          wheelSensitivity: 0.25,
+          textureOnViewport: true,
+          motionBlur: true,
+          motionBlurOpacity: 0.06,
+          style: [
+            {
+              selector: "node",
+              style: {
+                "label": "data(displayLabel)",
+                "font-family": "IBM Plex Sans TC",
+                "font-size": 11,
+                "min-zoomed-font-size": 8,
+                "text-wrap": "wrap",
+                "text-max-width": 110,
+                "text-valign": "center",
+                "text-halign": "center",
+                "color": "#201913",
+                "text-background-color": "rgba(255,255,255,0.68)",
+                "text-background-opacity": 1,
+                "text-background-padding": 3,
+                "text-border-color": "rgba(120,93,64,0.18)",
+                "text-border-opacity": 1,
+                "text-border-width": 0.5,
+                "background-color": ele => POS_COLORS[ele.data("pos")] || POS_COLORS.OTHER,
+                "border-width": 1.5,
+                "border-color": "rgba(87,67,45,0.18)",
+                "width": "data(size)",
+                "height": "data(size)",
+                "overlay-opacity": 0,
+                "shadow-blur": 18,
+                "shadow-opacity": 0.14,
+                "shadow-color": "rgba(94,67,41,0.38)",
+                "shadow-offset-x": 0,
+                "shadow-offset-y": 8
+              }
+            },
+            {
+              selector: "edge",
+              style: {
+                "curve-style": "bezier",
+                "width": "data(edgeWidth)",
+                "line-color": "#a6947d",
+                "opacity": "data(edgeOpacity)",
+                "overlay-opacity": 0
+              }
+            },
+            {
+              selector: ".muted",
+              style: {
+                "opacity": 0.12,
+                "text-opacity": 0.12
+              }
+            },
+            {
+              selector: ".focus",
+              style: {
+                "border-width": 4,
+                "border-color": "#201712",
+                "shadow-opacity": 0.28,
+                "shadow-blur": 28,
+                "z-index-compare": "manual",
+                "z-index": 999
+              }
+            },
+            {
+              selector: ".strength-hot",
+              style: {
+                "border-width": 4,
+                "border-color": "#236d50",
+                "line-color": "#236d50"
+              }
+            },
+            {
+              selector: ".bridge-hot",
+              style: {
+                "border-width": 4,
+                "border-color": "#9b4635",
+                "line-color": "#9b4635"
+              }
+            }
+          ]
+        });
+
+        bindCyEvents();
+      } else {
+        app.cy.elements().remove();
+        app.cy.add(elements);
+      }
+
+      els.emptyState.style.display = elements.nodes.length ? "none" : "flex";
+      runLayout();
+    }
+
+    function runLayout() {
+      if (!app.cy) return;
+      app.cy.layout(layoutConfig()).run();
+      setTimeout(() => app.cy.fit(undefined, 36), 120);
+    }
+
+    function bindCyEvents() {
+      const cy = app.cy;
+
+      cy.on("tap", "node", e => {
+        focusNode(e.target.id());
+        updateNodeInfo(e.target.id());
+      });
+
+      cy.on("mouseover", "node", e => {
+        const n = e.target;
+        const id = n.id();
+        const m = app.metrics;
+        els.tip.innerHTML = `
+          <strong class="mono">${id}</strong><br>
+          詞頻：<span class="mono">${n.data("freq")}</span><br>
+          Strength：<span class="mono">${(m?.strength?.[id] || 0).toFixed(3)}</span><br>
+          Betweenness：<span class="mono">${(m?.betweenness?.[id] || 0).toFixed(4)}</span>
+        `;
+        els.tip.style.display = "block";
+      });
+
+      cy.on("mousemove", e => {
+        if (els.tip.style.display !== "block") return;
+        els.tip.style.left = `${e.originalEvent.pageX + 14}px`;
+        els.tip.style.top = `${e.originalEvent.pageY + 14}px`;
+      });
+
+      cy.on("mouseout", "node", () => {
+        els.tip.style.display = "none";
+      });
+
+      cy.on("tap", e => {
+        if (e.target === cy) {
+          clearFocus();
+        }
+      });
+    }
+
+    function applyWeights() {
+      if (!app.cy || !app.metrics) return;
+
+      const S = normalizeMap(app.metrics.strength, els.normMethod.value);
+      const B = normalizeMap(app.metrics.betweenness, els.normMethod.value);
+      const C = normalizeMap(app.metrics.closeness, els.normMethod.value);
+
+      const a = +els.alpha.value || 0.65;
+      const b = +els.beta.value || 0.25;
+      const g = +els.gamma.value || 0.10;
+
+      const ids = app.cy.nodes().map(n => n.id());
+      const score = {};
+
+      ids.forEach(id => {
+        score[id] = a * (S[id] || 0) + b * (B[id] || 0) + g * (C[id] || 0);
+      });
+
+      const final = normalizeMap(score, "minmax");
+      const topIds = new Set(
+        rank(final)
+          .slice(0, Math.max(8, Math.round(ids.length * 0.45)))
+          .map(([id]) => id)
+      );
+
+      app.cy.nodes().forEach(n => {
+        const v = final[n.id()] || 0;
+        n.data("score", v);
+        n.data("size", 28 + v * 42);
+        n.data("displayLabel", els.labelMode.value === "top" && !topIds.has(n.id()) ? "" : n.id());
+      });
+
+      app.metrics.combined = final;
+      updateTables();
+      runLayout();
+    }
+
+    function updateStats(nodes, edges, filtered, tokenTotal) {
+      document.getElementById("statNodes").textContent = nodes.length;
+      document.getElementById("statEdges").textContent = edges.length;
+      document.getElementById("statSentences").textContent = filtered.length;
+      document.getElementById("statTokens").textContent = tokenTotal;
+      document.getElementById("statDensity").textContent = nodes.length ? (edges.length * 2 / nodes.length).toFixed(2) : "0.00";
+    }
+
+    function updateTables() {
+      if (!app.metrics) return;
+
+      els.strengthTable.innerHTML = "";
+      els.bridgeTable.innerHTML = "";
+
+      rank(app.metrics.strength).slice(0, 12).forEach(([id, val], i) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${i + 1}</td>
+          <td class="mono">${id}</td>
+          <td>${val.toFixed(3)}</td>
+          <td>${((app.metrics.combined || {})[id] || 0).toFixed(3)}</td>
+        `;
+        tr.onclick = () => {
+          focusNode(id);
+          updateNodeInfo(id);
+        };
+        els.strengthTable.appendChild(tr);
+      });
+
+      rank(app.metrics.betweenness).slice(0, 12).forEach(([id, val], i) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${i + 1}</td>
+          <td class="mono">${id}</td>
+          <td>${val.toFixed(4)}</td>
+          <td>${(app.metrics.closeness[id] || 0).toFixed(4)}</td>
+        `;
+        tr.onclick = () => {
+          focusNode(id);
+          updateNodeInfo(id);
+        };
+        els.bridgeTable.appendChild(tr);
+      });
+    }
+
+    function updateNodeInfo(id) {
+      if (!app.cy || !app.metrics) return;
+      const node = app.cy.getElementById(id);
+      if (!node.length) return;
+
+      const neighbors = node.neighborhood("node")
+        .map(n => ({
+          id: n.id(),
+          score: (app.metrics.combined || {})[n.id()] || 0
+        }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 8);
+
+      const pos = app.posMap.get(id) || "OTHER";
+
+      els.nodeInfo.innerHTML = `
+        <div class="pills" style="margin-bottom:10px;">
+          <span class="pill"><strong class="mono">${id}</strong></span>
+          <span class="pill">${pos}</span>
+          <span class="pill">freq ${node.data("freq")}</span>
+        </div>
+        <div class="mono" style="line-height:1.9;">
+          Strength = ${(app.metrics.strength[id] || 0).toFixed(3)}<br>
+          Degree = ${(app.metrics.degree[id] || 0).toFixed(0)}<br>
+          Betweenness = ${(app.metrics.betweenness[id] || 0).toFixed(4)}<br>
+          Closeness = ${(app.metrics.closeness[id] || 0).toFixed(4)}<br>
+          Combined = ${((app.metrics.combined || {})[id] || 0).toFixed(4)}
+        </div>
+        <div style="margin-top:10px;">
+          <strong>最相關的鄰近概念</strong><br>
+          ${neighbors.length
+            ? neighbors.map(x => `<span class="pill" style="margin-top:8px;">${x.id}</span>`).join(" ")
+            : "目前沒有可顯示的鄰近概念"}
+        </div>
+      `;
+    }
+
+    function clearFocus() {
+      if (!app.cy) return;
+      app.cy.elements().removeClass("focus muted");
+      els.nodeInfo.innerHTML = "尚未選取節點。點一下圖中的節點，這裡會顯示它的詞頻、中央性與相鄰概念。";
+    }
+
+    function focusNode(id) {
+      if (!app.cy) return;
+      const node = app.cy.getElementById(id);
+      if (!node.length) {
+        showToast("找不到這個節點");
+        return;
+      }
+
+      app.cy.elements().addClass("muted");
+      node.removeClass("muted").addClass("focus");
+      node.closedNeighborhood().removeClass("muted");
+      app.cy.animate({
+        fit: { eles: node.closedNeighborhood(), padding: 100 },
+        duration: 450
+      });
+    }
+
+    function clearHighlights() {
+      if (app.cy) {
+        app.cy.elements().removeClass("strength-hot bridge-hot");
+      }
+    }
+
+    function highlightTop(type) {
+      if (!app.cy || !app.metrics) return;
+      clearHighlights();
+
+      const cls = type === "strength" ? "strength-hot" : "bridge-hot";
+      rank(app.metrics[type]).slice(0, 8).map(([id]) => id).forEach(id => {
+        const node = app.cy.getElementById(id);
+        node.addClass(cls);
+        node.connectedEdges().addClass(cls);
+      });
+
+      app.cy.fit(app.cy.elements(`.${cls}`), 80);
+    }
+
+    function searchNode() {
+      const q = (els.searchNode.value || "").trim();
+      if (!q) return;
+      focusNode(q);
+      updateNodeInfo(q);
+    }
+
+    function exportCsv() {
+      if (!app.cy) return;
+      const rows = ["source,target,cooc,pmi,weight"];
+      app.cy.edges().forEach(e => {
+        rows.push([
+          e.data("source"),
+          e.data("target"),
+          e.data("cooc"),
+          (+e.data("pmi") || 0).toFixed(4),
+          (+e.data("weight") || 0).toFixed(4)
+        ].join(","));
+      });
+      const blob = new Blob([rows.join("\n")], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "concept-network-edges.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function exportJson() {
+      if (!app.cy || !app.metrics) return;
+      const payload = JSON.stringify({
+        nodes: app.cy.nodes().map(n => n.data()),
+        edges: app.cy.edges().map(e => e.data()),
+        metrics: app.metrics
+      }, null, 2);
+
+      const blob = new Blob([payload], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "concept-network.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function exportPng() {
+      if (!app.cy) return;
+      const png = app.cy.png({ full: true, scale: 2.5, bg: "#f7f2e8" });
+      const a = document.createElement("a");
+      a.href = png;
+      a.download = "concept-network.png";
+      a.click();
+    }
+
+    function buildNetwork() {
+      const raw = els.text.value.trim();
+      if (!raw) {
+        showToast("請先貼上已斷詞文本");
+        return;
+      }
+
+      const sentences = parseTaggedText(raw);
+      if (!sentences.length) {
+        showToast("沒有成功解析到任何 詞(詞性) 格式");
+        return;
+      }
+
+      const filtered = buildVocabulary(sentences);
+      const tokenTotal = filtered.reduce((a, s) => a + s.length, 0);
+
+      if (!tokenTotal) {
+        showToast("過濾後沒有可用詞彙，請調整詞性或停用詞");
+        return;
+      }
+
+      const stats = computeStats(filtered, +els.windowSize.value || 5);
+      const elements = prepareGraph(stats);
+
+      if (!elements.nodes.length) {
+        showToast("目前條件太嚴格，沒有可視化節點");
+        return;
+      }
+
+      initCy(elements);
+      app.metrics = computeCentralities(app.cy);
+      applyWeights();
+      updateStats(elements.nodes, elements.edges, filtered, tokenTotal);
+      clearFocus();
+      showToast("概念網絡已建立");
+    }
+
+    function loadDemo() {
+      els.text.value = [
+        "電流(Na) 通過(VC) 線圈(Na) 時(Nd) 會(VH) 產生(VC) 磁場(Na) 。(PERIODCATEGORY)",
+        "磁場(Na) 會(VH) 影響(VC) 指南針(Na) 的(DE) 偏轉(VA) 方向(Na) 。(PERIODCATEGORY)",
+        "如果(Cbb) 線圈(Na) 中(Ncd) 的(DE) 電流(Na) 增加(VC) ，(COMMACATEGORY) 磁力(Na) 也(D) 會(VH) 增強(VC) 。(PERIODCATEGORY)",
+        "磁場(Na) 強度(Na) 與(Caa) 線圈(Na) 匝數(Na) 、(COMMACATEGORY) 電流(Na) 大小(Na) 有(V_2) 關係(Na) 。(PERIODCATEGORY)",
+        "學生(Na) 可以(VH) 透過(VC) 實驗(Na) 觀察(VC) 電流(Na) 、(COMMACATEGORY) 磁場(Na) 與(Caa) 磁力(Na) 之間(Ncd) 的(DE) 連結(Na) 。(PERIODCATEGORY)"
+      ].join(" ");
+      showToast("已載入示例文本");
+    }
+
+    function clearText() {
+      els.text.value = "";
+      els.searchNode.value = "";
+      clearFocus();
+
+      if (app.cy) {
+        app.cy.elements().remove();
+      }
+
+      els.emptyState.style.display = "flex";
+      document.getElementById("statNodes").textContent = "0";
+      document.getElementById("statEdges").textContent = "0";
+      document.getElementById("statSentences").textContent = "0";
+      document.getElementById("statTokens").textContent = "0";
+      document.getElementById("statDensity").textContent = "0.00";
+      els.strengthTable.innerHTML = "";
+      els.bridgeTable.innerHTML = "";
+      app.metrics = null;
+      showToast("已清空畫面");
+    }
+
+    function bindUI() {
+      renderPosFilters();
+      renderLegend();
+
+      document.getElementById("buildGraph").onclick = buildNetwork;
+      document.getElementById("loadDemo").onclick = loadDemo;
+      document.getElementById("clearText").onclick = clearText;
+
+      document.getElementById("reweight").onclick = () => {
+        if (!app.cy || !app.metrics) {
+          showToast("請先建構網絡");
+          return;
+        }
+        applyWeights();
+        showToast("節點權重已更新");
+      };
+
+      document.getElementById("fitGraph").onclick = () => app.cy && app.cy.fit(undefined, 36);
+      document.getElementById("rerunLayout").onclick = () => app.cy && runLayout();
+      document.getElementById("highlightStrength").onclick = () => highlightTop("strength");
+      document.getElementById("highlightBridge").onclick = () => highlightTop("betweenness");
+      document.getElementById("clearHighlight").onclick = clearHighlights;
+      document.getElementById("searchBtn").onclick = searchNode;
+      document.getElementById("clearSearch").onclick = () => {
+        els.searchNode.value = "";
+        clearFocus();
+      };
+      document.getElementById("exportCsv").onclick = exportCsv;
+      document.getElementById("exportJson").onclick = exportJson;
+      document.getElementById("exportPng").onclick = exportPng;
+
+      els.searchNode.addEventListener("keydown", e => {
+        if (e.key === "Enter") searchNode();
+      });
+
+      els.labelMode.onchange = () => {
+        if (app.cy && app.metrics) applyWeights();
+      };
+    }
+
+    bindUI();
+    loadDemo();
+    buildNetwork();
+  </script>
+</body>
+</html>
 
