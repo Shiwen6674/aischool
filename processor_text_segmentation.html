@@ -211,28 +211,28 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
           <div class="stat-card border-l-4 border-slate-500">
-            <div class="stat-title"><i class="fa-solid fa-chart-pie"></i><span data-i18n="total">Total</span></div>
+            <div class="stat-title"><i class="fa-solid fa-chart-pie"></i><span data-i18n="total">總覽 Total</span></div>
             <div class="stat-val-row"><span class="stat-label" data-i18n="tokens">Tokens</span><span class="stat-num text-slate-700" id="stat-total-token">0</span></div>
             <div class="stat-val-row"><span class="stat-label" data-i18n="types">Types</span><span class="stat-num text-slate-500" id="stat-total-type">0</span></div>
             <div class="text-xs text-right text-slate-400 mt-1">TTR: <span id="stat-total-ttr">0.00</span></div>
           </div>
           <div class="stat-card border-l-4 border-blue-500">
-            <div class="stat-title text-blue-600"><span class="w-2 h-2 rounded-full bg-blue-500"></span><span>Noun (N)</span></div>
+            <div class="stat-title text-blue-600"><span class="w-2 h-2 rounded-full bg-blue-500"></span><span data-i18n="stat_noun">名詞 Noun (N)</span></div>
             <div class="stat-val-row"><span class="stat-label" data-i18n="tokens">Tokens</span><span class="stat-num text-blue-700" id="stat-n-token">0</span></div>
             <div class="stat-bar-bg"><div id="bar-n" class="stat-bar-fill bg-blue-500" style="width:0%"></div></div>
           </div>
           <div class="stat-card border-l-4 border-red-500">
-            <div class="stat-title text-red-600"><span class="w-2 h-2 rounded-full bg-red-500"></span><span>Verb (V)</span></div>
+            <div class="stat-title text-red-600"><span class="w-2 h-2 rounded-full bg-red-500"></span><span data-i18n="stat_verb">動詞 Verb (V)</span></div>
             <div class="stat-val-row"><span class="stat-label" data-i18n="tokens">Tokens</span><span class="stat-num text-red-700" id="stat-v-token">0</span></div>
             <div class="stat-bar-bg"><div id="bar-v" class="stat-bar-fill bg-red-500" style="width:0%"></div></div>
           </div>
           <div class="stat-card border-l-4 border-green-500">
-            <div class="stat-title text-green-600"><span class="w-2 h-2 rounded-full bg-green-500"></span><span>Adj (A)</span></div>
+            <div class="stat-title text-green-600"><span class="w-2 h-2 rounded-full bg-green-500"></span><span data-i18n="stat_adj">形容詞 Adjective (A)</span></div>
             <div class="stat-val-row"><span class="stat-label" data-i18n="tokens">Tokens</span><span class="stat-num text-green-700" id="stat-a-token">0</span></div>
             <div class="stat-bar-bg"><div id="bar-a" class="stat-bar-fill bg-green-500" style="width:0%"></div></div>
           </div>
           <div class="stat-card border-l-4 border-amber-500">
-            <div class="stat-title text-amber-600"><span class="w-2 h-2 rounded-full bg-amber-500"></span><span>Adv (D)</span></div>
+            <div class="stat-title text-amber-600"><span class="w-2 h-2 rounded-full bg-amber-500"></span><span data-i18n="stat_adv">副詞 Adverb (D)</span></div>
             <div class="stat-val-row"><span class="stat-label" data-i18n="tokens">Tokens</span><span class="stat-num text-amber-700" id="stat-d-token">0</span></div>
             <div class="stat-bar-bg"><div id="bar-d" class="stat-bar-fill bg-amber-500" style="width:0%"></div></div>
           </div>
@@ -245,12 +245,12 @@
                 <i class="fa-solid fa-tags text-purple-500"></i><span data-i18n="result_title">斷詞結果</span>
               </h3>
               <div class="hidden md:flex gap-4 text-xs font-bold text-slate-400 flex-wrap">
-                <span class="flex items-center gap-1 text-blue-600">● <span data-i18n="legend_noun">Noun</span></span>
-                <span class="flex items-center gap-1 text-red-600">● <span data-i18n="legend_verb">Verb</span></span>
-                <span class="flex items-center gap-1 text-green-600">● <span data-i18n="legend_adj">Adj</span></span>
-                <span class="flex items-center gap-1 text-amber-600">● <span data-i18n="legend_adv">Adv</span></span>
-                <span class="flex items-center gap-1 text-violet-600">● <span data-i18n="legend_punc">Punctuation</span></span>
-                <span class="flex items-center gap-1 text-slate-500">● <span data-i18n="legend_other">Other</span></span>
+                <span class="flex items-center gap-1 text-blue-600">● <span data-i18n="legend_noun">名詞 Noun</span></span>
+                <span class="flex items-center gap-1 text-red-600">● <span data-i18n="legend_verb">動詞 Verb</span></span>
+                <span class="flex items-center gap-1 text-green-600">● <span data-i18n="legend_adj">形容詞 Adjective</span></span>
+                <span class="flex items-center gap-1 text-amber-600">● <span data-i18n="legend_adv">副詞 Adverb</span></span>
+                <span class="flex items-center gap-1 text-violet-600">● <span data-i18n="legend_punc">標點 Punctuation</span></span>
+                <span class="flex items-center gap-1 text-slate-500">● <span data-i18n="legend_other">其他 Other</span></span>
               </div>
             </div>
             <div class="flex gap-2 flex-wrap">
@@ -313,17 +313,22 @@
           <div class="glass-panel p-6 rounded-3xl border border-white/60">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2"><i class="fa-solid fa-circle-info text-purple-500"></i><span data-i18n="meta_title">分析資訊</span></h3>
-              <span id="metaCompletenessTag" class="chip">—</span>
+              <div class="flex items-center gap-2">
+                <span id="metaCompletenessTag" class="chip">—</span>
+                <button onclick="toggleMetaPanel()" class="view-tab active" id="metaToggleBtn"><span data-i18n="btn_fold">收合</span></button>
+              </div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-              <div class="chip justify-between"><span data-i18n="meta_request_id">Request ID</span><span class="mono" id="metaRequestId">—</span></div>
-              <div class="chip justify-between"><span data-i18n="meta_engine">Engine</span><span class="mono" id="metaEngine">legacy</span></div>
-              <div class="chip justify-between"><span data-i18n="meta_duration">處理時間</span><span class="mono" id="metaDuration">—</span></div>
-              <div class="chip justify-between"><span data-i18n="meta_sentences">句數</span><span class="mono" id="metaSentences">0</span></div>
-              <div class="chip justify-between"><span data-i18n="meta_input_chars">輸入字元</span><span class="mono" id="metaInputChars">0</span></div>
-              <div class="chip justify-between"><span data-i18n="meta_coverage">覆蓋率</span><span class="mono" id="metaCoverage">0%</span></div>
+            <div id="metaPanel">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                <div class="chip justify-between"><span data-i18n="meta_request_id">Request ID</span><span class="mono" id="metaRequestId">—</span></div>
+                <div class="chip justify-between"><span data-i18n="meta_engine">Engine</span><span class="mono" id="metaEngine">legacy</span></div>
+                <div class="chip justify-between"><span data-i18n="meta_duration">處理時間</span><span class="mono" id="metaDuration">—</span></div>
+                <div class="chip justify-between"><span data-i18n="meta_sentences">句數</span><span class="mono" id="metaSentences">0</span></div>
+                <div class="chip justify-between"><span data-i18n="meta_input_chars">輸入字元</span><span class="mono" id="metaInputChars">0</span></div>
+                <div class="chip justify-between"><span data-i18n="meta_coverage">覆蓋率</span><span class="mono" id="metaCoverage">0%</span></div>
+              </div>
+              <div class="mt-4 text-sm text-slate-500" id="metaNote" data-i18n="meta_note">只有完整結果才會產生正式統計。</div>
             </div>
-            <div class="mt-4 text-sm text-slate-500" id="metaNote" data-i18n="meta_note">只有完整結果才會產生正式統計。</div>
           </div>
 
           <div class="glass-panel p-6 rounded-3xl border border-white/60">
@@ -364,9 +369,10 @@
         state_success_title:'分析完成', state_success_msg:'結果完整，可用於統計與匯出。',
         state_partial_title:'結果不完整', state_partial_msg:'系統偵測到結果疑似截斷，已停止把它當成正式結果。',
         state_error_title:'分析失敗', state_error_msg:'本次回傳格式異常或後端未正常回應。',
-        total:'Total', tokens:'Tokens', types:'Types',
+        total:'總覽 Total', tokens:'詞數 Tokens', types:'詞型 Types',
+        stat_noun:'名詞 Noun (N)', stat_verb:'動詞 Verb (V)', stat_adj:'形容詞 Adjective (A)', stat_adv:'副詞 Adverb (D)',
         result_title:'斷詞結果', btn_copy_text:'複製純文字', btn_download:'下載 .txt', btn_download_csv:'下載 .csv', btn_download_json:'下載 .json',
-        legend_noun:'Noun', legend_verb:'Verb', legend_adj:'Adj', legend_adv:'Adv', legend_punc:'Punctuation', legend_other:'Other',
+        legend_noun:'名詞 Noun', legend_verb:'動詞 Verb', legend_adj:'形容詞 Adjective', legend_adv:'副詞 Adverb', legend_punc:'標點 Punctuation', legend_other:'其他 Other',
         view_reading:'閱讀模式', view_table:'表格模式', toggle_raw_pos:'顯示原始詞性',
         col_sentence:'句', col_word:'詞', col_category:'類別', col_raw_pos:'原始詞性', col_char_span:'字長',
         meta_title:'分析資訊', meta_request_id:'Request ID', meta_engine:'Engine', meta_duration:'處理時間', meta_sentences:'句數', meta_input_chars:'輸入字元', meta_coverage:'覆蓋率', meta_note:'只有完整結果才會產生正式統計。',
@@ -386,8 +392,8 @@
         state_success_title:'Analysis complete', state_success_msg:'The result looks complete and can be used for export/statistics.',
         state_partial_title:'Incomplete result', state_partial_msg:'The system suspects the result is truncated and will not treat it as final.',
         state_error_title:'Analysis failed', state_error_msg:'The response format is invalid or the backend did not respond correctly.',
-        total:'Total', tokens:'Tokens', types:'Types', result_title:'Results', btn_copy_text:'Copy Text', btn_download:'Download .txt', btn_download_csv:'Download .csv', btn_download_json:'Download .json',
-        legend_noun:'Noun', legend_verb:'Verb', legend_adj:'Adj', legend_adv:'Adv', legend_punc:'Punctuation', legend_other:'Other',
+        total:'Total 總覽', tokens:'Tokens 詞數', types:'Types 詞型', stat_noun:'Noun 名詞 (N)', stat_verb:'Verb 動詞 (V)', stat_adj:'Adjective 形容詞 (A)', stat_adv:'Adverb 副詞 (D)', result_title:'Results', btn_copy_text:'Copy Text', btn_download:'Download .txt', btn_download_csv:'Download .csv', btn_download_json:'Download .json',
+        legend_noun:'Noun 名詞', legend_verb:'Verb 動詞', legend_adj:'Adjective 形容詞', legend_adv:'Adverb 副詞', legend_punc:'Punctuation 標點', legend_other:'Other 其他',
         view_reading:'Reading View', view_table:'Table View', toggle_raw_pos:'Show Raw POS',
         col_sentence:'Sentence', col_word:'Word', col_category:'Category', col_raw_pos:'Raw POS', col_char_span:'Length',
         meta_title:'Analysis Meta', meta_request_id:'Request ID', meta_engine:'Engine', meta_duration:'Duration', meta_sentences:'Sentences', meta_input_chars:'Input chars', meta_coverage:'Coverage', meta_note:'Formal statistics are generated only for complete results.',
@@ -407,8 +413,8 @@
         state_success_title:'解析完了', state_success_msg:'結果は完全と判定され、統計や書き出しに使えます。',
         state_partial_title:'結果が不完全', state_partial_msg:'途中で切れた可能性があり、正式結果として扱いません。',
         state_error_title:'解析失敗', state_error_msg:'レスポンス形式異常、または後台が正常に応答しませんでした。',
-        total:'Total', tokens:'Tokens', types:'Types', result_title:'解析結果', btn_copy_text:'テキストコピー', btn_download:'ダウンロード .txt', btn_download_csv:'ダウンロード .csv', btn_download_json:'ダウンロード .json',
-        legend_noun:'Noun', legend_verb:'Verb', legend_adj:'Adj', legend_adv:'Adv', legend_punc:'Punctuation', legend_other:'Other',
+        total:'総覧 Total', tokens:'語数 Tokens', types:'語形 Types', stat_noun:'名詞 Noun (N)', stat_verb:'動詞 Verb (V)', stat_adj:'形容詞 Adjective (A)', stat_adv:'副詞 Adverb (D)', result_title:'解析結果', btn_copy_text:'テキストコピー', btn_download:'ダウンロード .txt', btn_download_csv:'ダウンロード .csv', btn_download_json:'ダウンロード .json',
+        legend_noun:'名詞 Noun', legend_verb:'動詞 Verb', legend_adj:'形容詞 Adjective', legend_adv:'副詞 Adverb', legend_punc:'句読点 Punctuation', legend_other:'その他 Other',
         view_reading:'閲覧表示', view_table:'表表示', toggle_raw_pos:'生POS表示',
         col_sentence:'文', col_word:'語', col_category:'カテゴリ', col_raw_pos:'生POS', col_char_span:'字長',
         meta_title:'解析情報', meta_request_id:'Request ID', meta_engine:'Engine', meta_duration:'処理時間', meta_sentences:'文数', meta_input_chars:'入力文字数', meta_coverage:'カバー率', meta_note:'正式統計は完全結果のみ生成されます。',
@@ -428,8 +434,8 @@
         state_success_title:'分析完成', state_success_msg:'结果完整，可用于统计与导出。',
         state_partial_title:'结果不完整', state_partial_msg:'系统侦测到结果疑似被截断，已停止将其视为正式结果。',
         state_error_title:'分析失败', state_error_msg:'本次回传格式异常或后端未正常响应。',
-        total:'Total', tokens:'Tokens', types:'Types', result_title:'分词结果', btn_copy_text:'复制纯文本', btn_download:'下载 .txt', btn_download_csv:'下载 .csv', btn_download_json:'下载 .json',
-        legend_noun:'Noun', legend_verb:'Verb', legend_adj:'Adj', legend_adv:'Adv', legend_punc:'Punctuation', legend_other:'Other',
+        total:'总览 Total', tokens:'词数 Tokens', types:'词型 Types', stat_noun:'名词 Noun (N)', stat_verb:'动词 Verb (V)', stat_adj:'形容词 Adjective (A)', stat_adv:'副词 Adverb (D)', result_title:'分词结果', btn_copy_text:'复制纯文本', btn_download:'下载 .txt', btn_download_csv:'下载 .csv', btn_download_json:'下载 .json',
+        legend_noun:'名词 Noun', legend_verb:'动词 Verb', legend_adj:'形容词 Adjective', legend_adv:'副词 Adverb', legend_punc:'标点 Punctuation', legend_other:'其他 Other',
         view_reading:'阅读模式', view_table:'表格模式', toggle_raw_pos:'显示原始词性',
         col_sentence:'句', col_word:'词', col_category:'类别', col_raw_pos:'原始词性', col_char_span:'字长',
         meta_title:'分析信息', meta_request_id:'Request ID', meta_engine:'Engine', meta_duration:'处理时间', meta_sentences:'句数', meta_input_chars:'输入字符', meta_coverage:'覆盖率', meta_note:'只有完整结果才会产生正式统计。',
@@ -463,8 +469,21 @@
       document.getElementById('inputText').placeholder = document.getElementById('language-selector').value === 'en' ? 'Paste scientific text here...' : msg('label_input') + '...';
       document.getElementById('tokenSearch').placeholder = msg('search_placeholder');
       renderCategoryChips();
+      syncPanelToggleButtons();
       refreshStateText();
       if (lastAnalysis) renderAnalysis(lastAnalysis);
+    }
+
+    function syncPanelToggleButtons() {
+      setToggleButtonText('metaToggleBtn', 'metaPanel');
+      setToggleButtonText('debugToggleBtn', 'debugPanel');
+    }
+
+    function setToggleButtonText(buttonId, panelId) {
+      const button = document.getElementById(buttonId);
+      const panel = document.getElementById(panelId);
+      if (!button || !panel) return;
+      button.querySelector('span').textContent = panel.classList.contains('soft-hidden') ? msg('btn_expand') : msg('btn_fold');
     }
 
     function changeLanguage() { applyTranslations(); }
@@ -882,37 +901,23 @@
     function renderReadingView(tokens, sentences) {
       const container = document.getElementById('sentenceContainer');
       container.innerHTML = '';
-      const grouped = new Map();
-      sentences.forEach(s => grouped.set(s.sentence_index, []));
-      tokens.forEach(t => {
-        if (!grouped.has(t.sentenceIndex)) grouped.set(t.sentenceIndex, []);
-        grouped.get(t.sentenceIndex).push(t);
-      });
-      const totalSentences = sentences.length || 1;
-      for (let i = 0; i < totalSentences; i++) {
-        const block = document.createElement('div');
-        block.className = 'sentence-block';
-        const title = document.createElement('div');
-        title.className = 'text-sm font-black text-slate-500 mb-3';
-        title.textContent = msg('sentence_label').replace('{n}', i + 1);
-        block.appendChild(title);
-        const body = document.createElement('div');
-        body.className = 'leading-loose';
-        const items = grouped.get(i) || [];
-        if (!items.length) {
-          body.innerHTML = `<div class="text-sm text-amber-700 font-bold">${msg('state_partial_title')}</div>`;
-        } else {
-          items.forEach(t => {
-            const span = document.createElement('span');
-            span.className = 'token-unit';
-            span.title = `${t.categoryLabel} / ${t.rawPos}`;
-            span.innerHTML = `<span class="token-word">${escapeHtml(t.word)}</span><span class="token-pos ${getPosColorClass(t.category)}">(${escapeHtml(showRawPos ? t.rawPos : t.categoryLabel)})</span>`;
-            body.appendChild(span);
-          });
-        }
-        block.appendChild(body);
-        container.appendChild(block);
+      const block = document.createElement('div');
+      block.className = 'sentence-block';
+      const body = document.createElement('div');
+      body.className = 'leading-loose';
+      if (!tokens.length) {
+        body.innerHTML = `<div class="text-sm text-amber-700 font-bold">${msg('state_partial_title')}</div>`;
+      } else {
+        tokens.forEach(t => {
+          const span = document.createElement('span');
+          span.className = 'token-unit';
+          span.title = `${t.categoryLabel} / ${t.rawPos}`;
+          span.innerHTML = `<span class="token-word">${escapeHtml(t.word)}</span><span class="token-pos ${getPosColorClass(t.category)}">(${escapeHtml(showRawPos ? t.rawPos : t.categoryLabel)})</span>`;
+          body.appendChild(span);
+        });
       }
+      block.appendChild(body);
+      container.appendChild(block);
     }
 
     function renderTableView(tokens) {
@@ -1017,11 +1022,16 @@
       downloadBlob(`segmentation_result_${Date.now()}.json`, 'application/json;charset=utf-8', JSON.stringify(lastAnalysis, null, 2));
     }
 
+    function toggleMetaPanel() {
+      const panel = document.getElementById('metaPanel');
+      panel.classList.toggle('soft-hidden');
+      setToggleButtonText('metaToggleBtn', 'metaPanel');
+    }
+
     function toggleDebugPanel() {
       const panel = document.getElementById('debugPanel');
-      const btn = document.getElementById('debugToggleBtn');
       panel.classList.toggle('soft-hidden');
-      btn.querySelector('span').textContent = panel.classList.contains('soft-hidden') ? msg('btn_expand') : msg('btn_fold');
+      setToggleButtonText('debugToggleBtn', 'debugPanel');
     }
 
     function setupBackLink() {
