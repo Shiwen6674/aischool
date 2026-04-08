@@ -1035,25 +1035,10 @@
     }
 
 function setupBackLink() {
-  const params = new URLSearchParams(location.search);
-  const referrer = document.referrer || '';
-  let referrerFrom = '';
-
-  try {
-    const referrerPath = new URL(referrer).pathname.toLowerCase();
-    if (referrerPath.endsWith('/professor.html') || referrerPath.endsWith('professor.html')) referrerFrom = 'professor';
-    if (referrerPath.endsWith('/researcher.html') || referrerPath.endsWith('researcher.html')) referrerFrom = 'researcher';
-  } catch {}
-
-  const from = params.get('from') || sessionStorage.getItem('segmentation_from') || referrerFrom || 'professor';
-  sessionStorage.setItem('segmentation_from', from);
-
-  const target = from === 'professor' ? 'professor.html' : 'researcher.html';
   document.getElementById('back-link-trigger').onclick = () => {
-    window.location.href = target;
+    window.location.href = 'professor.html';
   };
 }
-
 
     document.getElementById('inputText').addEventListener('input', updateCharCount);
 
