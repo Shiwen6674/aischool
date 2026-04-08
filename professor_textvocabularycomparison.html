@@ -167,15 +167,15 @@
                         
                         <!-- 預設不勾選 -->
                         <label class="flex items-center">
-                            <input type="checkbox" class="hidden pos-check" value="D">
+                            <input type="checkbox" class="hidden pos-check" value="D" checked>
                             <span class="w-full text-center px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-500 hover:bg-white transition" data-i18n="pos_d">副詞 (D)</span>
                         </label>
                         <label class="flex items-center">
-                            <input type="checkbox" class="hidden pos-check" value="C">
+                            <input type="checkbox" class="hidden pos-check" value="C" checked>
                             <span class="w-full text-center px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-500 hover:bg-white transition" data-i18n="pos_c">連接詞 (C)</span>
                         </label>
                         <label class="flex items-center">
-                            <input type="checkbox" class="hidden pos-check" value="O">
+                            <input type="checkbox" class="hidden pos-check" value="O" checked>
                             <span class="w-full text-center px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-500 hover:bg-white transition" data-i18n="pos_o">其他</span>
                         </label>
                     </div>
@@ -332,7 +332,7 @@
                 "btn_analyze": "Start Analysis", "msg_start": "Input text to start comparison", "msg_hint": "Auto-filter punctuation & POS",
                 "header_only_a": "Unique to A", "header_common": "Intersection", "header_union": "Union", "header_only_b": "Unique to B",
                 "btn_copy": "Copy Content", "msg_copied": "Copied", "err_input": "Please input text!",
-                "ph_text": "Paste tokenized text here..."
+                "ph_text": "Paste tokenized text here, for example: cell(Na) is(SHI) organism(Na)..."
             },
             "ja": {
                 "back_btn": "研究センターへ", "tool_name": "語彙比較ツール", 
@@ -342,7 +342,7 @@
                 "btn_analyze": "比較開始", "msg_start": "テキストを入力して比較", "msg_hint": "句読点と品詞を自動フィルタリング",
                 "header_only_a": "A のみ", "header_common": "共通 (交差)", "header_union": "和集合", "header_only_b": "B のみ",
                 "btn_copy": "コピー", "msg_copied": "コピーしました", "err_input": "テキストを入力してください！",
-                "ph_text": "分かち書きされたテキストを貼り付け..."
+                "ph_text": "分かち書き済みテキストを貼り付けてください。例：細胞(Na) は(SHI) 生物体(Na)..."
             },
             "zh-CN": {
                 "back_btn": "返回研究中心", "tool_name": "文本词汇比较", 
@@ -352,7 +352,7 @@
                 "btn_analyze": "开始比对分析", "msg_start": "输入文本并开始比对", "msg_hint": "支持自动过滤标点与词性筛选",
                 "header_only_a": "A 独有", "header_common": "AB 交集", "header_union": "AB 并集", "header_only_b": "B 独有",
                 "btn_copy": "复制内容", "msg_copied": "已复制", "err_input": "请至少输入一段文本！",
-                "ph_text": "请贴上断词后的文本..."
+                "ph_text": "请贴上已分词文本，例如：细胞(Na) 是(SHI) 生物体(Na)..."
             },
             "ko": { "back_btn": "연구 센터로", "tool_name": "어휘 비교", "label_pos_filter": "품사 필터", "label_show_pos": "POS 표시", "pos_n": "명사 (N)", "pos_v": "동사 (V)", "pos_a": "형용사 (A)", "pos_d": "부사 (D)", "pos_c": "접속사 (C)", "pos_o": "기타", "label_text_a": "텍스트 A", "label_text_b": "텍스트 B", "btn_example": "예시", "btn_clear": "지우기", "btn_analyze": "분석 시작", "msg_start": "텍스트를 입력하여 비교 시작", "msg_hint": "구두점 및 품사 자동 필터링", "header_only_a": "A 고유", "header_common": "교집합", "header_union": "합집합", "header_only_b": "B 고유", "btn_copy": "복사", "msg_copied": "복사됨", "err_input": "텍스트를 입력하세요!", "ph_text": "토큰화된 텍스트 붙여넣기..." },
             "es": { "back_btn": "Volver", "tool_name": "Comp. Vocabulario", "label_pos_filter": "Filtro POS", "label_show_pos": "Mostrar POS", "pos_n": "Sustantivo", "pos_v": "Verbo", "pos_a": "Adj", "pos_d": "Adv", "pos_c": "Conj", "pos_o": "Otro", "label_text_a": "Texto A", "label_text_b": "Texto B", "btn_example": "Ejemplo", "btn_clear": "Borrar", "btn_analyze": "Analizar", "msg_start": "Entrada de texto", "msg_hint": "Filtro automático", "header_only_a": "Solo A", "header_common": "Intersección", "header_union": "Unión", "header_only_b": "Solo B", "btn_copy": "Copiar", "msg_copied": "Copiado", "err_input": "¡Entrada requerida!", "ph_text": "Pegar texto..." },
