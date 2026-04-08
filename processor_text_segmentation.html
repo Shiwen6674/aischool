@@ -1,552 +1,1089 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 科學文本斷詞系統 | Science Learning Hub</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        researcher: { light: '#e9d5ff', DEFAULT: '#a855f7', dark: '#7e22ce' },
-                        glass: {
-                            100: 'rgba(255, 255, 255, 0.1)',
-                            200: 'rgba(255, 255, 255, 0.2)',
-                            700: 'rgba(255, 255, 255, 0.7)',
-                            900: 'rgba(255, 255, 255, 0.9)',
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', "Segoe UI", 'Roboto', "Helvetica Neue", 'Arial', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'Menlo', 'Monaco', 'Courier New', 'monospace'],
-                    },
-                    animation: {
-                        "fade-in-up": "fadeInUp 0.6s ease-out forwards",
-                    },
-                    keyframes: {
-                        "fadeInUp": {
-                            "0%": { opacity: "0", transform: "translateY(20px)" },
-                            "100%": { opacity: "1", transform: "translateY(0)" }
-                        }
-                    }
-                }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 科學文本斷詞系統 | Science Learning Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            researcher: { light: '#e9d5ff', DEFAULT: '#a855f7', dark: '#7e22ce' },
+            glass: {
+              100: 'rgba(255, 255, 255, 0.1)',
+              200: 'rgba(255, 255, 255, 0.2)',
+              700: 'rgba(255, 255, 255, 0.7)',
+              900: 'rgba(255, 255, 255, 0.9)',
             }
+          },
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Menlo', 'Monaco', 'Courier New', 'monospace'],
+          },
+          animation: {
+            'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
+          },
+          keyframes: {
+            fadeInUp: {
+              '0%': { opacity: '0', transform: 'translateY(20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' }
+            }
+          }
         }
-    </script>
-    <style>
-        /* 繼承 Researcher 風格 */
-        body { background-color: #f8fafc; color: #334155; }
-        
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(226, 232, 240, 0.8);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-        }
-
-        .input-area:focus {
-            outline: none;
-            border-color: #a855f7;
-            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15);
-        }
-        
-        .title-3d {
-            background: linear-gradient(135deg, #581c87 0%, #7e22ce 50%, #a855f7 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            filter: drop-shadow(1px 1px 0px rgba(168, 85, 247, 0.4)) 
-                    drop-shadow(3px 3px 0px rgba(88, 28, 135, 0.1));
-        }
-
-        /* === 斷詞結果樣式 (流動式文本) === */
-        .token-unit {
-            display: inline; /* 讓文字自然流動 */
-            font-size: 1.15rem;
-            line-height: 2;
-            white-space: pre-wrap; /* 保留換行 */
-        }
-
-        .token-word {
-            font-weight: 900; /* 黑粗體 */
-            color: #0f172a;   /* 純黑 */
-        }
-
-        .token-pos {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.95rem;
-            font-weight: 700;
-            margin-left: 1px;
-        }
-
-        /* 詞性顏色定義 (文字顏色) */
-        .pos-n { color: #2563eb; } /* 名詞 - 藍 */
-        .pos-v { color: #dc2626; } /* 動詞 - 紅 */
-        .pos-a { color: #16a34a; } /* 形容詞 - 綠 */
-        .pos-d { color: #d97706; } /* 副詞 - 橘黃 */
-        .pos-m { color: #7c3aed; } /* 量詞 - 紫 */
-        .pos-o { color: #64748b; } /* 其他 - 灰 */
-
-        /* 統計卡片樣式 */
-        .stat-card {
-            background: #fff;
-            border-radius: 1rem;
-            padding: 1.25rem;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            transition: transform 0.2s ease;
-        }
-        .stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
-        }
-        .stat-title { font-size: 0.875rem; font-weight: 700; color: #64748b; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
-        .stat-val-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.25rem; }
-        .stat-label { font-size: 0.75rem; color: #94a3b8; font-weight: 600; }
-        .stat-num { font-size: 1.25rem; font-weight: 800; color: #334155; font-family: 'JetBrains Mono', monospace; }
-        .stat-bar-bg { width: 100%; height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden; margin-top: 4px; }
-        .stat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease-out; }
-
-        /* 背景動畫 */
-        #canvas-container {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -10; overflow: hidden;
-            background: linear-gradient(135deg, #fdfbff 0%, #f5f3ff 100%);
-        }
-        
-        select { font-size: 0.95rem; }
-    </style>
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #f8fafc; color: #334155; }
+    .glass-panel {
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(226,232,240,0.8);
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+    }
+    .input-area:focus,
+    .search-input:focus,
+    .filter-select:focus {
+      outline: none;
+      border-color: #a855f7;
+      box-shadow: 0 0 0 3px rgba(168,85,247,0.15);
+    }
+    .title-3d {
+      background: linear-gradient(135deg, #581c87 0%, #7e22ce 50%, #a855f7 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      filter: drop-shadow(1px 1px 0px rgba(168,85,247,0.4)) drop-shadow(3px 3px 0px rgba(88,28,135,0.1));
+    }
+    .token-unit {
+      display: inline-block;
+      margin-right: .35rem;
+      margin-bottom: .45rem;
+      line-height: 1.75;
+      white-space: nowrap;
+      border-radius: .8rem;
+      padding: .25rem .45rem;
+      background: rgba(255,255,255,.72);
+      border: 1px solid rgba(226,232,240,.95);
+    }
+    .token-word { font-weight: 900; color: #0f172a; }
+    .token-pos {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .84rem;
+      font-weight: 800;
+      margin-left: 3px;
+    }
+    .pos-n { color: #2563eb; }
+    .pos-v { color: #dc2626; }
+    .pos-a { color: #16a34a; }
+    .pos-d { color: #d97706; }
+    .pos-f { color: #7c3aed; }
+    .pos-punc { color: #9333ea; }
+    .pos-o { color: #64748b; }
+    .stat-card {
+      background: #fff;
+      border-radius: 1rem;
+      padding: 1.25rem;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 2px 4px rgba(0,0,0,.02);
+      transition: transform .2s ease;
+    }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0,0,0,.05); }
+    .stat-title { font-size: .875rem; font-weight: 700; color: #64748b; display:flex; align-items:center; gap:.5rem; margin-bottom:.75rem; }
+    .stat-val-row { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:.25rem; }
+    .stat-label { font-size:.75rem; color:#94a3b8; font-weight:600; }
+    .stat-num { font-size:1.25rem; font-weight:800; color:#334155; font-family:'JetBrains Mono', monospace; }
+    .stat-bar-bg { width:100%; height:6px; background:#f1f5f9; border-radius:3px; overflow:hidden; margin-top:4px; }
+    .stat-bar-fill { height:100%; border-radius:3px; transition: width .5s ease-out; }
+    #canvas-container {
+      position: fixed; top:0; left:0; width:100%; height:100%; z-index:-10; overflow:hidden;
+      background: linear-gradient(135deg, #fdfbff 0%, #f5f3ff 100%);
+    }
+    .chip {
+      display:inline-flex; align-items:center; gap:.4rem; border-radius:999px; padding:.45rem .8rem;
+      font-size:.84rem; font-weight:700; border:1px solid #e2e8f0; background:#fff;
+    }
+    .chip.active { background:#faf5ff; color:#7e22ce; border-color:#d8b4fe; }
+    .view-tab {
+      border:1px solid #e2e8f0; background:#fff; color:#64748b; border-radius:.9rem; padding:.55rem .9rem; font-weight:800; font-size:.86rem;
+    }
+    .view-tab.active { background:#faf5ff; color:#7e22ce; border-color:#d8b4fe; }
+    .status-banner { border-radius: 1.25rem; padding: 1rem 1.1rem; border:1px solid transparent; }
+    .status-empty { background:#f8fafc; border-color:#e2e8f0; color:#64748b; }
+    .status-loading { background:#faf5ff; border-color:#e9d5ff; color:#7e22ce; }
+    .status-success { background:#ecfdf5; border-color:#a7f3d0; color:#047857; }
+    .status-partial { background:#fff7ed; border-color:#fdba74; color:#c2410c; }
+    .status-error { background:#fef2f2; border-color:#fca5a5; color:#b91c1c; }
+    .sentence-block { border:1px solid #ede9fe; background:#fcfcff; border-radius:1.2rem; padding:1rem 1rem .8rem; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .soft-hidden { display:none !important; }
+    .table-wrap { overflow:auto; border:1px solid #e2e8f0; border-radius:1rem; background:#fff; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:.75rem .85rem; border-bottom:1px solid #f1f5f9; text-align:left; font-size:.92rem; }
+    th { background:#fafafa; color:#475569; font-weight:800; position:sticky; top:0; }
+    .kbd { font-family:'JetBrains Mono', monospace; border:1px solid #d1d5db; background:#fff; border-radius:.5rem; padding:.1rem .38rem; font-size:.76rem; }
+  </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col" style="visibility:hidden;">
+  <div id="canvas-container"><canvas id="network-canvas"></canvas></div>
 
-    <div id="canvas-container">
-        <canvas id="network-canvas"></canvas>
-    </div>
-
-    <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center space-x-3 cursor-pointer group" onclick="window.location.href='professor.html'">
-                <div class="bg-purple-100 p-2 rounded-xl text-purple-600 transition group-hover:bg-purple-600 group-hover:text-white">
-                    <i class="fa-solid fa-arrow-left"></i>
-                </div>
-                <span class="text-lg font-bold text-slate-700 group-hover:text-purple-700 transition" data-i18n="back_researcher">返回研究中心</span>
-            </div>
-            <div class="flex items-center space-x-4">
-                <select id="language-selector" onchange="changeLanguage()" class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block p-2">
-                    <option value="zh-TW">繁體中文</option>
-                    <option value="en">English</option>
-                    <option value="ja">日本語</option>
-                    <option value="zh-CN">简体中文</option>
-                </select>
-                <div class="flex items-center gap-2 px-3 py-1.5 bg-purple-50 text-purple-700 rounded-full text-sm font-bold border border-purple-200">
-                    <i class="fa-solid fa-scissors"></i> <span data-i18n="tool_name">AI 科學文本斷詞</span>
-                </div>
-            </div>
+  <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+      <div class="flex items-center space-x-3 cursor-pointer group" id="back-link-trigger">
+        <div class="bg-purple-100 p-2 rounded-xl text-purple-600 transition group-hover:bg-purple-600 group-hover:text-white">
+          <i class="fa-solid fa-arrow-left"></i>
         </div>
-    </nav>
-
-    <main class="flex-1 p-6 md:p-10 max-w-7xl mx-auto w-full">
-        <div class="animate-fade-in-up space-y-8">
-            
-            <div class="text-center">
-                <h1 class="text-4xl font-black text-slate-800 mb-2 tracking-tight title-3d" data-i18n="page_title">AI 科學文本斷詞系統</h1>
-                <p class="text-slate-500 font-medium" data-i18n="page_subtitle">CKIP Standard Segmentation & POS Tagging</p>
-            </div>
-
-            <div class="glass-panel p-8 rounded-[2.5rem] mb-8 border border-white/60">
-                <div class="flex justify-between items-center mb-4">
-                    <label class="text-lg font-bold text-purple-900 flex items-center gap-2">
-                        <i class="fa-regular fa-file-lines"></i> <span data-i18n="label_input">原始文本</span>
-                    </label>
-                    <div class="flex gap-3">
-                        <button onclick="loadDemo()" class="text-xs font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition border border-purple-200">
-                            <i class="fa-solid fa-flask mr-1"></i> <span data-i18n="btn_demo">載入範例</span>
-                        </button>
-                        <button onclick="clearText()" class="text-xs font-bold text-slate-500 bg-slate-50 hover:bg-red-50 hover:text-red-500 px-3 py-1.5 rounded-lg transition border border-slate-200">
-                            <i class="fa-solid fa-trash-can mr-1"></i> <span data-i18n="btn_clear">清空</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <textarea id="inputText" class="input-area w-full h-48 p-5 rounded-2xl border border-slate-200 bg-white/70 text-slate-700 leading-relaxed resize-none mb-6 font-mono text-lg" placeholder="請在此貼上科學文章..."></textarea>
-
-                <div class="flex justify-center">
-                    <button id="runBtn" onclick="runSegmentation()" class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-10 py-3.5 rounded-2xl font-bold text-lg shadow-lg hover:shadow-purple-500/30 transition transform active:scale-95 flex items-center gap-2">
-                        <i class="fa-solid fa-microchip"></i> <span data-i18n="btn_analyze">開始 AI 斷詞</span>
-                    </button>
-                </div>
-            </div>
-
-            <div id="result-panel" class="hidden animate-fade-in-up">
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-                    <div class="stat-card border-l-4 border-slate-500">
-                        <div class="stat-title"><i class="fa-solid fa-chart-pie"></i> Total</div>
-                        <div class="stat-val-row">
-                            <span class="stat-label">Tokens</span>
-                            <span class="stat-num text-slate-700" id="stat-total-token">0</span>
-                        </div>
-                        <div class="stat-val-row">
-                            <span class="stat-label">Types</span>
-                            <span class="stat-num text-slate-500" id="stat-total-type">0</span>
-                        </div>
-                        <div class="text-xs text-right text-slate-400 mt-1">TTR: <span id="stat-total-ttr">0.00</span></div>
-                    </div>
-                    <div class="stat-card border-l-4 border-blue-500">
-                        <div class="stat-title text-blue-600"><span class="w-2 h-2 rounded-full bg-blue-500"></span> Noun (N)</div>
-                        <div class="stat-val-row">
-                            <span class="stat-label">Tokens</span>
-                            <span class="stat-num text-blue-700" id="stat-n-token">0</span>
-                        </div>
-                        <div class="stat-bar-bg"><div id="bar-n" class="stat-bar-fill bg-blue-500" style="width: 0%"></div></div>
-                    </div>
-                    <div class="stat-card border-l-4 border-red-500">
-                        <div class="stat-title text-red-600"><span class="w-2 h-2 rounded-full bg-red-500"></span> Verb (V)</div>
-                        <div class="stat-val-row">
-                            <span class="stat-label">Tokens</span>
-                            <span class="stat-num text-red-700" id="stat-v-token">0</span>
-                        </div>
-                        <div class="stat-bar-bg"><div id="bar-v" class="stat-bar-fill bg-red-500" style="width: 0%"></div></div>
-                    </div>
-                    <div class="stat-card border-l-4 border-green-500">
-                        <div class="stat-title text-green-600"><span class="w-2 h-2 rounded-full bg-green-500"></span> Adj (A/VH)</div>
-                        <div class="stat-val-row">
-                            <span class="stat-label">Tokens</span>
-                            <span class="stat-num text-green-700" id="stat-a-token">0</span>
-                        </div>
-                        <div class="stat-bar-bg"><div id="bar-a" class="stat-bar-fill bg-green-500" style="width: 0%"></div></div>
-                    </div>
-                    <div class="stat-card border-l-4 border-amber-500">
-                        <div class="stat-title text-amber-600"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Adv (D)</div>
-                        <div class="stat-val-row">
-                            <span class="stat-label">Tokens</span>
-                            <span class="stat-num text-amber-700" id="stat-d-token">0</span>
-                        </div>
-                        <div class="stat-bar-bg"><div id="bar-d" class="stat-bar-fill bg-amber-500" style="width: 0%"></div></div>
-                    </div>
-                </div>
-
-                <div class="glass-panel p-8 rounded-[2.5rem] border border-white/60 relative overflow-hidden">
-                    
-                    <div class="flex flex-wrap justify-between items-center mb-6 border-b border-purple-100 pb-4 gap-4">
-                        <div class="flex items-center gap-4">
-                            <h3 class="text-xl font-bold text-slate-700 flex items-center gap-2">
-                                <i class="fa-solid fa-tags text-purple-500"></i> <span data-i18n="result_title">斷詞結果</span>
-                            </h3>
-                            <div class="hidden md:flex gap-4 text-xs font-bold text-slate-400">
-                                <span class="flex items-center gap-1"><span class="text-blue-600">● Noun</span></span>
-                                <span class="flex items-center gap-1"><span class="text-red-600">● Verb</span></span>
-                                <span class="flex items-center gap-1"><span class="text-green-600">● Adj</span></span>
-                                <span class="flex items-center gap-1"><span class="text-amber-600">● Adv</span></span>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="copyResult()" class="text-xs font-bold text-slate-500 hover:text-purple-600 border border-slate-200 px-3 py-1.5 rounded-lg transition hover:bg-white flex items-center gap-1">
-                                <i class="fa-regular fa-copy"></i> <span data-i18n="btn_copy_text">複製純文字</span>
-                            </button>
-                            <button onclick="downloadTxt()" class="text-xs font-bold text-slate-500 hover:text-purple-600 border border-slate-200 px-3 py-1.5 rounded-lg transition hover:bg-white flex items-center gap-1">
-                                <i class="fa-solid fa-download"></i> <span data-i18n="btn_download">下載 .txt</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div id="loadingState" class="hidden flex flex-col items-center justify-center py-12 text-purple-500">
-                        <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4"></i>
-                        <span class="font-bold animate-pulse" data-i18n="msg_processing">AI 正在依據科學規則進行斷詞...</span>
-                    </div>
-
-                    <div id="tokensContainer" class="leading-loose min-h-[200px] p-6 bg-white/60 rounded-3xl border border-slate-100/50 shadow-inner text-lg"></div>
-
-                </div>
-            </div>
-            
+        <span class="text-lg font-bold text-slate-700 group-hover:text-purple-700 transition" data-i18n="back_researcher">返回研究中心</span>
+      </div>
+      <div class="flex items-center space-x-4">
+        <select id="language-selector" onchange="changeLanguage()" class="filter-select bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg block p-2">
+          <option value="zh-TW">繁體中文</option>
+          <option value="en">English</option>
+          <option value="ja">日本語</option>
+          <option value="zh-CN">简体中文</option>
+        </select>
+        <div class="flex items-center gap-2 px-3 py-1.5 bg-purple-50 text-purple-700 rounded-full text-sm font-bold border border-purple-200">
+          <i class="fa-solid fa-scissors"></i><span data-i18n="tool_name">AI 科學文本斷詞</span>
         </div>
-    </main>
-
-    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-full shadow-xl opacity-0 translate-y-10 z-50 transition-all duration-300 pointer-events-none font-bold text-sm flex items-center gap-2">
-        <i class="fa-solid fa-check-circle text-green-400"></i> <span id="toast-msg"></span>
+      </div>
     </div>
+  </nav>
 
-    <script>
-        // *** 設定 GAS API 網址 (請填入部署後的網址) ***
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxt_6RXtT2DklrwLO7g2jQ4LnfTDEvpS1jQ-f4gRf-N_QOwBzT1_SfaDf1CPNBtZ1Z5Yg/exec"; 
+  <main class="flex-1 p-6 md:p-10 max-w-7xl mx-auto w-full">
+    <div class="animate-fade-in-up space-y-8">
+      <div class="text-center">
+        <h1 class="text-4xl font-black text-slate-800 mb-2 tracking-tight title-3d" data-i18n="page_title">AI 科學文本斷詞系統</h1>
+        <p class="text-slate-500 font-medium" data-i18n="page_subtitle">CKIP Standard Segmentation & POS Tagging</p>
+      </div>
 
-        // *** 多語系字典 ***
-        const translations = {
-            "zh-TW": {
-                "back_researcher": "返回研究中心", "tool_name": "AI 科學文本斷詞", "page_title": "AI 科學文本斷詞系統", "page_subtitle": "CKIP Standard Segmentation & POS Tagging",
-                "label_input": "原始文本", "btn_demo": "載入範例", "btn_clear": "清空", "btn_analyze": "開始 AI 斷詞",
-                "result_title": "斷詞結果", "btn_copy_text": "複製純文字", "btn_download": "下載 .txt",
-                "msg_processing": "AI 正在依據科學規則進行斷詞...", "msg_input_error": "請先輸入文本", "msg_success": "斷詞完成！", "msg_copied": "已複製結果", "msg_downloaded": "檔案下載中...", "msg_error": "系統繁忙，請稍後再試", "msg_demo_loaded": "範例已載入",
-                "demo_text": "光合作用是植物利用葉綠素吸收太陽能，將水和二氧化碳轉化為葡萄糖與氧氣的過程。這個過程不僅為植物本身提供能量，也是地球上絕大多數生命能量的來源。"
-            },
-            "en": {
-                "back_researcher": "Back to Research Center", "tool_name": "AI Tokenizer", "page_title": "Scientific Text Segmentation", "page_subtitle": "CKIP Standard Segmentation & POS Tagging",
-                "label_input": "Raw Text", "btn_demo": "Load Demo", "btn_clear": "Clear", "btn_analyze": "Start Segmentation",
-                "result_title": "Results", "btn_copy_text": "Copy Text", "btn_download": "Download .txt",
-                "msg_processing": "AI is processing based on scientific rules...", "msg_input_error": "Please input text first", "msg_success": "Segmentation Complete!", "msg_copied": "Copied!", "msg_downloaded": "Downloading...", "msg_error": "System Error, try again later", "msg_demo_loaded": "Demo Loaded",
-                "demo_text": "Photosynthesis is the process used by plants to convert light energy into chemical energy that can later be released to fuel the organism's activities."
-            },
-            "ja": {
-                "back_researcher": "研究センターへ戻る", "tool_name": "AI 形態素解析", "page_title": "科学テキスト形態素解析", "page_subtitle": "CKIP Standard Segmentation & POS Tagging",
-                "label_input": "テキスト入力", "btn_demo": "デモをロード", "btn_clear": "クリア", "btn_analyze": "解析開始",
-                "result_title": "解析結果", "btn_copy_text": "テキストをコピー", "btn_download": "ダウンロード .txt",
-                "msg_processing": "AIが科学ルールに基づいて解析中...", "msg_input_error": "テキストを入力してください", "msg_success": "解析完了！", "msg_copied": "コピーしました", "msg_downloaded": "ダウンロード中...", "msg_error": "エラーが発生しました", "msg_demo_loaded": "デモデータをロードしました",
-                "demo_text": "光合成は、植物が光エネルギーを利用して、水と二酸化炭素をグルコースと酸素に変換するプロセスです。"
-            },
-            "zh-CN": {
-                "back_researcher": "返回研究中心", "tool_name": "AI 科学文本分词", "page_title": "AI 科学文本分词系统", "page_subtitle": "CKIP Standard Segmentation & POS Tagging",
-                "label_input": "原始文本", "btn_demo": "载入范例", "btn_clear": "清空", "btn_analyze": "开始 AI 分词",
-                "result_title": "分词结果", "btn_copy_text": "复制纯文本", "btn_download": "下载 .txt",
-                "msg_processing": "AI 正在依据科学规则进行分词...", "msg_input_error": "请先输入文本", "msg_success": "分词完成！", "msg_copied": "已复制结果", "msg_downloaded": "文件下载中...", "msg_error": "系统繁忙，请稍后再试", "msg_demo_loaded": "范例已载入",
-                "demo_text": "光合作用是植物利用叶绿素吸收太阳能，将水和二氧化碳转化为葡萄糖与氧气的过程。这个过程不仅为植物本身提供能量，也是地球上绝大多数生命能量的来源。"
-            }
+      <div class="glass-panel p-8 rounded-[2.5rem] mb-8 border border-white/60">
+        <div class="flex justify-between items-center mb-4 gap-4 flex-wrap">
+          <label class="text-lg font-bold text-purple-900 flex items-center gap-2">
+            <i class="fa-regular fa-file-lines"></i><span data-i18n="label_input">原始文本</span>
+          </label>
+          <div class="flex gap-3">
+            <button onclick="loadDemo()" id="demoBtn" class="text-xs font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition border border-purple-200">
+              <i class="fa-solid fa-flask mr-1"></i><span data-i18n="btn_demo">載入範例</span>
+            </button>
+            <button onclick="clearText()" id="clearBtn" class="text-xs font-bold text-slate-500 bg-slate-50 hover:bg-red-50 hover:text-red-500 px-3 py-1.5 rounded-lg transition border border-slate-200">
+              <i class="fa-solid fa-trash-can mr-1"></i><span data-i18n="btn_clear">清空</span>
+            </button>
+          </div>
+        </div>
+
+        <textarea id="inputText" class="input-area w-full h-48 p-5 rounded-2xl border border-slate-200 bg-white/70 text-slate-700 leading-relaxed resize-none mb-3 font-mono text-lg" placeholder="請在此貼上科學文章..."></textarea>
+
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
+          <div class="flex items-center gap-3 flex-wrap text-sm">
+            <span class="chip"><i class="fa-regular fa-keyboard text-slate-500"></i><span data-i18n="char_count">字元數</span><span class="mono" id="charCount">0</span></span>
+            <span class="chip"><i class="fa-regular fa-lightbulb text-amber-500"></i><span data-i18n="best_range">建議長度</span><span class="mono" id="bestRange">1–1200</span></span>
+            <span class="chip soft-hidden" id="longTextWarning"><i class="fa-solid fa-triangle-exclamation text-amber-500"></i><span data-i18n="long_warn">文本偏長，建議分段分析</span></span>
+          </div>
+          <div class="text-sm text-slate-500" id="analysisHint" data-i18n="analysis_hint">系統會檢查結果是否完整；若疑似截斷，會自動重試一次。</div>
+        </div>
+
+        <div class="flex justify-center gap-3 flex-wrap">
+          <button id="runBtn" onclick="runSegmentation()" class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-10 py-3.5 rounded-2xl font-bold text-lg shadow-lg hover:shadow-purple-500/30 transition transform active:scale-95 flex items-center gap-2">
+            <i class="fa-solid fa-microchip"></i><span data-i18n="btn_analyze">開始 AI 斷詞</span>
+          </button>
+          <button id="cancelBtn" onclick="cancelSegmentation()" class="soft-hidden bg-white text-slate-700 px-6 py-3.5 rounded-2xl font-bold text-lg border border-slate-200 shadow-sm hover:bg-slate-50 transition flex items-center gap-2">
+            <i class="fa-solid fa-ban"></i><span data-i18n="btn_cancel">取消分析</span>
+          </button>
+          <button id="retryBtnTop" onclick="rerunSegmentation()" class="soft-hidden bg-amber-50 text-amber-700 px-6 py-3.5 rounded-2xl font-bold text-lg border border-amber-200 shadow-sm hover:bg-amber-100 transition flex items-center gap-2">
+            <i class="fa-solid fa-rotate-right"></i><span data-i18n="btn_retry">重新分析</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="result-panel" class="animate-fade-in-up">
+        <div id="stateBanner" class="status-banner status-empty mb-6">
+          <div class="flex items-start gap-3">
+            <i id="stateIcon" class="fa-regular fa-circle text-slate-400 mt-1"></i>
+            <div>
+              <div class="font-bold" id="stateTitle" data-i18n="state_empty_title">尚未開始分析</div>
+              <div class="text-sm mt-1" id="stateMessage" data-i18n="state_empty_msg">請先貼上文本，再按「開始 AI 斷詞」。</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+          <div class="stat-card border-l-4 border-slate-500">
+            <div class="stat-title"><i class="fa-solid fa-chart-pie"></i><span data-i18n="total">Total</span></div>
+            <div class="stat-val-row"><span class="stat-label" data-i18n="tokens">Tokens</span><span class="stat-num text-slate-700" id="stat-total-token">0</span></div>
+            <div class="stat-val-row"><span class="stat-label" data-i18n="types">Types</span><span class="stat-num text-slate-500" id="stat-total-type">0</span></div>
+            <div class="text-xs text-right text-slate-400 mt-1">TTR: <span id="stat-total-ttr">0.00</span></div>
+          </div>
+          <div class="stat-card border-l-4 border-blue-500">
+            <div class="stat-title text-blue-600"><span class="w-2 h-2 rounded-full bg-blue-500"></span><span>Noun (N)</span></div>
+            <div class="stat-val-row"><span class="stat-label" data-i18n="tokens">Tokens</span><span class="stat-num text-blue-700" id="stat-n-token">0</span></div>
+            <div class="stat-bar-bg"><div id="bar-n" class="stat-bar-fill bg-blue-500" style="width:0%"></div></div>
+          </div>
+          <div class="stat-card border-l-4 border-red-500">
+            <div class="stat-title text-red-600"><span class="w-2 h-2 rounded-full bg-red-500"></span><span>Verb (V)</span></div>
+            <div class="stat-val-row"><span class="stat-label" data-i18n="tokens">Tokens</span><span class="stat-num text-red-700" id="stat-v-token">0</span></div>
+            <div class="stat-bar-bg"><div id="bar-v" class="stat-bar-fill bg-red-500" style="width:0%"></div></div>
+          </div>
+          <div class="stat-card border-l-4 border-green-500">
+            <div class="stat-title text-green-600"><span class="w-2 h-2 rounded-full bg-green-500"></span><span>Adj (A)</span></div>
+            <div class="stat-val-row"><span class="stat-label" data-i18n="tokens">Tokens</span><span class="stat-num text-green-700" id="stat-a-token">0</span></div>
+            <div class="stat-bar-bg"><div id="bar-a" class="stat-bar-fill bg-green-500" style="width:0%"></div></div>
+          </div>
+          <div class="stat-card border-l-4 border-amber-500">
+            <div class="stat-title text-amber-600"><span class="w-2 h-2 rounded-full bg-amber-500"></span><span>Adv (D)</span></div>
+            <div class="stat-val-row"><span class="stat-label" data-i18n="tokens">Tokens</span><span class="stat-num text-amber-700" id="stat-d-token">0</span></div>
+            <div class="stat-bar-bg"><div id="bar-d" class="stat-bar-fill bg-amber-500" style="width:0%"></div></div>
+          </div>
+        </div>
+
+        <div class="glass-panel p-8 rounded-[2.5rem] border border-white/60 relative overflow-hidden mb-6">
+          <div class="flex flex-wrap justify-between items-center mb-6 border-b border-purple-100 pb-4 gap-4">
+            <div class="flex items-center gap-4 flex-wrap">
+              <h3 class="text-xl font-bold text-slate-700 flex items-center gap-2">
+                <i class="fa-solid fa-tags text-purple-500"></i><span data-i18n="result_title">斷詞結果</span>
+              </h3>
+              <div class="hidden md:flex gap-4 text-xs font-bold text-slate-400 flex-wrap">
+                <span class="flex items-center gap-1 text-blue-600">● <span data-i18n="legend_noun">Noun</span></span>
+                <span class="flex items-center gap-1 text-red-600">● <span data-i18n="legend_verb">Verb</span></span>
+                <span class="flex items-center gap-1 text-green-600">● <span data-i18n="legend_adj">Adj</span></span>
+                <span class="flex items-center gap-1 text-amber-600">● <span data-i18n="legend_adv">Adv</span></span>
+                <span class="flex items-center gap-1 text-violet-600">● <span data-i18n="legend_punc">Punctuation</span></span>
+                <span class="flex items-center gap-1 text-slate-500">● <span data-i18n="legend_other">Other</span></span>
+              </div>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+              <button onclick="copyResult()" class="text-xs font-bold text-slate-500 hover:text-purple-600 border border-slate-200 px-3 py-1.5 rounded-lg transition hover:bg-white flex items-center gap-1">
+                <i class="fa-regular fa-copy"></i><span data-i18n="btn_copy_text">複製純文字</span>
+              </button>
+              <button onclick="downloadTxt()" class="text-xs font-bold text-slate-500 hover:text-purple-600 border border-slate-200 px-3 py-1.5 rounded-lg transition hover:bg-white flex items-center gap-1">
+                <i class="fa-solid fa-download"></i><span data-i18n="btn_download">下載 .txt</span>
+              </button>
+              <button onclick="downloadCsv()" class="text-xs font-bold text-slate-500 hover:text-purple-600 border border-slate-200 px-3 py-1.5 rounded-lg transition hover:bg-white flex items-center gap-1">
+                <i class="fa-solid fa-table"></i><span data-i18n="btn_download_csv">下載 .csv</span>
+              </button>
+              <button onclick="downloadJson()" class="text-xs font-bold text-slate-500 hover:text-purple-600 border border-slate-200 px-3 py-1.5 rounded-lg transition hover:bg-white flex items-center gap-1">
+                <i class="fa-solid fa-code"></i><span data-i18n="btn_download_json">下載 .json</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="loadingState" class="soft-hidden flex flex-col items-center justify-center py-12 text-purple-500">
+            <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4"></i>
+            <span class="font-bold animate-pulse" data-i18n="msg_processing">AI 正在依據科學規則進行斷詞...</span>
+          </div>
+
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
+            <div class="flex items-center gap-2 flex-wrap">
+              <button class="view-tab active" id="viewReadBtn" onclick="setViewMode('reading')"><i class="fa-regular fa-eye mr-1"></i><span data-i18n="view_reading">閱讀模式</span></button>
+              <button class="view-tab" id="viewTableBtn" onclick="setViewMode('table')"><i class="fa-solid fa-table-list mr-1"></i><span data-i18n="view_table">表格模式</span></button>
+              <button class="view-tab" id="toggleRawPosBtn" onclick="toggleRawPos()"><i class="fa-solid fa-code mr-1"></i><span data-i18n="toggle_raw_pos">顯示原始詞性</span></button>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <input id="tokenSearch" class="search-input w-52 px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm" placeholder="搜尋詞彙" oninput="applyFilters()">
+              <div class="flex gap-2 flex-wrap" id="categoryChips"></div>
+            </div>
+          </div>
+
+          <div id="readingView" class="space-y-4">
+            <div id="sentenceContainer" class="space-y-4"></div>
+          </div>
+
+          <div id="tableView" class="soft-hidden">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th data-i18n="col_sentence">句</th>
+                    <th data-i18n="col_word">詞</th>
+                    <th data-i18n="col_category">類別</th>
+                    <th data-i18n="col_raw_pos">原始詞性</th>
+                    <th data-i18n="col_char_span">字長</th>
+                  </tr>
+                </thead>
+                <tbody id="resultTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <div class="glass-panel p-6 rounded-3xl border border-white/60">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2"><i class="fa-solid fa-circle-info text-purple-500"></i><span data-i18n="meta_title">分析資訊</span></h3>
+              <span id="metaCompletenessTag" class="chip">—</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <div class="chip justify-between"><span data-i18n="meta_request_id">Request ID</span><span class="mono" id="metaRequestId">—</span></div>
+              <div class="chip justify-between"><span data-i18n="meta_engine">Engine</span><span class="mono" id="metaEngine">legacy</span></div>
+              <div class="chip justify-between"><span data-i18n="meta_duration">處理時間</span><span class="mono" id="metaDuration">—</span></div>
+              <div class="chip justify-between"><span data-i18n="meta_sentences">句數</span><span class="mono" id="metaSentences">0</span></div>
+              <div class="chip justify-between"><span data-i18n="meta_input_chars">輸入字元</span><span class="mono" id="metaInputChars">0</span></div>
+              <div class="chip justify-between"><span data-i18n="meta_coverage">覆蓋率</span><span class="mono" id="metaCoverage">0%</span></div>
+            </div>
+            <div class="mt-4 text-sm text-slate-500" id="metaNote" data-i18n="meta_note">只有完整結果才會產生正式統計。</div>
+          </div>
+
+          <div class="glass-panel p-6 rounded-3xl border border-white/60">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2"><i class="fa-solid fa-bug text-purple-500"></i><span data-i18n="debug_title">原始回應 / 除錯資訊</span></h3>
+              <button onclick="toggleDebugPanel()" class="view-tab active" id="debugToggleBtn"><span data-i18n="btn_fold">收合</span></button>
+            </div>
+            <div id="debugPanel">
+              <pre id="debugRaw" class="bg-slate-950 text-slate-100 rounded-2xl p-4 text-xs overflow-auto min-h-[220px] max-h-[360px] whitespace-pre-wrap"></pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-center">
+          <button id="retryBtnBottom" onclick="rerunSegmentation()" class="soft-hidden bg-amber-50 text-amber-700 px-6 py-3 rounded-2xl font-bold text-base border border-amber-200 shadow-sm hover:bg-amber-100 transition flex items-center gap-2">
+            <i class="fa-solid fa-rotate-right"></i><span data-i18n="btn_retry">重新分析</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-full shadow-xl opacity-0 translate-y-10 z-50 transition-all duration-300 pointer-events-none font-bold text-sm flex items-center gap-2">
+    <i class="fa-solid fa-check-circle text-green-400"></i><span id="toast-msg"></span>
+  </div>
+
+  <script>
+    // 保留原常數名稱，避免你原本部署方式受影響
+    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxt_6RXtT2DklrwLO7g2jQ4LnfTDEvpS1jQ-f4gRf-N_QOwBzT1_SfaDf1CPNBtZ1Z5Yg/exec';
+
+    const translations = {
+      'zh-TW': {
+        back_researcher:'返回研究中心', tool_name:'AI 科學文本斷詞', page_title:'AI 科學文本斷詞系統', page_subtitle:'CKIP Standard Segmentation & POS Tagging',
+        label_input:'原始文本', btn_demo:'載入範例', btn_clear:'清空', btn_analyze:'開始 AI 斷詞', btn_cancel:'取消分析', btn_retry:'重新分析',
+        char_count:'字元數', best_range:'建議長度', long_warn:'文本偏長，建議分段分析', analysis_hint:'系統會檢查結果是否完整；若疑似截斷，會自動重試一次。',
+        state_empty_title:'尚未開始分析', state_empty_msg:'請先貼上文本，再按「開始 AI 斷詞」。',
+        state_loading_title:'系統分析中', state_loading_msg:'已送出文本，正在等待回傳結果。',
+        state_success_title:'分析完成', state_success_msg:'結果完整，可用於統計與匯出。',
+        state_partial_title:'結果不完整', state_partial_msg:'系統偵測到結果疑似截斷，已停止把它當成正式結果。',
+        state_error_title:'分析失敗', state_error_msg:'本次回傳格式異常或後端未正常回應。',
+        total:'Total', tokens:'Tokens', types:'Types',
+        result_title:'斷詞結果', btn_copy_text:'複製純文字', btn_download:'下載 .txt', btn_download_csv:'下載 .csv', btn_download_json:'下載 .json',
+        legend_noun:'Noun', legend_verb:'Verb', legend_adj:'Adj', legend_adv:'Adv', legend_punc:'Punctuation', legend_other:'Other',
+        view_reading:'閱讀模式', view_table:'表格模式', toggle_raw_pos:'顯示原始詞性',
+        col_sentence:'句', col_word:'詞', col_category:'類別', col_raw_pos:'原始詞性', col_char_span:'字長',
+        meta_title:'分析資訊', meta_request_id:'Request ID', meta_engine:'Engine', meta_duration:'處理時間', meta_sentences:'句數', meta_input_chars:'輸入字元', meta_coverage:'覆蓋率', meta_note:'只有完整結果才會產生正式統計。',
+        debug_title:'原始回應 / 除錯資訊', btn_fold:'收合', btn_expand:'展開',
+        msg_processing:'AI 正在依據科學規則進行斷詞...', msg_input_error:'請先輸入文本', msg_success:'斷詞完成！', msg_copied:'已複製結果', msg_downloaded:'檔案下載中...', msg_error:'系統繁忙，請稍後再試', msg_demo_loaded:'範例已載入', msg_retrying:'結果疑似不完整，系統自動重試一次中...', msg_cancelled:'本次分析已取消', msg_no_result:'目前沒有可匯出的結果',
+        search_placeholder:'搜尋詞彙', filter_all:'全部', filter_n:'名詞', filter_v:'動詞', filter_a:'形容詞', filter_d:'副詞', filter_f:'功能詞', filter_punc:'標點', filter_o:'其他',
+        category_n:'名詞', category_v:'動詞', category_a:'形容詞', category_d:'副詞', category_f:'功能詞', category_punc:'標點', category_o:'其他',
+        complete_yes:'完整', complete_no:'未完成', sentence_label:'第 {n} 句',
+        demo_text:'光合作用是植物利用葉綠素吸收太陽能，將水和二氧化碳轉化為葡萄糖與氧氣的過程。這個過程不僅為植物本身提供能量，也是地球上絕大多數生命能量的來源。'
+      },
+      'en': {
+        back_researcher:'Back to Research Center', tool_name:'AI Tokenizer', page_title:'Scientific Text Segmentation', page_subtitle:'CKIP Standard Segmentation & POS Tagging',
+        label_input:'Raw Text', btn_demo:'Load Demo', btn_clear:'Clear', btn_analyze:'Start Segmentation', btn_cancel:'Cancel', btn_retry:'Retry',
+        char_count:'Chars', best_range:'Best Range', long_warn:'Text is long; segment by paragraphs if possible', analysis_hint:'The system checks completeness and retries once if truncation is suspected.',
+        state_empty_title:'No analysis yet', state_empty_msg:'Paste text first, then click Start Segmentation.',
+        state_loading_title:'Analyzing', state_loading_msg:'Your text has been sent and the system is waiting for a response.',
+        state_success_title:'Analysis complete', state_success_msg:'The result looks complete and can be used for export/statistics.',
+        state_partial_title:'Incomplete result', state_partial_msg:'The system suspects the result is truncated and will not treat it as final.',
+        state_error_title:'Analysis failed', state_error_msg:'The response format is invalid or the backend did not respond correctly.',
+        total:'Total', tokens:'Tokens', types:'Types', result_title:'Results', btn_copy_text:'Copy Text', btn_download:'Download .txt', btn_download_csv:'Download .csv', btn_download_json:'Download .json',
+        legend_noun:'Noun', legend_verb:'Verb', legend_adj:'Adj', legend_adv:'Adv', legend_punc:'Punctuation', legend_other:'Other',
+        view_reading:'Reading View', view_table:'Table View', toggle_raw_pos:'Show Raw POS',
+        col_sentence:'Sentence', col_word:'Word', col_category:'Category', col_raw_pos:'Raw POS', col_char_span:'Length',
+        meta_title:'Analysis Meta', meta_request_id:'Request ID', meta_engine:'Engine', meta_duration:'Duration', meta_sentences:'Sentences', meta_input_chars:'Input chars', meta_coverage:'Coverage', meta_note:'Formal statistics are generated only for complete results.',
+        debug_title:'Raw Response / Debug', btn_fold:'Fold', btn_expand:'Expand',
+        msg_processing:'AI is segmenting the scientific text...', msg_input_error:'Please input text first', msg_success:'Segmentation complete!', msg_copied:'Copied!', msg_downloaded:'Downloading...', msg_error:'System error, try again later', msg_demo_loaded:'Demo loaded', msg_retrying:'The result looks incomplete. Auto-retrying once...', msg_cancelled:'Analysis cancelled', msg_no_result:'No result available for export',
+        search_placeholder:'Search token', filter_all:'All', filter_n:'Noun', filter_v:'Verb', filter_a:'Adj', filter_d:'Adv', filter_f:'Function', filter_punc:'Punctuation', filter_o:'Other',
+        category_n:'Noun', category_v:'Verb', category_a:'Adj', category_d:'Adv', category_f:'Function', category_punc:'Punctuation', category_o:'Other',
+        complete_yes:'Complete', complete_no:'Incomplete', sentence_label:'Sentence {n}',
+        demo_text:'Photosynthesis is the process by which plants absorb solar energy through chlorophyll and convert water and carbon dioxide into glucose and oxygen. This process provides energy for the plant and is also the source of energy for most life on Earth.'
+      },
+      'ja': {
+        back_researcher:'研究センターへ戻る', tool_name:'AI 形態素解析', page_title:'科学テキスト形態素解析', page_subtitle:'CKIP Standard Segmentation & POS Tagging',
+        label_input:'入力テキスト', btn_demo:'デモ', btn_clear:'クリア', btn_analyze:'解析開始', btn_cancel:'中止', btn_retry:'再解析',
+        char_count:'文字数', best_range:'推奨長さ', long_warn:'長文です。段落ごとに分けると安定します', analysis_hint:'結果の完全性を確認し、切れている疑いがあれば自動で1回再試行します。',
+        state_empty_title:'未解析', state_empty_msg:'先にテキストを貼り付けてから開始してください。',
+        state_loading_title:'解析中', state_loading_msg:'テキスト送信後、結果を待っています。',
+        state_success_title:'解析完了', state_success_msg:'結果は完全と判定され、統計や書き出しに使えます。',
+        state_partial_title:'結果が不完全', state_partial_msg:'途中で切れた可能性があり、正式結果として扱いません。',
+        state_error_title:'解析失敗', state_error_msg:'レスポンス形式異常、または後台が正常に応答しませんでした。',
+        total:'Total', tokens:'Tokens', types:'Types', result_title:'解析結果', btn_copy_text:'テキストコピー', btn_download:'ダウンロード .txt', btn_download_csv:'ダウンロード .csv', btn_download_json:'ダウンロード .json',
+        legend_noun:'Noun', legend_verb:'Verb', legend_adj:'Adj', legend_adv:'Adv', legend_punc:'Punctuation', legend_other:'Other',
+        view_reading:'閲覧表示', view_table:'表表示', toggle_raw_pos:'生POS表示',
+        col_sentence:'文', col_word:'語', col_category:'カテゴリ', col_raw_pos:'生POS', col_char_span:'字長',
+        meta_title:'解析情報', meta_request_id:'Request ID', meta_engine:'Engine', meta_duration:'処理時間', meta_sentences:'文数', meta_input_chars:'入力文字数', meta_coverage:'カバー率', meta_note:'正式統計は完全結果のみ生成されます。',
+        debug_title:'生レスポンス / デバッグ', btn_fold:'折りたたむ', btn_expand:'開く',
+        msg_processing:'AI が科学テキストを解析中...', msg_input_error:'先にテキストを入力してください', msg_success:'解析完了！', msg_copied:'コピーしました', msg_downloaded:'ダウンロード中...', msg_error:'システムエラー', msg_demo_loaded:'デモを読み込みました', msg_retrying:'結果が不完全の可能性あり。1回自動再試行します...', msg_cancelled:'解析を中止しました', msg_no_result:'書き出せる結果がありません',
+        search_placeholder:'語を検索', filter_all:'全部', filter_n:'名詞', filter_v:'動詞', filter_a:'形容詞', filter_d:'副詞', filter_f:'機能語', filter_punc:'句読点', filter_o:'その他',
+        category_n:'名詞', category_v:'動詞', category_a:'形容詞', category_d:'副詞', category_f:'機能語', category_punc:'句読点', category_o:'その他',
+        complete_yes:'完全', complete_no:'不完全', sentence_label:'第 {n} 文',
+        demo_text:'光合成は、植物が葉緑素によって太陽エネルギーを吸収し、水と二酸化炭素をグルコースと酸素に変換する過程である。この過程は植物自身にエネルギーを与えるだけでなく、地球上の多くの生命のエネルギー源でもある。'
+      },
+      'zh-CN': {
+        back_researcher:'返回研究中心', tool_name:'AI 科学文本分词', page_title:'AI 科学文本分词系统', page_subtitle:'CKIP Standard Segmentation & POS Tagging',
+        label_input:'原始文本', btn_demo:'载入范例', btn_clear:'清空', btn_analyze:'开始分词', btn_cancel:'取消分析', btn_retry:'重新分析',
+        char_count:'字符数', best_range:'建议长度', long_warn:'文本偏长，建议分段分析', analysis_hint:'系统会检查结果完整性；若怀疑被截断，会自动重试一次。',
+        state_empty_title:'尚未开始分析', state_empty_msg:'请先贴上文本，再按“开始分词”。',
+        state_loading_title:'系统分析中', state_loading_msg:'文本已送出，正在等待结果。',
+        state_success_title:'分析完成', state_success_msg:'结果完整，可用于统计与导出。',
+        state_partial_title:'结果不完整', state_partial_msg:'系统侦测到结果疑似被截断，已停止将其视为正式结果。',
+        state_error_title:'分析失败', state_error_msg:'本次回传格式异常或后端未正常响应。',
+        total:'Total', tokens:'Tokens', types:'Types', result_title:'分词结果', btn_copy_text:'复制纯文本', btn_download:'下载 .txt', btn_download_csv:'下载 .csv', btn_download_json:'下载 .json',
+        legend_noun:'Noun', legend_verb:'Verb', legend_adj:'Adj', legend_adv:'Adv', legend_punc:'Punctuation', legend_other:'Other',
+        view_reading:'阅读模式', view_table:'表格模式', toggle_raw_pos:'显示原始词性',
+        col_sentence:'句', col_word:'词', col_category:'类别', col_raw_pos:'原始词性', col_char_span:'字长',
+        meta_title:'分析信息', meta_request_id:'Request ID', meta_engine:'Engine', meta_duration:'处理时间', meta_sentences:'句数', meta_input_chars:'输入字符', meta_coverage:'覆盖率', meta_note:'只有完整结果才会产生正式统计。',
+        debug_title:'原始回传 / 调试信息', btn_fold:'收合', btn_expand:'展开',
+        msg_processing:'AI 正在进行科学分词...', msg_input_error:'请先输入文本', msg_success:'分词完成！', msg_copied:'已复制结果', msg_downloaded:'文件下载中...', msg_error:'系统繁忙，请稍后再试', msg_demo_loaded:'范例已载入', msg_retrying:'结果疑似不完整，系统自动重试一次中...', msg_cancelled:'本次分析已取消', msg_no_result:'目前没有可导出的结果',
+        search_placeholder:'搜索词汇', filter_all:'全部', filter_n:'名词', filter_v:'动词', filter_a:'形容词', filter_d:'副词', filter_f:'功能词', filter_punc:'标点', filter_o:'其他',
+        category_n:'名词', category_v:'动词', category_a:'形容词', category_d:'副词', category_f:'功能词', category_punc:'标点', category_o:'其他',
+        complete_yes:'完整', complete_no:'未完成', sentence_label:'第 {n} 句',
+        demo_text:'光合作用是植物利用叶绿素吸收太阳能，将水和二氧化碳转化为葡萄糖与氧气的过程。这个过程不仅为植物本身提供能量，也是地球上绝大多数生命能量的来源。'
+      }
+    };
+
+    const CATEGORY_ORDER = ['all', 'n', 'v', 'a', 'd', 'f', 'punc', 'o'];
+    const SUSPICIOUS_END_WORDS = new Set(['和', '將', '将', '與', '与', '及', '或', '把', '被', '在', '的', '地', '得', '而', '並', '并', '則', '则']);
+    const SUSPICIOUS_END_CATEGORIES = new Set(['f']);
+
+    let lastAnalysis = null;
+    let currentView = 'reading';
+    let showRawPos = true;
+    let currentCategory = 'all';
+    let currentAbortController = null;
+    let manualCancelled = false;
+
+    function msg(key) {
+      const lang = document.getElementById('language-selector').value;
+      return (translations[lang] || translations['zh-TW'])[key] || key;
+    }
+
+    function applyTranslations() {
+      document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = msg(el.getAttribute('data-i18n')); });
+      document.getElementById('inputText').placeholder = document.getElementById('language-selector').value === 'en' ? 'Paste scientific text here...' : msg('label_input') + '...';
+      document.getElementById('tokenSearch').placeholder = msg('search_placeholder');
+      renderCategoryChips();
+      refreshStateText();
+      if (lastAnalysis) renderAnalysis(lastAnalysis);
+    }
+
+    function changeLanguage() { applyTranslations(); }
+
+    function loadDemo() {
+      document.getElementById('inputText').value = msg('demo_text');
+      updateCharCount();
+      showToast(msg('msg_demo_loaded'));
+    }
+
+    function clearText() {
+      if (currentAbortController) return;
+      document.getElementById('inputText').value = '';
+      updateCharCount();
+      lastAnalysis = null;
+      resetStats();
+      clearResults();
+      setState('empty');
+    }
+
+    function updateCharCount() {
+      const len = document.getElementById('inputText').value.length;
+      document.getElementById('charCount').textContent = len;
+      document.getElementById('metaInputChars').textContent = len;
+      const warning = document.getElementById('longTextWarning');
+      if (len > 1200) warning.classList.remove('soft-hidden');
+      else warning.classList.add('soft-hidden');
+    }
+
+    function showToast(text, type = 'normal') {
+      const t = document.getElementById('toast');
+      const icon = t.querySelector('i');
+      icon.className = type === 'error' ? 'fa-solid fa-triangle-exclamation text-red-400' : type === 'warn' ? 'fa-solid fa-triangle-exclamation text-amber-400' : 'fa-solid fa-check-circle text-green-400';
+      document.getElementById('toast-msg').innerText = text;
+      t.classList.remove('opacity-0', 'translate-y-10');
+      setTimeout(() => t.classList.add('opacity-0', 'translate-y-10'), 2600);
+    }
+
+    function setState(state, details = {}) {
+      const banner = document.getElementById('stateBanner');
+      const icon = document.getElementById('stateIcon');
+      const title = document.getElementById('stateTitle');
+      const message = document.getElementById('stateMessage');
+      banner.className = 'status-banner mb-6';
+      const mapping = {
+        empty: { cls:'status-empty', icon:'fa-regular fa-circle text-slate-400', title:'state_empty_title', msg:'state_empty_msg' },
+        loading: { cls:'status-loading', icon:'fa-solid fa-circle-notch fa-spin', title:'state_loading_title', msg:'state_loading_msg' },
+        success: { cls:'status-success', icon:'fa-solid fa-circle-check', title:'state_success_title', msg:'state_success_msg' },
+        partial: { cls:'status-partial', icon:'fa-solid fa-triangle-exclamation', title:'state_partial_title', msg:'state_partial_msg' },
+        error: { cls:'status-error', icon:'fa-solid fa-octagon-exclamation', title:'state_error_title', msg:'state_error_msg' },
+      };
+      const m = mapping[state];
+      banner.classList.add(m.cls);
+      icon.className = m.icon + ' mt-1';
+      title.textContent = details.title || msg(m.title);
+      message.textContent = details.message || msg(m.msg);
+      banner.dataset.state = state;
+      document.getElementById('retryBtnTop').classList.toggle('soft-hidden', !(state === 'partial' || state === 'error'));
+      document.getElementById('retryBtnBottom').classList.toggle('soft-hidden', !(state === 'partial' || state === 'error'));
+    }
+
+    function refreshStateText() {
+      const state = document.getElementById('stateBanner').dataset.state || 'empty';
+      if (!lastAnalysis) {
+        if (state !== 'loading') setState(state);
+        return;
+      }
+      if (state === 'success') setState('success');
+      if (state === 'partial') setState('partial');
+      if (state === 'error') setState('error');
+    }
+
+    function setBusy(isBusy) {
+      document.getElementById('runBtn').disabled = isBusy;
+      document.getElementById('demoBtn').disabled = isBusy;
+      document.getElementById('clearBtn').disabled = isBusy;
+      document.getElementById('inputText').disabled = isBusy;
+      document.getElementById('runBtn').classList.toggle('opacity-50', isBusy);
+      document.getElementById('cancelBtn').classList.toggle('soft-hidden', !isBusy);
+      document.getElementById('loadingState').classList.toggle('soft-hidden', !isBusy);
+    }
+
+    function cancelSegmentation() {
+      manualCancelled = true;
+      if (currentAbortController) currentAbortController.abort();
+      currentAbortController = null;
+      setBusy(false);
+      setState('error', { title: msg('msg_cancelled'), message: msg('msg_cancelled') });
+      showToast(msg('msg_cancelled'), 'warn');
+    }
+
+    function rerunSegmentation() { runSegmentation(true); }
+
+    async function runSegmentation(force = false) {
+      const text = document.getElementById('inputText').value.trim();
+      if (!text) { showToast(msg('msg_input_error'), 'error'); return; }
+      if (!force && currentAbortController) return;
+
+      manualCancelled = false;
+      currentAbortController = new AbortController();
+      setBusy(true);
+      setState('loading');
+      clearResults();
+      resetStats();
+      const startedAt = performance.now();
+
+      try {
+        const analysis = await requestSegmentationWithRetry(text, currentAbortController.signal);
+        if (manualCancelled) return;
+        analysis.durationMs = Math.round(performance.now() - startedAt);
+        lastAnalysis = analysis;
+        renderAnalysis(analysis);
+        if (analysis.status === 'success') {
+          setState('success');
+          showToast(msg('msg_success'));
+        } else if (analysis.status === 'partial') {
+          setState('partial', { message: analysis.partialReason || msg('state_partial_msg') });
+          showToast(msg('state_partial_title'), 'warn');
+        } else {
+          setState('error', { message: analysis.error || msg('state_error_msg') });
+          showToast(msg('msg_error'), 'error');
+        }
+      } catch (error) {
+        if (!manualCancelled) {
+          lastAnalysis = {
+            status: 'error',
+            error: error.message || msg('msg_error'),
+            rawResponse: { error: String(error && error.message || error) },
+            tokens: [], sentences: splitSentences(text), coveragePct: 0, isComplete: false
+          };
+          renderAnalysis(lastAnalysis);
+          setState('error', { message: lastAnalysis.error });
+          showToast(msg('msg_error'), 'error');
+        }
+      } finally {
+        setBusy(false);
+        currentAbortController = null;
+      }
+    }
+
+    async function requestSegmentationWithRetry(text, signal) {
+      let first = await requestSegmentation(text, signal);
+      if (first.status === 'partial') {
+        showToast(msg('msg_retrying'), 'warn');
+        let second = await requestSegmentation(text, signal, true);
+        second.previousAttempt = first;
+        if (second.status === 'success') return second;
+        if (second.status === 'partial' && !second.partialReason) second.partialReason = first.partialReason;
+        return second;
+      }
+      return first;
+    }
+
+    async function requestSegmentation(text, signal, secondTry = false) {
+      if (!GAS_API_URL) throw new Error('GAS URL missing');
+      const response = await fetch(GAS_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ text, mode: 'segmentation', attempt: secondTry ? 2 : 1 }),
+        signal
+      });
+
+      const rawText = await response.text();
+      const raw = tryParseJSON(rawText);
+      const normalized = normalizeBackendResponse(raw, rawText, text);
+      return normalized;
+    }
+
+    function tryParseJSON(text) {
+      try { return JSON.parse(text); } catch { return null; }
+    }
+
+    function normalizeBackendResponse(raw, rawText, inputText) {
+      const requestId = crypto.randomUUID ? crypto.randomUUID().slice(0, 8) : String(Date.now());
+      const base = {
+        requestId,
+        inputText,
+        rawResponse: raw || rawText,
+        engine: 'legacy-string',
+        tokens: [],
+        sentences: splitSentences(inputText),
+        coveragePct: 0,
+        isComplete: false,
+        status: 'error',
+        partialReason: '',
+        error: ''
+      };
+
+      if (!raw) {
+        base.error = 'Response is not valid JSON';
+        return base;
+      }
+
+      // 新格式
+      if (Array.isArray(raw.tokens)) {
+        const tokens = raw.tokens.map((t, idx) => normalizeTokenObject(t, idx));
+        const completeness = evaluateCompleteness(inputText, tokens, splitSentences(inputText), raw.is_complete);
+        return {
+          ...base,
+          requestId: raw.request_id || requestId,
+          engine: raw.engine || 'structured-json',
+          tokens,
+          sentences: raw.sentences && raw.sentences.length ? raw.sentences.map(s => ({ sentence_index: s.sentence_index ?? 0, text: s.text || '' })) : splitSentences(inputText),
+          coveragePct: completeness.coveragePct,
+          isComplete: completeness.isComplete,
+          status: raw.status === 'error' ? 'error' : completeness.isComplete ? 'success' : 'partial',
+          partialReason: completeness.reason,
+          error: raw.message || ''
         };
+      }
 
-        function getMsg(key) {
-            const lang = document.getElementById("language-selector").value;
-            return (translations[lang] || translations['zh-TW'])[key] || key;
+      // 舊格式：status + result 字串
+      if (raw.status === 'success' && typeof raw.result === 'string') {
+        const tokens = parseLegacyTokenString(raw.result, inputText);
+        const completeness = evaluateCompleteness(inputText, tokens, splitSentences(inputText), undefined);
+        return {
+          ...base,
+          engine: raw.engine || 'legacy-string',
+          tokens,
+          coveragePct: completeness.coveragePct,
+          isComplete: completeness.isComplete,
+          status: completeness.isComplete ? 'success' : 'partial',
+          partialReason: completeness.reason,
+          error: ''
+        };
+      }
+
+      if (raw.status === 'partial' && typeof raw.result === 'string') {
+        const tokens = parseLegacyTokenString(raw.result, inputText);
+        const completeness = evaluateCompleteness(inputText, tokens, splitSentences(inputText), false);
+        return {
+          ...base,
+          engine: raw.engine || 'legacy-string',
+          tokens,
+          coveragePct: completeness.coveragePct,
+          isComplete: false,
+          status: 'partial',
+          partialReason: raw.message || completeness.reason || 'Partial result',
+          error: ''
+        };
+      }
+
+      base.error = raw.message || 'Unsupported response shape';
+      return base;
+    }
+
+    function normalizeTokenObject(token, idx) {
+      const word = String(token.word || token.w || '').trim();
+      const rawPos = String(token.pos || token.p || 'O').trim();
+      const category = getPosCategory(rawPos);
+      return {
+        id: idx + 1,
+        word,
+        rawPos,
+        category,
+        categoryLabel: msg('category_' + category),
+        sentenceIndex: Number.isInteger(token.sentence_index) ? token.sentence_index : 0,
+        tokenIndex: Number.isInteger(token.token_index) ? token.token_index : idx,
+      };
+    }
+
+    function parseLegacyTokenString(textString, inputText) {
+      if (!textString) return [];
+      const cleaned = String(textString).replace(/\r/g, ' ').replace(/\n/g, ' ').replace(/\u3000+/g, ' ').trim();
+      const rawParts = cleaned.split(/\s+/).filter(Boolean);
+      const tokens = rawParts.map((part, idx) => {
+        const match = part.match(/^(.*)\(([^()]*)\)$/);
+        if (match) {
+          const word = match[1];
+          const rawPos = match[2];
+          return {
+            id: idx + 1,
+            word,
+            rawPos,
+            category: getPosCategory(rawPos),
+            categoryLabel: msg('category_' + getPosCategory(rawPos)),
+            sentenceIndex: 0,
+            tokenIndex: idx,
+          };
         }
+        return {
+          id: idx + 1,
+          word: part,
+          rawPos: 'O',
+          category: 'o',
+          categoryLabel: msg('category_o'),
+          sentenceIndex: 0,
+          tokenIndex: idx,
+        };
+      }).filter(t => t.word !== '');
+      assignSentenceIndexes(tokens, splitSentences(inputText));
+      return tokens;
+    }
 
-        function changeLanguage() {
-            const lang = document.getElementById("language-selector").value;
-            document.querySelectorAll("[data-i18n]").forEach(el => {
-                el.innerText = getMsg(el.getAttribute("data-i18n"));
-            });
-            const input = document.getElementById('inputText');
-            if(lang === 'en') input.placeholder = "Paste text here...";
-            else input.placeholder = "請在此貼上科學文章...";
+    function splitSentences(text) {
+      const arr = String(text || '').split(/(?<=[。！？!?])/).map(s => s.trim()).filter(Boolean);
+      if (!arr.length && text.trim()) return [{ sentence_index: 0, text: text.trim() }];
+      return arr.map((s, i) => ({ sentence_index: i, text: s }));
+    }
+
+    function assignSentenceIndexes(tokens, sentences) {
+      const sentLens = sentences.map(s => normalizeLoose(s.text).length);
+      let cumulative = 0;
+      let currentSentence = 0;
+      tokens.forEach(token => {
+        const len = normalizeLoose(token.word).length;
+        while (currentSentence < sentLens.length - 1 && cumulative >= sentLens[currentSentence]) {
+          cumulative = 0;
+          currentSentence += 1;
         }
+        token.sentenceIndex = currentSentence;
+        cumulative += len;
+      });
+    }
 
-        // *** UI 操作 ***
-        function loadDemo() {
-            const lang = document.getElementById("language-selector").value;
-            const t = translations[lang] || translations['zh-TW'];
-            document.getElementById('inputText').value = t.demo_text;
-            showToast(getMsg('msg_demo_loaded'));
+    function normalizeLoose(text) {
+      return String(text || '')
+        .replace(/[\s\u3000]/g, '')
+        .replace(/[，,。！？!?；;：:“”"'‘’（）()《》【】\[\]、]/g, '')
+        .trim();
+    }
+
+    function evaluateCompleteness(inputText, tokens, sentences, backendIsComplete) {
+      const inputNorm = normalizeLoose(inputText);
+      const reconNorm = normalizeLoose(tokens.map(t => t.word).join(''));
+      const coveragePct = inputNorm.length ? Math.min(100, Math.round((reconNorm.length / inputNorm.length) * 100)) : 0;
+      const lastToken = tokens[tokens.length - 1];
+      const suspiciousEnd = !lastToken ? true : SUSPICIOUS_END_WORDS.has(lastToken.word) || SUSPICIOUS_END_CATEGORIES.has(lastToken.category) || /COMMA|CATEGORY|PAREN|SPACE/i.test(lastToken.rawPos || '');
+      const requiredSentenceCount = sentences.length;
+      const actualSentenceCount = new Set(tokens.map(t => t.sentenceIndex)).size || 0;
+
+      let isComplete = Boolean(tokens.length) && coveragePct >= 92 && (!suspiciousEnd || coveragePct >= 98);
+      if (typeof backendIsComplete === 'boolean') isComplete = isComplete && backendIsComplete;
+      if (requiredSentenceCount > 1 && actualSentenceCount < requiredSentenceCount && coveragePct < 98) isComplete = false;
+
+      let reason = '';
+      if (!tokens.length) reason = 'No tokens returned';
+      else if (coveragePct < 92) reason = 'Coverage is too low; output likely truncated';
+      else if (suspiciousEnd && coveragePct < 98) reason = 'The last token suggests the sentence may have been cut off';
+      else if (requiredSentenceCount > 1 && actualSentenceCount < requiredSentenceCount && coveragePct < 98) reason = 'Not all sentences appear to be covered';
+      else if (typeof backendIsComplete === 'boolean' && backendIsComplete === false) reason = 'Backend flagged the result as incomplete';
+
+      return { isComplete, coveragePct, reason };
+    }
+
+    function getPosCategory(rawPos) {
+      const p = String(rawPos || 'O').toUpperCase();
+      if (/COMMA|PERIOD|CATEGORY|PAREN|PU|PUNCT|EXCLAM|QUESTION/.test(p)) return 'punc';
+      if (p.startsWith('N')) return 'n';
+      if (p.startsWith('V') || p === 'SHI') return 'v';
+      if (p.startsWith('A') || p === 'VH' || p === 'VA' || p === 'VS') return 'a';
+      if (p.startsWith('D') || p === 'DE') return 'd';
+      if (p.startsWith('C') || p.startsWith('P') || p.startsWith('T') || p.startsWith('I') || p === 'O') return 'f';
+      return 'o';
+    }
+
+    function getPosColorClass(category) {
+      return ({ n:'pos-n', v:'pos-v', a:'pos-a', d:'pos-d', f:'pos-f', punc:'pos-punc', o:'pos-o' })[category] || 'pos-o';
+    }
+
+    function renderAnalysis(analysis) {
+      document.getElementById('debugRaw').textContent = typeof analysis.rawResponse === 'string' ? analysis.rawResponse : JSON.stringify(analysis.rawResponse, null, 2);
+      document.getElementById('metaRequestId').textContent = analysis.requestId || '—';
+      document.getElementById('metaEngine').textContent = analysis.engine || 'legacy';
+      document.getElementById('metaDuration').textContent = analysis.durationMs ? `${analysis.durationMs} ms` : '—';
+      document.getElementById('metaSentences').textContent = analysis.sentences.length;
+      document.getElementById('metaInputChars').textContent = analysis.inputText.length;
+      document.getElementById('metaCoverage').textContent = `${analysis.coveragePct || 0}%`;
+      document.getElementById('metaCompletenessTag').textContent = analysis.isComplete ? msg('complete_yes') : msg('complete_no');
+      document.getElementById('metaNote').textContent = analysis.isComplete ? msg('state_success_msg') : (analysis.partialReason || analysis.error || msg('meta_note'));
+
+      const filtered = getFilteredTokens(analysis.tokens);
+      renderReadingView(filtered, analysis.sentences);
+      renderTableView(filtered);
+      renderStats(analysis);
+    }
+
+    function clearResults() {
+      document.getElementById('sentenceContainer').innerHTML = '';
+      document.getElementById('resultTableBody').innerHTML = '';
+      document.getElementById('debugRaw').textContent = '';
+      document.getElementById('metaRequestId').textContent = '—';
+      document.getElementById('metaEngine').textContent = 'legacy';
+      document.getElementById('metaDuration').textContent = '—';
+      document.getElementById('metaSentences').textContent = '0';
+      document.getElementById('metaCoverage').textContent = '0%';
+      document.getElementById('metaCompletenessTag').textContent = '—';
+      document.getElementById('metaNote').textContent = msg('meta_note');
+    }
+
+    function resetStats() {
+      ['total-token','total-type','n-token','v-token','a-token','d-token'].forEach(id => document.getElementById(`stat-${id}`).textContent = '0');
+      document.getElementById('stat-total-ttr').textContent = '0.00';
+      ['n','v','a','d'].forEach(k => document.getElementById(`bar-${k}`).style.width = '0%');
+    }
+
+    function renderStats(analysis) {
+      if (!analysis.isComplete) {
+        resetStats();
+        return;
+      }
+      const tokens = analysis.tokens;
+      const unique = new Set(tokens.map(t => t.word));
+      const groups = { n:0, v:0, a:0, d:0 };
+      tokens.forEach(t => { if (groups[t.category] != null) groups[t.category]++; });
+      document.getElementById('stat-total-token').textContent = tokens.length;
+      document.getElementById('stat-total-type').textContent = unique.size;
+      document.getElementById('stat-total-ttr').textContent = tokens.length ? (unique.size / tokens.length).toFixed(2) : '0.00';
+      ['n','v','a','d'].forEach(k => {
+        document.getElementById(`stat-${k}-token`).textContent = groups[k];
+        document.getElementById(`bar-${k}`).style.width = tokens.length ? `${(groups[k] / tokens.length) * 100}%` : '0%';
+      });
+    }
+
+    function renderReadingView(tokens, sentences) {
+      const container = document.getElementById('sentenceContainer');
+      container.innerHTML = '';
+      const grouped = new Map();
+      sentences.forEach(s => grouped.set(s.sentence_index, []));
+      tokens.forEach(t => {
+        if (!grouped.has(t.sentenceIndex)) grouped.set(t.sentenceIndex, []);
+        grouped.get(t.sentenceIndex).push(t);
+      });
+      const totalSentences = sentences.length || 1;
+      for (let i = 0; i < totalSentences; i++) {
+        const block = document.createElement('div');
+        block.className = 'sentence-block';
+        const title = document.createElement('div');
+        title.className = 'text-sm font-black text-slate-500 mb-3';
+        title.textContent = msg('sentence_label').replace('{n}', i + 1);
+        block.appendChild(title);
+        const body = document.createElement('div');
+        body.className = 'leading-loose';
+        const items = grouped.get(i) || [];
+        if (!items.length) {
+          body.innerHTML = `<div class="text-sm text-amber-700 font-bold">${msg('state_partial_title')}</div>`;
+        } else {
+          items.forEach(t => {
+            const span = document.createElement('span');
+            span.className = 'token-unit';
+            span.title = `${t.categoryLabel} / ${t.rawPos}`;
+            span.innerHTML = `<span class="token-word">${escapeHtml(t.word)}</span><span class="token-pos ${getPosColorClass(t.category)}">(${escapeHtml(showRawPos ? t.rawPos : t.categoryLabel)})</span>`;
+            body.appendChild(span);
+          });
         }
+        block.appendChild(body);
+        container.appendChild(block);
+      }
+    }
 
-        function clearText() {
-            document.getElementById('inputText').value = '';
-            document.getElementById('result-panel').classList.add('hidden');
+    function renderTableView(tokens) {
+      const tbody = document.getElementById('resultTableBody');
+      tbody.innerHTML = '';
+      if (!tokens.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-slate-400 py-8">—</td></tr>`;
+        return;
+      }
+      tokens.forEach((t, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="mono">${idx + 1}</td>
+          <td>${t.sentenceIndex + 1}</td>
+          <td class="font-bold text-slate-800">${escapeHtml(t.word)}</td>
+          <td><span class="${getPosColorClass(t.category)} font-bold">${escapeHtml(t.categoryLabel)}</span></td>
+          <td class="mono">${escapeHtml(t.rawPos)}</td>
+          <td class="mono">${normalizeLoose(t.word).length}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function escapeHtml(str) {
+      return String(str || '').replace(/[&<>"']/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[s]));
+    }
+
+    function setViewMode(mode) {
+      currentView = mode;
+      document.getElementById('readingView').classList.toggle('soft-hidden', mode !== 'reading');
+      document.getElementById('tableView').classList.toggle('soft-hidden', mode !== 'table');
+      document.getElementById('viewReadBtn').classList.toggle('active', mode === 'reading');
+      document.getElementById('viewTableBtn').classList.toggle('active', mode === 'table');
+    }
+
+    function toggleRawPos() {
+      showRawPos = !showRawPos;
+      document.getElementById('toggleRawPosBtn').classList.toggle('active', showRawPos);
+      document.getElementById('toggleRawPosBtn').querySelector('span').textContent = showRawPos ? msg('toggle_raw_pos') : msg('category_n') + '/' + msg('category_v');
+      if (lastAnalysis) renderReadingView(getFilteredTokens(lastAnalysis.tokens), lastAnalysis.sentences);
+    }
+
+    function renderCategoryChips() {
+      const box = document.getElementById('categoryChips');
+      box.innerHTML = '';
+      CATEGORY_ORDER.forEach(c => {
+        const btn = document.createElement('button');
+        btn.className = 'chip' + (currentCategory === c ? ' active' : '');
+        btn.textContent = msg('filter_' + c);
+        btn.onclick = () => { currentCategory = c; renderCategoryChips(); applyFilters(); };
+        box.appendChild(btn);
+      });
+    }
+
+    function getFilteredTokens(tokens) {
+      const q = document.getElementById('tokenSearch').value.trim().toLowerCase();
+      return tokens.filter(t => (currentCategory === 'all' || t.category === currentCategory) && (!q || t.word.toLowerCase().includes(q) || t.rawPos.toLowerCase().includes(q)));
+    }
+
+    function applyFilters() {
+      if (!lastAnalysis) return;
+      const filtered = getFilteredTokens(lastAnalysis.tokens);
+      renderReadingView(filtered, lastAnalysis.sentences);
+      renderTableView(filtered);
+    }
+
+    function formatResultText(tokens = null) {
+      const source = tokens || (lastAnalysis ? lastAnalysis.tokens : []);
+      return source.map(t => `${t.word}(${t.rawPos})`).join('　');
+    }
+
+    function copyResult() {
+      if (!lastAnalysis || !lastAnalysis.tokens.length) { showToast(msg('msg_no_result'), 'warn'); return; }
+      navigator.clipboard.writeText(formatResultText()).then(() => showToast(msg('msg_copied')));
+    }
+
+    function downloadBlob(filename, mime, content) {
+      const blob = new Blob([content], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast(msg('msg_downloaded'));
+    }
+
+    function downloadTxt() {
+      if (!lastAnalysis || !lastAnalysis.tokens.length) { showToast(msg('msg_no_result'), 'warn'); return; }
+      downloadBlob(`segmentation_result_${Date.now()}.txt`, 'text/plain;charset=utf-8', formatResultText());
+    }
+
+    function downloadCsv() {
+      if (!lastAnalysis || !lastAnalysis.tokens.length) { showToast(msg('msg_no_result'), 'warn'); return; }
+      const rows = [['index','sentence','word','category','raw_pos','length']].concat(lastAnalysis.tokens.map((t, idx) => [idx + 1, t.sentenceIndex + 1, t.word, t.categoryLabel, t.rawPos, normalizeLoose(t.word).length]));
+      const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+      downloadBlob(`segmentation_result_${Date.now()}.csv`, 'text/csv;charset=utf-8', csv);
+    }
+
+    function downloadJson() {
+      if (!lastAnalysis || !lastAnalysis.tokens.length) { showToast(msg('msg_no_result'), 'warn'); return; }
+      downloadBlob(`segmentation_result_${Date.now()}.json`, 'application/json;charset=utf-8', JSON.stringify(lastAnalysis, null, 2));
+    }
+
+    function toggleDebugPanel() {
+      const panel = document.getElementById('debugPanel');
+      const btn = document.getElementById('debugToggleBtn');
+      panel.classList.toggle('soft-hidden');
+      btn.querySelector('span').textContent = panel.classList.contains('soft-hidden') ? msg('btn_expand') : msg('btn_fold');
+    }
+
+    function setupBackLink() {
+      const params = new URLSearchParams(location.search);
+      const from = params.get('from') || sessionStorage.getItem('segmentation_from') || 'researcher';
+      sessionStorage.setItem('segmentation_from', from);
+      const target = from === 'professor' ? 'professor.html' : 'researcher.html';
+      document.getElementById('back-link-trigger').onclick = () => { window.location.href = target; };
+    }
+
+    document.getElementById('inputText').addEventListener('input', updateCharCount);
+
+    (function background() {
+      const canvas = document.getElementById('network-canvas');
+      const ctx = canvas.getContext('2d');
+      let width, height, particles = [];
+      function resize() {
+        width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; initParticles();
+      }
+      class Particle {
+        constructor() {
+          this.x = Math.random() * width; this.y = Math.random() * height;
+          this.vx = (Math.random() - 0.5) * 0.5; this.vy = (Math.random() - 0.5) * 0.5;
+          this.size = Math.random() * 2 + 1; this.color = `rgba(168,85,247,${Math.random() * 0.4})`;
         }
-
-        function showToast(msg, type='normal') {
-            const t = document.getElementById('toast');
-            document.getElementById('toast-msg').innerText = msg;
-            t.querySelector('i').className = type==='error' ? 'fa-solid fa-triangle-exclamation text-red-400' : 'fa-solid fa-check-circle text-green-400';
-            t.classList.remove('opacity-0', 'translate-y-10');
-            setTimeout(()=>t.classList.add('opacity-0', 'translate-y-10'), 3000);
+        update() {
+          this.x += this.vx; this.y += this.vy;
+          if (this.x < 0 || this.x > width) this.vx *= -1;
+          if (this.y < 0 || this.y > height) this.vy *= -1;
         }
-
-        // *** 核心：呼叫 GAS API 進行斷詞 ***
-        async function runSegmentation() {
-            const text = document.getElementById('inputText').value.trim();
-            if (!text) { showToast(getMsg('msg_input_error'), 'error'); return; }
-
-            // 檢查是否已填入部署網址
-            if (!GAS_API_URL || GAS_API_URL.includes("在此填入")) {
-                showToast("請先在 HTML 程式碼中填入 GAS 部署網址", 'error');
-                return;
+        draw() {
+          ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.fill();
+        }
+      }
+      function initParticles() { particles = []; for (let i = 0; i < 50; i++) particles.push(new Particle()); }
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+        particles.forEach(p => { p.update(); p.draw(); });
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x; const dy = particles[i].y - particles[j].y; const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 150) {
+              ctx.beginPath(); ctx.strokeStyle = `rgba(168,85,247,${0.08 - dist / 2000})`; ctx.lineWidth = 0.5;
+              ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.stroke();
             }
-
-            const panel = document.getElementById('result-panel');
-            const loading = document.getElementById('loadingState');
-            const container = document.getElementById('tokensContainer');
-            const btn = document.getElementById('runBtn');
-            
-            panel.classList.remove('hidden');
-            loading.classList.remove('hidden');
-            container.innerHTML = ''; 
-            btn.disabled = true; btn.classList.add('opacity-50');
-            
-            panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-            try {
-                // 發送 POST 請求給 GAS
-                const response = await fetch(GAS_API_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "text/plain;charset=utf-8" }, // 避免 CORS 預檢
-                    body: JSON.stringify({ text: text })
-                });
-
-                const data = await response.json();
-
-                if (data.status === "success") {
-                    // GAS 回傳的是斷詞好的字串 (例: "測試(Na)　一下(D)")
-                    // 我們需要把它轉換成物件陣列 [{w:"測試", p:"Na"}, ...] 以便渲染
-                    const tokens = parseStringTokens(data.result);
-                    renderTokens(tokens);
-                    showToast(getMsg('msg_success'));
-                } else {
-                    throw new Error(data.message || "Unknown Error");
-                }
-
-            } catch (error) {
-                console.error(error);
-                container.innerHTML = `<p class="text-red-500 w-full text-center">${getMsg('msg_error')}: ${error.message}</p>`;
-            } finally {
-                loading.classList.add('hidden');
-                btn.disabled = false; btn.classList.remove('opacity-50');
-            }
+          }
         }
+        requestAnimationFrame(animate);
+      }
+      window.addEventListener('resize', resize); resize(); animate();
+    })();
 
-        // 輔助函式：將斷詞後的字串解析為 Token 物件
-        function parseStringTokens(textString) {
-            if(!textString) return [];
-            // 用全形空格切割
-            const parts = textString.split(/　/); 
-            return parts.map(p => {
-                // 抓取括號內的詞性，例如 "科學(Na)"
-                const match = p.match(/^(.*)\((.*)\)$/);
-                if (match) {
-                    return { w: match[1], p: match[2] };
-                }
-                // 如果解析失敗，回傳原字並標記為其他
-                if (p.trim() !== "") return { w: p, p: "O" };
-                return null;
-            }).filter(t => t !== null);
-        }
+    function boot() {
+      setupBackLink();
+      renderCategoryChips();
+      updateCharCount();
+      applyTranslations();
+      setViewMode('reading');
+      document.body.style.visibility = 'visible';
+    }
 
-        function renderTokens(tokens) {
-            const container = document.getElementById('tokensContainer');
-            window.lastTokens = tokens; 
-
-            // 計算統計數據
-            const stats = {
-                total: { token: 0, type: new Set() },
-                n: { token: 0, type: new Set() },
-                v: { token: 0, type: new Set() },
-                a: { token: 0, type: new Set() },
-                d: { token: 0, type: new Set() }
-            };
-
-            tokens.forEach(t => {
-                const word = t.w;
-                const pos = t.p.toUpperCase();
-                const posFirst = pos.charAt(0);
-
-                stats.total.token++;
-                stats.total.type.add(word);
-
-                if (posFirst === 'N') {
-                    stats.n.token++;
-                    stats.n.type.add(word);
-                } else if (posFirst === 'V') {
-                    stats.v.token++;
-                    stats.v.type.add(word);
-                } else if (posFirst === 'A' || pos === 'VH' || pos === 'VS') { 
-                    stats.a.token++;
-                    stats.a.type.add(word);
-                } else if (posFirst === 'D' || pos === 'DE') { 
-                    stats.d.token++;
-                    stats.d.type.add(word);
-                }
-            });
-
-            // 更新統計 UI
-            const updateStatUI = (idSuffix, data) => {
-                document.getElementById(`stat-${idSuffix}-token`).innerText = data.token;
-                if (document.getElementById(`stat-${idSuffix}-type`)) {
-                     document.getElementById(`stat-${idSuffix}-type`).innerText = data.type.size;
-                }
-                const bar = document.getElementById(`bar-${idSuffix}`);
-                if (bar && stats.total.token > 0) {
-                    const pct = (data.token / stats.total.token) * 100;
-                    bar.style.width = `${pct}%`;
-                }
-            };
-
-            updateStatUI('total', stats.total);
-            updateStatUI('n', stats.n);
-            updateStatUI('v', stats.v);
-            updateStatUI('a', stats.a);
-            updateStatUI('d', stats.d);
-
-            const ttr = stats.total.token > 0 ? (stats.total.type.size / stats.total.token).toFixed(2) : "0.00";
-            document.getElementById('stat-total-ttr').innerText = ttr;
-
-            // 渲染斷詞文本 (流動式)
-            tokens.forEach((t, index) => {
-                const span = document.createElement('span');
-                span.className = 'token-unit';
-
-                const pUpper = t.p.toUpperCase();
-                let colorClass = 'pos-o'; 
-                if (pUpper.startsWith('N')) colorClass = 'pos-n';
-                else if (pUpper.startsWith('V')) colorClass = 'pos-v';
-                else if (pUpper.startsWith('A') || pUpper === 'VH' || pUpper === 'VS') colorClass = 'pos-a';
-                else if (pUpper.startsWith('D') || pUpper === 'DE') colorClass = 'pos-d';
-                else if (pUpper === 'M' || pUpper === 'NF') colorClass = 'pos-m';
-                else if (pUpper.startsWith('P') || pUpper.startsWith('C')) colorClass = 'pos-m';
-                
-                span.innerHTML = `<span class="token-word">${t.w}</span><span class="token-pos ${colorClass}">(${t.p})</span>`;
-                container.appendChild(span);
-
-                if (index < tokens.length - 1) {
-                    const space = document.createTextNode('　');
-                    container.appendChild(space);
-                }
-            });
-
-            document.getElementById('result-panel').classList.remove('hidden');
-        }
-
-        function formatResultText() {
-            if (!window.lastTokens) return "";
-            return window.lastTokens.map(t => `${t.w}(${t.p})`).join('　');
-        }
-
-        function copyResult() {
-            const text = formatResultText();
-            if (!text) return;
-            navigator.clipboard.writeText(text);
-            showToast(getMsg('msg_copied'));
-        }
-
-        function downloadTxt() {
-            const text = formatResultText();
-            if (!text) return;
-            
-            const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `segmentation_result_${Date.now()}.txt`;
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast(getMsg('msg_downloaded'));
-        }
-
-        // *** Background ***
-        (function() {
-            const canvas = document.getElementById('network-canvas');
-            const ctx = canvas.getContext('2d');
-            let width, height, particles = [];
-            function resize() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; initParticles(); }
-            class Particle {
-                constructor() { this.x = Math.random() * width; this.y = Math.random() * height; this.vx = (Math.random()-0.5)*0.5; this.vy = (Math.random()-0.5)*0.5; this.size = Math.random()*2+1; this.color = `rgba(168, 85, 247, ${Math.random()*0.4})`; }
-                update() { this.x+=this.vx; this.y+=this.vy; if(this.x<0||this.x>width)this.vx*=-1; if(this.y<0||this.y>height)this.vy*=-1; }
-                draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI*2); ctx.fillStyle=this.color; ctx.fill(); }
-            }
-            function initParticles() { particles=[]; for(let i=0;i<50;i++) particles.push(new Particle()); }
-            function animate() {
-                ctx.clearRect(0, 0, width, height);
-                particles.forEach(p => { p.update(); p.draw(); });
-                for(let i=0;i<particles.length;i++){
-                    for(let j=i;j<particles.length;j++){
-                        const dx = particles[i].x - particles[j].x; const dy = particles[i].y - particles[j].y;
-                        const dist = Math.sqrt(dx*dx+dy*dy);
-                        if(dist<150){ ctx.beginPath(); ctx.strokeStyle=`rgba(168,85,247,${0.08 - dist/2000})`; ctx.lineWidth=0.5; ctx.moveTo(particles[i].x,particles[i].y); ctx.lineTo(particles[j].x,particles[j].y); ctx.stroke(); }
-                    }
-                }
-                requestAnimationFrame(animate);
-            }
-            window.addEventListener('resize', resize); resize(); animate();
-        })();
-    </script>
+    window.addEventListener('load', boot);
+  </script>
 </body>
 </html>
