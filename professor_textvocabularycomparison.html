@@ -145,7 +145,7 @@
                                     <div class="w-10 h-6 bg-slate-200 rounded-full shadow-inner transition-colors duration-300" id="toggle-bg"></div>
                                     <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow transition-transform duration-300" id="toggle-dot"></div>
                                 </div>
-                                <span class="ml-2 text-xs font-bold text-slate-600" data-i18n="label_show_pos">顯示 POS</span>
+                                <span class="ml-2 text-xs font-bold text-slate-600" data-i18n="label_show_pos">顯示詞性標記(POS)</span>
                             </label>
                         </div>
                     </div>
@@ -181,26 +181,35 @@
                     </div>
                 </div>
 
-                <div class="bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-xl px-4 py-3">
-  請貼上已斷詞文本，例如：細胞(Na) 是(SHI) 生物體(Na) 的(DE) 基本(Na) 單位(Na)
+               <div class="bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-xl px-4 py-3">
+    請貼上已斷詞文本，例如：細胞(Na) 是(SHI) 生物體(Na) 的(DE) 基本(Na) 單位(Na)
 </div>
-                <!-- 輸入框 A -->
-                <div>
-                    <div class="flex justify-between items-center mb-2">
-                        <label class="text-sm font-bold text-slate-700 flex items-center gap-2">
-                            <span class="w-6 h-6 rounded bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs">A</span> <span data-i18n="label_text_a">文本 A</span>
-                        </label>
-                        <div class="flex gap-2">
-                            <button onclick="loadExample()" class="text-xs text-indigo-600 hover:text-indigo-800 transition font-bold border border-indigo-200 rounded px-2 py-1 bg-indigo-50 flex items-center gap-1">
-                                <i class="fa-solid fa-file-import"></i> <span data-i18n="btn_example">載入範例</span>
-                            </button>
-                            <button onclick="clearInput('text-a')" class="text-xs text-slate-400 hover:text-red-500 transition flex items-center gap-1">
-                                <i class="fa-solid fa-trash-can"></i> <span data-i18n="btn_clear">清空</span>
-                            </button>
-                        </div>
-                    </div>
-                    <textarea id="text-a" class="input-area w-full h-40 p-4 rounded-xl resize-none text-sm font-mono leading-relaxed" placeholder="..."></textarea>
-                </div>
+
+<div class="flex gap-2">
+    <button onclick="loadExample()" class="text-xs text-indigo-600 hover:text-indigo-800 transition font-bold border border-indigo-200 rounded px-3 py-2 bg-indigo-50 flex items-center gap-1">
+        <i class="fa-solid fa-file-import"></i>
+        <span data-i18n="btn_example">載入範例</span>
+    </button>
+    <button onclick="clearAllInputs()" class="text-xs text-slate-500 hover:text-red-500 transition font-bold border border-slate-200 rounded px-3 py-2 bg-white flex items-center gap-1">
+        <i class="fa-solid fa-trash-can"></i>
+        <span data-i18n="btn_clear_all">清空全部</span>
+    </button>
+</div>
+
+<!-- 輸入框 A -->
+<div>
+    <div class="flex justify-between items-center mb-2">
+        <label class="text-sm font-bold text-slate-700 flex items-center gap-2">
+            <span class="w-6 h-6 rounded bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs">A</span>
+            <span data-i18n="label_text_a">文本 A</span>
+        </label>
+        <button onclick="clearInput('text-a')" class="text-xs text-slate-400 hover:text-red-500 transition flex items-center gap-1">
+            <i class="fa-solid fa-trash-can"></i>
+            <span data-i18n="btn_clear">清空</span>
+        </button>
+    </div>
+    <textarea id="text-a" class="input-area w-full h-40 p-4 rounded-xl resize-none text-sm font-mono leading-relaxed" placeholder="..."></textarea>
+</div>
 
                 <!-- 輸入框 B -->
                 <div>
@@ -232,68 +241,103 @@
                 <p class="text-sm opacity-70 mt-2" data-i18n="msg_hint">支援自動過濾標點與詞性篩選</p>
             </div>
 
-            <!-- 結果面板 -->
-            <div id="result-panel" class="hidden grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 animate-fade-in-up">
-                
-                <!-- 1. A 獨有 -->
-                <div class="flex flex-col h-[calc(100vh-140px)] glass-panel rounded-2xl overflow-hidden border-t-4 border-indigo-500">
-                    <div class="p-4 bg-white border-b border-slate-100 flex justify-between items-center">
-                        <h3 class="font-bold text-indigo-700 flex items-center gap-2"><i class="fa-solid fa-circle-minus"></i> <span data-i18n="header_only_a">A 獨有</span></h3>
-                        <span class="bg-indigo-50 text-indigo-700 text-xs px-2 py-1 rounded-md font-bold" id="count-only-a">0</span>
-                    </div>
-                    <textarea id="res-only-a" readonly class="flex-1 p-4 bg-transparent resize-none outline-none text-slate-600 font-mono text-sm leading-relaxed custom-scrollbar"></textarea>
-                    <div class="p-3 bg-slate-50 border-t border-slate-100">
-                        <button onclick="copyText('res-only-a')" class="w-full py-2 rounded-lg text-xs font-bold text-slate-500 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition border border-transparent hover:border-slate-200 flex items-center justify-center gap-2">
-                            <i class="fa-regular fa-copy"></i> <span data-i18n="btn_copy">複製內容</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 2. 交集 -->
-                <div class="flex flex-col h-[calc(100vh-140px)] glass-panel rounded-2xl overflow-hidden border-t-4 border-teal-500">
-                    <div class="p-4 bg-white border-b border-slate-100 flex justify-between items-center">
-                        <h3 class="font-bold text-teal-700 flex items-center gap-2"><i class="fa-solid fa-link"></i> <span data-i18n="header_common">AB 交集</span></h3>
-                        <span class="bg-teal-50 text-teal-700 text-xs px-2 py-1 rounded-md font-bold" id="count-common">0</span>
-                    </div>
-                    <textarea id="res-common" readonly class="flex-1 p-4 bg-transparent resize-none outline-none text-slate-600 font-mono text-sm leading-relaxed custom-scrollbar"></textarea>
-                    <div class="p-3 bg-slate-50 border-t border-slate-100">
-                        <button onclick="copyText('res-common')" class="w-full py-2 rounded-lg text-xs font-bold text-slate-500 hover:bg-white hover:text-teal-600 hover:shadow-sm transition border border-transparent hover:border-slate-200 flex items-center justify-center gap-2">
-                             <i class="fa-regular fa-copy"></i> <span data-i18n="btn_copy">複製內容</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 3. 聯集 -->
-                <div class="flex flex-col h-[calc(100vh-140px)] glass-panel rounded-2xl overflow-hidden border-t-4 border-fuchsia-500">
-                    <div class="p-4 bg-white border-b border-slate-100 flex justify-between items-center">
-                        <h3 class="font-bold text-fuchsia-700 flex items-center gap-2"><i class="fa-solid fa-layer-group"></i> <span data-i18n="header_union">AB 聯集</span></h3>
-                        <span class="bg-fuchsia-50 text-fuchsia-700 text-xs px-2 py-1 rounded-md font-bold" id="count-union">0</span>
-                    </div>
-                    <textarea id="res-union" readonly class="flex-1 p-4 bg-transparent resize-none outline-none text-slate-600 font-mono text-sm leading-relaxed custom-scrollbar"></textarea>
-                    <div class="p-3 bg-slate-50 border-t border-slate-100">
-                        <button onclick="copyText('res-union')" class="w-full py-2 rounded-lg text-xs font-bold text-slate-500 hover:bg-white hover:text-fuchsia-600 hover:shadow-sm transition border border-transparent hover:border-slate-200 flex items-center justify-center gap-2">
-                             <i class="fa-regular fa-copy"></i> <span data-i18n="btn_copy">複製內容</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 4. B 獨有 -->
-                <div class="flex flex-col h-[calc(100vh-140px)] glass-panel rounded-2xl overflow-hidden border-t-4 border-emerald-500">
-                    <div class="p-4 bg-white border-b border-slate-100 flex justify-between items-center">
-                        <h3 class="font-bold text-emerald-700 flex items-center gap-2"><i class="fa-solid fa-circle-plus"></i> <span data-i18n="header_only_b">B 獨有</span></h3>
-                        <span class="bg-emerald-50 text-emerald-700 text-xs px-2 py-1 rounded-md font-bold" id="count-only-b">0</span>
-                    </div>
-                    <textarea id="res-only-b" readonly class="flex-1 p-4 bg-transparent resize-none outline-none text-slate-600 font-mono text-sm leading-relaxed custom-scrollbar"></textarea>
-                    <div class="p-3 bg-slate-50 border-t border-slate-100">
-                        <button onclick="copyText('res-only-b')" class="w-full py-2 rounded-lg text-xs font-bold text-slate-500 hover:bg-white hover:text-emerald-600 hover:shadow-sm transition border border-transparent hover:border-slate-200 flex items-center justify-center gap-2">
-                             <i class="fa-regular fa-copy"></i> <span data-i18n="btn_copy">複製內容</span>
-                        </button>
-                    </div>
-                </div>
-
-            </div>
-        </main>
+<div id="result-panel" class="hidden space-y-4 animate-fade-in-up">
+    <div class="flex justify-end">
+        <button onclick="copyAllResults()" class="bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-50 transition flex items-center gap-2">
+            <i class="fa-regular fa-copy"></i>
+            <span data-i18n="btn_copy_all">複製全部結果</span>
+        </button>
     </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+
+        <!-- 1. A 獨有 -->
+        <div class="flex flex-col min-h-[320px] md:h-[calc(100vh-140px)] glass-panel rounded-2xl overflow-hidden border-t-4 border-indigo-500">
+            <div class="p-4 bg-white border-b border-slate-100">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-indigo-700 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-minus"></i>
+                        <span data-i18n="header_only_a">A 獨有</span>
+                    </h3>
+                    <span class="bg-indigo-50 text-indigo-700 text-xs px-2 py-1 rounded-md font-bold" id="count-only-a">0</span>
+                </div>
+                <p class="mt-1 text-xs text-slate-500" data-i18n="desc_only_a">只出現在 A 的詞</p>
+            </div>
+            <textarea id="res-only-a" readonly class="flex-1 p-4 bg-transparent resize-none outline-none text-slate-600 font-mono text-sm leading-relaxed custom-scrollbar"></textarea>
+            <div class="p-3 bg-slate-50 border-t border-slate-100">
+                <button onclick="copyText('res-only-a')" class="w-full py-2 rounded-lg text-xs font-bold text-slate-500 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition border border-transparent hover:border-slate-200 flex items-center justify-center gap-2">
+                    <i class="fa-regular fa-copy"></i>
+                    <span data-i18n="btn_copy">複製內容</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. AB 交集 -->
+        <div class="flex flex-col min-h-[320px] md:h-[calc(100vh-140px)] glass-panel rounded-2xl overflow-hidden border-t-4 border-teal-500">
+            <div class="p-4 bg-white border-b border-slate-100">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-teal-700 flex items-center gap-2">
+                        <i class="fa-solid fa-link"></i>
+                        <span data-i18n="header_common">AB 交集</span>
+                    </h3>
+                    <span class="bg-teal-50 text-teal-700 text-xs px-2 py-1 rounded-md font-bold" id="count-common">0</span>
+                </div>
+                <p class="mt-1 text-xs text-slate-500" data-i18n="desc_common">A 和 B 都出現的詞</p>
+            </div>
+            <textarea id="res-common" readonly class="flex-1 p-4 bg-transparent resize-none outline-none text-slate-600 font-mono text-sm leading-relaxed custom-scrollbar"></textarea>
+            <div class="p-3 bg-slate-50 border-t border-slate-100">
+                <button onclick="copyText('res-common')" class="w-full py-2 rounded-lg text-xs font-bold text-slate-500 hover:bg-white hover:text-teal-600 hover:shadow-sm transition border border-transparent hover:border-slate-200 flex items-center justify-center gap-2">
+                    <i class="fa-regular fa-copy"></i>
+                    <span data-i18n="btn_copy">複製內容</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 3. AB 聯集 -->
+        <div class="flex flex-col min-h-[320px] md:h-[calc(100vh-140px)] glass-panel rounded-2xl overflow-hidden border-t-4 border-fuchsia-500">
+            <div class="p-4 bg-white border-b border-slate-100">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-fuchsia-700 flex items-center gap-2">
+                        <i class="fa-solid fa-layer-group"></i>
+                        <span data-i18n="header_union">AB 聯集</span>
+                    </h3>
+                    <span class="bg-fuchsia-50 text-fuchsia-700 text-xs px-2 py-1 rounded-md font-bold" id="count-union">0</span>
+                </div>
+                <p class="mt-1 text-xs text-slate-500" data-i18n="desc_union">A 或 B 出現過的全部詞</p>
+            </div>
+            <textarea id="res-union" readonly class="flex-1 p-4 bg-transparent resize-none outline-none text-slate-600 font-mono text-sm leading-relaxed custom-scrollbar"></textarea>
+            <div class="p-3 bg-slate-50 border-t border-slate-100">
+                <button onclick="copyText('res-union')" class="w-full py-2 rounded-lg text-xs font-bold text-slate-500 hover:bg-white hover:text-fuchsia-600 hover:shadow-sm transition border border-transparent hover:border-slate-200 flex items-center justify-center gap-2">
+                    <i class="fa-regular fa-copy"></i>
+                    <span data-i18n="btn_copy">複製內容</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 4. B 獨有 -->
+        <div class="flex flex-col min-h-[320px] md:h-[calc(100vh-140px)] glass-panel rounded-2xl overflow-hidden border-t-4 border-emerald-500">
+            <div class="p-4 bg-white border-b border-slate-100">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-emerald-700 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-plus"></i>
+                        <span data-i18n="header_only_b">B 獨有</span>
+                    </h3>
+                    <span class="bg-emerald-50 text-emerald-700 text-xs px-2 py-1 rounded-md font-bold" id="count-only-b">0</span>
+                </div>
+                <p class="mt-1 text-xs text-slate-500" data-i18n="desc_only_b">只出現在 B 的詞</p>
+            </div>
+            <textarea id="res-only-b" readonly class="flex-1 p-4 bg-transparent resize-none outline-none text-slate-600 font-mono text-sm leading-relaxed custom-scrollbar"></textarea>
+            <div class="p-3 bg-slate-50 border-t border-slate-100">
+                <button onclick="copyText('res-only-b')" class="w-full py-2 rounded-lg text-xs font-bold text-slate-500 hover:bg-white hover:text-emerald-600 hover:shadow-sm transition border border-transparent hover:border-slate-200 flex items-center justify-center gap-2">
+                    <i class="fa-regular fa-copy"></i>
+                    <span data-i18n="btn_copy">複製內容</span>
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 
     <script>
         // Toggle Switch Logic
@@ -314,46 +358,142 @@
 
         // i18n
         const translations = {
-            "zh-TW": {
-                "back_btn": "返回研究中心", "tool_name": "文本詞彙比較", 
-                "label_pos_filter": "詞性篩選", "label_show_pos": "顯示 POS",
-                "pos_n": "名詞 (N)", "pos_v": "動詞 (V)", "pos_a": "形容詞 (A)", "pos_d": "副詞 (D)", "pos_c": "連接詞 (C)", "pos_o": "其他",
-                "label_text_a": "文本 A", "label_text_b": "文本 B", "btn_example": "載入範例", "btn_clear": "清空",
-                "btn_analyze": "開始比對分析", "msg_start": "輸入文本並開始比對", "msg_hint": "支援自動過濾標點與詞性篩選",
-                "header_only_a": "A 獨有", "header_common": "AB 交集", "header_union": "AB 聯集", "header_only_b": "B 獨有",
-                "btn_copy": "複製內容", "msg_copied": "已複製", "err_input": "請至少輸入一段文本！",
-                "ph_text": "請貼上已斷詞文本，例如：細胞(Na) 是(SHI) 生物體(Na)..."
-            },
-            "en": {
-                "back_btn": "Back to Research", "tool_name": "Vocab Comparison", 
-                "label_pos_filter": "POS Filter", "label_show_pos": "Show POS",
-                "pos_n": "Noun (N)", "pos_v": "Verb (V)", "pos_a": "Adj (A)", "pos_d": "Adv (D)", "pos_c": "Conj (C)", "pos_o": "Other",
-                "label_text_a": "Text A", "label_text_b": "Text B", "btn_example": "Example", "btn_clear": "Clear",
-                "btn_analyze": "Start Analysis", "msg_start": "Input text to start comparison", "msg_hint": "Auto-filter punctuation & POS",
-                "header_only_a": "Unique to A", "header_common": "Intersection", "header_union": "Union", "header_only_b": "Unique to B",
-                "btn_copy": "Copy Content", "msg_copied": "Copied", "err_input": "Please input text!",
-                "ph_text": "Paste tokenized text here, for example: cell(Na) is(SHI) organism(Na)..."
-            },
-            "ja": {
-                "back_btn": "研究センターへ", "tool_name": "語彙比較ツール", 
-                "label_pos_filter": "品詞フィルタ", "label_show_pos": "POS表示",
-                "pos_n": "名詞 (N)", "pos_v": "動詞 (V)", "pos_a": "形容詞 (A)", "pos_d": "副詞 (D)", "pos_c": "接続詞 (C)", "pos_o": "その他",
-                "label_text_a": "テキスト A", "label_text_b": "テキスト B", "btn_example": "例文", "btn_clear": "クリア",
-                "btn_analyze": "比較開始", "msg_start": "テキストを入力して比較", "msg_hint": "句読点と品詞を自動フィルタリング",
-                "header_only_a": "A のみ", "header_common": "共通 (交差)", "header_union": "和集合", "header_only_b": "B のみ",
-                "btn_copy": "コピー", "msg_copied": "コピーしました", "err_input": "テキストを入力してください！",
-                "ph_text": "分かち書き済みテキストを貼り付けてください。例：細胞(Na) は(SHI) 生物体(Na)..."
-            },
-            "zh-CN": {
-                "back_btn": "返回研究中心", "tool_name": "文本词汇比较", 
-                "label_pos_filter": "词性筛选", "label_show_pos": "显示 POS",
-                "pos_n": "名词 (N)", "pos_v": "动词 (V)", "pos_a": "形容词 (A)", "pos_d": "副词 (D)", "pos_c": "连词 (C)", "pos_o": "其他",
-                "label_text_a": "文本 A", "label_text_b": "文本 B", "btn_example": "载入范例", "btn_clear": "清空",
-                "btn_analyze": "开始比对分析", "msg_start": "输入文本并开始比对", "msg_hint": "支持自动过滤标点与词性筛选",
-                "header_only_a": "A 独有", "header_common": "AB 交集", "header_union": "AB 并集", "header_only_b": "B 独有",
-                "btn_copy": "复制内容", "msg_copied": "已复制", "err_input": "请至少输入一段文本！",
-                "ph_text": "请贴上已分词文本，例如：细胞(Na) 是(SHI) 生物体(Na)..."
-            },
+"zh-TW": {
+    "back_btn": "返回研究中心",
+    "tool_name": "文本詞彙比較",
+    "label_pos_filter": "詞性篩選",
+    "label_show_pos": "顯示詞性標記(POS)",
+    "pos_n": "名詞 (N)",
+    "pos_v": "動詞 (V)",
+    "pos_a": "形容詞 (A)",
+    "pos_d": "副詞 (D)",
+    "pos_c": "連接詞 (C)",
+    "pos_o": "其他",
+    "label_text_a": "文本 A",
+    "label_text_b": "文本 B",
+    "btn_example": "載入範例",
+    "btn_clear": "清空",
+    "btn_clear_all": "清空全部",
+    "btn_analyze": "開始比對分析",
+    "btn_copy": "複製內容",
+    "btn_copy_all": "複製全部結果",
+    "msg_start": "輸入文本並開始比對",
+    "msg_hint": "支援自動過濾標點與詞性篩選",
+    "header_only_a": "A 獨有",
+    "header_common": "AB 交集",
+    "header_union": "AB 聯集",
+    "header_only_b": "B 獨有",
+    "desc_only_a": "只出現在 A 的詞",
+    "desc_common": "A 和 B 都出現的詞",
+    "desc_union": "A 或 B 出現過的全部詞",
+    "desc_only_b": "只出現在 B 的詞",
+    "msg_copied": "已複製",
+    "err_input": "請至少輸入一段文本！",
+    "ph_text": "請貼上已斷詞文本，例如：細胞(Na) 是(SHI) 生物體(Na)..."
+},
+
+"en": {
+    "back_btn": "Back to Research",
+    "tool_name": "Vocab Comparison",
+    "label_pos_filter": "POS Filter",
+    "label_show_pos": "Show POS Tags",
+    "pos_n": "Noun (N)",
+    "pos_v": "Verb (V)",
+    "pos_a": "Adj (A)",
+    "pos_d": "Adv (D)",
+    "pos_c": "Conj (C)",
+    "pos_o": "Other",
+    "label_text_a": "Text A",
+    "label_text_b": "Text B",
+    "btn_example": "Example",
+    "btn_clear": "Clear",
+    "btn_clear_all": "Clear All",
+    "btn_analyze": "Start Analysis",
+    "btn_copy": "Copy Content",
+    "btn_copy_all": "Copy All Results",
+    "msg_start": "Input text to start comparison",
+    "msg_hint": "Auto-filter punctuation and POS",
+    "header_only_a": "Unique to A",
+    "header_common": "Intersection",
+    "header_union": "Union",
+    "header_only_b": "Unique to B",
+    "desc_only_a": "Words that appear only in A",
+    "desc_common": "Words that appear in both A and B",
+    "desc_union": "All words that appear in A or B",
+    "desc_only_b": "Words that appear only in B",
+    "msg_copied": "Copied",
+    "err_input": "Please input text!",
+    "ph_text": "Paste tokenized text here, for example: cell(Na) is(SHI) organism(Na)..."
+},
+
+"ja": {
+    "back_btn": "研究センターへ",
+    "tool_name": "語彙比較ツール",
+    "label_pos_filter": "品詞フィルタ",
+    "label_show_pos": "品詞タグを表示",
+    "pos_n": "名詞 (N)",
+    "pos_v": "動詞 (V)",
+    "pos_a": "形容詞 (A)",
+    "pos_d": "副詞 (D)",
+    "pos_c": "接続詞 (C)",
+    "pos_o": "その他",
+    "label_text_a": "テキスト A",
+    "label_text_b": "テキスト B",
+    "btn_example": "例文",
+    "btn_clear": "クリア",
+    "btn_clear_all": "すべてクリア",
+    "btn_analyze": "比較開始",
+    "btn_copy": "コピー",
+    "btn_copy_all": "結果をすべてコピー",
+    "msg_start": "テキストを入力して比較",
+    "msg_hint": "句読点と品詞を自動フィルタリング",
+    "header_only_a": "A のみ",
+    "header_common": "共通 (交差)",
+    "header_union": "和集合",
+    "header_only_b": "B のみ",
+    "desc_only_a": "A にのみ出現する語",
+    "desc_common": "A と B の両方に出現する語",
+    "desc_union": "A または B に出現したすべての語",
+    "desc_only_b": "B にのみ出現する語",
+    "msg_copied": "コピーしました",
+    "err_input": "テキストを入力してください！",
+    "ph_text": "分かち書き済みテキストを貼り付けてください。例：細胞(Na) は(SHI) 生物体(Na)..."
+},
+
+"zh-CN": {
+    "back_btn": "返回研究中心",
+    "tool_name": "文本词汇比较",
+    "label_pos_filter": "词性筛选",
+    "label_show_pos": "显示词性标记(POS)",
+    "pos_n": "名词 (N)",
+    "pos_v": "动词 (V)",
+    "pos_a": "形容词 (A)",
+    "pos_d": "副词 (D)",
+    "pos_c": "连词 (C)",
+    "pos_o": "其他",
+    "label_text_a": "文本 A",
+    "label_text_b": "文本 B",
+    "btn_example": "载入范例",
+    "btn_clear": "清空",
+    "btn_clear_all": "清空全部",
+    "btn_analyze": "开始比对分析",
+    "btn_copy": "复制内容",
+    "btn_copy_all": "复制全部结果",
+    "msg_start": "输入文本并开始比对",
+    "msg_hint": "支持自动过滤标点与词性筛选",
+    "header_only_a": "A 独有",
+    "header_common": "AB 交集",
+    "header_union": "AB 并集",
+    "header_only_b": "B 独有",
+    "desc_only_a": "只出现在 A 的词",
+    "desc_common": "A 和 B 都出现的词",
+    "desc_union": "A 或 B 出现过的全部词",
+    "desc_only_b": "只出现在 B 的词",
+    "msg_copied": "已复制",
+    "err_input": "请至少输入一段文本！",
+    "ph_text": "请贴上已分词文本，例如：细胞(Na) 是(SHI) 生物体(Na)..."
+},
+
             "ko": { "back_btn": "연구 센터로", "tool_name": "어휘 비교", "label_pos_filter": "품사 필터", "label_show_pos": "POS 표시", "pos_n": "명사 (N)", "pos_v": "동사 (V)", "pos_a": "형용사 (A)", "pos_d": "부사 (D)", "pos_c": "접속사 (C)", "pos_o": "기타", "label_text_a": "텍스트 A", "label_text_b": "텍스트 B", "btn_example": "예시", "btn_clear": "지우기", "btn_analyze": "분석 시작", "msg_start": "텍스트를 입력하여 비교 시작", "msg_hint": "구두점 및 품사 자동 필터링", "header_only_a": "A 고유", "header_common": "교집합", "header_union": "합집합", "header_only_b": "B 고유", "btn_copy": "복사", "msg_copied": "복사됨", "err_input": "텍스트를 입력하세요!", "ph_text": "토큰화된 텍스트 붙여넣기..." },
             "es": { "back_btn": "Volver", "tool_name": "Comp. Vocabulario", "label_pos_filter": "Filtro POS", "label_show_pos": "Mostrar POS", "pos_n": "Sustantivo", "pos_v": "Verbo", "pos_a": "Adj", "pos_d": "Adv", "pos_c": "Conj", "pos_o": "Otro", "label_text_a": "Texto A", "label_text_b": "Texto B", "btn_example": "Ejemplo", "btn_clear": "Borrar", "btn_analyze": "Analizar", "msg_start": "Entrada de texto", "msg_hint": "Filtro automático", "header_only_a": "Solo A", "header_common": "Intersección", "header_union": "Unión", "header_only_b": "Solo B", "btn_copy": "Copiar", "msg_copied": "Copiado", "err_input": "¡Entrada requerida!", "ph_text": "Pegar texto..." },
             "pt": { "back_btn": "Voltar", "tool_name": "Comp. Vocabulário", "label_pos_filter": "Filtro POS", "label_show_pos": "Mostrar POS", "pos_n": "Substantivo", "pos_v": "Verbo", "pos_a": "Adj", "pos_d": "Adv", "pos_c": "Conj", "pos_o": "Outro", "label_text_a": "Texto A", "label_text_b": "Texto B", "btn_example": "Exemplo", "btn_clear": "Limpar", "btn_analyze": "Analisar", "msg_start": "Entrada de texto", "msg_hint": "Filtro automático", "header_only_a": "Só A", "header_common": "Interseção", "header_union": "União", "header_only_b": "Só B", "btn_copy": "Copiar", "msg_copied": "Copiado", "err_input": "Entrada necessária!", "ph_text": "Colar texto..." },
@@ -394,6 +534,19 @@
             document.getElementById(id).focus();
         }
 
+function clearAllInputs() {
+    document.getElementById('text-a').value = '';
+    document.getElementById('text-b').value = '';
+    document.getElementById('empty-state').classList.remove('hidden');
+    document.getElementById('result-panel').classList.add('hidden');
+    document.getElementById('input-error').textContent = '';
+    document.getElementById('input-error').classList.add('hidden');
+    document.getElementById('input-error').classList.remove('text-emerald-700', 'bg-emerald-50', 'border-emerald-200');
+    document.getElementById('input-error').classList.add('text-red-600', 'bg-red-50', 'border-red-200');
+}
+
+
+        
         function copyText(id) {
             const el = document.getElementById(id);
             el.select();
@@ -406,6 +559,34 @@
             setTimeout(() => btn.innerHTML = originalHTML, 1500);
         }
 
+function copyAllResults() {
+    const lang = document.getElementById("language-selector").value;
+    const t = translations[lang] || translations['en'];
+
+    const text = [
+        `${t.header_only_a}\n${document.getElementById('res-only-a').value}`,
+        `${t.header_common}\n${document.getElementById('res-common').value}`,
+        `${t.header_union}\n${document.getElementById('res-union').value}`,
+        `${t.header_only_b}\n${document.getElementById('res-only-b').value}`
+    ].join('\n\n');
+
+    navigator.clipboard.writeText(text).then(() => {
+        const errorBox = document.getElementById('input-error');
+        errorBox.textContent = t.msg_copied;
+        errorBox.classList.remove('hidden');
+        errorBox.classList.remove('text-red-600', 'bg-red-50', 'border-red-200');
+        errorBox.classList.add('text-emerald-700', 'bg-emerald-50', 'border-emerald-200');
+
+        setTimeout(() => {
+            errorBox.textContent = '';
+            errorBox.classList.add('hidden');
+            errorBox.classList.remove('text-emerald-700', 'bg-emerald-50', 'border-emerald-200');
+            errorBox.classList.add('text-red-600', 'bg-red-50', 'border-red-200');
+        }, 1500);
+    });
+}
+
+        
         // 解析詞性並過濾 (關鍵修正：如果沒有標記，無條件保留)
         function parseAndFilter(text, activePos) {
             const rawTokens = text.trim().split(/\s+/);
@@ -468,6 +649,9 @@
 
 const errorBox = document.getElementById('input-error');
 
+errorBox.classList.remove('text-emerald-700', 'bg-emerald-50', 'border-emerald-200');
+errorBox.classList.add('text-red-600', 'bg-red-50', 'border-red-200');
+
 if (!textA && !textB) {
     errorBox.textContent = t.err_input;
     errorBox.classList.remove('hidden');
@@ -476,6 +660,7 @@ if (!textA && !textB) {
 
 errorBox.textContent = '';
 errorBox.classList.add('hidden');
+
 
 
             // 取得勾選的詞性
