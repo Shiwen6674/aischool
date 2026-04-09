@@ -2,17 +2,17 @@
 <html lang="zh-TW" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Science | 科學雙語閱讀</title>
     
-    <script>
-        // 【開發模式】已暫時將下方檢查註解掉，讓您可以直接進入測試。
-        /*
-        if (!sessionStorage.getItem('isLoggedIn')) {
-            window.location.href = 'index.html';
-        }
-        */
-    </script>
+<script>
+    const DEV_BYPASS_LOGIN = false; // 測試時才改成 true
+
+    if (!DEV_BYPASS_LOGIN && !sessionStorage.getItem('isLoggedIn')) {
+        window.location.href = 'index.html';
+    }
+</script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -381,6 +381,18 @@
     <span class="text-slate-500 opacity-30 text-2xl" data-i18n="waiting_hint">等待探索...</span>
 </h1>
                     <div id="article-content" class="space-y-2"></div> 
+                    <div id="mobile-vocab-panel" class="lg:hidden mt-8 glass-panel panel-right overflow-hidden">
+    <div class="p-4 border-b border-white/10 bg-gradient-to-r from-yellow-500/10 to-transparent">
+        <div class="flex items-center gap-2 mb-1">
+            <i class="fa-solid fa-lightbulb text-yellow-400"></i>
+            <h3 class="text-sm font-bold text-yellow-400 tracking-widest" data-i18n="vocab_title">科學詞彙庫</h3>
+        </div>
+    </div>
+    <div class="scroll-area max-h-[40vh] overflow-y-auto p-3" id="vocab-container-mobile">
+        <div class="text-center py-10 opacity-30 text-sm text-white" data-i18n="vocab_empty">詞彙將顯示於此</div>
+    </div>
+</div>
+
                 </article>
             </div>
         </section>
@@ -540,29 +552,48 @@
         }
 
 function changeLanguage(lang) {
-            currentLang = lang;
-            localStorage.setItem('appLang', lang); 
-            applyLanguage(lang);
-            
-            // [修正重點]：移除 && el.disabled 判斷
-            // 讓所有選單 (包含 "階段") 的標題 (options[0]) 都會強制更新為當前語言
-            const ids=['stage','grade','version','semester','unit'];
-            ids.forEach(id => {
-               const el = document.getElementById(`sel-${id}`);
-               if(el) {
-                   const key = id; 
-                   const label = i18n[currentLang][key] || '...';
-                   // 強制更新選單的第一個選項（即預設標題）
-                   if(el.options.length > 0) {
-                       el.options[0].text = label;
-                   }
-               }
-            });
-            
-            if(processedUnits.length > 0) {
-                 filterUnits('stage');
-            }
+    currentLang = lang;
+    localStorage.setItem('appLang', lang);
+    applyLanguage(lang);
+
+    const ids = ['stage', 'grade', 'version', 'semester', 'unit'];
+    ids.forEach(id => {
+        const el = document.getElementById(`sel-${id}`);
+        if (!el || !el.options.length) return;
+
+        const label = i18n[currentLang][id] || '...';
+        if (!el.value) {
+            el.options[0].text = label;
         }
+    });
+
+    const selectedUnitId = document.getElementById('sel-unit')?.value;
+
+    if (selectedUnitId !== "") {
+        const unit = processedUnits.find(i => String(i.id) === String(selectedUnitId));
+        if (unit) renderArticle(unit);
+    } else {
+        const waiting = i18n[currentLang]['waiting_hint'] || '等待探索...';
+        const navGuide = i18n[currentLang]['side_select_guide'] || '請選擇單元';
+        const vocabEmpty = i18n[currentLang]['vocab_empty'] || '詞彙將顯示於此';
+
+        document.getElementById('article-title').innerHTML =
+            `<span class="text-slate-500 opacity-30 text-2xl">${waiting}</span>`;
+        document.getElementById('article-content').innerHTML = '';
+        document.getElementById('nav-title').innerText = navGuide;
+        document.getElementById('status-bar').innerText = 'READY';
+        document.getElementById('unit-list').innerHTML =
+            `<div class="text-center text-slate-500 text-sm mt-10 p-4">${i18n[currentLang]['select_hint'] || ''}</div>`;
+        document.getElementById('vocab-container').innerHTML =
+            `<div class="text-center py-10 opacity-30 text-sm text-white">${vocabEmpty}</div>`;
+
+        const mobileBox = document.getElementById('vocab-container-mobile');
+        if (mobileBox) {
+            mobileBox.innerHTML = `<div class="text-center py-10 opacity-30 text-sm text-white">${vocabEmpty}</div>`;
+        }
+    }
+}
+
 
         function applyLanguage(lang) {
             const texts = i18n[lang] || i18n['zh-TW'];
@@ -673,33 +704,46 @@ function filterUnits(lvl) {
 
         function loadSelectedUnit(){ const u=processedUnits.find(i=>i.id==document.getElementById('sel-unit').value); if(u) renderArticle(u); }
 
-        function renderVocabSidebar() {
-          const container = document.getElementById('vocab-container');
-          container.innerHTML = '';
-          const keys = Object.keys(activeVocabMap || {});
-          if(keys.length === 0) {
-            const emptyText = i18n[currentLang]['vocab_empty'];
-            container.innerHTML = `<div class="text-center opacity-30 text-sm mt-10 text-white">${emptyText}</div>`;
-            return;
-          }
-          keys.forEach(zh => {
-            const enVal = (activeVocabMap[zh] || "").toString().trim();
-            const showEn = enVal ? enVal : "Loading...";
-            const card = document.createElement('div');
-            card.className = "vocab-item";
-            card.innerHTML = `
-              <div class="flex-1 pr-2">
-                <div class="text-lg font-bold text-yellow-400 cursor-pointer mb-1" onclick="speakText('${zh.replace(/'/g,"\\'")}')">${escapeHtml(zh)}</div>
-                <div class="text-sm en-term-label cursor-pointer" data-zh="${escapeHtml(zh)}" onclick="speakVocabEn('${zh.replace(/'/g,"\\'")}', this)">${escapeHtml(showEn)}</div>
-              </div>
-              <div class="flex items-center gap-1">
-                <button onclick="event.stopPropagation(); speakText('${zh.replace(/'/g,"\\'")}')" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center text-xs">中</button>
-                <button onclick="event.stopPropagation(); speakVocabEn('${zh.replace(/'/g,"\\'")}', this)" class="w-8 h-8 rounded-full bg-green-500/20 text-green-400 hover:bg-green-500 hover:text-white font-bold flex items-center justify-center text-xs">EN</button>
-              </div>`;
-            container.appendChild(card);
-            if(!enVal) translateVocabItem(zh, card.querySelector('.en-term-label'));
-          });
-        }
+function renderSingleVocabContainer(container) {
+  if (!container) return;
+
+  container.innerHTML = '';
+  const keys = Object.keys(activeVocabMap || {});
+
+  if (keys.length === 0) {
+    const emptyText = i18n[currentLang]['vocab_empty'] || '詞彙將顯示於此';
+    container.innerHTML = `<div class="text-center opacity-30 text-sm mt-10 text-white">${emptyText}</div>`;
+    return;
+  }
+
+  keys.forEach(zh => {
+    const enVal = (activeVocabMap[zh] || "").toString().trim();
+    const showEn = enVal ? enVal : "Loading...";
+    const card = document.createElement('div');
+    card.className = "vocab-item";
+    card.innerHTML = `
+      <div class="flex-1 pr-2">
+        <div class="text-lg font-bold text-yellow-400 cursor-pointer mb-1" onclick="speakText('${zh.replace(/'/g,"\\'")}')">${escapeHtml(zh)}</div>
+        <div class="text-sm en-term-label cursor-pointer" data-zh="${escapeHtml(zh)}" onclick="speakVocabEn('${zh.replace(/'/g,"\\'")}', this)">${escapeHtml(showEn)}</div>
+      </div>
+      <div class="flex items-center gap-1">
+        <button onclick="event.stopPropagation(); speakText('${zh.replace(/'/g,"\\'")}')" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center text-xs">中</button>
+        <button onclick="event.stopPropagation(); speakVocabEn('${zh.replace(/'/g,"\\'")}', this)" class="w-8 h-8 rounded-full bg-green-500/20 text-green-400 hover:bg-green-500 hover:text-white font-bold flex items-center justify-center text-xs">EN</button>
+      </div>
+    `;
+    container.appendChild(card);
+
+    if (!enVal) {
+      translateVocabItem(zh, card.querySelector('.en-term-label'));
+    }
+  });
+}
+
+function renderVocabSidebar() {
+  renderSingleVocabContainer(document.getElementById('vocab-container'));
+  renderSingleVocabContainer(document.getElementById('vocab-container-mobile'));
+}
+
 
         async function speakVocabEn(zh, btn){
           const card = btn && btn.closest ? btn.closest('.vocab-item') : null;
@@ -743,25 +787,49 @@ function filterUnits(lvl) {
           });
         }
 
-        async function translateVisibleBlocks() {
-            const ens = document.querySelectorAll('.en-text'), load=document.getElementById('trans-loading');
-            let need=false; ens.forEach(e=>{if(!e.innerText)need=true}); if(!need)return;
-            load.classList.remove('hidden');
-            for(let el of ens) {
-                if(el.innerText) continue;
-                let src = decodeURIComponent(el.getAttribute('data-source') || "").replace(/　/g,'');
-                if(translationCache[src]) { el.innerHTML=makeClickable(highlightEnglishVocabInText(translationCache[src])); continue; }
-                try {
-                    const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURIComponent(src)}`);
-                    const json = await res.json();
-                    let txt=""; json[0].forEach(i=>txt+=i[0]);
-                    el.innerHTML = makeClickable(highlightEnglishVocabInText(txt));
-                    translationCache[src]=txt;
-                } catch(e){ el.innerText="Error"; }
-            }
-            load.classList.add('hidden');
-            rehighlightEnglishBlocks();
+async function translateVisibleBlocks() {
+    const ens = document.querySelectorAll('.en-text');
+    const load = document.getElementById('trans-loading');
+
+    let need = false;
+    ens.forEach(e => {
+        if (!e.innerText.trim()) need = true;
+    });
+    if (!need) return;
+
+    if (load) load.classList.remove('hidden');
+
+    for (const el of ens) {
+        if (el.innerText.trim()) continue;
+
+        const src = decodeURIComponent(el.getAttribute('data-source') || "").replace(/　/g, '').trim();
+        if (!src) continue;
+
+        if (translationCache[src]) {
+            el.innerHTML = makeClickable(highlightEnglishVocabInText(translationCache[src]));
+            continue;
         }
+
+        try {
+            const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURIComponent(src)}`);
+            const json = await res.json();
+            let txt = "";
+            (json[0] || []).forEach(i => txt += (i[0] || ""));
+
+            if (txt.trim()) {
+                el.innerHTML = makeClickable(highlightEnglishVocabInText(txt));
+                translationCache[src] = txt;
+            } else {
+                el.innerHTML = makeClickable(escapeHtml(src));
+            }
+        } catch (e) {
+            el.innerHTML = makeClickable(escapeHtml(src));
+        }
+    }
+
+    if (load) load.classList.add('hidden');
+    rehighlightEnglishBlocks();
+}
 
         function makeClickable(html) { return `<span class="cursor-pointer hover:text-green-300 transition">${html}</span>`; }
         function escapeHtml(s){ return (s||"").toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
@@ -925,15 +993,6 @@ function filterUnits(lvl) {
             }
         }
 
-        // [新增] 判斷是否需要注音並轉換
-        function getZhuyinHtml(text) {
-            if (typeof pinyinPro === 'undefined') return escapeHtml(text);
-            const { html } = pinyinPro;
-            return html(text, { 
-                mode: 'zhuyin', 
-                wrapNonChinese: true 
-            });
-        }
 
        // [新增輔助函式] 判斷是否需要注音並轉換
         function getZhuyinHtml(text) {
@@ -964,11 +1023,13 @@ function filterUnits(lvl) {
                 lines = unit.ckip.split('\n').map(x=>x.replace(/　/g,' ').replace(/\([^)]*\)/g,'').trim()).filter(Boolean);
             }
 
-            // [修正重點 2]：判斷是否為中年級 (國小三年級、四年級)
-            const selGrade = document.getElementById('sel-grade');
-            // 判斷邏輯：如果單元資料本身寫三年級/四年級，或者使用者下拉選單選了三年級/四年級
-            const isJunior = (unit.grade === '三年級' || unit.grade === '四年級') || 
-                             (selGrade && (selGrade.value === '三年級' || selGrade.value === '四年級'));
+const selGrade = document.getElementById('sel-grade');
+const unitGrade = String(unit.grade || '').trim();
+const selectedGrade = selGrade ? String(selGrade.value || '').trim() : '';
+
+const juniorGrades = new Set(['3', '4', '三年級', '四年級']);
+const isJunior = juniorGrades.has(unitGrade) || juniorGrades.has(selectedGrade);
+
             
             const unitCkipSet = unit.ckip ? getCkipTokenSet(unit.ckip) : null;
             const unitCkipTokens = unit.ckip ? getCkipTokenArray(unit.ckip) : [];
@@ -1305,8 +1366,13 @@ function filterUnits(lvl) {
 
         function setVoice(g) {
             currentVoice = g;
-            document.getElementById('btn-male').className = g==='male' ? 'w-9 h-9 rounded-full flex items-center justify-center transition bg-green-500 text-white shadow-lg' : 'w-9 h-9 rounded-full flex items-center justify-center transition text-slate-400 hover:text-white';
-            document.getElementById('btn-female').className = g==='female' ? 'w-9 h-9 rounded-full flex items-center justify-center transition bg-green-500 text-white shadow-lg' : 'w-9 h-9 rounded-full flex items-center justify-center transition text-slate-400 hover:text-white';
+            document.getElementById('btn-male').className = g==='male'
+  ? 'w-9 h-9 md:w-7 md:h-7 rounded-full flex items-center justify-center transition bg-green-500 text-white shadow-lg'
+  : 'w-9 h-9 md:w-7 md:h-7 rounded-full flex items-center justify-center transition text-slate-400 hover:text-white';
+
+document.getElementById('btn-female').className = g==='female'
+  ? 'w-9 h-9 md:w-7 md:h-7 rounded-full flex items-center justify-center transition bg-green-500 text-white shadow-lg'
+  : 'w-9 h-9 md:w-7 md:h-7 rounded-full flex items-center justify-center transition text-slate-400 hover:text-white';
             stopSpeech();
         }
 
