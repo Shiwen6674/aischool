@@ -418,9 +418,11 @@
                     <span class="text-[9px] font-bold text-slate-500 uppercase">SPEED</span>
                     <span id="rate-display" class="text-[9px] font-bold text-green-400">1.0x</span>
                 </div>
-                <input type="range" id="play-rate" min="0.5" max="2.0" step="0.1" value="1.0" 
-                       class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-green-500"
-                       oninput="updateRateDisplay(this.value)">
+<input type="range" id="play-rate" min="0.5" max="2.0" step="0.1" value="1.0" 
+       class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-green-500"
+       oninput="updateRateDisplay(this.value)"
+       onchange="trackEvent('speed_changed', { value: this.value })">
+
             </div>
 
             <div class="flex items-center gap-2 md:gap-4 justify-center flex-grow">
@@ -474,7 +476,14 @@ const TRACKING_URL = 'https://script.google.com/macros/s/AKfycbwXvqOFGVuay1_jZ7d
 let pageEnterTime = Date.now();
 let currentMode = 'dual';
 let currentUnitData = null;
+let unitEnterTime = null;
+let completedUnits = new Set();
+let lastTrackedBlockKey = '';
+let suppressModeTracking = false;
+let suppressVoiceTracking = false;
 
+
+        
         const i18n = {
             'zh-TW': { 
                 return: '返回', 
@@ -542,13 +551,20 @@ let currentUnitData = null;
             initLanguage();
             fetchData();
             if(synth) synth.onvoiceschanged = () => synth.getVoices();
-            setVoice('female'); 
+            suppressVoiceTracking = true;
+setVoice('female');
+suppressVoiceTracking = false;
+
 
             document.addEventListener('touchstart', () => {
                 try{ if(!synth)return; synth.cancel(); const u=new SpeechSynthesisUtterance(" "); u.volume=0; synth.speak(u); }catch(e){}
             }, { once: true, passive: true });
 trackEvent('page_view');
 window.addEventListener('beforeunload', trackPageLeave);
+const readingContainer = document.getElementById('reading-container');
+if (readingContainer) {
+    readingContainer.addEventListener('scroll', checkUnitCompletion);
+}
 
             
         });
@@ -560,10 +576,10 @@ window.addEventListener('beforeunload', trackPageLeave);
         }
 
 function changeLanguage(lang) {
-        trackEvent('language_changed', { value: lang });
     currentLang = lang;
     localStorage.setItem('appLang', lang);
     applyLanguage(lang);
+    trackEvent('language_changed', { value: lang });
 
     const ids = ['stage', 'grade', 'version', 'semester', 'unit'];
     ids.forEach(id => {
@@ -717,11 +733,20 @@ function filterUnits(lvl) {
 function loadSelectedUnit() {
     const u = processedUnits.find(i => i.id == document.getElementById('sel-unit').value);
     if (u) {
-        currentUnitData = u;
-        trackEvent('unit_selected', { detail: u.title });
-        renderArticle(u);
+        if (currentUnitData && unitEnterTime) {
+            trackUnitLeave();
+        }
+
+currentUnitData = u;
+unitEnterTime = Date.now();
+lastTrackedBlockKey = '';
+completedUnits.delete(u.id);
+trackEvent('unit_selected', { detail: u.title });
+renderArticle(u);
+
     }
 }
+
 
 
 function renderSingleVocabContainer(container) {
@@ -893,7 +918,7 @@ function highlightEnglishVocabInText(txt) {
   for (const m of matches) {
     html += escapeHtml(src.slice(last, m.start));
     const js = m.text.replace(/'/g, "\\'");
-    html += `<span class="sci-term" onclick="event.stopPropagation(); speakText('${js}')" title="${escapeHtml(m.text)}">${escapeHtml(m.text)}</span>`;
+    html += `<span class="sci-term" onclick="event.stopPropagation(); trackEvent('term_clicked', { detail: '${escapeHtml(m.text)}', value: 'en' }); speakText('${js}')" title="${escapeHtml(m.text)}">${escapeHtml(m.text)}</span>`;
     last = m.end;
   }
 
@@ -903,16 +928,21 @@ function highlightEnglishVocabInText(txt) {
 
 
         // [新增] 更新滑桿顯示數值
-        function updateRateDisplay(val) {
-            document.getElementById('rate-display').innerText = val + 'x';
-        }
+function updateRateDisplay(val) {
+    document.getElementById('rate-display').innerText = val + 'x';
+}
+
 
         // [核心修正] 停止聲音但不重置索引
-        function stopAudioOnly() {
-            isSpeaking = false;
-            if (synth) synth.cancel();
-            document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-play ml-1"></i>';
-        }
+function stopAudioOnly() {
+    isSpeaking = false;
+    if (synth) {
+        synth.cancel();
+    }
+    const btn = document.getElementById('btn-play');
+    if (btn) btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>';
+}
+
 
         // [核心修正] 完全停止並重置
         function resetAudio() {
@@ -925,6 +955,7 @@ function highlightEnglishVocabInText(txt) {
 
         // [核心修正] 上一句
        function playPrev() {
+           trackEvent('audio_prev');
             // 1. 強制切斷所有發音與自動連結
             isSpeaking = false; 
             synth.cancel();
@@ -949,6 +980,7 @@ function highlightEnglishVocabInText(txt) {
 
         // [核心修正] 下一句 (絕對穩定版)
         function playNext() {
+            trackEvent('audio_next');
             // 1. 強制切斷所有發音與自動連結
             isSpeaking = false; 
             synth.cancel();
@@ -976,6 +1008,20 @@ function highlightEnglishVocabInText(txt) {
             block.classList.add('reading-active');
             block.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
+function checkUnitCompletion() {
+    if (!currentUnitData) return;
+
+    const container = document.getElementById('reading-container');
+    if (!container) return;
+
+    const scrollBottom = container.scrollTop + container.clientHeight;
+    const nearBottom = scrollBottom >= container.scrollHeight - 80;
+
+    if (nearBottom && !completedUnits.has(currentUnitData.id)) {
+        completedUnits.add(currentUnitData.id);
+        trackEvent('unit_completed', { detail: currentUnitData.title });
+    }
+}
 
         // [核心修正] 播放序列邏輯
        function playSequence() {
@@ -992,6 +1038,7 @@ function highlightEnglishVocabInText(txt) {
             clearHighlights();
             const block = blocks[currentBlockIndex];
             highlightBlock(block);
+           trackBlockPlayed(block, currentBlockIndex);
 
             // 抓取文字
             const enEl = block.querySelector('.en-text');
@@ -1133,7 +1180,10 @@ const isJunior = juniorGrades.has(unitGrade) || juniorGrades.has(selectedGrade);
                         </div>`;
                 }
             }
-            setMode('dual');
+            suppressModeTracking = true;
+setMode('dual');
+suppressModeTracking = false;
+
         }
         function getCkipTokenSet(ckipLine){
           const raw = (ckipLine || "").toString().trim();
@@ -1198,7 +1248,7 @@ const isJunior = juniorGrades.has(unitGrade) || juniorGrades.has(selectedGrade);
             const zh = sp.term;
             const js = ((map[zh] || zh) + "").toString().replace(/'/g, "\\'");
             const title = escapeHtml(((map[zh] || "") + "").toString());
-            html += `<span class="sci-term" onclick="event.stopPropagation(); speakText('${js}')" title="${title}">${escapeHtml(zh)}</span>`;
+            html += `<span class="sci-term" onclick="event.stopPropagation(); trackEvent('term_clicked', { detail: '${escapeHtml(zh)}', value: 'zh' }); speakText('${js}')" title="${title}">${escapeHtml(zh)}</span>`;
             last = sp.end;
           }
           html += escapeHtml(src.slice(last));
@@ -1381,27 +1431,39 @@ const isJunior = juniorGrades.has(unitGrade) || juniorGrades.has(selectedGrade);
 
 function toggleSpeech() {
     const btn = document.getElementById('btn-play');
-    if (isSpeaking) {
-        trackEvent('audio_pause');
-        isSpeaking = false;
-        if (synth) synth.cancel();
-        if (btn) btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>';
-    } else {
-        trackEvent('audio_play');
-        isSpeaking = true;
-        if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-        if (synth && synth.paused) synth.resume();
-        
-        if(synth.getVoices().length === 0 && synth.onvoiceschanged) synth.onvoiceschanged();
+    if (!synth) return;
 
-        const blocks = document.querySelectorAll('.content-block, .section-header');
-        if (currentBlockIndex >= blocks.length) currentBlockIndex = 0;
-        setTimeout(() => { if (isSpeaking) playSequence(); }, 10);
+    if (isSpeaking && !synth.paused) {
+        trackEvent('audio_pause');
+        synth.pause();
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>';
+        return;
     }
+
+    if (synth.paused) {
+        trackEvent('audio_play');
+        synth.resume();
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        return;
+    }
+
+    trackEvent('audio_play');
+    isSpeaking = true;
+    if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+
+    if (synth.getVoices().length === 0 && synth.onvoiceschanged) {
+        synth.onvoiceschanged();
+    }
+
+    const blocks = document.querySelectorAll('.content-block, .section-header');
+    if (currentBlockIndex >= blocks.length) currentBlockIndex = 0;
+    setTimeout(() => { if (isSpeaking) playSequence(); }, 10);
 }
 
 
+
         function toggleLoop() {
+            trackEvent('loop_toggled', { value: !isLooping ? 'on' : 'off' });
             isLooping = !isLooping;
             const btn = document.getElementById('btn-loop');
             if(isLooping) {
@@ -1419,8 +1481,12 @@ function toggleSpeech() {
             document.querySelectorAll('.reading-active').forEach(el => { el.classList.remove('reading-active'); });
         }
 
-        function setVoice(g) {
-            currentVoice = g;
+function setVoice(g) {
+    if (!suppressVoiceTracking) {
+        trackEvent('voice_changed', { value: g });
+    }
+    currentVoice = g;
+
             document.getElementById('btn-male').className = g==='male'
   ? 'w-9 h-9 md:w-7 md:h-7 rounded-full flex items-center justify-center transition bg-green-500 text-white shadow-lg'
   : 'w-9 h-9 md:w-7 md:h-7 rounded-full flex items-center justify-center transition text-slate-400 hover:text-white';
@@ -1428,12 +1494,15 @@ function toggleSpeech() {
 document.getElementById('btn-female').className = g==='female'
   ? 'w-9 h-9 md:w-7 md:h-7 rounded-full flex items-center justify-center transition bg-green-500 text-white shadow-lg'
   : 'w-9 h-9 md:w-7 md:h-7 rounded-full flex items-center justify-center transition text-slate-400 hover:text-white';
-            stopSpeech();
+            stopAudioOnly();
         }
 
-        function setMode(m) {
-                currentMode = m;
-    trackEvent('mode_changed', { value: m });
+function setMode(m) {
+    currentMode = m;
+    if (!suppressModeTracking) {
+        trackEvent('mode_changed', { value: m });
+    }
+
 
             ['en','dual','zh'].forEach(x=>document.getElementById(`btn-${x}`).className=x===m?"px-4 py-1.5 text-xs font-bold rounded-full bg-green-500 text-white shadow-lg":"px-4 py-1.5 text-xs font-bold rounded-full text-slate-400 hover:text-white transition");
             if(m!=='zh') translateVisibleBlocks();
@@ -1492,8 +1561,43 @@ function trackEvent(eventName, extra = {}) {
 }
 
 function trackPageLeave() {
+    trackUnitLeave();
+
     const duration = Math.round((Date.now() - pageEnterTime) / 1000);
     trackEvent('page_leave', { duration });
+}
+function trackBlockPlayed(block, index) {
+    if (!block || !currentUnitData) return;
+
+    const zhEl = block.querySelector('.zh-text');
+    const enEl = block.querySelector('.en-text');
+
+    const zhText = (zhEl?.getAttribute('data-speak') || zhEl?.innerText || '').trim();
+    const enText = (enEl?.innerText || '').trim();
+
+    const preview = zhText || enText;
+    if (!preview) return;
+
+    const shortPreview = preview.length > 60 ? preview.slice(0, 60) + '...' : preview;
+    const blockKey = `${currentUnitData.id}-${index}-${shortPreview}`;
+
+    if (lastTrackedBlockKey === blockKey) return;
+    lastTrackedBlockKey = blockKey;
+
+    trackEvent('block_played', {
+        detail: shortPreview,
+        value: index
+    });
+}
+
+function trackUnitLeave() {
+    if (!currentUnitData || !unitEnterTime) return;
+
+    const duration = Math.round((Date.now() - unitEnterTime) / 1000);
+    trackEvent('unit_leave', {
+        detail: currentUnitData.title,
+        duration: duration
+    });
 }
         
         function showToast(m) { const T=document.getElementById('toast'); document.getElementById('toast-msg').innerText=m; T.classList.remove('opacity-0','-translate-y-10'); setTimeout(()=>T.classList.add('opacity-0','-translate-y-10'),2500); }
