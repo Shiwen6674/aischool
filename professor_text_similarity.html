@@ -222,6 +222,10 @@
 
 <body>
   <div class="wrap">
+    <div style="margin-bottom:16px;">
+      <button class="btnGhost" onclick="goBackProfessor()">返回研究中心</button>
+    </div>
+
 
     <!-- ===== Header + Text Inputs ===== -->
     <section class="panel">
@@ -342,222 +346,238 @@
   </div>
 
   <script>
-    // === 小工具：即時計數 ===
-    function updateCounts(){
-      const a = document.getElementById('textA').value;
-      const b = document.getElementById('textB').value;
-      document.getElementById('countA').textContent = "字數：" + a.length;
-      document.getElementById('countB').textContent = "字數：" + b.length;
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbwLgjsVkgeRU6XMPNTLJkDpkO7HOuD4mW-RmNG6fExlHuMsmRsl-0YlcrDQ3o51M31psw/exec";
+
+  function getCurrentUser() {
+    try {
+      return JSON.parse(sessionStorage.getItem("currentUser") || "null");
+    } catch {
+      return null;
     }
-    document.getElementById('textA').addEventListener('input', updateCounts);
-    document.getElementById('textB').addEventListener('input', updateCounts);
+  }
 
-    // === 主按鈕：分析 ===
-    function runAnalysis(){
-      const payload = {
-        textA: document.getElementById('textA').value || "",
-        textB: document.getElementById('textB').value || "",
-        useStructure: {
-          jaccard:  document.getElementById('optJaccard').checked,
-          cosine:   document.getElementById('optCosine').checked,
-          edit:     document.getElementById('optEdit').checked,
-          ngram:    document.getElementById('optNgram').checked
-        },
-        useConcept: {
-          conceptCoverage: document.getElementById('optConcept').checked
-        },
-        useSemantic: {
-          embed: document.getElementById('optEmbed').checked,
-          bert:  document.getElementById('optBERT').checked,
-          llm:   document.getElementById('optLLM').checked
-        }
-      };
+function guardProfessorPage() {
+  const user = getCurrentUser();
+  const allowedRoles = new Set(["researcher", "professor"]);
 
-      // 預先顯示「分析中」
-      document.getElementById('summaryBox').textContent   = "分析中…";
-      document.getElementById('structureBox').textContent = "分析中…";
-      document.getElementById('conceptBox').textContent   = "分析中…";
-      document.getElementById('semanticBox').textContent  = "分析中…";
+  if (!user || !allowedRoles.has(user.role)) {
+    sessionStorage.setItem("redirectMsg", "請先從首頁登入教授帳號，再使用文本相似性分析。");
+    window.location.replace("index.html");
+    return false;
+  }
+  return true;
+}
+function goBackProfessor() {
+  window.location.href = "professor.html";
+}
 
-      google.script.run
-        .withSuccessHandler(function(result){
-          renderResult(result);
-        })
-        .withFailureHandler(function(err){
-  document.getElementById('summaryBox').textContent = "錯誤：" + (err && err.message ? err.message : err);
-  document.getElementById('structureBox').textContent = "分析失敗";
-  document.getElementById('conceptBox').textContent = "分析失敗";
-  document.getElementById('semanticBox').textContent = "分析失敗";
-})
+  function updateCounts() {
+    const a = document.getElementById("textA").value;
+    const b = document.getElementById("textB").value;
+    document.getElementById("countA").textContent = "字數：" + a.length;
+    document.getElementById("countB").textContent = "字數：" + b.length;
+  }
 
-        .compareTexts(payload);
+  document.getElementById("textA").addEventListener("input", updateCounts);
+  document.getElementById("textB").addEventListener("input", updateCounts);
+
+  async function runAnalysis() {
+    const textA = document.getElementById("textA").value || "";
+    const textB = document.getElementById("textB").value || "";
+
+    if (!textA.trim() || !textB.trim()) {
+      alert("請先輸入兩段文本。");
+      return;
     }
 
-    // === 下載結果按鈕 ===
-    // 我們會把最後一次分析結果暫存在 window.lastResult
-    function downloadResult(){
-      if(!window.lastResult){
-        alert("目前沒有可下載的結果，請先執行分析。");
-        return;
+    const payload = {
+      textA,
+      textB,
+      useStructure: {
+        jaccard: document.getElementById("optJaccard").checked,
+        cosine: document.getElementById("optCosine").checked,
+        edit: document.getElementById("optEdit").checked,
+        ngram: document.getElementById("optNgram").checked
+      },
+      useConcept: {
+        conceptCoverage: document.getElementById("optConcept").checked
+      },
+      useSemantic: {
+        embed: document.getElementById("optEmbed").checked,
+        bert: document.getElementById("optBERT").checked,
+        llm: document.getElementById("optLLM").checked
       }
-      const blob = new Blob(
-        [JSON.stringify(window.lastResult,null,2)],
-        {type:"application/json;charset=utf-8"}
-      );
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = "text_similarity_result.json";
-      a.click();
-      URL.revokeObjectURL(url);
+    };
+
+    document.getElementById("summaryBox").textContent = "分析中…";
+    document.getElementById("structureBox").textContent = "分析中…";
+    document.getElementById("conceptBox").textContent = "分析中…";
+    document.getElementById("semanticBox").textContent = "分析中…";
+
+    try {
+      const response = await fetch(GAS_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error("HTTP " + response.status);
+      }
+
+      const result = await response.json();
+
+      if (result.status && result.status !== "success") {
+        throw new Error(result.message || "分析失敗");
+      }
+
+      renderResult(result);
+    } catch (err) {
+      const msg = err && err.message ? err.message : String(err);
+      document.getElementById("summaryBox").textContent = "錯誤：" + msg;
+      document.getElementById("structureBox").textContent = "分析失敗";
+      document.getElementById("conceptBox").textContent = "分析失敗";
+      document.getElementById("semanticBox").textContent = "分析失敗";
+    }
+  }
+
+  function downloadResult() {
+    if (!window.lastResult) {
+      alert("目前沒有可下載的結果，請先執行分析。");
+      return;
     }
 
-    // === 把後端結果放進畫面 ===
-    // === 把後端結果放進畫面 ===
-    function renderResult(result){
-      window.lastResult = result; // 給下載用
+    const blob = new Blob(
+      [JSON.stringify(window.lastResult, null, 2)],
+      { type: "application/json;charset=utf-8" }
+    );
 
-      // 1. 總覽
-      let summaryText = "";
-      summaryText += "整體結構相似度(示意)：" + (result.summary?.structureScore ?? "N/A") + "\n";
-      summaryText += "整體概念相似度：" + (result.summary?.conceptScore ?? "N/A") + "\n";
-      summaryText += "整體語意相似度：" + (result.summary?.semanticScore ?? "N/A") + "\n";
-      document.getElementById('summaryBox').textContent = summaryText || "無資料";
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "text_similarity_result.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
-      // 2. 結構層
-      let structureText = "";
-      if(result.structure){
-        if(result.structure.jaccard !== undefined)
-          structureText += "Jaccard：" + result.structure.jaccard + "\n";
-        if(result.structure.cosine !== undefined)
-          structureText += "Cosine(TF)：" + result.structure.cosine + "\n";
-        if(result.structure.editSim !== undefined)
-          structureText += "Levenshtein 相似度：" + result.structure.editSim + "\n";
-        if(result.structure.ngramOverlap !== undefined)
-          structureText += "N-gram Overlap：" + result.structure.ngramOverlap + "\n";
-        if(Array.isArray(result.structure.sentencePairs)){
-          structureText += "\n逐句近似句對照（摘要）：\n";
-          result.structure.sentencePairs.slice(0,3).forEach(p=>{
-            structureText += "A: " + p.a + "\nB: " + p.b + "\n相似度：" + p.sim + "\n---\n";
-          });
-        }
+  function renderResult(result) {
+    window.lastResult = result;
+
+    const summary = result.summary || {};
+    const structure = result.structure || {};
+    const concept = result.concept || {};
+    const semantic = result.semantic || {};
+
+    let summaryText = "";
+    summaryText += "整體結構相似度：" + (summary.structureScore ?? "N/A") + "\n";
+    summaryText += "整體概念相似度：" + (summary.conceptScore ?? "N/A") + "\n";
+    summaryText += "整體語意相似度：" + (summary.semanticScore ?? "N/A") + "\n";
+    document.getElementById("summaryBox").textContent = summaryText || "無資料";
+
+    let structureText = "";
+    if (structure.jaccard !== undefined) structureText += "Jaccard：" + structure.jaccard + "\n";
+    if (structure.cosine !== undefined) structureText += "Cosine(TF)：" + structure.cosine + "\n";
+    if (structure.editSim !== undefined) structureText += "Levenshtein 相似度：" + structure.editSim + "\n";
+    if (structure.ngramOverlap !== undefined) structureText += "N-gram Overlap：" + structure.ngramOverlap + "\n";
+    if (Array.isArray(structure.sentencePairs) && structure.sentencePairs.length) {
+      structureText += "\n逐句近似句對照（摘要）：\n";
+      structure.sentencePairs.slice(0, 3).forEach(function(p) {
+        structureText += "A: " + (p.a || "") + "\n";
+        structureText += "B: " + (p.b || "") + "\n";
+        structureText += "相似度：" + (p.sim ?? "N/A") + "\n---\n";
+      });
+    }
+    document.getElementById("structureBox").textContent = structureText || "無資料";
+
+    let conceptText = "";
+    const ab = concept.conceptABSummary;
+    if (ab) {
+      conceptText += "【概念相似度（A vs B）】\n";
+      conceptText += "概念重疊分數：" + (ab.overlapScore !== undefined ? ab.overlapScore : "N/A") + "\n";
+
+      conceptText += "A&B共同關鍵概念（前20）：\n";
+      if (Array.isArray(ab.commonTop) && ab.commonTop.length) {
+        ab.commonTop.forEach(function(w) { conceptText += " - " + w + "\n"; });
+      } else {
+        conceptText += " - 無\n";
       }
-      document.getElementById('structureBox').textContent = structureText || "無資料";
 
-      // 3. 概念層
-            // 3. 概念層：先顯示「A vs B 概念重疊」，再顯示「課綱對齊」
-      let conceptText = "";
+      conceptText += "僅A有的重要概念（前20）：\n";
+      if (Array.isArray(ab.onlyA) && ab.onlyA.length) {
+        ab.onlyA.forEach(function(w) { conceptText += " - " + w + "\n"; });
+      } else {
+        conceptText += " - 無\n";
+      }
 
-      if (result.concept) {
-        // (A) A vs B 概念相似度摘要
-        const ab = result.concept.conceptABSummary;
-        if (ab) {
-          conceptText += "【概念相似度（A vs B）】\n";
-          conceptText += "概念重疊分數(0~1)："
-                       + (ab.overlapScore !== undefined ? ab.overlapScore : "N/A") + "\n";
+      conceptText += "僅B有的重要概念（前20）：\n";
+      if (Array.isArray(ab.onlyB) && ab.onlyB.length) {
+        ab.onlyB.forEach(function(w) { conceptText += " - " + w + "\n"; });
+      } else {
+        conceptText += " - 無\n";
+      }
 
-          // 共通概念
-          if (Array.isArray(ab.commonTop) && ab.commonTop.length > 0) {
-            conceptText += "A&B共同關鍵概念（前20）：\n";
-            ab.commonTop.forEach(function(w){
-              conceptText += " - " + w + "\n";
-            });
-          } else {
-            conceptText += "A&B共同關鍵概念（前20）：\n - 無\n";
-          }
+      conceptText += "\n";
+    }
 
-          // 只有A
-          if (Array.isArray(ab.onlyA) && ab.onlyA.length > 0) {
-            conceptText += "僅A有的重要概念（前20）：\n";
-            ab.onlyA.forEach(function(w){
-              conceptText += " - " + w + "\n";
-            });
-          } else {
-            conceptText += "僅A有的重要概念（前20）：\n - 無\n";
-          }
+    if (Array.isArray(concept.curriculumStages) && concept.curriculumStages.length) {
+      conceptText += "【課綱對齊分析（以文本A檢查課綱）】\n";
 
-          // 只有B
-          if (Array.isArray(ab.onlyB) && ab.onlyB.length > 0) {
-            conceptText += "僅B有的重要概念（前20）：\n";
-            ab.onlyB.forEach(function(w){
-              conceptText += " - " + w + "\n";
-            });
-          } else {
-            conceptText += "僅B有的重要概念（前20）：\n - 無\n";
-          }
+      concept.curriculumStages.forEach(function(stageBlock) {
+        const stageName = stageBlock.stage || "(無名稱)";
+        const coverageVal = stageBlock.coverage !== undefined ? stageBlock.coverage : "N/A";
+        const hitCount = stageBlock.matchedConcepts ? stageBlock.matchedConcepts.length : 0;
+        const totalCount = stageBlock.totalConcepts !== undefined ? stageBlock.totalConcepts : "N/A";
 
-          conceptText += "\n"; // 分段空行
-        }
+        conceptText += "Stage：" + stageName + " | 涵蓋率：" + coverageVal + " (命中 " + hitCount + " / 總數 " + totalCount + ")\n";
 
-        // (B) 課綱對齊分析
-        if (Array.isArray(result.concept.curriculumStages)) {
-          conceptText += "【課綱對齊分析（以文本A檢查課綱）】\n";
+        if (!stageBlock.matchedConcepts || !stageBlock.matchedConcepts.length) {
+          conceptText += "  （此文本未命中該階段任何概念）\n\n";
+        } else {
+          stageBlock.matchedConcepts.forEach(function(c) {
+            const showConcept = c.conceptBrief || c.conceptClean || c.concept || "";
+            const showContent = c.contentBrief || c.contentClean || c.content || "";
 
-          result.concept.curriculumStages.forEach(stageBlock => {
-            // 安全防呆
-            const stageName   = stageBlock.stage || "(無名稱)";
-            const coverageVal = (stageBlock.coverage !== undefined ? stageBlock.coverage : "N/A");
-            const hitCount    = stageBlock.matchedConcepts ? stageBlock.matchedConcepts.length : 0;
-            const totalCount  = stageBlock.totalConcepts !== undefined ? stageBlock.totalConcepts : "N/A";
-
-            conceptText += "Stage：" + stageName
-                        + " | 涵蓋率：" + coverageVal
-                        + " (命中 " + hitCount + " / 總數 " + totalCount + ")\n";
-
-            if (!stageBlock.matchedConcepts || stageBlock.matchedConcepts.length === 0) {
-              conceptText += "  （此文本未命中該階段任何概念）\n\n";
-            } else {
-              // 只列出命中條目的「跨科概念 + 學習內容」精簡版
-              stageBlock.matchedConcepts.forEach(c => {
-                const showConcept = (c.conceptBrief && c.conceptBrief.trim())
-                                    ? c.conceptBrief
-                                    : (c.conceptClean && c.conceptClean.trim()
-                                        ? c.conceptClean
-                                        : (c.concept || ""));
-
-                const showContent = (c.contentBrief && c.contentBrief.trim())
-                                    ? c.contentBrief
-                                    : (c.contentClean && c.contentClean.trim()
-                                        ? c.contentClean
-                                        : (c.content || ""));
-
-                if (showConcept || showContent) {
-                  conceptText += "  - " + showConcept;
-                  if (showContent) {
-                    conceptText += "；" + showContent;
-                  }
-                  conceptText += "\n";
-                }
-              });
+            if (showConcept || showContent) {
+              conceptText += "  - " + showConcept;
+              if (showContent) conceptText += "；" + showContent;
               conceptText += "\n";
             }
           });
+          conceptText += "\n";
         }
-      }
-
-      document.getElementById('conceptBox').textContent = conceptText || "無資料";
-
-
-      // 4. 語意層
-      let semanticText = "";
-      if(result.semantic){
-        if(result.semantic.embeddingCosine !== undefined)
-          semanticText += "Embedding Cosine：" + result.semantic.embeddingCosine + "\n\n";
-        if(result.semantic.llmReview){
-          semanticText += "LLM評語：\n";
-          semanticText += "相似度(0-1)：" + result.semantic.llmReview.similarity_score + "\n";
-          semanticText += "共同主題：" + result.semantic.llmReview.common_themes?.join(", ") + "\n";
-          semanticText += "差異重點：" + result.semantic.llmReview.differences?.join(", ") + "\n";
-          semanticText += "教師回饋建議：" + result.semantic.llmReview.feedback_for_teacher + "\n";
-        }
-        if(result.semantic.bertScore !== undefined){
-          semanticText += "\nBERTScore(語意對齊指標)：" + result.semantic.bertScore + "\n";
-        }
-      }
-      document.getElementById('semanticBox').textContent = semanticText || "未啟用或無資料";
+      });
     }
 
-  </script>
+    document.getElementById("conceptBox").textContent = conceptText || "無資料";
+
+    let semanticText = "";
+    if (semantic.embeddingCosine !== undefined) {
+      semanticText += "Embedding Cosine：" + semantic.embeddingCosine + "\n\n";
+    }
+
+    if (semantic.llmReview) {
+      semanticText += "LLM評語：\n";
+      semanticText += "相似度：" + (semantic.llmReview.similarity_score ?? "N/A") + "\n";
+      semanticText += "共同主題：" + ((semantic.llmReview.common_themes || []).join(", ") || "無") + "\n";
+      semanticText += "差異重點：" + ((semantic.llmReview.differences || []).join(", ") || "無") + "\n";
+      semanticText += "教師回饋建議：" + (semantic.llmReview.feedback_for_teacher || "無") + "\n";
+    }
+
+    if (semantic.bertScore !== undefined && semantic.bertScore !== null) {
+      semanticText += "\nBERTScore(語意對齊指標)：" + semantic.bertScore + "\n";
+    }
+
+    document.getElementById("semanticBox").textContent = semanticText || "未啟用或無資料";
+  }
+
+if (guardProfessorPage()) {
+  sessionStorage.setItem("last_professor_feature", "text_similarity");
+  updateCounts();
+}
+
+</script>
 </body>
 </html>
 
