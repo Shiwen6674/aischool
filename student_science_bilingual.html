@@ -6,7 +6,7 @@
     <title>AI Science | 科學雙語閱讀</title>
     
 <script>
-    const DEV_BYPASS_LOGIN = ture; // 測試時才改成 true
+    const DEV_BYPASS_LOGIN = true; // 測試時才改成 true
 
     if (!DEV_BYPASS_LOGIN && !sessionStorage.getItem('isLoggedIn')) {
         window.location.href = 'index.html';
@@ -833,22 +833,54 @@ async function translateVisibleBlocks() {
 
         function makeClickable(html) { return `<span class="cursor-pointer hover:text-green-300 transition">${html}</span>`; }
         function escapeHtml(s){ return (s||"").toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
-        function highlightEnglishVocabInText(txt){
-          let safe = escapeHtml(txt);
-          const terms = Object.values(activeVocabMap||{}).map(v => (v||"").trim()).filter(v => v && v !== "Loading..." && /[a-zA-Z]/.test(v));
-          const uniq = [...new Set(terms)].sort((a,b)=>b.length-a.length);
-          if(!uniq.length) return safe;
-          for(const term of uniq){
-            const escaped = term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-            const isSingleWord = /^[A-Za-z]+$/.test(term);
-            const re = isSingleWord ? new RegExp(`\\b(${escaped})\\b`,'gi') : new RegExp(`(${escaped})`,'gi');
-            safe = safe.replace(re, (m) => {
-              const js = m.replace(/'/g,"\\'");
-              return `<span class="sci-term" onclick="event.stopPropagation(); speakText('${js}')" title="${m}">${m}</span>`;
-            });
-          }
-          return safe;
-        }
+function highlightEnglishVocabInText(txt) {
+  const src = (txt || "").toString();
+  const terms = Object.values(activeVocabMap || {})
+    .map(v => (v || "").trim())
+    .filter(v => v && v !== "Loading..." && /[a-zA-Z]/.test(v));
+
+  const uniq = [...new Set(terms)].sort((a, b) => b.length - a.length);
+  if (!uniq.length) return escapeHtml(src);
+
+  const matches = [];
+
+  const overlaps = (start, end) =>
+    matches.some(m => !(end <= m.start || start >= m.end));
+
+  for (const term of uniq) {
+    const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const isSingleWord = /^[A-Za-z]+$/.test(term);
+    const re = isSingleWord
+      ? new RegExp(`\\b${escaped}\\b`, 'gi')
+      : new RegExp(escaped, 'gi');
+
+    let match;
+    while ((match = re.exec(src)) !== null) {
+      const start = match.index;
+      const end = start + match[0].length;
+      if (overlaps(start, end)) continue;
+      matches.push({ start, end, text: match[0] });
+    }
+  }
+
+  if (!matches.length) return escapeHtml(src);
+
+  matches.sort((a, b) => a.start - b.start);
+
+  let html = '';
+  let last = 0;
+
+  for (const m of matches) {
+    html += escapeHtml(src.slice(last, m.start));
+    const js = m.text.replace(/'/g, "\\'");
+    html += `<span class="sci-term" onclick="event.stopPropagation(); speakText('${js}')" title="${escapeHtml(m.text)}">${escapeHtml(m.text)}</span>`;
+    last = m.end;
+  }
+
+  html += escapeHtml(src.slice(last));
+  return html;
+}
+
 
         // [新增] 更新滑桿顯示數值
         function updateRateDisplay(val) {
