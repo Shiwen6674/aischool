@@ -2128,6 +2128,7 @@ async function sendChatMessage() {
 
   const msg = input.value.trim();
   if (!msg) return;
+logEvent("chat_send", msg.slice(0, 80), "1");
 
   const chatBody = document.getElementById("chat-messages");
   const userTimeStr = getCurrentTimeString(); // 取得學生發問時間
@@ -2169,18 +2170,21 @@ if (chatBody) {
   const contextText  = String(contextTextFull).slice(0, 6000);
   const contextVocab = String(contextVocabFull).slice(0, 3000);
 
-  const payload = {
-    action: "chat_with_ai",
-    message: msg,
-    currentUnit: filters.unitName || "",
-    contextText,
-    contextVocab,
-    userName: currentUser.name || "訪客",
-    stage: filters.stage,
-    publisher: filters.publisher,
-    grade: filters.grade,
-    semester: filters.semester
-  };
+const payload = {
+  action: "chat_with_ai",
+  message: msg,
+  currentUnit: filters.unitName || "",
+  contextText,
+  contextVocab,
+  userName: currentUser.name || "訪客",
+  account: currentUser.account || currentUser.name || "訪客",
+  stage: filters.stage,
+  publisher: filters.publisher,
+  grade: filters.grade,
+  semester: filters.semester,
+  session_id: sessionId
+};
+
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 20000);
@@ -2523,6 +2527,9 @@ renderQuizQuestion();
         if (quizState.hasAnswered) return;
         const q = quizState.questions[quizState.currentIndex];
         if (!q) return;
+if (quizState.currentIndex === 0 && !quizState.answers[0]) {
+    logEvent("quiz_start", "開始作答單元小測驗", quizState.questions.length);
+}
 
         const quizOptionsEl  = document.getElementById("quiz-options");
         const quizFeedbackEl = document.getElementById("quiz-feedback");
@@ -2613,6 +2620,7 @@ renderQuizQuestion();
         const answered = quizState.answers.filter(a => a);
         const correctCount = answered.filter(a => a.correct).length;
         const score = Math.round((correctCount / totalQ) * 100);
+logEvent("quiz_finish", `答對 ${correctCount} / ${totalQ}`, score);
 
         resultBox.classList.remove("hidden");
 
@@ -2728,6 +2736,7 @@ function submitQuizLog(question, selectedIndex, correctIndex, isCorrect) {
         action: "log_quiz_answer",
         account: currentUser.account, // ★ 關鍵修正：傳送帳號
         userName: currentUser.name,
+            session_id: sessionId,
         stage: filters.stage || "",
         publisher: filters.publisher || "",
         grade: filters.grade || "",
