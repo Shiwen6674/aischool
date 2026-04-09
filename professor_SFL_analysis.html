@@ -6,27 +6,38 @@
 <title>SFL 語義分析｜Expert Version</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg:#f7f6f3; --fg:#1f2937; --muted:#6b7280;
-    --card:#ffffff; --border:#e5e7eb; --accent:#0ea5e9;
-  }
+:root {
+  --bg:#020617;
+  --bg-soft:#0f172a;
+  --fg:#e2e8f0;
+  --muted:#94a3b8;
+  --card:rgba(30, 41, 59, 0.72);
+  --border:rgba(148, 163, 184, 0.16);
+  --accent:#8b5cf6;
+  --accent-soft:#a78bfa;
+}
+
   *{box-sizing:border-box;}
   /* 全站主要字體：
      - 中文優先使用 微軟正黑體
      - 英文/拉丁優先使用 Times New Roman
      - 之後再 fallback 回原本的 Noto Serif TC 和一般 serif
   */
-  body{
-    font-family:
-      "Microsoft JhengHei",
-      "微軟正黑體",
-      "Times New Roman",
-      "Noto Serif TC",
-      serif;
-    background:var(--bg);
-    color:var(--fg);
-    margin:0;
-  }
+body{
+  font-family:
+    "Microsoft JhengHei",
+    "微軟正黑體",
+    "Times New Roman",
+    "Noto Serif TC",
+    serif;
+  background:
+    radial-gradient(circle at top left, rgba(139,92,246,0.18), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(96,165,250,0.12), transparent 24%),
+    var(--bg);
+  color:var(--fg);
+  margin:0;
+}
+
   .container{ max-width:1150px; margin:0 auto; padding:28px; }
   h1{
     font-family:
@@ -37,7 +48,17 @@
       serif;
     font-size:26px; margin:6px 0 20px; text-align:center; letter-spacing:1px;
   }
-  .card{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,.05); margin-bottom:20px; }
+  .card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,.22);
+  margin-bottom:20px;
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+}
+
   .row-inline{ display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
   label{
     font-family:
@@ -70,17 +91,25 @@
     padding:10px 14px; border:1px solid var(--border); border-radius:10px; background:#fff; cursor:pointer; transition:.15s; font-weight:600;
   }
   .btn:hover{ transform:translateY(-1px); }
-  .btn.primary{ background:var(--accent); color:#fff; border-color:var(--accent); }
+  .btn.primary{
+  background:linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+  color:#fff;
+  border-color:#8b5cf6;
+}
   .btn:disabled{ opacity:.5; cursor:not-allowed; transform:none; }
   .status{
-    font-family:
-      "Microsoft JhengHei",
-      "微軟正黑體",
-      "Times New Roman",
-      "Noto Serif TC",
-      serif;
-    color:var(--muted); margin-left:auto; min-width:200px; text-align:right;
-  }
+  font-family:
+    "Microsoft JhengHei",
+    "微軟正黑體",
+    "Times New Roman",
+    "Noto Serif TC",
+    serif;
+  color:var(--muted);
+  margin-left:auto;
+  min-width:200px;
+  text-align:right;
+}
+
   .section-title{
     font-family:
       "Microsoft JhengHei",
@@ -118,15 +147,98 @@
       serif;
     border-top:1px solid var(--border); padding:8px; vertical-align:top; word-break:break-word;
   }
+  .topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:16px;
+  margin-bottom:18px;
+}
+
+.user-chip{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:10px 14px;
+  border-radius:999px;
+  border:1px solid rgba(167,139,250,0.28);
+  background:rgba(139,92,246,0.12);
+  color:#e9d5ff;
+}
+
+.user-avatar{
+  width:38px;
+  height:38px;
+  border-radius:999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
+  background:rgba(139,92,246,0.24);
+  border:1px solid rgba(167,139,250,0.35);
+}
+
+.user-meta{
+  line-height:1.2;
+}
+
+.user-name{
+  font-size:14px;
+  font-weight:700;
+  color:#f5f3ff;
+}
+
+.user-role{
+  font-size:11px;
+  color:#c4b5fd;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+
+.page-note{
+  margin:0 0 18px;
+  color:var(--muted);
+  text-align:center;
+  font-size:14px;
+}
+
+label, .section-title, h1, thead th, tbody td{
+  color:var(--fg);
+}
+
+select, textarea{
+  background:rgba(15,23,42,0.72);
+  color:#fff;
+  border:1px solid rgba(148,163,184,0.22);
+}
+
+select::placeholder, textarea::placeholder{
+  color:#94a3b8;
+}
+
 </style>
 </head>
 <body>
 <div class="container">
-  <div style="margin-bottom:16px;">
-    <button class="btn" onclick="goBackProfessor()">返回研究中心</button>
+  <div class="topbar">
+    <div>
+      <div style="margin-bottom:16px;">
+        <button class="btn" onclick="goBackProfessor()">返回研究中心</button>
+      </div>
+    </div>
+
+    <div id="userChip" class="user-chip" style="display:none;">
+      <div id="userAvatar" class="user-avatar">P</div>
+      <div class="user-meta">
+        <div id="userName" class="user-name">Professor</div>
+        <div class="user-role">Professor Hub</div>
+      </div>
+    </div>
   </div>
 
   <h1>SFL 語義分析（Systemic Functional Linguistics Semantic Analysis）</h1>
+  <p class="page-note">本分析結果為 AI 與規則式輔助判讀，供教學與研究參考，不作為唯一判定依據。</p>
+
 
 
   <div class="card">
@@ -150,12 +262,13 @@
     <label for="text">貼上文本（Paste your text）</label>
     <textarea id="text" class="full" placeholder="貼上中文或英文科學文本..."></textarea>
 
-    <div class="actions">
-      <button id="analyzeBtn" class="btn primary">分析 Analyze</button>
-      <button id="clearBtn" class="btn">清空 Clear</button>
-      <button id="downloadCSV" class="btn" disabled>下載 CSV</button>
-      <span id="status" class="status"></span>
-    </div>
+<div class="actions">
+  <button id="analyzeBtn" class="btn primary">分析 Analyze</button>
+  <button id="exampleBtn" class="btn">載入示例</button>
+  <button id="clearBtn" class="btn">清空 Clear</button>
+  <button id="downloadCSV" class="btn" disabled>下載 CSV</button>
+  <span id="status" class="status"></span>
+</div>
   </div>
 
   <div id="results"></div>
@@ -164,6 +277,22 @@
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxbW0q_tOM6woE9lt6r9Nbf-MUIdS4jgTYsWVTj-kViSDQ2Ymu4RmKzPrrLMjO2FSq6uQ/exec";
 const $ = id => document.getElementById(id);
+  const EXAMPLE_TEXT = "當聲音經由空氣傳播時，會引起空氣分子的振動。這些振動以波的形式向外傳遞，因此人們可以在不同位置聽到聲音。若障礙物阻擋聲波，聲音的傳播效果就會改變。";
+
+function renderCurrentUser() {
+  const user = getCurrentUser();
+  if (!user) return;
+
+  const name = user.name || user.Name || user.email || user.Email || "Professor";
+  const chip = $("userChip");
+  const avatar = $("userAvatar");
+  const nameEl = $("userName");
+
+  if (chip) chip.style.display = "flex";
+  if (avatar) avatar.textContent = String(name).trim().charAt(0).toUpperCase();
+  if (nameEl) nameEl.textContent = name;
+}
+
 function getCurrentUser() {
   try {
     return JSON.parse(sessionStorage.getItem("currentUser") || "null");
@@ -252,6 +381,11 @@ $('downloadCSV').addEventListener('click', ()=>{
   URL.revokeObjectURL(u);
 });
 
+  $('exampleBtn').addEventListener('click', ()=>{
+  $('text').value = EXAMPLE_TEXT;
+  $('lang').value = 'zh';
+  $('module').value = 'all';
+});
 $('clearBtn').addEventListener('click', ()=>{
   $('text').value=''; $('results').innerHTML=''; $('status').textContent='';
   window.__csv=''; $('downloadCSV').disabled=true;
@@ -366,7 +500,9 @@ function formatCirc(cs){
 
 if (guardProfessorPage()) {
   sessionStorage.setItem("last_professor_feature", "sfl_analysis");
+  renderCurrentUser();
 }
+
 </script>
 
 </body>
