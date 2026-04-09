@@ -1,1 +1,674 @@
 
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> AI文字雲生成器 | Science Learning Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 替換原本那一行，使用 cdnjs 的穩定版本 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wordcloud2.js/1.2.2/wordcloud2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Work Sans"', '"Noto Sans TC"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: { DEFAULT: '#BB50E0', hover: '#9a00cc', light: '#f3e5f5', bg: '#f8fafc' },
+                        pos: { n: '#8b5cf6', v: '#10b981', a: '#f59e0b', d: '#3b82f6', c: '#ec4899', o: '#9ca3af' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #fff; color: #212121; height: 100vh; display: flex; flex-direction: column; overflow: hidden; user-select: none; }
+        
+        .nav-link { cursor: pointer; position: relative; font-weight: 600; color: #757575; transition: color 0.3s; font-size: 1rem; }
+        .nav-link.active { color: #BB50E0; }
+        .nav-link.active::after { content: ''; position: absolute; bottom: -8px; left: 0; width: 100%; height: 3px; background-color: #BB50E0; border-radius: 3px 3px 0 0; }
+
+        .scroller::-webkit-scrollbar { width: 8px; }
+        .scroller::-webkit-scrollbar-track { background: #f1f1f1; }
+        .scroller::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+        .scroller::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+        .loader { width: 24px; height: 24px; border: 3px solid rgba(187, 80, 224, 0.2); border-top-color: #BB50E0; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .pos-chip { display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; border: 1px solid #e5e7eb; background-color: #fff; color: #6b7280; cursor: pointer; transition: all 0.2s; }
+        .pos-chip:hover { background-color: #f9fafb; border-color: #d1d5db; }
+        
+        .pos-chip.active[data-pos="n"] { background-color: #f5f3ff; color: #8b5cf6; border-color: #8b5cf6; }
+        .pos-chip.active[data-pos="v"] { background-color: #ecfdf5; color: #10b981; border-color: #10b981; }
+        .pos-chip.active[data-pos="a"] { background-color: #fffbeb; color: #f59e0b; border-color: #f59e0b; }
+        .pos-chip.active[data-pos="d"] { background-color: #eff6ff; color: #3b82f6; border-color: #3b82f6; }
+        .pos-chip.active[data-pos="c"] { background-color: #fdf2f8; color: #ec4899; border-color: #ec4899; }
+        .pos-chip.active[data-pos="o"] { background-color: #f3f4f6; color: #4b5563; border-color: #6b7280; }
+
+        .pos-dot { width: 8px; height: 8px; border-radius: 50%; background-color: currentColor; }
+        
+        /* 隱藏的 PDF 生成容器 */
+        #pdf-generator-container {
+            position: absolute; top: -9999px; left: -9999px; width: 800px;
+            background: #fff; padding: 40px; box-sizing: border-box;
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+    <header class="h-16 border-b border-gray-200 bg-white flex items-center justify-between px-6 shrink-0 z-30 shadow-sm">
+        <div class="flex items-center gap-6">
+            <button onclick="window.location.href='researcher.html'" class="text-gray-500 hover:text-brand transition font-medium flex items-center gap-2 text-base">
+                <i class="fa-solid fa-arrow-left"></i> <span data-i18n="back">返回研究中心</span>
+            </button>
+            <div class="h-6 w-px bg-gray-300"></div>
+            <h1 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <i class="fa-solid fa-cloud text-brand"></i>
+                <span data-i18n="title">AI 智能文字雲</span>
+            </h1>
+        </div>
+        <div class="flex items-center gap-4">
+            <select id="language-selector" onchange="App.changeLanguage()" class="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-brand focus:border-brand block p-2 outline-none cursor-pointer">
+                <option value="zh-TW">繁體中文</option>
+                <option value="en">English</option>
+                <option value="ja">日本語</option>
+                <option value="zh-CN">简体中文</option>
+            </select>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        
+        <aside class="w-[45%] min-w-[450px] max-w-[800px] bg-white border-r border-gray-200 flex flex-col h-full shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-20">
+            <div class="flex-1 overflow-y-auto scroller p-8"> 
+                
+                <div class="flex border-b border-gray-200 mb-6">
+                    <div class="nav-link active px-4 py-2 text-base" data-i18n="tab_text">文字輸入</div>
+                </div>
+
+                <div class="mb-8">
+                    <div class="bg-brand-bg rounded-xl border border-gray-300 p-4 focus-within:border-brand focus-within:ring-1 focus-within:ring-brand transition">
+                        <textarea id="text-input" class="w-full h-40 bg-transparent border-0 outline-none text-gray-700 resize-none leading-relaxed placeholder-gray-400 text-base" placeholder="請在此貼上文章..."></textarea>
+                    </div>
+                    <div class="flex justify-end gap-3 mt-3">
+                        <button onclick="App.loadExample()" class="text-sm font-bold text-brand hover:text-brand-hover px-4 py-2 rounded border border-brand-light hover:bg-brand-light transition flex items-center gap-2">
+                            <i class="fa-solid fa-flask"></i> <span data-i18n="btn_example">範例</span>
+                        </button>
+                        <button onclick="App.clearInput()" class="text-sm font-bold text-gray-500 hover:text-red-500 px-4 py-2 rounded border border-gray-200 hover:bg-red-50 transition flex items-center gap-2">
+                            <i class="fa-solid fa-trash"></i> <span data-i18n="btn_clear">清空</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-8 bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <h5 class="text-base font-bold mb-4 text-gray-700 flex items-center gap-2" data-i18n="sec_options">
+                        <i class="fa-solid fa-sliders"></i> 設定選項
+                    </h5>
+
+                    <div class="grid grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-500 uppercase mb-2" data-i18n="label_model">權重模型</label>
+                            <div class="relative">
+                                <select id="model-select" class="w-full p-3 bg-white border border-gray-300 rounded-lg text-base appearance-none focus:border-brand outline-none cursor-pointer font-medium shadow-sm">
+                                    <option value="frequency" data-i18n="opt_freq">詞頻 (Frequency)</option>
+                                    <option value="tfidf" data-i18n="opt_tfidf">TF-IDF (Intra-text)</option>
+                                    <option value="textrank" data-i18n="opt_textrank">TextRank (Weighted)</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down absolute right-3 top-4 text-gray-400 text-xs pointer-events-none"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-500 uppercase mb-2" data-i18n="label_shape">形狀</label>
+                            <div class="relative">
+                                <select id="shape-select" class="w-full p-3 bg-white border border-gray-300 rounded-lg text-base appearance-none focus:border-brand outline-none cursor-pointer font-medium shadow-sm">
+                                    <option value="circle" data-i18n="shape_circle">圓形</option>
+                                    <option value="square" data-i18n="shape_square">方形</option>
+                                    <option value="cardioid" data-i18n="shape_heart">愛心</option>
+                                    <option value="star" data-i18n="shape_star">星形</option>
+                                    <option value="diamond" data-i18n="shape_diamond">菱形</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down absolute right-3 top-4 text-gray-400 text-xs pointer-events-none"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="block text-sm font-bold text-gray-500 uppercase" data-i18n="label_max_words">顯示詞彙數量</label>
+                            <span id="max-words-val" class="text-sm font-bold text-brand bg-white px-3 py-1 rounded border border-gray-200">100</span>
+                        </div>
+                        <input type="range" id="max-words-slider" min="10" max="200" step="10" value="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-500 uppercase mb-3" data-i18n="label_pos_filter">詞性過濾</label>
+                        <div class="flex flex-wrap gap-3" id="pos-container">
+                            <button class="pos-chip active" data-pos="n"><span class="pos-dot"></span> 名詞 (N)</button>
+                            <button class="pos-chip active" data-pos="v"><span class="pos-dot"></span> 動詞 (V)</button>
+                            <button class="pos-chip active" data-pos="a"><span class="pos-dot"></span> 形容詞 (A)</button>
+                            <button class="pos-chip" data-pos="d"><span class="pos-dot"></span> 副詞 (D)</button>
+                            <button class="pos-chip" data-pos="c"><span class="pos-dot"></span> 連接詞 (C)</button>
+                            <button class="pos-chip" data-pos="o"><span class="pos-dot"></span> 其他 (O)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="btn-analyze" onclick="App.runAnalysis()" class="w-full bg-brand hover:bg-brand-hover text-white font-bold py-4 rounded-xl shadow-lg shadow-brand/20 transition transform active:scale-[0.98] flex items-center justify-center gap-2 text-base tracking-wide">
+                    <span data-i18n="btn_visualize">產生文字雲</span> <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </button>
+            </div>
+
+            <div id="results-container" class="hidden border-t border-gray-200 bg-gray-50 h-[40%] flex flex-col">
+                <div class="flex border-b border-gray-200 bg-white px-6 justify-between items-center">
+                    <div class="flex">
+                        <button onclick="App.switchTab('ai')" id="tab-ai" class="py-3 px-6 text-base font-bold text-brand border-b-2 border-brand transition" data-i18n="tab_ai">AI 洞察</button>
+                        <button onclick="App.switchTab('data')" id="tab-data" class="py-3 px-6 text-base font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition" data-i18n="tab_data">數據列表</button>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="App.downloadReport('txt')" class="text-xs font-bold text-gray-500 hover:text-brand bg-gray-100 px-3 py-1.5 rounded transition" title="Download TXT">
+                            <i class="fa-solid fa-file-lines"></i> TXT
+                        </button>
+                        <button onclick="App.downloadReport('pdf')" class="text-xs font-bold text-gray-500 hover:text-brand bg-gray-100 px-3 py-1.5 rounded transition" title="Download PDF">
+                            <i class="fa-solid fa-file-pdf"></i> PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div id="panel-ai" class="flex-1 overflow-y-auto scroller p-6 text-base text-gray-700 leading-relaxed space-y-4 bg-brand-bg"></div>
+
+                <div id="panel-data" class="hidden flex-1 overflow-y-auto scroller p-0">
+                    <table class="w-full text-sm text-left border-collapse">
+                        <thead class="bg-gray-100 text-gray-500 sticky top-0 shadow-sm z-10">
+                            <tr>
+                                <th class="p-3 font-semibold pl-6" data-i18n="col_rank">#</th>
+                                <th class="p-3 font-semibold" data-i18n="col_word">詞彙</th>
+                                <th class="p-3 font-semibold" data-i18n="col_pos">詞性</th>
+                                <th class="p-3 text-right font-semibold pr-6" data-i18n="col_weight">權重</th>
+                            </tr>
+                        </thead>
+                        <tbody id="data-table-body" class="divide-y divide-gray-200 bg-white"></tbody>
+                    </table>
+                </div>
+            </div>
+        </aside>
+
+        <div id="resizer" class="w-1.5 bg-gray-200 cursor-col-resize hover:bg-brand transition z-30"></div>
+
+        <main class="flex-1 bg-gray-100 relative flex flex-col items-center justify-center p-8 overflow-hidden">
+            
+            <div id="canvas-wrapper" class="w-full h-full bg-white rounded-2xl shadow-sm border border-gray-200 relative flex items-center justify-center overflow-hidden">
+                
+                <div id="empty-state" class="text-center opacity-60">
+                    <img src="https://cdn-icons-png.flaticon.com/512/4047/4047268.png" alt="Cloud" class="w-32 h-32 mx-auto mb-6 opacity-50 grayscale">
+                    <h3 class="text-2xl font-bold text-gray-700" data-i18n="state_ready">準備就緒</h3>
+                    <p class="text-gray-500 mt-2 text-lg" data-i18n="state_ready_desc">請在左側輸入文字並產生文字雲</p>
+                </div>
+
+                <div id="loading-state" class="hidden text-center">
+                    <div class="loader mx-auto mb-6 w-12 h-12 border-4"></div>
+                    <p class="text-brand font-bold text-xl animate-pulse" data-i18n="state_loading">AI 正在運算中...</p>
+                    <p class="text-gray-400 text-sm mt-1">斷詞、權重計算、AI 解讀</p>
+                </div>
+
+                <canvas id="word-cloud-canvas" class="hidden"></canvas>
+            </div>
+
+            <!-- ✅ 只修正 text-gray-800 斷行問題，其他不變 -->
+            <button onclick="App.downloadImage()" id="btn-download" class="hidden absolute bottom-12 right-12 bg-white text-gray-800 hover:text-brand border border-gray-300 px-8 py-4 rounded-full shadow-xl font-bold transition transform hover:-translate-y-1 flex items-center gap-3 z-30 group text-base">
+                <span class="group-hover:text-brand transition" data-i18n="btn_download">下載圖片</span> <i class="fa-solid fa-download group-hover:animate-bounce"></i>
+            </button>
+
+        </main>
+    </div>
+
+    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full shadow-2xl opacity-0 translate-y-10 transition-all duration-300 pointer-events-none z-50 font-medium text-sm flex items-center gap-3">
+        <i class="fa-solid fa-info-circle"></i> <span id="toast-msg">Notification</span>
+    </div>
+
+    <div id="pdf-generator-container"></div>
+
+    <script>
+        // 🔴🔴🔴 請務必填入您部署後的 GAS Web App URL (結尾是 /exec) 🔴🔴🔴
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbw3UqYr976wAd9aeEsLpTDSlGaUVdBpaErqZi-zHgNzh_Gd0SuggfdI7ldVzrqR1Ygd/exec"; 
+
+        const App = {
+            state: {
+                words: [],
+                resizeTimer: null,
+                currentLang: 'zh-TW',
+                activePos: new Set(['n', 'v', 'a']),
+                maxWords: 100
+            },
+
+            translations: {
+                "zh-TW": {
+                    "back": "返回研究中心", "title": "AI 智能文字雲", "tab_text": "文字輸入",
+                    "btn_example": "載入範例", "btn_clear": "清空", "sec_options": "設定選項",
+                    "sec_options_desc": "自定義您的文字雲參數", "label_model": "權重模型", "label_shape": "形狀", "label_pos_filter": "詞性過濾 (點擊切換)", "label_max_words": "顯示詞彙數量",
+                    "opt_freq": "詞頻 (Frequency)", "opt_tfidf": "TF-IDF (Intra-text)", "opt_textrank": "TextRank (Weighted)",
+                    "shape_circle": "圓形", "shape_square": "方形", "shape_heart": "愛心", "shape_star": "星形", "shape_diamond": "菱形",
+                    "btn_visualize": "產生文字雲", "tab_ai": "AI 洞察", "tab_data": "數據列表",
+                    "col_rank": "#", "col_word": "詞彙", "col_pos": "詞性", "col_weight": "權重",
+                    "state_ready": "準備就緒", "state_ready_desc": "請在左側輸入文字並產生文字雲",
+                    "state_loading": "AI 正在運算中...", "btn_download": "下載圖片",
+                    "msg_input_empty": "請輸入文字", "msg_processing": "處理中...", "msg_success": "分析完成", "msg_error": "發生錯誤"
+                },
+                "en": {
+                    "back": "Back", "title": "AI Word Cloud", "tab_text": "Text Input",
+                    "btn_example": "Example", "btn_clear": "Clear", "sec_options": "Options",
+                    "sec_options_desc": "Customize options", "label_model": "Model", "label_shape": "Shape", "label_pos_filter": "POS Filters", "label_max_words": "Max Words",
+                    "opt_freq": "Frequency", "opt_tfidf": "TF-IDF", "opt_textrank": "TextRank",
+                    "shape_circle": "Circle", "shape_square": "Square", "shape_heart": "Heart", "shape_star": "Star", "shape_diamond": "Diamond",
+                    "btn_visualize": "VISUALIZE", "tab_ai": "AI Insight", "tab_data": "Data List",
+                    "col_rank": "#", "col_word": "Word", "col_pos": "POS", "col_weight": "Weight",
+                    "state_ready": "Ready", "state_ready_desc": "Input text to start",
+                    "state_loading": "Processing...", "btn_download": "Download",
+                    "msg_input_empty": "Input text required", "msg_processing": "Processing...", "msg_success": "Done", "msg_error": "Error"
+                },
+                "ja": {
+                    "back": "戻る", "title": "AI ワードクラウド", "tab_text": "入力", "btn_example": "例文", "btn_clear": "クリア", "sec_options": "設定",
+                    "sec_options_desc": "オプションを選択", "label_model": "モデル", "label_shape": "形状", "label_pos_filter": "品詞フィルタ", "label_max_words": "単語数", "opt_freq": "頻度", "opt_tfidf": "TF-IDF", "opt_textrank": "TextRank", "shape_circle": "円形", "shape_square": "四角", "shape_heart": "ハート", "shape_star": "星", "shape_diamond": "菱形", "btn_visualize": "生成する", "tab_ai": "AI分析", "tab_data": "データ", "col_rank": "#", "col_word": "単語", "col_pos": "品詞", "col_weight": "重み", "state_ready": "準備完了", "state_ready_desc": "テキストを入力してください", "state_loading": "処理中...", "btn_download": "画像保存", "msg_input_empty": "入力してください", "msg_processing": "計算中...", "msg_success": "完了", "msg_error": "エラー"
+                },
+                "zh-CN": {
+                    "back": "返回", "title": "AI 智能文字云", "tab_text": "文字输入", "btn_example": "范例", "btn_clear": "清空", "sec_options": "选项", "sec_options_desc": "自定义参数", "label_model": "权重模型", "label_shape": "形状", "label_pos_filter": "词性过滤", "label_max_words": "词汇数量", "opt_freq": "词频", "opt_tfidf": "TF-IDF", "opt_textrank": "TextRank", "shape_circle": "圆形", "shape_square": "方形", "shape_heart": "心形", "shape_star": "星形", "shape_diamond": "菱形", "btn_visualize": "生成文字云", "tab_ai": "AI 洞察", "tab_data": "数据列表", "col_rank": "#", "col_word": "词汇", "col_pos": "词性", "col_weight": "权重", "state_ready": "准备就绪", "state_ready_desc": "请输入文字", "state_loading": "运算中...", "btn_download": "下载图片", "msg_input_empty": "请输入文字", "msg_processing": "处理中...", "msg_success": "分析完成", "msg_error": "发生错误"
+                }
+            },
+
+            exampleText: "電流磁效應是指電流通過導線時，會在導線周圍產生磁場的現象。1820年，丹麥物理學家奧斯特發現，當導線通電時，旁邊的磁針會發生偏轉，證明了電與磁之間有密切的關係。磁場的方向可以用安培右手定則來判斷：用右手握住導線，大拇指指向電流方向，四指彎曲的方向就是磁場方向。若將導線繞成螺線管，通電後內部會產生均勻磁場，其特性類似於條形磁鐵。",
+
+            init() {
+                this.bindEvents();
+                this.initResizer();
+                document.getElementById('text-input').placeholder = "請在此貼上文章 (建議 100 字以上)...";
+            },
+
+            bindEvents() {
+                document.querySelectorAll('.pos-chip').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const target = e.currentTarget;
+                        const pos = target.dataset.pos;
+                        if (this.state.activePos.has(pos)) {
+                            this.state.activePos.delete(pos);
+                            target.classList.remove('active');
+                        } else {
+                            this.state.activePos.add(pos);
+                            target.classList.add('active');
+                        }
+                        if (this.state.words.length > 0) this.renderWordCloud();
+                    });
+                });
+
+                const slider = document.getElementById('max-words-slider');
+                const valDisplay = document.getElementById('max-words-val');
+                slider.addEventListener('input', (e) => {
+                    this.state.maxWords = parseInt(e.target.value);
+                    valDisplay.innerText = this.state.maxWords;
+                });
+
+                document.getElementById('shape-select').addEventListener('change', () => {
+                    if (this.state.words.length > 0) this.renderWordCloud();
+                });
+                
+                 },
+
+            initResizer() {
+                const resizer = document.getElementById('resizer');
+                const sidebar = document.querySelector('aside');
+                let isResizing = false;
+
+                resizer.addEventListener('mousedown', () => { isResizing = true; document.body.style.cursor = 'col-resize'; });
+                document.addEventListener('mousemove', (e) => {
+                    if (!isResizing) return;
+                    const w = e.clientX;
+                    if (w > 400 && w < window.innerWidth * 0.7) sidebar.style.width = `${w}px`;
+                });
+                document.addEventListener('mouseup', () => {
+                    if (isResizing) {
+                        isResizing = false; document.body.style.cursor = 'default';
+                        if (this.state.words.length > 0) this.renderWordCloud();
+                    }
+                });
+            },
+
+            // ✅ 修正：範例載入使用 App.exampleText，避免 this 指向錯誤
+            loadExample() {
+                const ta = document.getElementById('text-input');
+                if (!ta) return;
+                ta.value = App.exampleText || "";
+            },
+
+            clearInput() { 
+                document.getElementById('text-input').value = ''; 
+                document.getElementById('results-container').classList.add('hidden');
+                document.getElementById('word-cloud-canvas').classList.add('hidden');
+                document.getElementById('btn-download').classList.add('hidden');
+                document.getElementById('empty-state').classList.remove('hidden');
+                this.state.words = []; 
+            },
+
+            changeLanguage() {
+                this.state.currentLang = document.getElementById('language-selector').value;
+                const t = this.translations[this.state.currentLang] || this.translations['zh-TW'];
+                document.querySelectorAll('[data-i18n]').forEach(el => {
+                    el.innerText = t[el.getAttribute('data-i18n')] || el.innerText;
+                });
+                
+                const opts = ['opt_freq','opt_tfidf','opt_textrank','shape_circle','shape_square','shape_heart','shape_star','shape_diamond'];
+                opts.forEach(k => {
+                    const el = document.querySelector(`option[data-i18n="${k}"]`) || document.querySelector(`option[value="${k.split('_')[1]}"]`);
+                    if(el && t[k]) el.innerText = t[k];
+                });
+            },
+
+            switchTab(tab) {
+                const tabAi = document.getElementById('tab-ai');
+                const tabData = document.getElementById('tab-data');
+                const panelAi = document.getElementById('panel-ai');
+                const panelData = document.getElementById('panel-data');
+
+                if (tab === 'ai') {
+                    tabAi.className = "py-3 px-6 text-base font-bold text-brand border-b-2 border-brand transition";
+                    tabData.className = "py-3 px-6 text-base font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition";
+                    panelAi.classList.remove('hidden'); panelData.classList.add('hidden');
+                } else {
+                    tabAi.className = "py-3 px-6 text-base font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition";
+                    tabData.className = "py-3 px-6 text-base font-bold text-brand border-b-2 border-brand transition";
+                    panelAi.classList.add('hidden'); panelData.classList.remove('hidden');
+                }
+            },
+
+            async runAnalysis() {
+                const text = document.getElementById('text-input').value.trim();
+                const model = document.getElementById('model-select').value;
+                const btn = document.getElementById('btn-analyze');
+                const t = this.translations[this.state.currentLang] || this.translations['zh-TW'];
+
+                if (!text) { this.showToast(t.msg_input_empty, 'error'); return; }
+                if (GAS_URL.includes("在此填入")) { this.showToast("API URL not set", 'error'); return; }
+
+                const orgBtnHtml = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = `<div class="loader w-4 h-4 border-2 border-white/30 border-t-white mr-2"></div> ${t.msg_processing}`;
+                
+                document.getElementById('empty-state').classList.add('hidden');
+                document.getElementById('word-cloud-canvas').classList.add('hidden');
+                document.getElementById('btn-download').classList.add('hidden');
+                document.getElementById('loading-state').classList.remove('hidden');
+                document.getElementById('results-container').classList.add('hidden');
+
+                const payload = { text: text, mode: model, maxTerms: this.state.maxWords };
+
+                try {
+                    const res = await fetch(GAS_URL, {
+                        method: 'POST',
+                        body: JSON.stringify(payload),
+                        headers: { "Content-Type": "text/plain;charset=utf-8" }
+                    });
+                    const json = await res.json();
+
+                    if (json.status === 'success') {
+                        this.state.words = json.data.wordList;
+                        document.getElementById('panel-ai').innerHTML = json.data.aiAnalysis;
+                        this.renderTable(json.data.wordList);
+                        
+                        document.getElementById('loading-state').classList.add('hidden');
+                        document.getElementById('results-container').classList.remove('hidden');
+                        
+                        const canvas = document.getElementById('word-cloud-canvas');
+                        canvas.classList.remove('hidden');
+                        setTimeout(() => this.renderWordCloud(), 100);
+                        
+                        this.showToast(t.msg_success, "success");
+                    } else {
+                        throw new Error(json.message);
+                    }
+                } catch (error) {
+                    console.error(error);
+                    document.getElementById('loading-state').classList.add('hidden');
+                    document.getElementById('empty-state').classList.remove('hidden');
+                    this.showToast(t.msg_error + ": " + error.message, "error");
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = orgBtnHtml;
+                }
+            },
+
+            renderWordCloud() {
+                // ✅ 新增保險：確認函式庫真的有載到，避免再次出現 WordCloud is not defined
+                if (typeof WordCloud !== 'function') {
+                    console.error('WordCloud library not loaded');
+                    this.showToast('文字雲程式庫載入失敗，請重新整理頁面', 'error');
+                    return;
+                }
+
+                const canvas = document.getElementById('word-cloud-canvas');
+                const wrapper = document.getElementById('canvas-wrapper');
+                const shape = document.getElementById('shape-select').value;
+
+                const filteredList = this.state.words.filter(item => {
+                    const p = (item.pos || 'o').toLowerCase().charAt(0);
+                    let type = 'o';
+                    if (['n','v','a','d','c'].includes(p)) type = p;
+                    return this.state.activePos.has(type);
+                });
+
+                if (filteredList.length === 0) {
+                    this.showToast("篩選後無詞彙", "error");
+                    return;
+                }
+
+                canvas.classList.remove('hidden');
+                document.getElementById('btn-download').classList.remove('hidden');
+                
+                const w = wrapper.clientWidth;
+                const h = wrapper.clientHeight;
+                canvas.width = w;
+                canvas.height = h;
+
+                const maxWeight = Math.max(...filteredList.map(i => i.weight)) || 1;
+                const factor = (w / 10) / maxWeight;
+
+                const list = filteredList.map(i => [i.word, i.weight * factor + 14]);
+
+                setTimeout(() => {
+                    WordCloud(canvas, {
+                        list: list,
+                        gridSize: 8,
+                        weightFactor: 0.6,
+                        fontFamily: '"Work Sans", "Noto Sans TC", sans-serif',
+                        fontWeight: 'bold',
+                        color: (word) => {
+                            const item = this.state.words.find(i => i.word === word);
+                            return this.getPosColor(item ? item.pos : 'o');
+                        },
+                        rotateRatio: 0.15,
+                        rotationSteps: 2,
+                        // ✅ 微調愛心 / 其他 shape 的垂直中心，讓圖稍微往上
+                        vCenter: 0.32,
+                        shape: shape,
+                        backgroundColor: 'transparent',
+                        drawOutOfBound: false,
+                        shrinkToFit: true,
+                        shuffle: false 
+                    });
+                }, 50);
+            },
+
+            getPosColor(pos) {
+                const p = String(pos).toLowerCase();
+                if (p.startsWith('n')) return '#8b5cf6'; 
+                if (p.startsWith('v')) return '#10b981'; 
+                if (p.startsWith('a')) return '#f59e0b'; 
+                if (p.startsWith('d')) return '#3b82f6'; 
+                if (p.startsWith('c')) return '#ec4899'; 
+                return '#9ca3af'; 
+            },
+
+            renderTable(list) {
+                const tbody = document.getElementById('data-table-body');
+                tbody.innerHTML = list.slice(0, 100).map((item, idx) => `
+                    <tr class="hover:bg-gray-50 transition border-b border-gray-100">
+                        <td class="p-3 text-gray-400 font-mono text-xs pl-6">${idx + 1}</td>
+                        <td class="p-3 font-medium text-gray-800">${item.word}</td>
+                        <td class="p-3 text-gray-500 text-xs font-bold uppercase">${item.pos}</td>
+                        <td class="p-3 text-right font-mono text-gray-600 pr-6">${item.weight.toFixed(2)}</td>
+                    </tr>
+                `).join('');
+            },
+
+            /* 貼上這一段 */
+async downloadReport(type) {
+    if(this.state.words.length === 0) {
+        this.showToast("請先產生分析結果", "error");
+        return;
+    }
+
+    if (type === 'txt') {
+        let content = "AI 智能文字雲 - 分析報告\n\n";
+        content += "=== AI 洞察 ===\n";
+        content += document.getElementById('panel-ai').innerText + "\n\n";
+        content += "=== 數據列表 (前 100 筆) ===\n";
+        content += "排名\t詞彙\t詞性\t權重\n";
+        this.state.words.slice(0, 100).forEach((w, i) => {
+            content += `${i+1}\t${w.word}\t${w.pos}\t${w.weight.toFixed(2)}\n`;
+        });
+        const blob = new Blob([content], { type: 'text/plain' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `report_${Date.now()}.txt`;
+        link.click();
+
+    } else if (type === 'pdf') {
+        this.showToast("正在生成 PDF，請稍候...", "info");
+        
+        const container = document.getElementById('pdf-generator-container');
+        
+        // 1. 生成 AI 洞察部分的 HTML 內容
+        let pdfContent = `
+            <div style="font-family: 'Noto Sans TC', sans-serif; color: #333; width: 100%;">
+                <h1 style="font-size: 24px; font-weight: bold; color: #BB50E0; margin-bottom: 10px;">AI 智能文字雲分析報告</h1>
+                <p style="font-size: 12px; color: #666; margin-bottom: 30px;">生成時間: ${new Date().toLocaleString()}</p>
+                
+                <h2 style="font-size: 18px; font-weight: bold; border-bottom: 2px solid #eee; padding-bottom: 5px; margin-bottom: 10px;">1. AI 深度洞察</h2>
+                <div style="font-size: 14px; line-height: 1.6; margin-bottom: 30px;">
+                    ${document.getElementById('panel-ai').innerHTML}
+                </div>
+
+                <div style="page-break-before: always; margin-top: 50px;">
+                    <h2 style="font-size: 18px; font-weight: bold; border-bottom: 2px solid #eee; padding-bottom: 5px; margin-bottom: 10px;">2. 數據列表 (前 15 筆)</h2>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                        <thead>
+                            <tr style="background-color: #f5f5f5;">
+                                <th style="padding: 8px; text-align: left;">排名</th>
+                                <th style="padding: 8px; text-align: left;">詞彙</th>
+                                <th style="padding: 8px; text-align: left;">詞性</th>
+                                <th style="padding: 8px; text-align: right;">權重</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+        `;
+
+        // 填充數據表格
+        this.state.words.slice(0, 15).forEach((w, i) => {
+            const bg = i % 2 === 0 ? '#fff' : '#fafafa';
+            pdfContent += `
+                <tr style="background-color: ${bg};">
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${i+1}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">${w.word}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${w.pos}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">${w.weight.toFixed(2)}</td>
+                </tr>
+            `;
+        });
+
+        pdfContent += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        container.innerHTML = pdfContent;
+
+        try {
+            // 使用 html2canvas 將整個隱藏容器轉為單一長圖
+            const canvas = await html2canvas(container, { scale: 2 });
+            const imgData = canvas.toDataURL('image/png');
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = doc.internal.pageSize.getWidth();
+            const pdfHeight = doc.internal.pageSize.getHeight();
+
+            const margin = 10;
+            const pageWidth = pdfWidth - margin * 2;
+            const pageHeight = pdfHeight - margin * 2;
+
+            const imgProps = doc.getImageProperties(imgData);
+            const imgHeight = (imgProps.height * pageWidth) / imgProps.width;
+
+            let heightLeft = imgHeight;
+            let position = margin;
+            
+            // 第一頁
+            doc.addImage(imgData, 'PNG', margin, position, pageWidth, imgHeight);
+            heightLeft -= pageHeight;
+
+            // 後續頁：每一頁都「剛好往上移一個 pageHeight」
+            while (heightLeft > 0) {
+                doc.addPage();
+                position -= pageHeight;
+                doc.addImage(imgData, 'PNG', margin, position, pageWidth, imgHeight);
+                heightLeft -= pageHeight;
+            }
+
+
+            doc.save(`report_${Date.now()}.pdf`);
+            this.showToast("PDF 下載成功", "success");
+        } catch (err) {
+            console.error(err);
+            this.showToast("PDF 生成失敗", "error");
+        }
+    }
+}
+
+            downloadImage() {
+                const canvas = document.getElementById('word-cloud-canvas');
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height;
+                const ctx = tempCanvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                ctx.drawImage(canvas, 0, 0);
+                const link = document.createElement('a');
+                link.download = `wordcloud_${Date.now()}.png`;
+                link.href = tempCanvas.toDataURL('image/png');
+                link.click();
+            },
+
+            showToast(msg, type = 'info') {
+                const toast = document.getElementById('toast');
+                const toastMsg = document.getElementById('toast-msg');
+                toastMsg.innerText = msg;
+                toast.classList.remove('opacity-0', 'translate-y-10');
+                if (type === 'error') {
+                    toast.classList.remove('bg-gray-900'); toast.classList.add('bg-red-600');
+                } else {
+                    toast.classList.add('bg-gray-900'); toast.classList.remove('bg-red-600');
+                }
+                setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-10'); }, 3000);
+            }
+        };
+
+        App.init();
+    </script>
+</body>
+</html>
