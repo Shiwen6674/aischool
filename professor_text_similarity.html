@@ -6,6 +6,10 @@
   <title>文本相似度分析 Text Similarity Analysis</title>
 
   <style>
+    *{
+  box-sizing:border-box;
+}
+
     :root{
       --bg:#f9f8f6;
       --fg:#2a2a2a;
@@ -52,23 +56,34 @@
       margin-bottom:24px;
     }
 
-    /* === 輸入區 === */
-    .inputs{
-      display:flex;
-      flex-wrap:nowrap;
-      justify-content:center;   /* 置中整組輸入框 */
-      gap:48px;                 /* A/B 中間距離 */
-      max-width:1100px;         /* 整排最多1000px寬 */
-      margin:0 auto;            /* 置中對齊 */
-    }
+.inputs{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:24px;
+  max-width:1100px;
+  margin:0 auto;
+}
 
-    .col{
-      flex:0 0 45%;             /* 每欄固定大約35%的寬度，而不是50% */
-      max-width:45%;
-      display:flex;
-      flex-direction:column;
-      min-width:320px;          /* 避免太小時字難輸入 */
-    }
+.col{
+  flex:1 1 460px;
+  max-width:520px;
+  display:flex;
+  flex-direction:column;
+  min-width:280px;
+}
+
+@media (max-width: 768px){
+  .inputs{
+    flex-direction:column;
+    gap:16px;
+  }
+
+  .col{
+    max-width:100%;
+    min-width:100%;
+  }
+}
 
     label{
       font-size:.9rem;
@@ -170,6 +185,12 @@
     button.btnMain:hover{
       background:#444;
     }
+    button.btnMain:disabled{
+  background:#999;
+  cursor:not-allowed;
+  opacity:.7;
+}
+
 
     button.btnGhost{
       background:#fff;
@@ -184,7 +205,14 @@
     button.btnGhost:hover{
       background:#f0efec;
     }
+button.btnGhost:disabled{
+  color:#999;
+  background:#f3f3f3;
+  cursor:not-allowed;
+  opacity:.7;
+}
 
+    
     /* === 結果卡片區（上下直排4塊） === */
     .results-stack{
       display:flex;
@@ -314,8 +342,9 @@
 
       <!-- 動作列：分析、下載結果 -->
       <div class="action-row">
-        <button class="btnMain" onclick="runAnalysis()">分析</button>
-        <button class="btnGhost" onclick="downloadResult()">下載結果</button>
+        <button id="analyzeBtn" class="btnMain" onclick="runAnalysis()">分析</button>
+        <button id="downloadBtn" class="btnGhost" onclick="downloadResult()" disabled>下載 JSON</button>
+
       </div>
     </section>
 
@@ -358,15 +387,17 @@
 
 function guardProfessorPage() {
   const user = getCurrentUser();
+  const role = user?.role || user?.Role || "";
   const allowedRoles = new Set(["researcher", "professor"]);
 
-  if (!user || !allowedRoles.has(user.role)) {
+  if (!user || !allowedRoles.has(role)) {
     sessionStorage.setItem("redirectMsg", "請先從首頁登入教授帳號，再使用文本相似性分析。");
     window.location.replace("index.html");
     return false;
   }
   return true;
 }
+
 function goBackProfessor() {
   window.location.href = "professor.html";
 }
@@ -381,67 +412,89 @@ function goBackProfessor() {
   document.getElementById("textA").addEventListener("input", updateCounts);
   document.getElementById("textB").addEventListener("input", updateCounts);
 
-  async function runAnalysis() {
-    const textA = document.getElementById("textA").value || "";
-    const textB = document.getElementById("textB").value || "";
+async function runAnalysis() {
+  const analyzeBtn = document.getElementById("analyzeBtn");
+  const textA = document.getElementById("textA").value || "";
+  const textB = document.getElementById("textB").value || "";
 
-    if (!textA.trim() || !textB.trim()) {
-      alert("請先輸入兩段文本。");
-      return;
-    }
-
-    const payload = {
-      textA,
-      textB,
-      useStructure: {
-        jaccard: document.getElementById("optJaccard").checked,
-        cosine: document.getElementById("optCosine").checked,
-        edit: document.getElementById("optEdit").checked,
-        ngram: document.getElementById("optNgram").checked
-      },
-      useConcept: {
-        conceptCoverage: document.getElementById("optConcept").checked
-      },
-      useSemantic: {
-        embed: document.getElementById("optEmbed").checked,
-        bert: document.getElementById("optBERT").checked,
-        llm: document.getElementById("optLLM").checked
-      }
-    };
-
-    document.getElementById("summaryBox").textContent = "分析中…";
-    document.getElementById("structureBox").textContent = "分析中…";
-    document.getElementById("conceptBox").textContent = "分析中…";
-    document.getElementById("semanticBox").textContent = "分析中…";
-
-    try {
-      const response = await fetch(GAS_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8"
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        throw new Error("HTTP " + response.status);
-      }
-
-      const result = await response.json();
-
-      if (result.status && result.status !== "success") {
-        throw new Error(result.message || "分析失敗");
-      }
-
-      renderResult(result);
-    } catch (err) {
-      const msg = err && err.message ? err.message : String(err);
-      document.getElementById("summaryBox").textContent = "錯誤：" + msg;
-      document.getElementById("structureBox").textContent = "分析失敗";
-      document.getElementById("conceptBox").textContent = "分析失敗";
-      document.getElementById("semanticBox").textContent = "分析失敗";
-    }
+  if (!textA.trim() || !textB.trim()) {
+    alert("請先輸入兩段文本。");
+    return;
   }
+
+  const payload = {
+    textA,
+    textB,
+    useStructure: {
+      jaccard: document.getElementById("optJaccard").checked,
+      cosine: document.getElementById("optCosine").checked,
+      edit: document.getElementById("optEdit").checked,
+      ngram: document.getElementById("optNgram").checked
+    },
+    useConcept: {
+      conceptCoverage: document.getElementById("optConcept").checked
+    },
+    useSemantic: {
+      embed: document.getElementById("optEmbed").checked,
+      bert: document.getElementById("optBERT").checked,
+      llm: document.getElementById("optLLM").checked
+    }
+  };
+
+  analyzeBtn.disabled = true;
+  analyzeBtn.textContent = "分析中...";
+document.getElementById("downloadBtn").disabled = true;
+
+  document.getElementById("summaryBox").textContent = "分析中…";
+  document.getElementById("structureBox").textContent = "分析中…";
+  document.getElementById("conceptBox").textContent = "分析中…";
+  document.getElementById("semanticBox").textContent = "分析中…";
+
+  try {
+    const response = await fetch(GAS_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      throw new Error("HTTP " + response.status);
+    }
+
+    const result = await response.json();
+
+    if (result.status && result.status !== "success") {
+      throw new Error(result.message || "分析失敗");
+    }
+
+    renderResult(result);
+    document.getElementById("downloadBtn").disabled = false;
+
+  } catch (err) {
+    const rawMsg = err && err.message ? err.message : String(err);
+    let friendlyMsg = "目前無法連線到分析服務，請稍後再試。";
+
+    if (rawMsg.includes("HTTP 404")) {
+      friendlyMsg = "找不到分析服務，請確認 GAS 網址是否正確。";
+    } else if (rawMsg.includes("HTTP 405")) {
+      friendlyMsg = "分析服務不接受這種呼叫方式，請檢查 GAS 的 doPost 設定。";
+    } else if (rawMsg.includes("Failed to fetch")) {
+      friendlyMsg = "連線失敗，請確認網路或 GAS 是否已部署。";
+    }
+
+    document.getElementById("summaryBox").textContent = "錯誤：" + friendlyMsg;
+    document.getElementById("structureBox").textContent = "分析失敗";
+    document.getElementById("conceptBox").textContent = "分析失敗";
+    document.getElementById("semanticBox").textContent = "分析失敗";
+    document.getElementById("downloadBtn").disabled = true;
+
+  } finally {
+    analyzeBtn.disabled = false;
+    analyzeBtn.textContent = "分析";
+  }
+}
 
   function downloadResult() {
     if (!window.lastResult) {
