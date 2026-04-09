@@ -1537,7 +1537,7 @@
       return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,"0")).join("");
     }
 
-    async function api(action, data) {
+    async function api(action, data = {}) {
       // Always try CORS JSON first
       try {
         const res = await fetch(GAS_URL, {
@@ -1563,9 +1563,11 @@
           } catch {}
           return { ok:true, mode:"no-cors" };
         }
-        const t = translations[currentLang] || translations["zh-TW"];
-        toast(t.api_down || "Backend unavailable");
-        return { ok:false, error:"backend_unavailable" };
+if (!data.silent) {
+  const t = translations[currentLang] || translations["zh-TW"];
+  toast(t.api_down || "Backend unavailable");
+}
+return { ok:false, error:"backend_unavailable" };
       }
     }
 
@@ -2395,12 +2397,12 @@
 const stored = getStoredUser();
 if (stored) {
   uiSetLoggedIn(stored);
-  api("user.pingProfessor", { email: stored.email }).then(r => {
-    if (r && r.ok) {
-      loginCount = r.loginCount ?? loginCount;
-      document.getElementById("login-count").textContent = (loginCount != null) ? String(loginCount) : "—";
-    }
-  });
+  api("user.pingProfessor", { email: stored.email, silent: true }).then(r => {
+  if (r && r.ok) {
+    loginCount = r.loginCount ?? loginCount;
+    document.getElementById("login-count").textContent = (loginCount != null) ? String(loginCount) : "—";
+  }
+});
 } else {
   window.location.href = "index.html";
 }
