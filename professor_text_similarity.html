@@ -255,6 +255,128 @@
       min-height:60px;
       line-height:1.65;
     }
+
+    .metric-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      gap:12px;
+    }
+
+    .metric-card{
+      border:1px solid var(--border);
+      border-radius:10px;
+      background:#fcfcfb;
+      padding:12px;
+    }
+
+    .metric-name{
+      font-size:.78rem;
+      color:#6b7280;
+      margin-bottom:6px;
+      font-weight:600;
+    }
+
+    .metric-value{
+      font-size:1.15rem;
+      font-weight:700;
+      color:#1f2937;
+      margin-bottom:8px;
+    }
+
+    .metric-bar{
+      height:8px;
+      border-radius:999px;
+      background:#ece8e1;
+      overflow:hidden;
+    }
+
+    .metric-fill{
+      height:100%;
+      border-radius:999px;
+      background:linear-gradient(90deg,#7c3aed,#a78bfa);
+    }
+
+    .concept-layout{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:14px;
+    }
+
+    .concept-box{
+      border:1px solid var(--border);
+      border-radius:10px;
+      background:#fcfcfb;
+      padding:12px;
+    }
+
+    .concept-box h3{
+      margin:0 0 10px 0;
+      font-size:.82rem;
+      color:#374151;
+      font-weight:700;
+    }
+
+    .chip-list{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      border-radius:999px;
+      padding:5px 10px;
+      font-size:.76rem;
+      line-height:1.2;
+      border:1px solid transparent;
+      background:#f3f4f6;
+      color:#374151;
+    }
+
+    .chip-common{
+      background:#f3e8ff;
+      color:#6b21a8;
+      border-color:#e9d5ff;
+    }
+
+    .chip-a{
+      background:#eff6ff;
+      color:#1d4ed8;
+      border-color:#bfdbfe;
+    }
+
+    .chip-b{
+      background:#fff7ed;
+      color:#c2410c;
+      border-color:#fed7aa;
+    }
+
+    .empty-note{
+      font-size:.8rem;
+      color:#9ca3af;
+    }
+
+    .pair-table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:10px;
+      font-size:.8rem;
+    }
+
+    .pair-table th,
+    .pair-table td{
+      border:1px solid #e5e7eb;
+      padding:8px;
+      text-align:left;
+      vertical-align:top;
+    }
+
+    .pair-table th{
+      background:#f9fafb;
+      color:#374151;
+      font-weight:700;
+    }
   </style>
 </head>
 
@@ -268,6 +390,9 @@
       <h1>文本相似度分析 Text Similarity Analysis</h1>
       <div class="sub">
         貼上兩段文本，按「分析」，系統會呈現表層文本相似性、關鍵概念重疊及語意詮釋結果。結果供教學與研究輔助參考，不作為唯一判定依據。
+      </div>
+      <div class="sub" style="margin-top:-8px; font-size:.88rem; color:#7c3aed;">
+        建議以空格標示重要術語，例如：細胞膜 細胞核 遺傳物質 DNA。使用空格分詞可提升概念分析與對照準確度。
       </div>
 
       <div class="action-row" style="margin-top:0; margin-bottom:16px;">
@@ -403,10 +528,10 @@
 
     function loadExamplePair() {
       document.getElementById("textA").value =
-        "細胞是生物體結構與功能的基本單位。細胞膜負責控制物質進出，細胞核保存遺傳物質 DNA。";
+        "細胞 是 生物體 結構 與 功能 的 基本單位。 細胞膜 負責 控制 物質進出，細胞核 保存 遺傳物質 DNA。";
 
       document.getElementById("textB").value =
-        "生物體由細胞構成，細胞是生命活動的基本單位。外層細胞膜調節物質交換，細胞核中含有 DNA，負責遺傳訊息保存。";
+        "生物體 由 細胞 構成。 細胞 是 生命活動 的 基本單位。 外層 細胞膜 調節 物質交換，細胞核 中 含有 DNA，負責 遺傳訊息 保存。";
 
       updateCounts();
     }
@@ -415,6 +540,42 @@
       document.getElementById("textA").value = "";
       document.getElementById("textB").value = "";
       updateCounts();
+    }
+
+    function escapeHtml(str) {
+      return String(str || "").replace(/[&<>"']/g, function(s) {
+        return ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" })[s];
+      });
+    }
+
+    function renderMetricCard(label, value) {
+      const showValue = value == null ? "N/A" : value;
+      const width = value == null ? 0 : Math.max(0, Math.min(100, Number(value)));
+      return `
+        <div class="metric-card">
+          <div class="metric-name">${escapeHtml(label)}</div>
+          <div class="metric-value">${escapeHtml(showValue)}</div>
+          <div class="metric-bar">
+            <div class="metric-fill" style="width:${width}%"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderChipGroup(title, items, cls) {
+      const safeItems = Array.isArray(items) ? items : [];
+      return `
+        <div class="concept-box">
+          <h3>${escapeHtml(title)}</h3>
+          ${
+            safeItems.length
+              ? `<div class="chip-list">${safeItems.map(function(item) {
+                  return `<span class="chip ${cls}">${escapeHtml(item)}</span>`;
+                }).join("")}</div>`
+              : `<div class="empty-note">無</div>`
+          }
+        </div>
+      `;
     }
 
     document.getElementById("textA").addEventListener("input", updateCounts);
@@ -529,90 +690,71 @@
       const concept = result.concept || {};
       const semantic = result.semantic || {};
 
-      let summaryText = "";
-      summaryText += "表層文本相似性：" + (summary.structureScore ?? "N/A") + "\n";
-      summaryText += "關鍵概念重疊：" + (summary.conceptScore ?? "N/A") + "\n";
-      summaryText += "語意詮釋結果：" + (summary.semanticScore ?? "N/A") + "\n";
-      document.getElementById("summaryBox").textContent = summaryText || "無資料";
+      document.getElementById("summaryBox").innerHTML = `
+        <div class="metric-grid">
+          ${renderMetricCard("表層文本相似性", summary.structureScore)}
+          ${renderMetricCard("關鍵概念重疊", summary.conceptScore)}
+          ${renderMetricCard("語意詮釋結果", summary.semanticScore)}
+        </div>
+      `;
 
-      let structureText = "";
-      if (structure.jaccard !== undefined) structureText += "Jaccard：" + structure.jaccard + "\n";
-      if (structure.cosine !== undefined) structureText += "TF Cosine：" + structure.cosine + "\n";
-      if (structure.editSim !== undefined) structureText += "Levenshtein 相似度：" + structure.editSim + "\n";
-      if (structure.ngramOverlap !== undefined) structureText += "N-gram Overlap：" + structure.ngramOverlap + "\n";
+      let structureHtml = "";
+
+      structureHtml += `<div class="metric-grid">`;
+      if (structure.jaccard !== undefined) structureHtml += renderMetricCard("Jaccard", structure.jaccard);
+      if (structure.cosine !== undefined) structureHtml += renderMetricCard("TF Cosine", structure.cosine);
+      if (structure.editSim !== undefined) structureHtml += renderMetricCard("Levenshtein", structure.editSim);
+      if (structure.ngramOverlap !== undefined) structureHtml += renderMetricCard("N-gram Overlap", structure.ngramOverlap);
+      structureHtml += `</div>`;
 
       if (Array.isArray(structure.sentencePairs) && structure.sentencePairs.length) {
-        structureText += "\n逐句近似句對照（摘要）：\n";
-        structure.sentencePairs.slice(0, 3).forEach(function(p) {
-          structureText += "A: " + (p.a || "") + "\n";
-          structureText += "B: " + (p.b || "") + "\n";
-          structureText += "相似度：" + (p.sim ?? "N/A") + "\n---\n";
-        });
+        structureHtml += `
+          <table class="pair-table">
+            <thead>
+              <tr>
+                <th>文本 A 句子</th>
+                <th>文本 B 對應句子</th>
+                <th>相似度</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${structure.sentencePairs.slice(0, 5).map(function(p) {
+                return `
+                  <tr>
+                    <td>${escapeHtml(p.a || "")}</td>
+                    <td>${escapeHtml(p.b || "")}</td>
+                    <td>${escapeHtml(p.sim == null ? "N/A" : p.sim)}</td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+          </table>
+        `;
       }
 
-      document.getElementById("structureBox").textContent = structureText || "無資料";
+      document.getElementById("structureBox").innerHTML = structureHtml || "無資料";
 
-      let conceptText = "";
-      const ab = concept.conceptABSummary;
+      const ab = concept.conceptABSummary || {};
+      let conceptHtml = "";
 
-      if (ab) {
-        conceptText += "【關鍵概念重疊（A vs B）】\n";
-        conceptText += "概念重疊分數：" + (ab.overlapScore !== undefined ? ab.overlapScore : "N/A") + "\n";
+      conceptHtml += `
+        <div class="metric-grid" style="margin-bottom:14px;">
+          ${renderMetricCard("概念重疊分數", ab.overlapScore)}
+          ${renderMetricCard("文本 A 概念數", ab.countA)}
+          ${renderMetricCard("共同概念數", ab.countCommon)}
+          ${renderMetricCard("文本 B 概念數", ab.countB)}
+        </div>
+      `;
 
-        conceptText += "A 與 B 共同關鍵概念（前20）：\n";
-        if (Array.isArray(ab.commonTop) && ab.commonTop.length) {
-          ab.commonTop.forEach(function(w) { conceptText += " - " + w + "\n"; });
-        } else {
-          conceptText += " - 無\n";
-        }
+      conceptHtml += `
+        <div class="concept-layout">
+          ${renderChipGroup("A 與 B 共同概念", ab.commonTop, "chip-common")}
+          ${renderChipGroup("僅 A 有的重要概念", ab.onlyA, "chip-a")}
+          ${renderChipGroup("僅 B 有的重要概念", ab.onlyB, "chip-b")}
+        </div>
+      `;
 
-        conceptText += "僅 A 有的重要概念（前20）：\n";
-        if (Array.isArray(ab.onlyA) && ab.onlyA.length) {
-          ab.onlyA.forEach(function(w) { conceptText += " - " + w + "\n"; });
-        } else {
-          conceptText += " - 無\n";
-        }
-
-        conceptText += "僅 B 有的重要概念（前20）：\n";
-        if (Array.isArray(ab.onlyB) && ab.onlyB.length) {
-          ab.onlyB.forEach(function(w) { conceptText += " - " + w + "\n"; });
-        } else {
-          conceptText += " - 無\n";
-        }
-
-        conceptText += "\n";
-      }
-
-      if (Array.isArray(concept.curriculumStages) && concept.curriculumStages.length) {
-        conceptText += "【課綱對齊分析（以文本 A 檢查課綱）】\n";
-
-        concept.curriculumStages.forEach(function(stageBlock) {
-          const stageName = stageBlock.stage || "(無名稱)";
-          const coverageVal = stageBlock.coverage !== undefined ? stageBlock.coverage : "N/A";
-          const hitCount = stageBlock.matchedConcepts ? stageBlock.matchedConcepts.length : 0;
-          const totalCount = stageBlock.totalConcepts !== undefined ? stageBlock.totalConcepts : "N/A";
-
-          conceptText += "Stage：" + stageName + " | 涵蓋率：" + coverageVal + " (命中 " + hitCount + " / 總數 " + totalCount + ")\n";
-
-          if (!stageBlock.matchedConcepts || !stageBlock.matchedConcepts.length) {
-            conceptText += "  （此文本未命中該階段任何概念）\n\n";
-          } else {
-            stageBlock.matchedConcepts.forEach(function(c) {
-              const showConcept = c.conceptBrief || c.conceptClean || c.concept || "";
-              const showContent = c.contentBrief || c.contentClean || c.content || "";
-
-              if (showConcept || showContent) {
-                conceptText += "  - " + showConcept;
-                if (showContent) conceptText += "；" + showContent;
-                conceptText += "\n";
-              }
-            });
-            conceptText += "\n";
-          }
-        });
-      }
-
-      document.getElementById("conceptBox").textContent = conceptText || "無資料";
+      document.getElementById("conceptBox").innerHTML = conceptHtml || "無資料";
 
       let semanticText = "";
       if (semantic.llmReview) {
