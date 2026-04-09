@@ -567,30 +567,34 @@ function changeLanguage(lang) {
         }
     });
 
-    const selectedUnitId = document.getElementById('sel-unit')?.value;
+const selectedUnitId = document.getElementById('sel-unit')?.value;
 
-    if (selectedUnitId !== "") {
-        const unit = processedUnits.find(i => String(i.id) === String(selectedUnitId));
-        if (unit) renderArticle(unit);
-    } else {
-        const waiting = i18n[currentLang]['waiting_hint'] || '等待探索...';
-        const navGuide = i18n[currentLang]['side_select_guide'] || '請選擇單元';
-        const vocabEmpty = i18n[currentLang]['vocab_empty'] || '詞彙將顯示於此';
+if (selectedUnitId) {
+    const unit = processedUnits.find(i => String(i.id) === String(selectedUnitId));
+    if (unit) {
+        renderArticle(unit);
+        return;
+    }
+}
 
-        document.getElementById('article-title').innerHTML =
-            `<span class="text-slate-500 opacity-30 text-2xl">${waiting}</span>`;
-        document.getElementById('article-content').innerHTML = '';
-        document.getElementById('nav-title').innerText = navGuide;
-        document.getElementById('status-bar').innerText = 'READY';
-        document.getElementById('unit-list').innerHTML =
-            `<div class="text-center text-slate-500 text-sm mt-10 p-4">${i18n[currentLang]['select_hint'] || ''}</div>`;
-        document.getElementById('vocab-container').innerHTML =
-            `<div class="text-center py-10 opacity-30 text-sm text-white">${vocabEmpty}</div>`;
+const waiting = i18n[currentLang]['waiting_hint'] || '等待探索...';
+const navGuide = i18n[currentLang]['side_select_guide'] || '請選擇單元';
+const vocabEmpty = i18n[currentLang]['vocab_empty'] || '詞彙將顯示於此';
 
-        const mobileBox = document.getElementById('vocab-container-mobile');
-        if (mobileBox) {
-            mobileBox.innerHTML = `<div class="text-center py-10 opacity-30 text-sm text-white">${vocabEmpty}</div>`;
-        }
+document.getElementById('article-title').innerHTML =
+    `<span class="text-slate-500 opacity-30 text-2xl">${waiting}</span>`;
+document.getElementById('article-content').innerHTML = '';
+document.getElementById('nav-title').innerText = navGuide;
+document.getElementById('status-bar').innerText = 'READY';
+document.getElementById('unit-list').innerHTML =
+    `<div class="text-center text-slate-500 text-sm mt-10 p-4">${i18n[currentLang]['select_hint'] || ''}</div>`;
+document.getElementById('vocab-container').innerHTML =
+    `<div class="text-center py-10 opacity-30 text-sm text-white">${vocabEmpty}</div>`;
+
+const mobileBox = document.getElementById('vocab-container-mobile');
+if (mobileBox) {
+    mobileBox.innerHTML = `<div class="text-center py-10 opacity-30 text-sm text-white">${vocabEmpty}</div>`;
+}
     }
 }
 
@@ -1153,7 +1157,7 @@ const isJunior = juniorGrades.has(unitGrade) || juniorGrades.has(selectedGrade);
           return false;
         }
         function processXRayWithCKIP(text, map, ckipTokenSet, ckipMergeSet) {
-          const src = (text || "").toString().replace(/　/g, "");
+          const src = (text || "").toString().replace(/　/g, " ");
           const keys = Object.keys(map || {}).filter(Boolean).sort((a, b) => b.length - a.length);
           if (!keys.length) return escapeHtml(src);
           const spans = [];
