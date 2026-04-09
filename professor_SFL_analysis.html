@@ -82,14 +82,22 @@ body{
   textarea.full{ width:100%; min-height:260px; line-height:1.6; resize:vertical; }
   .actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:10px; }
   .btn{
-    font-family:
-      "Microsoft JhengHei",
-      "微軟正黑體",
-      "Times New Roman",
-      "Noto Serif TC",
-      serif;
-    padding:10px 14px; border:1px solid var(--border); border-radius:10px; background:#fff; cursor:pointer; transition:.15s; font-weight:600;
-  }
+  font-family:
+    "Microsoft JhengHei",
+    "微軟正黑體",
+    "Times New Roman",
+    "Noto Serif TC",
+    serif;
+  padding:10px 14px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:rgba(255,255,255,0.08);
+  color:#e2e8f0;
+  cursor:pointer;
+  transition:.15s;
+  font-weight:600;
+}
+
   .btn:hover{ transform:translateY(-1px); }
   .btn.primary{
   background:linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
@@ -110,15 +118,19 @@ body{
   text-align:right;
 }
 
-  .section-title{
-    font-family:
-      "Microsoft JhengHei",
-      "微軟正黑體",
-      "Times New Roman",
-      "Noto Serif TC",
-      serif;
-    font-size:18px; font-weight:700; margin-bottom:10px; color:#0f172a;
-  }
+.section-title{
+  font-family:
+    "Microsoft JhengHei",
+    "微軟正黑體",
+    "Times New Roman",
+    "Noto Serif TC",
+    serif;
+  font-size:18px;
+  font-weight:700;
+  margin-bottom:10px;
+  color:#581c87;
+}
+
   .table-wrap{ width:100%; overflow:auto; border:1px solid var(--border); border-radius:12px; }
   table{
     font-family:
@@ -129,15 +141,22 @@ body{
       serif;
     width:100%; border-collapse:separate; border-spacing:0; font-size:14px;
   }
-  thead th{
-    font-family:
-      "Microsoft JhengHei",
-      "微軟正黑體",
-      "Times New Roman",
-      "Noto Serif TC",
-      serif;
-    background:#f9fafb; border-bottom:1px solid var(--border); padding:10px 8px; position:sticky; top:0; white-space:nowrap;
-  }
+thead th{
+  font-family:
+    "Microsoft JhengHei",
+    "微軟正黑體",
+    "Times New Roman",
+    "Noto Serif TC",
+    serif;
+  background:rgba(248,250,252,0.12);
+  border-bottom:1px solid var(--border);
+  padding:10px 8px;
+  position:sticky;
+  top:0;
+  white-space:nowrap;
+  color:#cbd5e1;
+}
+
   tbody td{
     font-family:
       "Microsoft JhengHei",
@@ -211,9 +230,20 @@ select, textarea{
   color:#fff;
   border:1px solid rgba(148,163,184,0.22);
 }
+select:focus, textarea:focus{
+  outline:none;
+  border-color:rgba(139,92,246,0.9);
+  box-shadow:0 0 0 3px rgba(139,92,246,0.20);
+}
 
 select::placeholder, textarea::placeholder{
   color:#94a3b8;
+}
+.hero-title{
+  background:linear-gradient(135deg, #c4b5fd 0%, #8b5cf6 45%, #60a5fa 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
 }
 
 </style>
@@ -236,7 +266,8 @@ select::placeholder, textarea::placeholder{
     </div>
   </div>
 
-  <h1>SFL 語義分析（Systemic Functional Linguistics Semantic Analysis）</h1>
+  <h1 class="hero-title">SFL 語義分析（Systemic Functional Linguistics Semantic Analysis）</h1>
+
   <p class="page-note">本分析結果為 AI 與規則式輔助判讀，供教學與研究參考，不作為唯一判定依據。</p>
 
 
