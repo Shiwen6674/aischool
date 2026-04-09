@@ -1435,19 +1435,24 @@
       try { return JSON.parse(s); } catch { return null; }
     }
 
-    function getStoredUser() {
-      const raw = sessionStorage.getItem("currentUser");
-      const obj = safeJsonParse(raw);
-      if (!obj) return null;
-      // normalize
-      return {
-        email: obj.Email || obj.email || "",
-        name: obj.Name || obj.name || "Professor",
-        role: obj.Role || obj.role || "professor",
-        unit: obj.Unit || obj.unit || obj.SchoolName || obj.school || "—",
-        field: obj.Field || obj.field || "",
-      };
-    }
+function normalizeRole(role) {
+  return role === "researcher" ? "professor" : role;
+}
+
+function getStoredUser() {
+  const raw = sessionStorage.getItem("currentUser");
+  const obj = safeJsonParse(raw);
+  if (!obj) return null;
+
+  return {
+    email: obj.Email || obj.email || "",
+    name: obj.Name || obj.name || "Professor",
+    role: normalizeRole(obj.Role || obj.role || "professor"),
+    unit: obj.Unit || obj.unit || obj.SchoolName || obj.school || "—",
+    field: obj.Field || obj.field || "",
+  };
+}
+
 
     function setStoredUser(u) {
       sessionStorage.setItem("currentUser", JSON.stringify(u));
@@ -2399,17 +2404,19 @@ return { ok:false, error:"backend_unavailable" };
       renderUsedFeatures();
 
 const stored = getStoredUser();
-if (stored) {
+if (stored && stored.role === "professor") {
   uiSetLoggedIn(stored);
   api("user.pingProfessor", { email: stored.email, silent: true }).then(r => {
-  if (r && r.ok) {
-    loginCount = r.loginCount ?? loginCount;
-    document.getElementById("login-count").textContent = (loginCount != null) ? String(loginCount) : "—";
-  }
-});
+    if (r && r.ok) {
+      loginCount = r.loginCount ?? loginCount;
+      document.getElementById("login-count").textContent = (loginCount != null) ? String(loginCount) : "—";
+    }
+  });
 } else {
+  sessionStorage.setItem("redirectMsg", "請先登入教授帳號，再使用研究中心。");
   window.location.href = "index.html";
 }
+
     }
 
     window.addEventListener("beforeunload", () => {
