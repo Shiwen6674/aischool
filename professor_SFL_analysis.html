@@ -1,1 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SFL 語義分析｜Expert Version</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f7f6f3; --fg:#1f2937; --muted:#6b7280;
+    --card:#ffffff; --border:#e5e7eb; --accent:#0ea5e9;
+  }
+  *{box-sizing:border-box;}
+  /* 全站主要字體：
+     - 中文優先使用 微軟正黑體
+     - 英文/拉丁優先使用 Times New Roman
+     - 之後再 fallback 回原本的 Noto Serif TC 和一般 serif
+  */
+  body{
+    font-family:
+      "Microsoft JhengHei",
+      "微軟正黑體",
+      "Times New Roman",
+      "Noto Serif TC",
+      serif;
+    background:var(--bg);
+    color:var(--fg);
+    margin:0;
+  }
+  .container{ max-width:1150px; margin:0 auto; padding:28px; }
+  h1{
+    font-family:
+      "Microsoft JhengHei",
+      "微軟正黑體",
+      "Times New Roman",
+      "Noto Serif TC",
+      serif;
+    font-size:26px; margin:6px 0 20px; text-align:center; letter-spacing:1px;
+  }
+  .card{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,.05); margin-bottom:20px; }
+  .row-inline{ display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+  label{
+    font-family:
+      "Microsoft JhengHei",
+      "微軟正黑體",
+      "Times New Roman",
+      "Noto Serif TC",
+      serif;
+    font-weight:600; margin-right:6px;
+  }
+  select, textarea{
+    font-family:
+      "Microsoft JhengHei",
+      "微軟正黑體",
+      "Times New Roman",
+      "Noto Serif TC",
+      serif;
+    border:1px solid var(--border); border-radius:10px; padding:10px; font-size:15px; background:#fff;
+  }
+  select.short{ min-width:180px; }
+  textarea.full{ width:100%; min-height:260px; line-height:1.6; resize:vertical; }
+  .actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:10px; }
+  .btn{
+    font-family:
+      "Microsoft JhengHei",
+      "微軟正黑體",
+      "Times New Roman",
+      "Noto Serif TC",
+      serif;
+    padding:10px 14px; border:1px solid var(--border); border-radius:10px; background:#fff; cursor:pointer; transition:.15s; font-weight:600;
+  }
+  .btn:hover{ transform:translateY(-1px); }
+  .btn.primary{ background:var(--accent); color:#fff; border-color:var(--accent); }
+  .btn:disabled{ opacity:.5; cursor:not-allowed; transform:none; }
+  .status{
+    font-family:
+      "Microsoft JhengHei",
+      "微軟正黑體",
+      "Times New Roman",
+      "Noto Serif TC",
+      serif;
+    color:var(--muted); margin-left:auto; min-width:200px; text-align:right;
+  }
+  .section-title{
+    font-family:
+      "Microsoft JhengHei",
+      "微軟正黑體",
+      "Times New Roman",
+      "Noto Serif TC",
+      serif;
+    font-size:18px; font-weight:700; margin-bottom:10px; color:#0f172a;
+  }
+  .table-wrap{ width:100%; overflow:auto; border:1px solid var(--border); border-radius:12px; }
+  table{
+    font-family:
+      "Microsoft JhengHei",
+      "微軟正黑體",
+      "Times New Roman",
+      "Noto Serif TC",
+      serif;
+    width:100%; border-collapse:separate; border-spacing:0; font-size:14px;
+  }
+  thead th{
+    font-family:
+      "Microsoft JhengHei",
+      "微軟正黑體",
+      "Times New Roman",
+      "Noto Serif TC",
+      serif;
+    background:#f9fafb; border-bottom:1px solid var(--border); padding:10px 8px; position:sticky; top:0; white-space:nowrap;
+  }
+  tbody td{
+    font-family:
+      "Microsoft JhengHei",
+      "微軟正黑體",
+      "Times New Roman",
+      "Noto Serif TC",
+      serif;
+    border-top:1px solid var(--border); padding:8px; vertical-align:top; word-break:break-word;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>SFL 語義分析（Systemic Functional Linguistics Semantic Analysis）</h1>
+
+  <div class="card">
+    <div class="row-inline">
+      <label for="lang">語言(Language)：</label>
+      <select id="lang" class="short">
+        <option value="">自動(Auto)</option>
+        <option value="zh">中文</option>
+        <option value="en">English</option>
+      </select>
+
+      <label for="module">語義功能(Semantic Function)：</label>
+      <select id="module" class="short">
+        <option value="ideational">概念(Ideational)</option>
+        <option value="interpersonal">人際(Interpersonal)</option>
+        <option value="textual">語篇(Textual)</option>
+        <option value="all">全部(All)</option>
+      </select>
+    </div>
+
+    <label for="text">貼上文本（Paste your text）</label>
+    <textarea id="text" class="full" placeholder="貼上中文或英文科學文本..."></textarea>
+
+    <div class="actions">
+      <button id="analyzeBtn" class="btn primary">分析 Analyze</button>
+      <button id="clearBtn" class="btn">清空 Clear</button>
+      <button id="downloadCSV" class="btn" disabled>下載 CSV</button>
+      <span id="status" class="status"></span>
+    </div>
+  </div>
+
+  <div id="results"></div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+$('analyzeBtn').addEventListener('click', ()=>{
+  const text = $('text').value.trim();
+  const lang = $('lang').value;
+  const module = $('module').value;
+  if(!text){ alert('請先貼上文本'); return; }
+
+  setBusy(true,'分析中…');
+  google.script.run
+    .withSuccessHandler(data=>{
+      if(!data || !data.ok){ setBusy(false,'錯誤：'+(data?.error||'未知')); return; }
+      renderResults(data.sfl.rows||[], module);
+      window.__csv = data.csv || "";
+      $('downloadCSV').disabled = !window.__csv;
+      setBusy(false,`完成 · 語言：${data.lang||'未標示'}`);
+    })
+    .withFailureHandler(err=>setBusy(false,'GAS 錯誤：'+(err?.message||err)))
+    .apiAnalyze(text, lang, module);
+});
+
+$('downloadCSV').addEventListener('click', ()=>{
+  if(!window.__csv) return;
+  const blob = new Blob([window.__csv], {type:"text/csv;charset=utf-8"});
+  const u = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=u; a.download="SFL_result.csv"; a.click();
+  URL.revokeObjectURL(u);
+});
+
+$('clearBtn').addEventListener('click', ()=>{
+  $('text').value=''; $('results').innerHTML=''; $('status').textContent='';
+  window.__csv=''; $('downloadCSV').disabled=true;
+});
+
+function setBusy(b,msg){ $('analyzeBtn').disabled=b; $('downloadCSV').disabled=b||!window.__csv; $('status').textContent=msg||''; }
+
+function renderResults(rows,module){
+  const wrap=$('results'); wrap.innerHTML='';
+  if(!rows.length){ wrap.innerHTML='<div class="card">無資料</div>'; return; }
+  if(module==='ideational'||module==='all') wrap.appendChild(renderIdeational(rows));
+  if(module==='interpersonal'||module==='all') wrap.appendChild(renderInterpersonal(rows));
+  if(module==='textual'||module==='all') wrap.appendChild(renderTextual(rows));
+}
+
+// === 概念功能 ===
+function renderIdeational(rows){
+  const card=document.createElement('div');
+  card.className='card';
+  card.innerHTML=`
+    <div class="section-title">概念功能 Ideational</div>
+    <div class="table-wrap"><table>
+    <thead><tr>
+      <th>文本句ID</th><th>小句ID</th><th>原句</th>
+      <th>參與者(Participants)</th><th>過程(Process)</th><th>環境(Circumstances)</th>
+    </tr></thead><tbody></tbody></table></div>`;
+  const tb=card.querySelector('tbody');
+  rows.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td>${r.sent_id||''}</td><td>${r.clause_id||''}</td><td>${r.text||''}</td>
+      <td>${formatParticipants(r.participants)}</td>
+      <td>${r.process_type||''}：${r.process_verb||''}</td>
+      <td>${formatCirc(r.circumstances)}</td>`;
+    tb.appendChild(tr);
+  });
+  return card;
+}
+
+// === 人際功能 ===
+function renderInterpersonal(rows){
+  const card=document.createElement('div');
+  card.className='card';
+  card.innerHTML=`
+    <div class="section-title">人際功能 Interpersonal</div>
+    <div class="table-wrap"><table>
+    <thead><tr>
+      <th>文本句ID</th><th>小句ID</th><th>原句</th>
+      <th>語氣(Mood)</th><th>情態類型(Modality Type)</th><th>強度(Strength)</th><th>標記詞(Cue)</th>
+    </tr></thead><tbody></tbody></table></div>`;
+  const tb=card.querySelector('tbody');
+  rows.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td>${r.sent_id||''}</td><td>${r.clause_id||''}</td><td>${r.text||''}</td>
+      <td>${r.mood||''}</td><td>${r.modality_type||''}</td>
+      <td>${r.modality_strength||''}</td><td>${r.modality_cue||''}</td>`;
+    tb.appendChild(tr);
+  });
+  return card;
+}
+
+// === 語篇功能 ===
+function renderTextual(rows){
+  const card=document.createElement('div');
+  card.className='card';
+  card.innerHTML=`
+    <div class="section-title">語篇功能 Textual</div>
+    <div class="table-wrap"><table>
+    <thead><tr>
+      <th>文本句ID</th><th>小句ID</th><th>原句</th>
+      <th>主位(Theme)</th><th>述位(Rheme)</th>
+      <th>連接類型(Conj Type)</th><th>連接詞(Conj)</th>
+    </tr></thead><tbody></tbody></table></div>`;
+  const tb=card.querySelector('tbody');
+  rows.forEach(r=>{
+    const themes=Array.isArray(r.themes)?r.themes.map(t=>t.type?`${t.type}:${t.span}`:t.span).join('｜'):'';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td>${r.sent_id||''}</td><td>${r.clause_id||''}</td><td>${r.text||''}</td>
+      <td>${themes}</td><td>${r.rheme||''}</td>
+      <td>${r.conj_type||''}</td><td>${r.conj_token||''}</td>`;
+    tb.appendChild(tr);
+  });
+  return card;
+}
+
+// === 輔助格式函式 ===
+function formatParticipants(p){
+  if(!p||typeof p!=='object') return '';
+  const order=["Carrier","Attribute","Actor","Goal","Senser","Phenomenon","Sayer","Verbiage","Existent"];
+  const out=order.filter(k=>p[k]).map(k=>`${k}：${p[k]}`);
+  return out.join('；')||'－';
+}
+function formatCirc(cs){
+  if(!Array.isArray(cs)) return '－';
+  if(cs.length===1 && cs[0]?.type==='－') return '－';
+  return cs.map(c=>`${c.type||''}:${c.span||''}`).join('｜');
+}
+</script>
+</body>
+</html>
 
