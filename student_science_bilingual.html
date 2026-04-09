@@ -464,12 +464,23 @@
         const COL_STAGE=0, COL_VERSION=2, COL_GRADE=3, COL_SEMESTER=4, COL_UNIT_NUM=6, COL_UNIT_NAME=7,
               COL_CONTENT=8, COL_CKIP=9, COL_VOCAB=18;
 
-        let rawData=[], processedUnits=[], isSpeaking=false, isLooping=false, currentVoice='female', translationCache={}, synth=window.speechSynthesis;
-        let activeVocabMap = {};
-        let currentBlockIndex = 0;
-        let currentUnitTitleZh = "";
-        let currentUnitTitleEn = "";
-        let currentLang = localStorage.getItem('appLang') || 'zh-TW';
+let rawData=[], processedUnits=[], isSpeaking=false, isLooping=false, currentVoice='female', translationCache={}, synth=window.speechSynthesis;
+let activeVocabMap = {};
+let currentBlockIndex = 0;
+let currentUnitTitleZh = "";
+let currentUnitTitleEn = "";
+let currentLang = localStorage.getItem('appLang') || 'zh-TW';
+const TRACKING_URL = 'https://script.google.com/macros/s/AKfycbwXvqOFGVuay1_jZ7dau5VkNqSqGppQ3ffIizlcyB4R0XwvQU7Km5JFuYR4wfFG2OMxHA/exec';
+let pageEnterTime = Date.now();
+let currentMode = 'dual';
+let currentUnitData = null;
+
+        
+const TRACKING_URL = 'https://script.google.com/macros/s/AKfycbwXvqOFGVuay1_jZ7dau5VkNqSqGppQ3ffIizlcyB4R0XwvQU7Km5JFuYR4wfFG2OMxHA/exec';
+let pageEnterTime = Date.now();
+let currentMode = 'dual';
+let currentUnitData = null;
+
 
         const i18n = {
             'zh-TW': { 
@@ -543,6 +554,10 @@
             document.addEventListener('touchstart', () => {
                 try{ if(!synth)return; synth.cancel(); const u=new SpeechSynthesisUtterance(" "); u.volume=0; synth.speak(u); }catch(e){}
             }, { once: true, passive: true });
+trackEvent('page_view');
+window.addEventListener('beforeunload', trackPageLeave);
+
+            
         });
 
         function initLanguage() {
@@ -552,6 +567,7 @@
         }
 
 function changeLanguage(lang) {
+        trackEvent('language_changed', { value: lang });
     currentLang = lang;
     localStorage.setItem('appLang', lang);
     applyLanguage(lang);
@@ -706,7 +722,15 @@ function filterUnits(lvl) {
             });
         }
 
-        function loadSelectedUnit(){ const u=processedUnits.find(i=>i.id==document.getElementById('sel-unit').value); if(u) renderArticle(u); }
+function loadSelectedUnit() {
+    const u = processedUnits.find(i => i.id == document.getElementById('sel-unit').value);
+    if (u) {
+        currentUnitData = u;
+        trackEvent('unit_selected', { detail: u.title });
+        renderArticle(u);
+    }
+}
+
 
 function renderSingleVocabContainer(container) {
   if (!container) return;
@@ -1363,24 +1387,27 @@ const isJunior = juniorGrades.has(unitGrade) || juniorGrades.has(selectedGrade);
             }, []).filter(s => s.trim().length > 0);
         }
 
-        function toggleSpeech() {
-            const btn = document.getElementById('btn-play');
-            if (isSpeaking) {
-                isSpeaking = false;
-                if (synth) synth.cancel();
-                if (btn) btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>';
-            } else {
-                isSpeaking = true;
-                if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-                if (synth && synth.paused) synth.resume();
-                
-                if(synth.getVoices().length === 0 && synth.onvoiceschanged) synth.onvoiceschanged();
+function toggleSpeech() {
+    const btn = document.getElementById('btn-play');
+    if (isSpeaking) {
+        trackEvent('audio_pause');
+        isSpeaking = false;
+        if (synth) synth.cancel();
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>';
+    } else {
+        trackEvent('audio_play');
+        isSpeaking = true;
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        if (synth && synth.paused) synth.resume();
+        
+        if(synth.getVoices().length === 0 && synth.onvoiceschanged) synth.onvoiceschanged();
 
-                const blocks = document.querySelectorAll('.content-block, .section-header');
-                if (currentBlockIndex >= blocks.length) currentBlockIndex = 0;
-                setTimeout(() => { if (isSpeaking) playSequence(); }, 10);
-            }
-        }
+        const blocks = document.querySelectorAll('.content-block, .section-header');
+        if (currentBlockIndex >= blocks.length) currentBlockIndex = 0;
+        setTimeout(() => { if (isSpeaking) playSequence(); }, 10);
+    }
+}
+
 
         function toggleLoop() {
             isLooping = !isLooping;
@@ -1413,6 +1440,9 @@ document.getElementById('btn-female').className = g==='female'
         }
 
         function setMode(m) {
+                currentMode = m;
+    trackEvent('mode_changed', { value: m });
+
             ['en','dual','zh'].forEach(x=>document.getElementById(`btn-${x}`).className=x===m?"px-4 py-1.5 text-xs font-bold rounded-full bg-green-500 text-white shadow-lg":"px-4 py-1.5 text-xs font-bold rounded-full text-slate-400 hover:text-white transition");
             if(m!=='zh') translateVisibleBlocks();
             const en=document.querySelectorAll('.en-text'), zh=document.querySelectorAll('.zh-text');
@@ -1428,7 +1458,52 @@ document.getElementById('btn-female').className = g==='female'
             }
             if(m !== 'zh') ensureTitleTranslated();
         }
+function getStudentInfo() {
+    let studentId = '';
+    let studentName = '';
 
+    try {
+        const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+        studentId = currentUser.id || currentUser.studentId || currentUser.username || '';
+        studentName = currentUser.name || '';
+    } catch (e) {}
+
+    return { studentId, studentName };
+}
+
+function trackEvent(eventName, extra = {}) {
+    const { studentId, studentName } = getStudentInfo();
+
+    const payload = {
+        student_id: studentId,
+        student_name: studentName,
+        event: eventName,
+        stage: document.getElementById('sel-stage')?.value || '',
+        grade: document.getElementById('sel-grade')?.value || '',
+        version: document.getElementById('sel-version')?.value || '',
+        semester: document.getElementById('sel-semester')?.value || '',
+        unit: currentUnitData?.title || currentUnitTitleZh || '',
+        mode: currentMode,
+        language: currentLang,
+        detail: extra.detail || '',
+        value: extra.value || '',
+        duration: extra.duration || '',
+        page: 'student_science_bilingual.html'
+    };
+
+    fetch(TRACKING_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    }).catch(() => {});
+}
+
+function trackPageLeave() {
+    const duration = Math.round((Date.now() - pageEnterTime) / 1000);
+    trackEvent('page_leave', { duration });
+}
+        
         function showToast(m) { const T=document.getElementById('toast'); document.getElementById('toast-msg').innerText=m; T.classList.remove('opacity-0','-translate-y-10'); setTimeout(()=>T.classList.add('opacity-0','-translate-y-10'),2500); }
     </script>
 </body>
