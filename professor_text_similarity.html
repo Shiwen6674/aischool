@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>文本相似度分析 Text Similarity Analysis</title>
+
+  <style>
+    :root{
+      --bg:#f9f8f6;
+      --fg:#2a2a2a;
+      --border:#dcdad5;
+      --card:#ffffff;
+      --muted:#6c6c6c;
+    }
+
+    body{
+      background:var(--bg);
+      color:var(--fg);
+      font-family:"Noto Serif CJK JP","Microsoft JhengHei","微軟正黑體",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+      margin:0;
+      padding:24px;
+      line-height:1.5;
+    }
+
+    .wrap{
+      max-width:1200px;
+      margin:0 auto;
+    }
+
+    h1{
+      font-size:1.2rem;
+      letter-spacing:0.05em;
+      margin:0 0 4px 0;
+      color:#2a2a2a;
+      font-weight:600;
+    }
+
+    .sub{
+      font-size:.9rem;
+      color:var(--muted);
+      margin-bottom:24px;
+      line-height:1.4;
+    }
+
+    .panel{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:16px 20px;
+      box-shadow:0 2px 6px rgba(0,0,0,.04);
+      margin-bottom:24px;
+    }
+
+    /* === 輸入區 === */
+    .inputs{
+      display:flex;
+      flex-wrap:nowrap;
+      justify-content:center;   /* 置中整組輸入框 */
+      gap:48px;                 /* A/B 中間距離 */
+      max-width:1100px;         /* 整排最多1000px寬 */
+      margin:0 auto;            /* 置中對齊 */
+    }
+
+    .col{
+      flex:0 0 45%;             /* 每欄固定大約35%的寬度，而不是50% */
+      max-width:45%;
+      display:flex;
+      flex-direction:column;
+      min-width:320px;          /* 避免太小時字難輸入 */
+    }
+
+    label{
+      font-size:.9rem;
+      font-weight:600;
+      margin-bottom:6px;
+      color:#444;
+    }
+
+    textarea{
+      width:100%;
+      min-height:200px;
+      resize:vertical;
+      border:1.5px solid var(--border);
+      border-radius:10px;
+      padding:12px;
+      font-size:.9rem;
+      line-height:1.5;
+      font-family:"Noto Serif CJK JP","Microsoft JhengHei","微軟正黑體",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+      background:#fff;
+      color:#2a2a2a;
+    }
+
+    .small{
+      font-size:.75rem;
+      color:var(--muted);
+      line-height:1.3;
+    }
+
+    .countRow{
+      display:flex;
+      justify-content:space-between;
+      font-size:.75rem;
+      color:var(--muted);
+      margin-top:4px;
+    }
+
+    /* === 選項列 === */
+    .options-block{
+      display:flex;
+      flex-wrap:wrap;
+      gap:24px;
+      margin-top:16px;
+      font-size:.8rem;
+      color:#444;
+    }
+
+    .option-group{
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:12px 16px;
+      box-shadow:0 1px 4px rgba(0,0,0,.03);
+      min-width:220px;
+    }
+
+    .option-title{
+      font-size:.8rem;
+      font-weight:600;
+      color:#2a2a2a;
+      margin-bottom:8px;
+      letter-spacing:.03em;
+    }
+
+    .check-row{
+      display:flex;
+      align-items:flex-start;
+      gap:8px;
+      margin-bottom:6px;
+      line-height:1.4;
+      font-size:.8rem;
+      color:#2a2a2a;
+    }
+
+    .check-row input{
+      margin-top:2px;
+    }
+
+    /* === 動作列 === */
+    .action-row{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      gap:16px;
+      margin-top:16px;
+      font-size:.8rem;
+      color:#444;
+    }
+
+    button.btnMain{
+      background:#2a2a2a;
+      color:#fff;
+      border:0;
+      border-radius:8px;
+      padding:8px 16px;
+      font-size:.8rem;
+      line-height:1.2rem;
+      cursor:pointer;
+    }
+    button.btnMain:hover{
+      background:#444;
+    }
+
+    button.btnGhost{
+      background:#fff;
+      color:#2a2a2a;
+      border:1px solid var(--border);
+      border-radius:8px;
+      padding:8px 16px;
+      font-size:.8rem;
+      line-height:1.2rem;
+      cursor:pointer;
+    }
+    button.btnGhost:hover{
+      background:#f0efec;
+    }
+
+    /* === 結果卡片區（上下直排4塊） === */
+    .results-stack{
+      display:flex;
+      flex-direction:column;
+      gap:20px;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:16px;
+      box-shadow:0 2px 6px rgba(0,0,0,.04);
+      font-size:.85rem;
+      line-height:1.4;
+    }
+
+    .card h2{
+      margin:0 0 8px 0;
+      font-size:.9rem;
+      font-weight:600;
+      color:#2a2a2a;
+      letter-spacing:.03em;
+    }
+
+    .results-area{
+      font-size:.8rem;
+      color:#2a2a2a;
+      white-space:pre-wrap;
+      word-break:break-word;
+      min-height:60px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <!-- ===== Header + Text Inputs ===== -->
+    <section class="panel">
+      <h1>文本相似度分析 Text Similarity Analysis</h1>
+      <div class="sub">
+        貼上兩段文本，按「分析」，系統會呈現文本結構、概念及語意之相似度指標。
+      </div>
+
+      <!-- 兩段文本輸入 -->
+      <div class="inputs">
+        <div class="col">
+          <label for="textA">文本 A</label>
+          <textarea id="textA" placeholder="在此貼上第一段文本..."></textarea>
+          <div class="countRow">
+            <div class="small" id="countA">字數：0</div>
+          </div>
+        </div>
+
+        <div class="col">
+          <label for="textB">文本 B</label>
+          <textarea id="textB" placeholder="在此貼上第二段文本..."></textarea>
+          <div class="countRow">
+            <div class="small" id="countB">字數：0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 選項區：三個層（結構層 / 概念層 / 語意層） -->
+      <div class="options-block">
+
+        <!-- 結構相似性 Structure Similarity -->
+        <div class="option-group">
+          <div class="option-title">結構相似性</div>
+
+          <label class="check-row">
+            <input type="checkbox" id="optJaccard" checked />
+            <span>Jaccard（詞集合重疊）</span>
+          </label>
+
+          <label class="check-row">
+            <input type="checkbox" id="optCosine" checked />
+            <span>Cosine（詞頻向量餘弦相似度）</span>
+          </label>
+
+          <label class="check-row">
+            <input type="checkbox" id="optEdit" checked />
+            <span>Levenshtein Distance（編輯距離相似度）</span>
+          </label>
+
+          <label class="check-row">
+            <input type="checkbox" id="optNgram" checked />
+            <span>N-gram Overlap（片段重疊）</span>
+          </label>
+        </div>
+
+        <!-- 概念相似性 Concept Similarity -->
+        <div class="option-group">
+          <div class="option-title">概念相似性</div>
+
+          <label class="check-row">
+            <input type="checkbox" id="optConcept" checked />
+            <span>Concept Coverage（核心概念覆蓋）</span>
+          </label>
+        </div>
+
+        <!-- 語意相似性 Semantic Similarity -->
+        <div class="option-group">
+          <div class="option-title">語意相似性</div>
+
+          <label class="check-row">
+            <input type="checkbox" id="optEmbed" />
+            <span>Embedding Similarity（語意向量餘弦）</span>
+          </label>
+
+          <label class="check-row">
+            <input type="checkbox" id="optBERT" />
+            <span>BERT model（詞級語意對齊）</span>
+          </label>
+
+          <label class="check-row">
+            <input type="checkbox" id="optLLM" />
+            <span>LLM-based evaluation（大型語言模型評估）</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 動作列：分析、下載結果 -->
+      <div class="action-row">
+        <button class="btnMain" onclick="runAnalysis()">分析</button>
+        <button class="btnGhost" onclick="downloadResult()">下載結果</button>
+      </div>
+    </section>
+
+
+    <!-- ===== 結果區：上下四塊 ===== -->
+    <section class="results-stack">
+      <div class="card">
+        <h2>總覽 Summary</h2>
+        <div id="summaryBox" class="results-area">尚未分析</div>
+      </div>
+
+      <div class="card">
+        <h2>結構相似度分析 Structure Similarity</h2>
+        <div id="structureBox" class="results-area">尚未分析</div>
+      </div>
+
+      <div class="card">
+        <h2>概念相似度分析 Concept Similarity</h2>
+        <div id="conceptBox" class="results-area">尚未分析</div>
+      </div>
+
+      <div class="card">
+        <h2>語意相似度分析 Semantic Similarity</h2>
+        <div id="semanticBox" class="results-area">未啟用或尚未分析</div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    // === 小工具：即時計數 ===
+    function updateCounts(){
+      const a = document.getElementById('textA').value;
+      const b = document.getElementById('textB').value;
+      document.getElementById('countA').textContent = "字數：" + a.length;
+      document.getElementById('countB').textContent = "字數：" + b.length;
+    }
+    document.getElementById('textA').addEventListener('input', updateCounts);
+    document.getElementById('textB').addEventListener('input', updateCounts);
+
+    // === 主按鈕：分析 ===
+    function runAnalysis(){
+      const payload = {
+        textA: document.getElementById('textA').value || "",
+        textB: document.getElementById('textB').value || "",
+        useStructure: {
+          jaccard:  document.getElementById('optJaccard').checked,
+          cosine:   document.getElementById('optCosine').checked,
+          edit:     document.getElementById('optEdit').checked,
+          ngram:    document.getElementById('optNgram').checked
+        },
+        useConcept: {
+          conceptCoverage: document.getElementById('optConcept').checked
+        },
+        useSemantic: {
+          embed: document.getElementById('optEmbed').checked,
+          bert:  document.getElementById('optBERT').checked,
+          llm:   document.getElementById('optLLM').checked
+        }
+      };
+
+      // 預先顯示「分析中」
+      document.getElementById('summaryBox').textContent   = "分析中…";
+      document.getElementById('structureBox').textContent = "分析中…";
+      document.getElementById('conceptBox').textContent   = "分析中…";
+      document.getElementById('semanticBox').textContent  = "分析中…";
+
+      google.script.run
+        .withSuccessHandler(function(result){
+          renderResult(result);
+        })
+        .withFailureHandler(function(err){
+  document.getElementById('summaryBox').textContent = "錯誤：" + (err && err.message ? err.message : err);
+  document.getElementById('structureBox').textContent = "分析失敗";
+  document.getElementById('conceptBox').textContent = "分析失敗";
+  document.getElementById('semanticBox').textContent = "分析失敗";
+})
+
+        .compareTexts(payload);
+    }
+
+    // === 下載結果按鈕 ===
+    // 我們會把最後一次分析結果暫存在 window.lastResult
+    function downloadResult(){
+      if(!window.lastResult){
+        alert("目前沒有可下載的結果，請先執行分析。");
+        return;
+      }
+      const blob = new Blob(
+        [JSON.stringify(window.lastResult,null,2)],
+        {type:"application/json;charset=utf-8"}
+      );
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = "text_similarity_result.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // === 把後端結果放進畫面 ===
+    // === 把後端結果放進畫面 ===
+    function renderResult(result){
+      window.lastResult = result; // 給下載用
+
+      // 1. 總覽
+      let summaryText = "";
+      summaryText += "整體結構相似度(示意)：" + (result.summary?.structureScore ?? "N/A") + "\n";
+      summaryText += "整體概念相似度：" + (result.summary?.conceptScore ?? "N/A") + "\n";
+      summaryText += "整體語意相似度：" + (result.summary?.semanticScore ?? "N/A") + "\n";
+      document.getElementById('summaryBox').textContent = summaryText || "無資料";
+
+      // 2. 結構層
+      let structureText = "";
+      if(result.structure){
+        if(result.structure.jaccard !== undefined)
+          structureText += "Jaccard：" + result.structure.jaccard + "\n";
+        if(result.structure.cosine !== undefined)
+          structureText += "Cosine(TF)：" + result.structure.cosine + "\n";
+        if(result.structure.editSim !== undefined)
+          structureText += "Levenshtein 相似度：" + result.structure.editSim + "\n";
+        if(result.structure.ngramOverlap !== undefined)
+          structureText += "N-gram Overlap：" + result.structure.ngramOverlap + "\n";
+        if(Array.isArray(result.structure.sentencePairs)){
+          structureText += "\n逐句近似句對照（摘要）：\n";
+          result.structure.sentencePairs.slice(0,3).forEach(p=>{
+            structureText += "A: " + p.a + "\nB: " + p.b + "\n相似度：" + p.sim + "\n---\n";
+          });
+        }
+      }
+      document.getElementById('structureBox').textContent = structureText || "無資料";
+
+      // 3. 概念層
+            // 3. 概念層：先顯示「A vs B 概念重疊」，再顯示「課綱對齊」
+      let conceptText = "";
+
+      if (result.concept) {
+        // (A) A vs B 概念相似度摘要
+        const ab = result.concept.conceptABSummary;
+        if (ab) {
+          conceptText += "【概念相似度（A vs B）】\n";
+          conceptText += "概念重疊分數(0~1)："
+                       + (ab.overlapScore !== undefined ? ab.overlapScore : "N/A") + "\n";
+
+          // 共通概念
+          if (Array.isArray(ab.commonTop) && ab.commonTop.length > 0) {
+            conceptText += "A&B共同關鍵概念（前20）：\n";
+            ab.commonTop.forEach(function(w){
+              conceptText += " - " + w + "\n";
+            });
+          } else {
+            conceptText += "A&B共同關鍵概念（前20）：\n - 無\n";
+          }
+
+          // 只有A
+          if (Array.isArray(ab.onlyA) && ab.onlyA.length > 0) {
+            conceptText += "僅A有的重要概念（前20）：\n";
+            ab.onlyA.forEach(function(w){
+              conceptText += " - " + w + "\n";
+            });
+          } else {
+            conceptText += "僅A有的重要概念（前20）：\n - 無\n";
+          }
+
+          // 只有B
+          if (Array.isArray(ab.onlyB) && ab.onlyB.length > 0) {
+            conceptText += "僅B有的重要概念（前20）：\n";
+            ab.onlyB.forEach(function(w){
+              conceptText += " - " + w + "\n";
+            });
+          } else {
+            conceptText += "僅B有的重要概念（前20）：\n - 無\n";
+          }
+
+          conceptText += "\n"; // 分段空行
+        }
+
+        // (B) 課綱對齊分析
+        if (Array.isArray(result.concept.curriculumStages)) {
+          conceptText += "【課綱對齊分析（以文本A檢查課綱）】\n";
+
+          result.concept.curriculumStages.forEach(stageBlock => {
+            // 安全防呆
+            const stageName   = stageBlock.stage || "(無名稱)";
+            const coverageVal = (stageBlock.coverage !== undefined ? stageBlock.coverage : "N/A");
+            const hitCount    = stageBlock.matchedConcepts ? stageBlock.matchedConcepts.length : 0;
+            const totalCount  = stageBlock.totalConcepts !== undefined ? stageBlock.totalConcepts : "N/A";
+
+            conceptText += "Stage：" + stageName
+                        + " | 涵蓋率：" + coverageVal
+                        + " (命中 " + hitCount + " / 總數 " + totalCount + ")\n";
+
+            if (!stageBlock.matchedConcepts || stageBlock.matchedConcepts.length === 0) {
+              conceptText += "  （此文本未命中該階段任何概念）\n\n";
+            } else {
+              // 只列出命中條目的「跨科概念 + 學習內容」精簡版
+              stageBlock.matchedConcepts.forEach(c => {
+                const showConcept = (c.conceptBrief && c.conceptBrief.trim())
+                                    ? c.conceptBrief
+                                    : (c.conceptClean && c.conceptClean.trim()
+                                        ? c.conceptClean
+                                        : (c.concept || ""));
+
+                const showContent = (c.contentBrief && c.contentBrief.trim())
+                                    ? c.contentBrief
+                                    : (c.contentClean && c.contentClean.trim()
+                                        ? c.contentClean
+                                        : (c.content || ""));
+
+                if (showConcept || showContent) {
+                  conceptText += "  - " + showConcept;
+                  if (showContent) {
+                    conceptText += "；" + showContent;
+                  }
+                  conceptText += "\n";
+                }
+              });
+              conceptText += "\n";
+            }
+          });
+        }
+      }
+
+      document.getElementById('conceptBox').textContent = conceptText || "無資料";
+
+
+      // 4. 語意層
+      let semanticText = "";
+      if(result.semantic){
+        if(result.semantic.embeddingCosine !== undefined)
+          semanticText += "Embedding Cosine：" + result.semantic.embeddingCosine + "\n\n";
+        if(result.semantic.llmReview){
+          semanticText += "LLM評語：\n";
+          semanticText += "相似度(0-1)：" + result.semantic.llmReview.similarity_score + "\n";
+          semanticText += "共同主題：" + result.semantic.llmReview.common_themes?.join(", ") + "\n";
+          semanticText += "差異重點：" + result.semantic.llmReview.differences?.join(", ") + "\n";
+          semanticText += "教師回饋建議：" + result.semantic.llmReview.feedback_for_teacher + "\n";
+        }
+        if(result.semantic.bertScore !== undefined){
+          semanticText += "\nBERTScore(語意對齊指標)：" + result.semantic.bertScore + "\n";
+        }
+      }
+      document.getElementById('semanticBox').textContent = semanticText || "未啟用或無資料";
+    }
+
+  </script>
+</body>
+</html>
+
