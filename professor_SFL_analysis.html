@@ -122,7 +122,12 @@
 </head>
 <body>
 <div class="container">
+  <div style="margin-bottom:16px;">
+    <button class="btn" onclick="goBackProfessor()">返回研究中心</button>
+  </div>
+
   <h1>SFL 語義分析（Systemic Functional Linguistics Semantic Analysis）</h1>
+
 
   <div class="card">
     <div class="row-inline">
@@ -157,26 +162,86 @@
 </div>
 
 <script>
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxbW0q_tOM6woE9lt6r9Nbf-MUIdS4jgTYsWVTj-kViSDQ2Ymu4RmKzPrrLMjO2FSq6uQ/exec";
 const $ = id => document.getElementById(id);
+function getCurrentUser() {
+  try {
+    return JSON.parse(sessionStorage.getItem("currentUser") || "null");
+  } catch {
+    return null;
+  }
+}
 
-$('analyzeBtn').addEventListener('click', ()=>{
+function guardProfessorPage() {
+  const user = getCurrentUser();
+  const role = user?.role || user?.Role || "";
+  const allowedRoles = new Set(["researcher", "professor"]);
+
+  if (!user || !allowedRoles.has(role)) {
+    sessionStorage.setItem("redirectMsg", "請先從首頁登入教授帳號，再使用 SFL 語義分析。");
+    window.location.replace("index.html");
+    return false;
+  }
+  return true;
+}
+
+function goBackProfessor() {
+  window.location.href = "professor.html";
+}
+
+function escapeHtml(s) {
+  return String(s || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+
+$('analyzeBtn').addEventListener('click', async () => {
   const text = $('text').value.trim();
   const lang = $('lang').value;
   const module = $('module').value;
-  if(!text){ alert('請先貼上文本'); return; }
 
-  setBusy(true,'分析中…');
-  google.script.run
-    .withSuccessHandler(data=>{
-      if(!data || !data.ok){ setBusy(false,'錯誤：'+(data?.error||'未知')); return; }
-      renderResults(data.sfl.rows||[], module);
-      window.__csv = data.csv || "";
-      $('downloadCSV').disabled = !window.__csv;
-      setBusy(false,`完成 · 語言：${data.lang||'未標示'}`);
-    })
-    .withFailureHandler(err=>setBusy(false,'GAS 錯誤：'+(err?.message||err)))
-    .apiAnalyze(text, lang, module);
+  if (!text) {
+    alert('請先貼上文本');
+    return;
+  }
+
+  setBusy(true, '分析中…');
+  $('results').innerHTML = '';
+
+  try {
+    const response = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify({ text, lang, module })
+    });
+
+    if (!response.ok) {
+      throw new Error('HTTP ' + response.status);
+    }
+
+    const data = await response.json();
+
+    if (!data || data.ok === false) {
+      setBusy(false, '錯誤：' + (data?.error || '未知'));
+      return;
+    }
+
+    renderResults((data.sfl && data.sfl.rows) || [], module);
+    window.__csv = data.csv || '';
+    $('downloadCSV').disabled = !window.__csv;
+    setBusy(false, `完成 · 語言：${data.lang || '未標示'}`);
+  } catch (err) {
+    const msg = err && err.message ? err.message : String(err);
+    setBusy(false, '連線錯誤：' + msg);
+  }
 });
+
 
 $('downloadCSV').addEventListener('click', ()=>{
   if(!window.__csv) return;
@@ -216,11 +281,14 @@ function renderIdeational(rows){
   const tb=card.querySelector('tbody');
   rows.forEach(r=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`
-      <td>${r.sent_id||''}</td><td>${r.clause_id||''}</td><td>${r.text||''}</td>
-      <td>${formatParticipants(r.participants)}</td>
-      <td>${r.process_type||''}：${r.process_verb||''}</td>
-      <td>${formatCirc(r.circumstances)}</td>`;
+tr.innerHTML=`
+  <td>${escapeHtml(r.sent_id||'')}</td>
+  <td>${escapeHtml(r.clause_id||'')}</td>
+  <td>${escapeHtml(r.text||'')}</td>
+  <td>${escapeHtml(formatParticipants(r.participants))}</td>
+  <td>${escapeHtml(r.process_type||'')}：${escapeHtml(r.process_verb||'')}</td>
+  <td>${escapeHtml(formatCirc(r.circumstances))}</td>`;
+
     tb.appendChild(tr);
   });
   return card;
@@ -241,13 +309,18 @@ function renderInterpersonal(rows){
   rows.forEach(r=>{
     const tr=document.createElement('tr');
     tr.innerHTML=`
-      <td>${r.sent_id||''}</td><td>${r.clause_id||''}</td><td>${r.text||''}</td>
-      <td>${r.mood||''}</td><td>${r.modality_type||''}</td>
-      <td>${r.modality_strength||''}</td><td>${r.modality_cue||''}</td>`;
+      <td>${escapeHtml(r.sent_id||'')}</td>
+      <td>${escapeHtml(r.clause_id||'')}</td>
+      <td>${escapeHtml(r.text||'')}</td>
+      <td>${escapeHtml(r.mood||'')}</td>
+      <td>${escapeHtml(r.modality_type||'')}</td>
+      <td>${escapeHtml(r.modality_strength||'')}</td>
+      <td>${escapeHtml(r.modality_cue||'')}</td>`;
     tb.appendChild(tr);
   });
   return card;
 }
+
 
 // === 語篇功能 ===
 function renderTextual(rows){
@@ -266,9 +339,13 @@ function renderTextual(rows){
     const themes=Array.isArray(r.themes)?r.themes.map(t=>t.type?`${t.type}:${t.span}`:t.span).join('｜'):'';
     const tr=document.createElement('tr');
     tr.innerHTML=`
-      <td>${r.sent_id||''}</td><td>${r.clause_id||''}</td><td>${r.text||''}</td>
-      <td>${themes}</td><td>${r.rheme||''}</td>
-      <td>${r.conj_type||''}</td><td>${r.conj_token||''}</td>`;
+  <td>${escapeHtml(r.sent_id||'')}</td>
+  <td>${escapeHtml(r.clause_id||'')}</td>
+  <td>${escapeHtml(r.text||'')}</td>
+  <td>${escapeHtml(themes)}</td>
+  <td>${escapeHtml(r.rheme||'')}</td>
+  <td>${escapeHtml(r.conj_type||'')}</td>
+  <td>${escapeHtml(r.conj_token||'')}</td>`;
     tb.appendChild(tr);
   });
   return card;
@@ -286,7 +363,12 @@ function formatCirc(cs){
   if(cs.length===1 && cs[0]?.type==='－') return '－';
   return cs.map(c=>`${c.type||''}:${c.span||''}`).join('｜');
 }
+
+if (guardProfessorPage()) {
+  sessionStorage.setItem("last_professor_feature", "sfl_analysis");
+}
 </script>
+
 </body>
 </html>
 
