@@ -258,9 +258,10 @@ button.btnGhost:disabled{
     <!-- ===== Header + Text Inputs ===== -->
     <section class="panel">
       <h1>文本相似度分析 Text Similarity Analysis</h1>
-      <div class="sub">
-        貼上兩段文本，按「分析」，系統會呈現文本結構、概念及語意之相似度指標。
-      </div>
+<div class="sub">
+  貼上兩段文本，按「分析」，系統會呈現文本結構、概念及語意之相似度指標。結果供教學與研究輔助參考，不作為唯一判定依據。
+</div>
+
 
       <!-- 兩段文本輸入 -->
       <div class="inputs">
@@ -319,26 +320,26 @@ button.btnGhost:disabled{
           </label>
         </div>
 
-        <!-- 語意相似性 Semantic Similarity -->
-        <div class="option-group">
-          <div class="option-title">語意相似性</div>
+<!-- 語意相似性 Semantic Similarity -->
+<div class="option-group">
+  <div class="option-title">語意相似性</div>
 
-          <label class="check-row">
-            <input type="checkbox" id="optEmbed" />
-            <span>Embedding Similarity（語意向量餘弦）</span>
-          </label>
+  <label class="check-row">
+    <input type="checkbox" id="optEmbed" />
+    <span>詞頻向量餘弦相似度</span>
+  </label>
 
-          <label class="check-row">
-            <input type="checkbox" id="optBERT" />
-            <span>BERT model（詞級語意對齊）</span>
-          </label>
+  <label class="check-row">
+    <input type="checkbox" id="optBERT" />
+    <span>AI語意補充分數</span>
+  </label>
 
-          <label class="check-row">
-            <input type="checkbox" id="optLLM" />
-            <span>LLM-based evaluation（大型語言模型評估）</span>
-          </label>
-        </div>
-      </div>
+  <label class="check-row">
+    <input type="checkbox" id="optLLM" />
+    <span>LLM大型語言模型評估</span>
+  </label>
+</div>
+
 
       <!-- 動作列：分析、下載結果 -->
       <div class="action-row">
@@ -606,9 +607,9 @@ document.getElementById("downloadBtn").disabled = true;
     document.getElementById("conceptBox").textContent = conceptText || "無資料";
 
     let semanticText = "";
-    if (semantic.embeddingCosine !== undefined) {
-      semanticText += "Embedding Cosine：" + semantic.embeddingCosine + "\n\n";
-    }
+if (semantic.embeddingCosine !== undefined) {
+  semanticText += "詞頻向量餘弦相似度：" + semantic.embeddingCosine + "\n\n";
+}
 
     if (semantic.llmReview) {
       semanticText += "LLM評語：\n";
@@ -618,9 +619,10 @@ document.getElementById("downloadBtn").disabled = true;
       semanticText += "教師回饋建議：" + (semantic.llmReview.feedback_for_teacher || "無") + "\n";
     }
 
-    if (semantic.bertScore !== undefined && semantic.bertScore !== null) {
-      semanticText += "\nBERTScore(語意對齊指標)：" + semantic.bertScore + "\n";
-    }
+if (semantic.bertScore !== undefined && semantic.bertScore !== null) {
+  semanticText += "\nAI語意補充分數：" + semantic.bertScore + "\n";
+}
+
 
     document.getElementById("semanticBox").textContent = semanticText || "未啟用或無資料";
   }
