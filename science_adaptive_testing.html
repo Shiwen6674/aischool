@@ -1339,48 +1339,73 @@ function processStem(rawStem) {
       
 // 1) 把 feedback_student 可能是「物件」或「JSON字串」統一成物件
 function normalizeAiFeedback(aiDataRaw){
-  if (!aiDataRaw) return { summary:"", weakness_analysis:"", action_plan:[] };
+  const empty = { summary:"", weakness_analysis:"", action_plan:[] };
 
-  // 已經是物件
-  if (typeof aiDataRaw === "object") {
+  function toNormalized(obj){
+    if (!obj || typeof obj !== "object") return empty;
+
+    const summary =
+      obj.summary ||
+      obj.overview ||
+      obj["總體評估"] ||
+      obj["整體評估"] ||
+      "";
+
+    const weakness =
+      obj.weakness_analysis ||
+      obj.misconception_analysis ||
+      obj.misconceptions ||
+      obj["迷思分析"] ||
+      obj["概念迷思"] ||
+      "";
+
+    let actions =
+      Array.isArray(obj.action_plan) ? obj.action_plan :
+      Array.isArray(obj.recommendations) ? obj.recommendations :
+      Array.isArray(obj["學習建議"]) ? obj["學習建議"] :
+      [];
+
+    if (!actions.length && typeof obj.action_plan === "string") {
+      actions = obj.action_plan.split(/\n|；|;/).map(s => s.trim()).filter(Boolean);
+    }
+
+    if (!actions.length && typeof obj["學習建議"] === "string") {
+      actions = obj["學習建議"].split(/\n|；|;/).map(s => s.trim()).filter(Boolean);
+    }
+
     return {
-      summary: aiDataRaw.summary || "",
-      weakness_analysis: aiDataRaw.weakness_analysis || "",
-      action_plan: Array.isArray(aiDataRaw.action_plan) ? aiDataRaw.action_plan : []
+      summary: String(summary || "").trim(),
+      weakness_analysis: String(weakness || "").trim(),
+      action_plan: actions.map(x => String(x || "").trim()).filter(Boolean)
     };
   }
 
-  // 可能是 JSON 字串
+  if (!aiDataRaw) return empty;
+
+  if (typeof aiDataRaw === "object") {
+    return toNormalized(aiDataRaw);
+  }
+
   if (typeof aiDataRaw === "string") {
     const s = aiDataRaw.trim();
+    if (!s) return empty;
 
-    // 第一層 parse
     try {
       const obj = JSON.parse(s);
 
-      // 有些後台會回傳「被包一層字串」=> 再 parse 一次
       if (typeof obj === "string") {
-        const obj2 = JSON.parse(obj);
-        return {
-          summary: obj2.summary || "",
-          weakness_analysis: obj2.weakness_analysis || "",
-          action_plan: Array.isArray(obj2.action_plan) ? obj2.action_plan : []
-        };
+        return toNormalized(JSON.parse(obj));
       }
 
-      return {
-        summary: obj.summary || "",
-        weakness_analysis: obj.weakness_analysis || "",
-        action_plan: Array.isArray(obj.action_plan) ? obj.action_plan : []
-      };
-    } catch(e) {
-      // parse 失敗，就回傳空（避免 UI 爆炸）
-      return { summary:"", weakness_analysis: s, action_plan:[] };
+      return toNormalized(obj);
+    } catch (e) {
+      return { summary:"", weakness_analysis:s, action_plan:[] };
     }
   }
 
-  return { summary:"", weakness_analysis:"", action_plan:[] };
+  return empty;
 }
+
 
 
 // 2) 把 weakness_analysis 用【小標題】切段，方便做卡片 UI
@@ -1546,13 +1571,32 @@ async function finishTest() {
       student_id: CAT.student_id,
       ai_feedback: true
     });
+console.log("finishCAT 回傳資料 =", json);
 
     document.getElementById("secQuiz").classList.add("hidden");
     document.getElementById("secResult").classList.remove("hidden");
 
-    const correct = json.correct_count || 0;
-    const total = json.total_count || 0;
-    const score100 = json.score_100 || 0;
+const correct = Number(
+  json.correct_count ??
+  json.data?.correct_count ??
+  json.result?.correct_count ??
+  0
+);
+
+const total = Number(
+  json.total_count ??
+  json.data?.total_count ??
+  json.result?.total_count ??
+  0
+);
+
+const score100 = Number(
+  json.score_100 ??
+  json.data?.score_100 ??
+  json.result?.score_100 ??
+  0
+);
+
     const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
 
     document.getElementById("resScore").textContent = `${accuracy}%`;
@@ -1569,7 +1613,28 @@ async function finishTest() {
     pdfFirstPageContainer.innerHTML = "";
     document.querySelectorAll(".dynamic-wrong-page").forEach(el => el.remove());
 
-    const wrongItems = Array.isArray(json.wrong_items) ? json.wrong_items : [];
+const wrongItemsRaw =
+  json.wrong_items ??
+  json.data?.wrong_items ??
+  json.result?.wrong_items ??
+  [];
+
+let wrongItems = [];
+
+if (Array.isArray(wrongItemsRaw)) {
+  wrongItems = wrongItemsRaw;
+} else if (typeof wrongItemsRaw === "string") {
+  try {
+    wrongItems = JSON.parse(wrongItemsRaw);
+  } catch {
+    wrongItems = [];
+  }
+}
+
+console.log("wrongItemsRaw =", wrongItemsRaw);
+console.log("wrongItems =", wrongItems);
+
+
 
     if (!wrongItems.length) {
       // 全對的情況
@@ -1656,7 +1721,23 @@ async function finishTest() {
     }
 
     // ... (後續 AI 分析部分保持不變) ...
-    const aiObj = normalizeAiFeedback(json.feedback_student);
+    const aiRaw =
+  json.feedback_student ??
+  json.data?.feedback_student ??
+  json.result?.feedback_student ??
+  json.ai_feedback ??
+  json.data?.ai_feedback ??
+  json.result?.ai_feedback ??
+  json.feedback ??
+  json.data?.feedback ??
+  json.result?.feedback ??
+  "";
+
+const aiObj = normalizeAiFeedback(aiRaw);
+
+console.log("AI 原始欄位 aiRaw =", aiRaw);
+console.log("AI 解析後 aiObj =", aiObj);
+
     const webAiBox = document.getElementById("resAiFeedback");
     const pdfAiBox = document.getElementById("pdf-advice-container");
 
@@ -1702,16 +1783,16 @@ async function finishTest() {
       <div class="grid gap-4">
         <div class="rounded-2xl border border-blue-500/30 bg-blue-500/10 p-5">
           <div class="text-base font-black text-blue-300 mb-2">總體評估</div>
-          <div class="text-sm leading-relaxed text-slate-200 whitespace-pre-line">${overviewText}</div>
+          <div class="text-sm leading-relaxed text-slate-200 whitespace-pre-line">${safeTextHtml(overviewText)}</div>
         </div>
         <div class="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5">
           <div class="text-base font-black text-amber-300 mb-2">迷思分析</div>
-          <div class="text-sm leading-relaxed text-slate-200 whitespace-pre-line">${misconceptionText}</div>
+          <div class="text-sm leading-relaxed text-slate-200 whitespace-pre-line">${safeTextHtml(misconceptionText)}</div>
         </div>
         <div class="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5">
           <div class="text-base font-black text-emerald-300 mb-2">學習建議</div>
           <ul class="list-disc pl-5 space-y-2 text-sm leading-relaxed text-slate-200">
-            ${actions.map(a => `<li>${a}</li>`).join("")}
+            ${actions.map(a => `<li>${safeTextHtml(a)}</li>`).join("")}
           </ul>
         </div>
       </div>
@@ -1810,6 +1891,15 @@ function generateWebWrongItemHtml(w, qNum) {
         </div>
       </div>
     `;
+}
+function safeTextHtml(text) {
+  return String(text || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+    .replace(/\n/g, "<br>");
 }
 
     function updatePdfInfo(score, correct, total) {
