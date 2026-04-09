@@ -12,6 +12,29 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@500;700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+ <script>
+  const PAGE_NAME = "professor_wordcloud.html";
+  const ALLOWED_ROLES = new Set(["researcher", "professor"]);
+
+  function getCurrentUser() {
+    try {
+      return JSON.parse(sessionStorage.getItem("currentUser") || "null");
+    } catch {
+      return null;
+    }
+  }
+
+  function guardProfessorPage() {
+    const user = getCurrentUser();
+    if (!user || !ALLOWED_ROLES.has(user.role)) {
+      sessionStorage.setItem("redirectMsg", "請先從首頁登入教授帳號，再使用文字雲工具。");
+      window.location.replace("index.html");
+      return null;
+    }
+    return user;
+  }
+</script>
+
   <script>
     tailwind.config = {
       theme: {
@@ -758,6 +781,7 @@
         return pack[key] || this.translations['zh-TW'][key] || key;
       },
       init() {
+        sessionStorage.setItem("last_professor_feature", "wordcloud");
         this.bindEvents();
         this.setupBackLink();
         this.applyTranslations();
@@ -1257,7 +1281,8 @@
         this.state.toastTimer = window.setTimeout(() => toast.classList.remove('show'), 2600);
       }
     };
-    App.init();
+    const currentUser = guardProfessorPage();
+if (currentUser) App.init();
   </script>
 </body>
 </html>
