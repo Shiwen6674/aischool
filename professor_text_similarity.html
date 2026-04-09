@@ -5,10 +5,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>文本相似度分析 Text Similarity Analysis</title>
 
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@600;700&family=Noto+Serif+TC:wght@400;600;700;900&display=swap" rel="stylesheet">
+
   <style>
     *{
-  box-sizing:border-box;
-}
+      box-sizing:border-box;
+    }
 
     :root{
       --bg:#f9f8f6;
@@ -21,10 +23,10 @@
     body{
       background:var(--bg);
       color:var(--fg);
-      font-family:"Noto Serif CJK JP","Microsoft JhengHei","微軟正黑體",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+      font-family:"Noto Serif TC","Microsoft JhengHei","微軟正黑體",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
       margin:0;
       padding:24px;
-      line-height:1.5;
+      line-height:1.6;
     }
 
     .wrap{
@@ -33,18 +35,20 @@
     }
 
     h1{
-      font-size:1.2rem;
-      letter-spacing:0.05em;
-      margin:0 0 4px 0;
-      color:#2a2a2a;
-      font-weight:600;
+      font-family:"Noto Serif TC","Crimson Text","Times New Roman",serif;
+      font-size:2rem;
+      letter-spacing:0.02em;
+      margin:0 0 8px 0;
+      color:#1f2937;
+      font-weight:700;
+      line-height:1.25;
     }
 
     .sub{
-      font-size:.9rem;
+      font-size:.95rem;
       color:var(--muted);
-      margin-bottom:24px;
-      line-height:1.4;
+      margin-bottom:20px;
+      line-height:1.6;
     }
 
     .panel{
@@ -56,34 +60,34 @@
       margin-bottom:24px;
     }
 
-.inputs{
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:center;
-  gap:24px;
-  max-width:1100px;
-  margin:0 auto;
-}
+    .inputs{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:24px;
+      max-width:1100px;
+      margin:0 auto;
+    }
 
-.col{
-  flex:1 1 460px;
-  max-width:520px;
-  display:flex;
-  flex-direction:column;
-  min-width:280px;
-}
+    .col{
+      flex:1 1 460px;
+      max-width:520px;
+      display:flex;
+      flex-direction:column;
+      min-width:280px;
+    }
 
-@media (max-width: 768px){
-  .inputs{
-    flex-direction:column;
-    gap:16px;
-  }
+    @media (max-width: 768px){
+      .inputs{
+        flex-direction:column;
+        gap:16px;
+      }
 
-  .col{
-    max-width:100%;
-    min-width:100%;
-  }
-}
+      .col{
+        max-width:100%;
+        min-width:100%;
+      }
+    }
 
     label{
       font-size:.9rem;
@@ -100,10 +104,16 @@
       border-radius:10px;
       padding:12px;
       font-size:.9rem;
-      line-height:1.5;
-      font-family:"Noto Serif CJK JP","Microsoft JhengHei","微軟正黑體",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+      line-height:1.6;
+      font-family:"Noto Serif TC","Microsoft JhengHei","微軟正黑體",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
       background:#fff;
       color:#2a2a2a;
+    }
+
+    textarea:focus{
+      outline:none;
+      border-color:#8b5cf6;
+      box-shadow:0 0 0 3px rgba(139,92,246,.12);
     }
 
     .small{
@@ -120,7 +130,6 @@
       margin-top:4px;
     }
 
-    /* === 選項列 === */
     .options-block{
       display:flex;
       flex-wrap:wrap;
@@ -140,9 +149,9 @@
     }
 
     .option-title{
-      font-size:.8rem;
-      font-weight:600;
-      color:#2a2a2a;
+      font-size:.82rem;
+      font-weight:700;
+      color:#1f2937;
       margin-bottom:8px;
       letter-spacing:.03em;
     }
@@ -152,8 +161,8 @@
       align-items:flex-start;
       gap:8px;
       margin-bottom:6px;
-      line-height:1.4;
-      font-size:.8rem;
+      line-height:1.45;
+      font-size:.82rem;
       color:#2a2a2a;
     }
 
@@ -161,12 +170,11 @@
       margin-top:2px;
     }
 
-    /* === 動作列 === */
     .action-row{
       display:flex;
       flex-wrap:wrap;
       align-items:center;
-      gap:16px;
+      gap:12px;
       margin-top:16px;
       font-size:.8rem;
       color:#444;
@@ -182,15 +190,16 @@
       line-height:1.2rem;
       cursor:pointer;
     }
+
     button.btnMain:hover{
       background:#444;
     }
-    button.btnMain:disabled{
-  background:#999;
-  cursor:not-allowed;
-  opacity:.7;
-}
 
+    button.btnMain:disabled{
+      background:#999;
+      cursor:not-allowed;
+      opacity:.7;
+    }
 
     button.btnGhost{
       background:#fff;
@@ -202,18 +211,18 @@
       line-height:1.2rem;
       cursor:pointer;
     }
+
     button.btnGhost:hover{
       background:#f0efec;
     }
-button.btnGhost:disabled{
-  color:#999;
-  background:#f3f3f3;
-  cursor:not-allowed;
-  opacity:.7;
-}
 
-    
-    /* === 結果卡片區（上下直排4塊） === */
+    button.btnGhost:disabled{
+      color:#999;
+      background:#f3f3f3;
+      cursor:not-allowed;
+      opacity:.7;
+    }
+
     .results-stack{
       display:flex;
       flex-direction:column;
@@ -227,23 +236,24 @@ button.btnGhost:disabled{
       padding:16px;
       box-shadow:0 2px 6px rgba(0,0,0,.04);
       font-size:.85rem;
-      line-height:1.4;
+      line-height:1.5;
     }
 
     .card h2{
       margin:0 0 8px 0;
-      font-size:.9rem;
-      font-weight:600;
-      color:#2a2a2a;
-      letter-spacing:.03em;
+      font-size:.95rem;
+      font-weight:700;
+      color:#1f2937;
+      letter-spacing:.02em;
     }
 
     .results-area{
-      font-size:.8rem;
+      font-size:.83rem;
       color:#2a2a2a;
       white-space:pre-wrap;
       word-break:break-word;
       min-height:60px;
+      line-height:1.65;
     }
   </style>
 </head>
@@ -254,16 +264,17 @@ button.btnGhost:disabled{
       <button class="btnGhost" onclick="goBackProfessor()">返回研究中心</button>
     </div>
 
-
-    <!-- ===== Header + Text Inputs ===== -->
     <section class="panel">
       <h1>文本相似度分析 Text Similarity Analysis</h1>
-<div class="sub">
-  貼上兩段文本，按「分析」，系統會呈現文本結構、概念及語意之相似度指標。結果供教學與研究輔助參考，不作為唯一判定依據。
-</div>
+      <div class="sub">
+        貼上兩段文本，按「分析」，系統會呈現表層文本相似性、關鍵概念重疊及語意詮釋結果。結果供教學與研究輔助參考，不作為唯一判定依據。
+      </div>
 
+      <div class="action-row" style="margin-top:0; margin-bottom:16px;">
+        <button class="btnGhost" type="button" onclick="loadExamplePair()">載入範例 A / B</button>
+        <button class="btnGhost" type="button" onclick="clearTexts()">清空文本</button>
+      </div>
 
-      <!-- 兩段文本輸入 -->
       <div class="inputs">
         <div class="col">
           <label for="textA">文本 A</label>
@@ -282,12 +293,9 @@ button.btnGhost:disabled{
         </div>
       </div>
 
-      <!-- 選項區：三個層（結構層 / 概念層 / 語意層） -->
       <div class="options-block">
-
-        <!-- 結構相似性 Structure Similarity -->
         <div class="option-group">
-          <div class="option-title">結構相似性</div>
+          <div class="option-title">表層文本相似性</div>
 
           <label class="check-row">
             <input type="checkbox" id="optJaccard" checked />
@@ -296,12 +304,12 @@ button.btnGhost:disabled{
 
           <label class="check-row">
             <input type="checkbox" id="optCosine" checked />
-            <span>Cosine（詞頻向量餘弦相似度）</span>
+            <span>TF Cosine（詞頻向量餘弦相似度）</span>
           </label>
 
           <label class="check-row">
             <input type="checkbox" id="optEdit" checked />
-            <span>Levenshtein Distance（編輯距離相似度）</span>
+            <span>Levenshtein Similarity（編輯距離相似度）</span>
           </label>
 
           <label class="check-row">
@@ -310,47 +318,31 @@ button.btnGhost:disabled{
           </label>
         </div>
 
-        <!-- 概念相似性 Concept Similarity -->
         <div class="option-group">
-          <div class="option-title">概念相似性</div>
+          <div class="option-title">關鍵概念重疊</div>
 
           <label class="check-row">
             <input type="checkbox" id="optConcept" checked />
-            <span>Concept Coverage（核心概念覆蓋）</span>
+            <span>Key Concept Coverage（核心概念覆蓋）</span>
           </label>
         </div>
 
-<!-- 語意相似性 Semantic Similarity -->
-<div class="option-group">
-  <div class="option-title">語意相似性</div>
+        <div class="option-group">
+          <div class="option-title">語意詮釋</div>
 
-  <label class="check-row">
-    <input type="checkbox" id="optEmbed" />
-    <span>詞頻向量餘弦相似度</span>
-  </label>
+          <label class="check-row">
+            <input type="checkbox" id="optLLM" />
+            <span>LLM 質性評閱（主題、差異、教學回饋）</span>
+          </label>
+        </div>
+      </div>
 
-  <label class="check-row">
-    <input type="checkbox" id="optBERT" />
-    <span>AI語意補充分數</span>
-  </label>
-
-  <label class="check-row">
-    <input type="checkbox" id="optLLM" />
-    <span>LLM大型語言模型評估</span>
-  </label>
-</div>
-
-
-      <!-- 動作列：分析、下載結果 -->
       <div class="action-row">
         <button id="analyzeBtn" class="btnMain" onclick="runAnalysis()">分析</button>
         <button id="downloadBtn" class="btnGhost" onclick="downloadResult()" disabled>下載 JSON</button>
-
       </div>
     </section>
 
-
-    <!-- ===== 結果區：上下四塊 ===== -->
     <section class="results-stack">
       <div class="card">
         <h2>總覽 Summary</h2>
@@ -358,281 +350,286 @@ button.btnGhost:disabled{
       </div>
 
       <div class="card">
-        <h2>結構相似度分析 Structure Similarity</h2>
+        <h2>表層文本相似性 Surface Similarity</h2>
         <div id="structureBox" class="results-area">尚未分析</div>
       </div>
 
       <div class="card">
-        <h2>概念相似度分析 Concept Similarity</h2>
+        <h2>關鍵概念重疊 Key Concept Overlap</h2>
         <div id="conceptBox" class="results-area">尚未分析</div>
       </div>
 
       <div class="card">
-        <h2>語意相似度分析 Semantic Similarity</h2>
+        <h2>語意詮釋 Semantic Interpretation</h2>
         <div id="semanticBox" class="results-area">未啟用或尚未分析</div>
       </div>
     </section>
-
   </div>
 
   <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbwLgjsVkgeRU6XMPNTLJkDpkO7HOuD4mW-RmNG6fExlHuMsmRsl-0YlcrDQ3o51M31psw/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbwLgjsVkgeRU6XMPNTLJkDpkO7HOuD4mW-RmNG6fExlHuMsmRsl-0YlcrDQ3o51M31psw/exec";
 
-  function getCurrentUser() {
-    try {
-      return JSON.parse(sessionStorage.getItem("currentUser") || "null");
-    } catch {
-      return null;
-    }
-  }
-
-function guardProfessorPage() {
-  const user = getCurrentUser();
-  const role = user?.role || user?.Role || "";
-  const allowedRoles = new Set(["researcher", "professor"]);
-
-  if (!user || !allowedRoles.has(role)) {
-    sessionStorage.setItem("redirectMsg", "請先從首頁登入教授帳號，再使用文本相似性分析。");
-    window.location.replace("index.html");
-    return false;
-  }
-  return true;
-}
-
-function goBackProfessor() {
-  window.location.href = "professor.html";
-}
-
-  function updateCounts() {
-    const a = document.getElementById("textA").value;
-    const b = document.getElementById("textB").value;
-    document.getElementById("countA").textContent = "字數：" + a.length;
-    document.getElementById("countB").textContent = "字數：" + b.length;
-  }
-
-  document.getElementById("textA").addEventListener("input", updateCounts);
-  document.getElementById("textB").addEventListener("input", updateCounts);
-
-async function runAnalysis() {
-  const analyzeBtn = document.getElementById("analyzeBtn");
-  const textA = document.getElementById("textA").value || "";
-  const textB = document.getElementById("textB").value || "";
-
-  if (!textA.trim() || !textB.trim()) {
-    alert("請先輸入兩段文本。");
-    return;
-  }
-
-  const payload = {
-    textA,
-    textB,
-    useStructure: {
-      jaccard: document.getElementById("optJaccard").checked,
-      cosine: document.getElementById("optCosine").checked,
-      edit: document.getElementById("optEdit").checked,
-      ngram: document.getElementById("optNgram").checked
-    },
-    useConcept: {
-      conceptCoverage: document.getElementById("optConcept").checked
-    },
-    useSemantic: {
-      embed: document.getElementById("optEmbed").checked,
-      bert: document.getElementById("optBERT").checked,
-      llm: document.getElementById("optLLM").checked
-    }
-  };
-
-  analyzeBtn.disabled = true;
-  analyzeBtn.textContent = "分析中...";
-document.getElementById("downloadBtn").disabled = true;
-
-  document.getElementById("summaryBox").textContent = "分析中…";
-  document.getElementById("structureBox").textContent = "分析中…";
-  document.getElementById("conceptBox").textContent = "分析中…";
-  document.getElementById("semanticBox").textContent = "分析中…";
-
-  try {
-    const response = await fetch(GAS_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      throw new Error("HTTP " + response.status);
+    function getCurrentUser() {
+      try {
+        return JSON.parse(sessionStorage.getItem("currentUser") || "null");
+      } catch {
+        return null;
+      }
     }
 
-    const result = await response.json();
+    function guardProfessorPage() {
+      const user = getCurrentUser();
+      const role = user?.role || user?.Role || "";
+      const allowedRoles = new Set(["researcher", "professor"]);
 
-    if (result.status && result.status !== "success") {
-      throw new Error(result.message || "分析失敗");
+      if (!user || !allowedRoles.has(role)) {
+        sessionStorage.setItem("redirectMsg", "請先從首頁登入教授帳號，再使用文本相似性分析。");
+        window.location.replace("index.html");
+        return false;
+      }
+      return true;
     }
 
-    renderResult(result);
-    document.getElementById("downloadBtn").disabled = false;
-
-  } catch (err) {
-    const rawMsg = err && err.message ? err.message : String(err);
-    let friendlyMsg = "目前無法連線到分析服務，請稍後再試。";
-
-    if (rawMsg.includes("HTTP 404")) {
-      friendlyMsg = "找不到分析服務，請確認 GAS 網址是否正確。";
-    } else if (rawMsg.includes("HTTP 405")) {
-      friendlyMsg = "分析服務不接受這種呼叫方式，請檢查 GAS 的 doPost 設定。";
-    } else if (rawMsg.includes("Failed to fetch")) {
-      friendlyMsg = "連線失敗，請確認網路或 GAS 是否已部署。";
+    function goBackProfessor() {
+      window.location.href = "professor.html";
     }
 
-    document.getElementById("summaryBox").textContent = "錯誤：" + friendlyMsg;
-    document.getElementById("structureBox").textContent = "分析失敗";
-    document.getElementById("conceptBox").textContent = "分析失敗";
-    document.getElementById("semanticBox").textContent = "分析失敗";
-    document.getElementById("downloadBtn").disabled = true;
-
-  } finally {
-    analyzeBtn.disabled = false;
-    analyzeBtn.textContent = "分析";
-  }
-}
-
-  function downloadResult() {
-    if (!window.lastResult) {
-      alert("目前沒有可下載的結果，請先執行分析。");
-      return;
+    function updateCounts() {
+      const a = document.getElementById("textA").value;
+      const b = document.getElementById("textB").value;
+      document.getElementById("countA").textContent = "字數：" + a.length;
+      document.getElementById("countB").textContent = "字數：" + b.length;
     }
 
-    const blob = new Blob(
-      [JSON.stringify(window.lastResult, null, 2)],
-      { type: "application/json;charset=utf-8" }
-    );
+    function loadExamplePair() {
+      document.getElementById("textA").value =
+        "細胞是生物體結構與功能的基本單位。細胞膜負責控制物質進出，細胞核保存遺傳物質 DNA。";
 
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "text_similarity_result.json";
-    a.click();
-    URL.revokeObjectURL(url);
-  }
+      document.getElementById("textB").value =
+        "生物體由細胞構成，細胞是生命活動的基本單位。外層細胞膜調節物質交換，細胞核中含有 DNA，負責遺傳訊息保存。";
 
-  function renderResult(result) {
-    window.lastResult = result;
-
-    const summary = result.summary || {};
-    const structure = result.structure || {};
-    const concept = result.concept || {};
-    const semantic = result.semantic || {};
-
-    let summaryText = "";
-    summaryText += "整體結構相似度：" + (summary.structureScore ?? "N/A") + "\n";
-    summaryText += "整體概念相似度：" + (summary.conceptScore ?? "N/A") + "\n";
-    summaryText += "整體語意相似度：" + (summary.semanticScore ?? "N/A") + "\n";
-    document.getElementById("summaryBox").textContent = summaryText || "無資料";
-
-    let structureText = "";
-    if (structure.jaccard !== undefined) structureText += "Jaccard：" + structure.jaccard + "\n";
-    if (structure.cosine !== undefined) structureText += "Cosine(TF)：" + structure.cosine + "\n";
-    if (structure.editSim !== undefined) structureText += "Levenshtein 相似度：" + structure.editSim + "\n";
-    if (structure.ngramOverlap !== undefined) structureText += "N-gram Overlap：" + structure.ngramOverlap + "\n";
-    if (Array.isArray(structure.sentencePairs) && structure.sentencePairs.length) {
-      structureText += "\n逐句近似句對照（摘要）：\n";
-      structure.sentencePairs.slice(0, 3).forEach(function(p) {
-        structureText += "A: " + (p.a || "") + "\n";
-        structureText += "B: " + (p.b || "") + "\n";
-        structureText += "相似度：" + (p.sim ?? "N/A") + "\n---\n";
-      });
+      updateCounts();
     }
-    document.getElementById("structureBox").textContent = structureText || "無資料";
 
-    let conceptText = "";
-    const ab = concept.conceptABSummary;
-    if (ab) {
-      conceptText += "【概念相似度（A vs B）】\n";
-      conceptText += "概念重疊分數：" + (ab.overlapScore !== undefined ? ab.overlapScore : "N/A") + "\n";
+    function clearTexts() {
+      document.getElementById("textA").value = "";
+      document.getElementById("textB").value = "";
+      updateCounts();
+    }
 
-      conceptText += "A&B共同關鍵概念（前20）：\n";
-      if (Array.isArray(ab.commonTop) && ab.commonTop.length) {
-        ab.commonTop.forEach(function(w) { conceptText += " - " + w + "\n"; });
-      } else {
-        conceptText += " - 無\n";
+    document.getElementById("textA").addEventListener("input", updateCounts);
+    document.getElementById("textB").addEventListener("input", updateCounts);
+
+    async function runAnalysis() {
+      const analyzeBtn = document.getElementById("analyzeBtn");
+      const textA = document.getElementById("textA").value || "";
+      const textB = document.getElementById("textB").value || "";
+
+      if (!textA.trim() || !textB.trim()) {
+        alert("請先輸入兩段文本。");
+        return;
       }
 
-      conceptText += "僅A有的重要概念（前20）：\n";
-      if (Array.isArray(ab.onlyA) && ab.onlyA.length) {
-        ab.onlyA.forEach(function(w) { conceptText += " - " + w + "\n"; });
-      } else {
-        conceptText += " - 無\n";
-      }
-
-      conceptText += "僅B有的重要概念（前20）：\n";
-      if (Array.isArray(ab.onlyB) && ab.onlyB.length) {
-        ab.onlyB.forEach(function(w) { conceptText += " - " + w + "\n"; });
-      } else {
-        conceptText += " - 無\n";
-      }
-
-      conceptText += "\n";
-    }
-
-    if (Array.isArray(concept.curriculumStages) && concept.curriculumStages.length) {
-      conceptText += "【課綱對齊分析（以文本A檢查課綱）】\n";
-
-      concept.curriculumStages.forEach(function(stageBlock) {
-        const stageName = stageBlock.stage || "(無名稱)";
-        const coverageVal = stageBlock.coverage !== undefined ? stageBlock.coverage : "N/A";
-        const hitCount = stageBlock.matchedConcepts ? stageBlock.matchedConcepts.length : 0;
-        const totalCount = stageBlock.totalConcepts !== undefined ? stageBlock.totalConcepts : "N/A";
-
-        conceptText += "Stage：" + stageName + " | 涵蓋率：" + coverageVal + " (命中 " + hitCount + " / 總數 " + totalCount + ")\n";
-
-        if (!stageBlock.matchedConcepts || !stageBlock.matchedConcepts.length) {
-          conceptText += "  （此文本未命中該階段任何概念）\n\n";
-        } else {
-          stageBlock.matchedConcepts.forEach(function(c) {
-            const showConcept = c.conceptBrief || c.conceptClean || c.concept || "";
-            const showContent = c.contentBrief || c.contentClean || c.content || "";
-
-            if (showConcept || showContent) {
-              conceptText += "  - " + showConcept;
-              if (showContent) conceptText += "；" + showContent;
-              conceptText += "\n";
-            }
-          });
-          conceptText += "\n";
+      const payload = {
+        textA,
+        textB,
+        useStructure: {
+          jaccard: document.getElementById("optJaccard").checked,
+          cosine: document.getElementById("optCosine").checked,
+          edit: document.getElementById("optEdit").checked,
+          ngram: document.getElementById("optNgram").checked
+        },
+        useConcept: {
+          conceptCoverage: document.getElementById("optConcept").checked
+        },
+        useSemantic: {
+          llm: document.getElementById("optLLM").checked
         }
-      });
+      };
+
+      analyzeBtn.disabled = true;
+      analyzeBtn.textContent = "分析中...";
+      document.getElementById("downloadBtn").disabled = true;
+
+      document.getElementById("summaryBox").textContent = "分析中…";
+      document.getElementById("structureBox").textContent = "分析中…";
+      document.getElementById("conceptBox").textContent = "分析中…";
+      document.getElementById("semanticBox").textContent = "分析中…";
+
+      try {
+        const response = await fetch(GAS_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          throw new Error("HTTP " + response.status);
+        }
+
+        const result = await response.json();
+
+        if (result.status && result.status !== "success") {
+          throw new Error(result.message || "分析失敗");
+        }
+
+        renderResult(result);
+        document.getElementById("downloadBtn").disabled = false;
+
+      } catch (err) {
+        const rawMsg = err && err.message ? err.message : String(err);
+        let friendlyMsg = "目前無法連線到分析服務，請稍後再試。";
+
+        if (rawMsg.includes("HTTP 404")) {
+          friendlyMsg = "找不到分析服務，請確認 GAS 網址是否正確。";
+        } else if (rawMsg.includes("HTTP 405")) {
+          friendlyMsg = "分析服務不接受這種呼叫方式，請檢查 GAS 的 doPost 設定。";
+        } else if (rawMsg.includes("Failed to fetch")) {
+          friendlyMsg = "連線失敗，請確認網路或 GAS 是否已部署。";
+        }
+
+        document.getElementById("summaryBox").textContent = "錯誤：" + friendlyMsg;
+        document.getElementById("structureBox").textContent = "分析失敗";
+        document.getElementById("conceptBox").textContent = "分析失敗";
+        document.getElementById("semanticBox").textContent = "分析失敗";
+        document.getElementById("downloadBtn").disabled = true;
+
+      } finally {
+        analyzeBtn.disabled = false;
+        analyzeBtn.textContent = "分析";
+      }
     }
 
-    document.getElementById("conceptBox").textContent = conceptText || "無資料";
+    function downloadResult() {
+      if (!window.lastResult) {
+        alert("目前沒有可下載的結果，請先執行分析。");
+        return;
+      }
 
-    let semanticText = "";
-if (semantic.embeddingCosine !== undefined) {
-  semanticText += "詞頻向量餘弦相似度：" + semantic.embeddingCosine + "\n\n";
-}
+      const blob = new Blob(
+        [JSON.stringify(window.lastResult, null, 2)],
+        { type: "application/json;charset=utf-8" }
+      );
 
-    if (semantic.llmReview) {
-      semanticText += "LLM評語：\n";
-      semanticText += "相似度：" + (semantic.llmReview.similarity_score ?? "N/A") + "\n";
-      semanticText += "共同主題：" + ((semantic.llmReview.common_themes || []).join(", ") || "無") + "\n";
-      semanticText += "差異重點：" + ((semantic.llmReview.differences || []).join(", ") || "無") + "\n";
-      semanticText += "教師回饋建議：" + (semantic.llmReview.feedback_for_teacher || "無") + "\n";
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "text_similarity_result.json";
+      a.click();
+      URL.revokeObjectURL(url);
     }
 
-if (semantic.bertScore !== undefined && semantic.bertScore !== null) {
-  semanticText += "\nAI語意補充分數：" + semantic.bertScore + "\n";
-}
+    function renderResult(result) {
+      window.lastResult = result;
 
+      const summary = result.summary || {};
+      const structure = result.structure || {};
+      const concept = result.concept || {};
+      const semantic = result.semantic || {};
 
-    document.getElementById("semanticBox").textContent = semanticText || "未啟用或無資料";
-  }
+      let summaryText = "";
+      summaryText += "表層文本相似性：" + (summary.structureScore ?? "N/A") + "\n";
+      summaryText += "關鍵概念重疊：" + (summary.conceptScore ?? "N/A") + "\n";
+      summaryText += "語意詮釋結果：" + (summary.semanticScore ?? "N/A") + "\n";
+      document.getElementById("summaryBox").textContent = summaryText || "無資料";
 
-if (guardProfessorPage()) {
-  sessionStorage.setItem("last_professor_feature", "text_similarity");
-  updateCounts();
-}
+      let structureText = "";
+      if (structure.jaccard !== undefined) structureText += "Jaccard：" + structure.jaccard + "\n";
+      if (structure.cosine !== undefined) structureText += "TF Cosine：" + structure.cosine + "\n";
+      if (structure.editSim !== undefined) structureText += "Levenshtein 相似度：" + structure.editSim + "\n";
+      if (structure.ngramOverlap !== undefined) structureText += "N-gram Overlap：" + structure.ngramOverlap + "\n";
 
-</script>
+      if (Array.isArray(structure.sentencePairs) && structure.sentencePairs.length) {
+        structureText += "\n逐句近似句對照（摘要）：\n";
+        structure.sentencePairs.slice(0, 3).forEach(function(p) {
+          structureText += "A: " + (p.a || "") + "\n";
+          structureText += "B: " + (p.b || "") + "\n";
+          structureText += "相似度：" + (p.sim ?? "N/A") + "\n---\n";
+        });
+      }
+
+      document.getElementById("structureBox").textContent = structureText || "無資料";
+
+      let conceptText = "";
+      const ab = concept.conceptABSummary;
+
+      if (ab) {
+        conceptText += "【關鍵概念重疊（A vs B）】\n";
+        conceptText += "概念重疊分數：" + (ab.overlapScore !== undefined ? ab.overlapScore : "N/A") + "\n";
+
+        conceptText += "A 與 B 共同關鍵概念（前20）：\n";
+        if (Array.isArray(ab.commonTop) && ab.commonTop.length) {
+          ab.commonTop.forEach(function(w) { conceptText += " - " + w + "\n"; });
+        } else {
+          conceptText += " - 無\n";
+        }
+
+        conceptText += "僅 A 有的重要概念（前20）：\n";
+        if (Array.isArray(ab.onlyA) && ab.onlyA.length) {
+          ab.onlyA.forEach(function(w) { conceptText += " - " + w + "\n"; });
+        } else {
+          conceptText += " - 無\n";
+        }
+
+        conceptText += "僅 B 有的重要概念（前20）：\n";
+        if (Array.isArray(ab.onlyB) && ab.onlyB.length) {
+          ab.onlyB.forEach(function(w) { conceptText += " - " + w + "\n"; });
+        } else {
+          conceptText += " - 無\n";
+        }
+
+        conceptText += "\n";
+      }
+
+      if (Array.isArray(concept.curriculumStages) && concept.curriculumStages.length) {
+        conceptText += "【課綱對齊分析（以文本 A 檢查課綱）】\n";
+
+        concept.curriculumStages.forEach(function(stageBlock) {
+          const stageName = stageBlock.stage || "(無名稱)";
+          const coverageVal = stageBlock.coverage !== undefined ? stageBlock.coverage : "N/A";
+          const hitCount = stageBlock.matchedConcepts ? stageBlock.matchedConcepts.length : 0;
+          const totalCount = stageBlock.totalConcepts !== undefined ? stageBlock.totalConcepts : "N/A";
+
+          conceptText += "Stage：" + stageName + " | 涵蓋率：" + coverageVal + " (命中 " + hitCount + " / 總數 " + totalCount + ")\n";
+
+          if (!stageBlock.matchedConcepts || !stageBlock.matchedConcepts.length) {
+            conceptText += "  （此文本未命中該階段任何概念）\n\n";
+          } else {
+            stageBlock.matchedConcepts.forEach(function(c) {
+              const showConcept = c.conceptBrief || c.conceptClean || c.concept || "";
+              const showContent = c.contentBrief || c.contentClean || c.content || "";
+
+              if (showConcept || showContent) {
+                conceptText += "  - " + showConcept;
+                if (showContent) conceptText += "；" + showContent;
+                conceptText += "\n";
+              }
+            });
+            conceptText += "\n";
+          }
+        });
+      }
+
+      document.getElementById("conceptBox").textContent = conceptText || "無資料";
+
+      let semanticText = "";
+      if (semantic.llmReview) {
+        semanticText += "LLM 質性評閱：\n";
+        semanticText += "相似度：" + (semantic.llmReview.similarity_score ?? "N/A") + "\n";
+        semanticText += "共同主題：" + ((semantic.llmReview.common_themes || []).join(", ") || "無") + "\n";
+        semanticText += "差異重點：" + ((semantic.llmReview.differences || []).join(", ") || "無") + "\n";
+        semanticText += "教師回饋建議：" + (semantic.llmReview.feedback_for_teacher || "無") + "\n";
+      }
+
+      document.getElementById("semanticBox").textContent = semanticText || "未啟用或無資料";
+    }
+
+    if (guardProfessorPage()) {
+      sessionStorage.setItem("last_professor_feature", "text_similarity");
+      updateCounts();
+    }
+  </script>
 </body>
 </html>
-
