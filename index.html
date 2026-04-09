@@ -763,7 +763,7 @@ function connect() {
             }
         });
 
-        let currentLang = 'zh-TW';
+        let currentLang = localStorage.getItem("AI_SCHOOL_LANG") || "zh-TW";
 
 function changeLanguage() {
   const langSelector = document.getElementById("language-selector");
@@ -771,6 +771,7 @@ function changeLanguage() {
 
   const lang = langSelector.value;
   currentLang = lang;
+localStorage.setItem("AI_SCHOOL_LANG", currentLang);
 
   const t = translations[lang] || translations["en"];
 
