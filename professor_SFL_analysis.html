@@ -7,22 +7,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:#020617;
-  --bg-soft:#0f172a;
-  --fg:#e2e8f0;
-  --muted:#94a3b8;
-  --card:rgba(30, 41, 59, 0.72);
-  --border:rgba(148, 163, 184, 0.16);
-  --accent:#8b5cf6;
-  --accent-soft:#a78bfa;
+  --bg:#f8fafc;
+  --bg-soft:#f5f3ff;
+  --fg:#334155;
+  --muted:#64748b;
+  --card:rgba(255,255,255,0.95);
+  --border:rgba(226,232,240,0.8);
+  --accent:#a855f7;
+  --accent-soft:#e9d5ff;
 }
 
-  *{box-sizing:border-box;}
-  /* 全站主要字體：
-     - 中文優先使用 微軟正黑體
-     - 英文/拉丁優先使用 Times New Roman
-     - 之後再 fallback 回原本的 Noto Serif TC 和一般 serif
-  */
+*{box-sizing:border-box;}
+
+/* 全站主要字體：
+   - 中文優先使用 微軟正黑體
+   - 英文/拉丁優先使用 Times New Roman
+   - 之後再 fallback 回原本的 Noto Serif TC 和一般 serif
+*/
 body{
   font-family:
     "Microsoft JhengHei",
@@ -30,58 +31,71 @@ body{
     "Times New Roman",
     "Noto Serif TC",
     serif;
-  background:
-    radial-gradient(circle at top left, rgba(139,92,246,0.18), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(96,165,250,0.12), transparent 24%),
-    var(--bg);
+  background: linear-gradient(135deg, #fdfbff 0%, #f5f3ff 100%);
   color:var(--fg);
   margin:0;
 }
 
-  .container{ max-width:1150px; margin:0 auto; padding:28px; }
-  h1{
-    font-family:
-      "Microsoft JhengHei",
-      "微軟正黑體",
-      "Times New Roman",
-      "Noto Serif TC",
-      serif;
-    font-size:26px; margin:6px 0 20px; text-align:center; letter-spacing:1px;
-  }
-  .card{
+.container{ max-width:1150px; margin:0 auto; padding:28px; }
+
+h1{
+  font-family:
+    "Microsoft JhengHei",
+    "微軟正黑體",
+    "Times New Roman",
+    "Noto Serif TC",
+    serif;
+  font-size:26px;
+  margin:6px 0 20px;
+  text-align:center;
+  letter-spacing:1px;
+}
+
+.card{
   background:var(--card);
   border:1px solid var(--border);
   border-radius:18px;
   padding:18px;
-  box-shadow:0 10px 30px rgba(0,0,0,.22);
+  box-shadow:0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
   margin-bottom:20px;
-  backdrop-filter:blur(16px);
-  -webkit-backdrop-filter:blur(16px);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
 }
 
-  .row-inline{ display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
-  label{
-    font-family:
-      "Microsoft JhengHei",
-      "微軟正黑體",
-      "Times New Roman",
-      "Noto Serif TC",
-      serif;
-    font-weight:600; margin-right:6px;
-  }
-  select, textarea{
-    font-family:
-      "Microsoft JhengHei",
-      "微軟正黑體",
-      "Times New Roman",
-      "Noto Serif TC",
-      serif;
-    border:1px solid var(--border); border-radius:10px; padding:10px; font-size:15px; background:#fff;
-  }
-  select.short{ min-width:180px; }
-  textarea.full{ width:100%; min-height:260px; line-height:1.6; resize:vertical; }
-  .actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:10px; }
-  .btn{
+.row-inline{ display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+
+label{
+  font-family:
+    "Microsoft JhengHei",
+    "微軟正黑體",
+    "Times New Roman",
+    "Noto Serif TC",
+    serif;
+  font-weight:600;
+  margin-right:6px;
+}
+
+select, textarea{
+  font-family:
+    "Microsoft JhengHei",
+    "微軟正黑體",
+    "Times New Roman",
+    "Noto Serif TC",
+    serif;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px;
+  font-size:15px;
+  background:#fff;
+  color:var(--fg);
+}
+
+select.short{ min-width:180px; }
+textarea.full{ width:100%; min-height:260px; line-height:1.6; resize:vertical; }
+
+.actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:10px; }
+
+.btn{
   font-family:
     "Microsoft JhengHei",
     "微軟正黑體",
@@ -91,21 +105,24 @@ body{
   padding:10px 14px;
   border:1px solid var(--border);
   border-radius:10px;
-  background:rgba(255,255,255,0.08);
-  color:#e2e8f0;
+  background:#fff;
+  color:#475569;
   cursor:pointer;
   transition:.15s;
   font-weight:600;
 }
 
-  .btn:hover{ transform:translateY(-1px); }
-  .btn.primary{
-  background:linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+.btn:hover{ transform:translateY(-1px); }
+
+.btn.primary{
+  background:linear-gradient(135deg, #9333ea 0%, #7c3aed 50%, #6366f1 100%);
   color:#fff;
-  border-color:#8b5cf6;
+  border-color:#9333ea;
 }
-  .btn:disabled{ opacity:.5; cursor:not-allowed; transform:none; }
-  .status{
+
+.btn:disabled{ opacity:.5; cursor:not-allowed; transform:none; }
+
+.status{
   font-family:
     "Microsoft JhengHei",
     "微軟正黑體",
@@ -131,16 +148,27 @@ body{
   color:#581c87;
 }
 
-  .table-wrap{ width:100%; overflow:auto; border:1px solid var(--border); border-radius:12px; }
-  table{
-    font-family:
-      "Microsoft JhengHei",
-      "微軟正黑體",
-      "Times New Roman",
-      "Noto Serif TC",
-      serif;
-    width:100%; border-collapse:separate; border-spacing:0; font-size:14px;
-  }
+.table-wrap{
+  width:100%;
+  overflow:auto;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:#fff;
+}
+
+table{
+  font-family:
+    "Microsoft JhengHei",
+    "微軟正黑體",
+    "Times New Roman",
+    "Noto Serif TC",
+    serif;
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  font-size:14px;
+}
+
 thead th{
   font-family:
     "Microsoft JhengHei",
@@ -148,25 +176,30 @@ thead th{
     "Times New Roman",
     "Noto Serif TC",
     serif;
-  background:rgba(248,250,252,0.12);
+  background:#fafafa;
   border-bottom:1px solid var(--border);
   padding:10px 8px;
   position:sticky;
   top:0;
   white-space:nowrap;
-  color:#cbd5e1;
+  color:#475569;
 }
 
-  tbody td{
-    font-family:
-      "Microsoft JhengHei",
-      "微軟正黑體",
-      "Times New Roman",
-      "Noto Serif TC",
-      serif;
-    border-top:1px solid var(--border); padding:8px; vertical-align:top; word-break:break-word;
-  }
-  .topbar{
+tbody td{
+  font-family:
+    "Microsoft JhengHei",
+    "微軟正黑體",
+    "Times New Roman",
+    "Noto Serif TC",
+    serif;
+  border-top:1px solid var(--border);
+  padding:8px;
+  vertical-align:top;
+  word-break:break-word;
+  color:var(--fg);
+}
+
+.topbar{
   display:flex;
   justify-content:space-between;
   align-items:flex-start;
@@ -180,9 +213,9 @@ thead th{
   gap:12px;
   padding:10px 14px;
   border-radius:999px;
-  border:1px solid rgba(167,139,250,0.28);
-  background:rgba(139,92,246,0.12);
-  color:#e9d5ff;
+  border:1px solid #d8b4fe;
+  background:#faf5ff;
+  color:#7e22ce;
 }
 
 .user-avatar{
@@ -193,8 +226,9 @@ thead th{
   align-items:center;
   justify-content:center;
   font-weight:700;
-  background:rgba(139,92,246,0.24);
-  border:1px solid rgba(167,139,250,0.35);
+  background:#f3e8ff;
+  border:1px solid #d8b4fe;
+  color:#7e22ce;
 }
 
 .user-meta{
@@ -204,12 +238,12 @@ thead th{
 .user-name{
   font-size:14px;
   font-weight:700;
-  color:#f5f3ff;
+  color:#6b21a8;
 }
 
 .user-role{
   font-size:11px;
-  color:#c4b5fd;
+  color:#9333ea;
   text-transform:uppercase;
   letter-spacing:.06em;
 }
@@ -221,32 +255,28 @@ thead th{
   font-size:14px;
 }
 
-label, .section-title, h1, thead th, tbody td{
+label, h1{
   color:var(--fg);
 }
 
-select, textarea{
-  background:rgba(15,23,42,0.72);
-  color:#fff;
-  border:1px solid rgba(148,163,184,0.22);
-}
 select:focus, textarea:focus{
   outline:none;
-  border-color:rgba(139,92,246,0.9);
-  box-shadow:0 0 0 3px rgba(139,92,246,0.20);
+  border-color:#a855f7;
+  box-shadow:0 0 0 3px rgba(168,85,247,0.15);
 }
 
 select::placeholder, textarea::placeholder{
   color:#94a3b8;
 }
+
 .hero-title{
-  background:linear-gradient(135deg, #c4b5fd 0%, #8b5cf6 45%, #60a5fa 100%);
+  background: linear-gradient(135deg, #581c87 0%, #7e22ce 50%, #a855f7 100%);
   -webkit-background-clip:text;
   background-clip:text;
   color:transparent;
 }
-
 </style>
+
 </head>
 <body>
 <div class="container">
