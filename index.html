@@ -268,12 +268,12 @@ select:-webkit-autofill {
                 <form id="form-login" onsubmit="handleLogin(event)" class="space-y-6">
                     <div>
                         <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_email">Email</label>
-                        <input type="text" id="login-email" required class="input-ai w-full px-5 py-3 rounded-xl outline-none" placeholder="name@example.com 或 admin">
+                        <input type="text" id="login-email" required data-i18n-placeholder="ph_login_email" class="input-ai w-full px-5 py-3 rounded-xl outline-none" placeholder="name@example.com 或 admin">
                     </div>
                     <div>
                         <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_password">密碼</label>
                         <div class="relative">
-                            <input type="password" id="login-password" required class="input-ai w-full px-5 py-3 rounded-xl outline-none pr-12" placeholder="••••••••">
+                            <input type="password" id="login-password" required data-i18n-placeholder="ph_login_password" class="input-ai w-full px-5 py-3 rounded-xl outline-none pr-12" placeholder="••••••••">
                             <i class="fa-solid fa-eye password-toggle absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer" onclick="togglePassword('login-password', this)"></i>
                         </div>
                     </div>
@@ -300,16 +300,17 @@ select:-webkit-autofill {
          data-i18n="label_select_role">註冊身分</label>
   <div class="relative">
     <select
-      id="input-role-select"
-      onchange="syncRoleFromSelector()"
-      class="input-ai w-full px-4 py-3 rounded-xl outline-none appearance-none
-             bg-slate-900/70 text-slate-100 border border-slate-600/50
-             hover:border-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-    >
-      <option value="student">學生</option>
-      <option value="teacher">教師</option>
-      <option value="professor">教授</option>
-    </select>
+  id="input-role-select"
+  onchange="syncRoleFromSelector()"
+  class="input-ai w-full px-4 py-3 rounded-xl outline-none appearance-none
+         bg-slate-900/70 text-slate-100 border border-slate-600/50
+         hover:border-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+>
+  <option value="student" data-i18n="role_student">學生</option>
+  <option value="teacher" data-i18n="role_teacher">教師</option>
+  <option value="professor" data-i18n="role_researcher">教授</option>
+</select>
+
 
     <i class="fa-solid fa-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
   </div>
@@ -320,12 +321,12 @@ select:-webkit-autofill {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_email_account">Email (帳號)</label>
-                            <input type="email" id="reg-email" required class="input-ai w-full px-4 py-3 rounded-xl outline-none" placeholder="name@example.com">
+                            <input type="email" id="reg-email" required data-i18n-placeholder="ph_register_email" class="input-ai w-full px-4 py-3 rounded-xl outline-none" placeholder="name@example.com">
                         </div>
                         <div>
                             <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_password">設定密碼</label>
                             <div class="relative">
-                                <input type="password" id="reg-password" required class="input-ai w-full px-4 py-3 rounded-xl outline-none pr-10" placeholder="******">
+                                <input type="password" id="reg-password" required data-i18n-placeholder="ph_register_password" class="input-ai w-full px-4 py-3 rounded-xl outline-none pr-10" placeholder="******">
                                 <i class="fa-solid fa-eye password-toggle absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer" onclick="togglePassword('reg-password', this)"></i>
                             </div>
                         </div>
@@ -334,12 +335,12 @@ select:-webkit-autofill {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_name">姓名</label>
-                            <input type="text" id="input-name" required class="input-ai w-full px-4 py-3 rounded-xl outline-none">
+                            <input type="text" id="input-name" required data-i18n-placeholder="ph_name" class="input-ai w-full px-4 py-3 rounded-xl outline-none">
                         </div>
                         <div>
                             <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_confirm_password">確認密碼</label>
                             <div class="relative">
-                                <input type="password" id="reg-password-confirm" required class="input-ai w-full px-4 py-3 rounded-xl outline-none pr-10" placeholder="******">
+                                <input type="password" id="reg-password-confirm" required data-i18n-placeholder="ph_register_password_confirm" class="input-ai w-full px-4 py-3 rounded-xl outline-none pr-10" placeholder="******">
                                 <i class="fa-solid fa-eye password-toggle absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer" onclick="togglePassword('reg-password-confirm', this)"></i>
                             </div>
                         </div>
@@ -361,7 +362,7 @@ select:-webkit-autofill {
                         </div>
                         <div>
                             <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_school_student">就讀學校 (縣市+校名)</label>
-                            <input type="text" id="input-school-student" class="input-ai w-full px-4 py-3 rounded-xl outline-none" placeholder="例如：花蓮縣東華附小">
+                           <input type="text" id="input-school-student" data-i18n-placeholder="ph_school_student" class="input-ai w-full px-4 py-3 rounded-xl outline-none" placeholder="例如：花蓮縣東華附小">
                         </div>
                         <div>
                             <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_grade_student">就讀年級</label>
@@ -373,45 +374,80 @@ select:-webkit-autofill {
                         </div>
                     </div>
 
-                    <div id="fields-teacher" class="role-fields hidden-section space-y-5 p-5 bg-slate-800/40 rounded-xl border border-slate-700/50">
-                        <div>
-                            <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_country">國家/地區</label>
-                            <select id="input-country-teacher" onchange="updateGrades('teacher')" class="input-ai w-full px-4 py-3 rounded-xl outline-none"></select>
-                        </div>
-                        <div><label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_school_teacher">服務學校 (縣市+校名)</label><input type="text" id="input-school-teacher" class="input-ai w-full px-4 py-3 rounded-xl outline-none" placeholder="例如：花蓮縣花崗國中"></div>
-                        <div class="grid grid-cols-2 gap-5">
-                            <div>
-                                <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_position">職稱</label>
-                                <select id="input-position" class="input-ai w-full px-4 py-3 rounded-xl outline-none">
-                                    <option value="Principal" data-i18n="pos_principal">校長</option><option value="Director" data-i18n="pos_director">主任</option>
-                                    <option value="SectionChief" data-i18n="pos_section_chief">組長</option><option value="HomeroomTeacher" data-i18n="pos_homeroom">導師</option>
-                                    <option value="SubjectTeacher" data-i18n="pos_subject">科任</option>
-                                </select>
-                            </div>
-                            <div><label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_teaching_grade">教學年級</label><select id="input-teaching-grade" class="input-ai w-full px-4 py-3 rounded-xl outline-none"></select></div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-5">
-                            <div><label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_subject">教學科目</label><input type="text" id="input-subject" class="input-ai w-full px-4 py-3 rounded-xl outline-none" placeholder="例如: 自然"></div>
-                            <div>
-                                <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_seniority">教學年資</label>
-                                <select id="input-seniority" class="input-ai w-full px-4 py-3 rounded-xl outline-none">
-                                    <option value="0-5" data-i18n="exp_0_5">5年以下</option><option value="6-10" data-i18n="exp_6_10">6-10 年</option><option value="11-15" data-i18n="exp_11_15">11-15 年</option><option value="16-20" data-i18n="exp_16_20">16-20 年</option><option value="21-25" data-i18n="exp_21_25">21-25 年</option><option value="25+" data-i18n="exp_25_plus">25 年以上</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
+<div id="fields-teacher" class="role-fields hidden-section space-y-5 p-5 bg-slate-800/40 rounded-xl border border-slate-700/50">
+    <div>
+        <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_country">國家/地區</label>
+        <select id="input-country-teacher" onchange="updateGrades('teacher')" class="input-ai w-full px-4 py-3 rounded-xl outline-none"></select>
+    </div>
 
-                    <div id="fields-researcher" class="role-fields hidden-section space-y-5 p-5 bg-slate-800/40 rounded-xl border border-slate-700/50">
-                        <div>
-                            <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_country">國家/地區</label>
-                            <select id="input-country-researcher" class="input-ai w-full px-4 py-3 rounded-xl outline-none"></select>
-                        </div>
-                        <div><label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_unit">服務單位</label><input type="text" id="input-unit" class="input-ai w-full px-4 py-3 rounded-xl outline-none" placeholder="例如：國立東華大學"></div>
-                        <div class="grid grid-cols-2 gap-5">
-                            <div><label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_research_title">職稱</label><input type="text" id="input-research-title" class="input-ai w-full px-4 py-3 rounded-xl outline-none" placeholder="例如: 教授"></div>
-                            <div><label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_field">研究領域</label><input type="text" id="input-field" class="input-ai w-full px-4 py-3 rounded-xl outline-none" placeholder="例如：科學教育"></div>
-                        </div>
-                    </div>
+    <div>
+        <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_school_teacher">服務學校 (縣市+校名)</label>
+        <input type="text" id="input-school-teacher" data-i18n-placeholder="ph_school_teacher" class="input-ai w-full px-4 py-3 rounded-xl outline-none" placeholder="例如：花蓮縣花崗國中">
+    </div>
+
+    <div class="grid grid-cols-2 gap-5">
+        <div>
+            <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_position">職稱</label>
+            <select id="input-position" class="input-ai w-full px-4 py-3 rounded-xl outline-none">
+                <option value="Principal" data-i18n="pos_principal">校長</option>
+                <option value="Director" data-i18n="pos_director">主任</option>
+                <option value="SectionChief" data-i18n="pos_section_chief">組長</option>
+                <option value="HomeroomTeacher" data-i18n="pos_homeroom">導師</option>
+                <option value="SubjectTeacher" data-i18n="pos_subject">科任</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_teaching_grade">教學年級</label>
+            <select id="input-teaching-grade" class="input-ai w-full px-4 py-3 rounded-xl outline-none"></select>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-5">
+        <div>
+            <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_subject">教學科目</label>
+            <input type="text" id="input-subject" class="input-ai w-full px-4 py-3 rounded-xl outline-none" placeholder="例如: 自然">
+        </div>
+
+        <div>
+            <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_seniority">教學年資</label>
+            <select id="input-seniority" class="input-ai w-full px-4 py-3 rounded-xl outline-none">
+                <option value="0-5" data-i18n="exp_0_5">5年以下</option>
+                <option value="6-10" data-i18n="exp_6_10">6-10 年</option>
+                <option value="11-15" data-i18n="exp_11_15">11-15 年</option>
+                <option value="16-20" data-i18n="exp_16_20">16-20 年</option>
+                <option value="21-25" data-i18n="exp_21_25">21-25 年</option>
+                <option value="25+" data-i18n="exp_25_plus">25 年以上</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+
+<div id="fields-researcher" class="role-fields hidden-section space-y-5 p-5 bg-slate-800/40 rounded-xl border border-slate-700/50">
+    <div>
+        <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_country">國家/地區</label>
+        <select id="input-country-researcher" class="input-ai w-full px-4 py-3 rounded-xl outline-none"></select>
+    </div>
+
+    <div>
+        <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_unit">服務單位</label>
+        <input type="text" id="input-unit" data-i18n-placeholder="ph_unit" class="input-ai w-full px-4 py-3 rounded-xl outline-none" placeholder="例如：國立東華大學">
+    </div>
+
+    <div class="grid grid-cols-2 gap-5">
+        <div>
+            <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_research_title">職稱</label>
+            <input type="text" id="input-research-title" class="input-ai w-full px-4 py-3 rounded-xl outline-none" placeholder="例如: 教授">
+        </div>
+
+        <div>
+            <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_field">研究領域</label>
+            <input type="text" id="input-field" data-i18n-placeholder="ph_field" class="input-ai w-full px-4 py-3 rounded-xl outline-none" placeholder="例如：科學教育">
+        </div>
+    </div>
+</div>
+
 
                     <button id="btn-do-register" type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition transform active:scale-[0.98] mt-4 text-lg" data-i18n="btn_register_action">註冊並登入</button>
                 </form>
@@ -421,7 +457,7 @@ select:-webkit-autofill {
                     <p class="text-slate-400 text-center mb-6" data-i18n="forgot_password_desc">請輸入您註冊時的 Email，系統將發送驗證信給您。</p>
                     <div>
                         <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_email">Email</label>
-                        <input type="email" id="forgot-email" required class="input-ai w-full px-5 py-3 rounded-xl outline-none" placeholder="name@example.com">
+                       <input type="email" id="forgot-email" required data-i18n-placeholder="ph_forgot_email" class="input-ai w-full px-5 py-3 rounded-xl outline-none" placeholder="name@example.com">
                     </div>
                     <button type="submit" id="btn-do-forgot" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl shadow-lg transition" data-i18n="btn_send_verify">發送驗證信</button>
                     <div class="text-center mt-4">
@@ -608,7 +644,19 @@ function connect() {
                 "btn_send_verify": "發送驗證信", "back_to_login": "返回登入",
                 "msg_logout_confirm": "你確定要登出嗎？", "btn_confirm": "確定", "btn_cancel": "取消", "not_registered": "尚未註冊？",
                 "country_tw": "台灣", "country_cn": "中國", "country_hk": "香港", "country_mo": "澳門", "country_jp": "日本", "country_kr": "韓國", "country_us": "美國", "country_gb": "英國", "country_sg": "新加坡", "country_my": "馬來西亞", "country_vn": "越南", "country_id": "印尼", "country_th": "泰國", "country_in": "印度", "country_au": "澳洲", "country_ca": "加拿大", "country_nz": "紐西蘭", "country_other": "其他國家",
-                "grade_tw_E": "國小", "grade_tw_J": "國中", "grade_tw_S": "高中", "grade_cn_P": "小學", "grade_cn_J": "初中", "grade_cn_S": "高中", "grade_hk_P": "小學", "grade_hk_S": "中學", "grade_jp_E": "小學", "grade_jp_J": "中學", "grade_jp_H": "高校", "grade_kr_E": "初等學校", "grade_kr_M": "中學校", "grade_kr_H": "高等學校", "grade_us_K": "幼兒園", "grade_us_G": "年級", "grade_gb_Y": "年級", "grade_intl_G": "年級"
+                "grade_tw_E": "國小", "grade_tw_J": "國中", "grade_tw_S": "高中", "grade_cn_P": "小學", "grade_cn_J": "初中", "grade_cn_S": "高中", "grade_hk_P": "小學", "grade_hk_S": "中學", "grade_jp_E": "小學", "grade_jp_J": "中學", "grade_jp_H": "高校", "grade_kr_E": "初等學校", "grade_kr_M": "中學校", "grade_kr_H": "高等學校", "grade_us_K": "幼兒園", "grade_us_G": "年級", "grade_gb_Y": "年級", "grade_intl_G": "年級",
+            "ph_login_email": "name@example.com 或 admin",
+"ph_login_password": "請輸入密碼",
+"ph_register_email": "name@example.com",
+"ph_register_password": "請設定密碼",
+"ph_name": "請輸入姓名",
+"ph_register_password_confirm": "請再次輸入密碼",
+"ph_school_student": "例如：花蓮縣東華附小",
+"ph_school_teacher": "例如：花蓮縣花崗國中",
+"ph_unit": "例如：國立東華大學",
+"ph_field": "例如：科學教育",
+"ph_forgot_email": "name@example.com"
+
             },
             "en": {
                 "site_title_nav": "AI School", "site_title_hero": "AI School", "welcome_prefix": "Welcome to",
@@ -627,7 +675,19 @@ function connect() {
                 "btn_send_verify": "Send Email", "back_to_login": "Back to Login",
                 "msg_logout_confirm": "Are you sure you want to logout?", "btn_confirm": "Confirm", "btn_cancel": "Cancel", "not_registered": "Not registered?",
                 "country_tw": "Taiwan", "country_cn": "China", "country_hk": "Hong Kong", "country_mo": "Macau", "country_jp": "Japan", "country_kr": "Korea", "country_us": "USA", "country_gb": "UK", "country_sg": "Singapore", "country_my": "Malaysia", "country_vn": "Vietnam", "country_id": "Indonesia", "country_th": "Thailand", "country_in": "India", "country_au": "Australia", "country_ca": "Canada", "country_nz": "New Zealand", "country_other": "Other",
-                "grade_tw_E": "Elementary G", "grade_tw_J": "Junior High G", "grade_tw_S": "Senior High G", "grade_cn_P": "Primary G", "grade_cn_J": "Junior High G", "grade_cn_S": "Senior High G", "grade_hk_P": "Primary P", "grade_hk_S": "Secondary S", "grade_jp_E": "Elementary G", "grade_jp_J": "Junior High G", "grade_jp_H": "High School G", "grade_kr_E": "Elementary G", "grade_kr_M": "Middle School G", "grade_kr_H": "High School G", "grade_us_K": "Kindergarten", "grade_us_G": "Grade", "grade_gb_Y": "Year", "grade_intl_G": "Grade"
+                "grade_tw_E": "Elementary G", "grade_tw_J": "Junior High G", "grade_tw_S": "Senior High G", "grade_cn_P": "Primary G", "grade_cn_J": "Junior High G", "grade_cn_S": "Senior High G", "grade_hk_P": "Primary P", "grade_hk_S": "Secondary S", "grade_jp_E": "Elementary G", "grade_jp_J": "Junior High G", "grade_jp_H": "High School G", "grade_kr_E": "Elementary G", "grade_kr_M": "Middle School G", "grade_kr_H": "High School G", "grade_us_K": "Kindergarten", "grade_us_G": "Grade", "grade_gb_Y": "Year", "grade_intl_G": "Grade",
+           "ph_login_email": "name@example.com or admin",
+"ph_login_password": "Enter password",
+"ph_register_email": "name@example.com",
+"ph_register_password": "Create password",
+"ph_name": "Enter your name",
+"ph_register_password_confirm": "Confirm your password",
+"ph_school_student": "e.g. Hualien Dong Hwa Elementary",
+"ph_school_teacher": "e.g. Hualien Huagang Junior High",
+"ph_unit": "e.g. National Dong Hwa University",
+"ph_field": "e.g. Science Education",
+"ph_forgot_email": "name@example.com"
+
             },
             "ja": {
                 "site_title_nav": "AI School", "site_title_hero": "AI School", "welcome_prefix": "ようこそ",
@@ -646,7 +706,19 @@ function connect() {
                 "btn_send_verify": "メール送信", "back_to_login": "ログインへ戻る",
                 "msg_logout_confirm": "ログアウトしますか？", "btn_confirm": "OK", "btn_cancel": "キャンセル", "not_registered": "未登録ですか？",
                 "country_tw": "台湾", "country_cn": "中国", "country_hk": "香港", "country_mo": "マカオ", "country_jp": "日本", "country_kr": "韓国", "country_us": "アメリカ", "country_gb": "イギリス", "country_sg": "シンガポール", "country_my": "マレーシア", "country_vn": "ベトナム", "country_id": "インドネシア", "country_th": "タイ", "country_in": "インド", "country_au": "オーストラリア", "country_ca": "カナダ", "country_nz": "ニュージーランド", "country_other": "その他",
-                "grade_tw_E": "小学校", "grade_tw_J": "中学校", "grade_tw_S": "高校", "grade_cn_P": "小学校", "grade_cn_J": "中学校", "grade_cn_S": "高校", "grade_hk_P": "Primary P", "grade_hk_S": "Secondary S", "grade_jp_E": "小学校", "grade_jp_J": "中学校", "grade_jp_H": "高校", "grade_kr_E": "初等学校", "grade_kr_M": "中学校", "grade_kr_H": "高等学校", "grade_us_K": "幼稚園", "grade_us_G": "学年", "grade_gb_Y": "年", "grade_intl_G": "学年"
+                "grade_tw_E": "小学校", "grade_tw_J": "中学校", "grade_tw_S": "高校", "grade_cn_P": "小学校", "grade_cn_J": "中学校", "grade_cn_S": "高校", "grade_hk_P": "Primary P", "grade_hk_S": "Secondary S", "grade_jp_E": "小学校", "grade_jp_J": "中学校", "grade_jp_H": "高校", "grade_kr_E": "初等学校", "grade_kr_M": "中学校", "grade_kr_H": "高等学校", "grade_us_K": "幼稚園", "grade_us_G": "学年", "grade_gb_Y": "年", "grade_intl_G": "学年",
+           "ph_login_email": "name@example.com または admin",
+"ph_login_password": "パスワードを入力",
+"ph_register_email": "name@example.com",
+"ph_register_password": "パスワードを設定",
+"ph_name": "氏名を入力",
+"ph_register_password_confirm": "パスワードを再入力",
+"ph_school_student": "例：花蓮県東華附小",
+"ph_school_teacher": "例：花蓮県花崗中学校",
+"ph_unit": "例：国立東華大学",
+"ph_field": "例：科学教育",
+"ph_forgot_email": "name@example.com"
+
             },
             "zh-CN": {
                 "site_title_nav": "AI School", "site_title_hero": "AI School", "welcome_prefix": "欢迎来到",
@@ -665,7 +737,19 @@ function connect() {
                 "btn_send_verify": "发送验证信", "back_to_login": "返回登录",
                 "msg_logout_confirm": "您确定要退出吗？", "btn_confirm": "确定", "btn_cancel": "取消", "not_registered": "尚未注册？",
                 "country_tw": "台湾", "country_cn": "中国", "country_hk": "香港", "country_mo": "澳门", "country_jp": "日本", "country_kr": "韩国", "country_us": "美国", "country_gb": "英国", "country_sg": "新加坡", "country_my": "马来西亚", "country_vn": "越南", "country_id": "印度尼西亚", "country_th": "泰国", "country_in": "印度", "country_au": "澳大利亚", "country_ca": "加拿大", "country_nz": "新西兰", "country_other": "其他国家",
-                "grade_tw_E": "小学", "grade_tw_J": "初中", "grade_tw_S": "高中", "grade_cn_P": "小学", "grade_cn_J": "初中", "grade_cn_S": "高中", "grade_hk_P": "小学", "grade_hk_S": "中学", "grade_jp_E": "小学", "grade_jp_J": "中学", "grade_jp_H": "高校", "grade_kr_E": "初等学校", "grade_kr_M": "中学校", "grade_kr_H": "高等学校", "grade_us_K": "幼儿园", "grade_us_G": "年级", "grade_gb_Y": "年级", "grade_intl_G": "年级"
+                "grade_tw_E": "小学", "grade_tw_J": "初中", "grade_tw_S": "高中", "grade_cn_P": "小学", "grade_cn_J": "初中", "grade_cn_S": "高中", "grade_hk_P": "小学", "grade_hk_S": "中学", "grade_jp_E": "小学", "grade_jp_J": "中学", "grade_jp_H": "高校", "grade_kr_E": "初等学校", "grade_kr_M": "中学校", "grade_kr_H": "高等学校", "grade_us_K": "幼儿园", "grade_us_G": "年级", "grade_gb_Y": "年级", "grade_intl_G": "年级",
+           "ph_login_email": "name@example.com 或 admin",
+"ph_login_password": "请输入密码",
+"ph_register_email": "name@example.com",
+"ph_register_password": "请设置密码",
+"ph_name": "请输入姓名",
+"ph_register_password_confirm": "请再次输入密码",
+"ph_school_student": "例如：花莲县东华附小",
+"ph_school_teacher": "例如：花莲县花岗国中",
+"ph_unit": "例如：国立东华大学",
+"ph_field": "例如：科学教育",
+"ph_forgot_email": "name@example.com"
+
             }
         };
 
@@ -719,6 +803,12 @@ function changeLanguage() {
 
   updateGrades("student", true);
   updateGrades("teacher", true);
+      document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+    const key = el.getAttribute("data-i18n-placeholder");
+    if (!key || !t[key]) return;
+    el.placeholder = t[key];
+  });
+      syncSessionUI();
 }
 
         
@@ -786,9 +876,9 @@ function changeLanguage() {
             }
         }
 
-        // *** 頁面邏輯 ***
-        document.addEventListener('DOMContentLoaded', () => { 
+document.addEventListener('DOMContentLoaded', () => { 
   changeLanguage();
+  syncSessionUI();
 
   // 如果是被 professor.html 擋回來，提示使用者先登入
   const msg = sessionStorage.getItem("redirectMsg");
@@ -797,6 +887,53 @@ function changeLanguage() {
     alert(msg);
   }
 });
+
+function getStoredUser() {
+  try {
+    return JSON.parse(sessionStorage.getItem("currentUser") || "null");
+  } catch {
+    return null;
+  }
+}
+
+function normalizeRole(role) {
+  return role === "researcher" ? "professor" : role;
+}
+
+function syncSessionUI() {
+  const user = getStoredUser();
+  const userInfoEl = document.getElementById("user-info-display");
+  const logoutBtn = document.getElementById("logout-btn");
+  const loginBtn = document.getElementById("nav-login-btn");
+
+  if (!user) {
+    if (userInfoEl) {
+      userInfoEl.textContent = "";
+      userInfoEl.classList.add("hidden");
+    }
+    if (logoutBtn) logoutBtn.classList.add("hidden");
+    if (loginBtn) loginBtn.classList.remove("hidden");
+    currentUser = null;
+    return;
+  }
+
+  currentUser = {
+    email: user.email || "",
+    name: user.name || "User",
+    role: normalizeRole(user.role || "")
+  };
+
+if (userInfoEl) {
+  const t = translations[currentLang] || translations["en"];
+  const roleKey = roleToI18n(currentUser.role);
+  const roleLabel = t[`role_${roleKey}`] || currentUser.role;
+  userInfoEl.textContent = `${currentUser.name} (${roleLabel})`;
+  userInfoEl.classList.remove("hidden");
+}
+
+  if (logoutBtn) logoutBtn.classList.remove("hidden");
+  if (loginBtn) loginBtn.classList.add("hidden");
+}
 
         function goHome() { 
             roleLocked = false; // ★ 新增
@@ -972,23 +1109,24 @@ try {
 
 
                 if (result.result === 'success') {
-                    const user = result.user;
-                    
-                    const userInfo = {
-                        email: user.email,
-                        name: user.name,
-                        role: user.role
-                    };
-                    sessionStorage.setItem("currentUser", JSON.stringify(userInfo));
-                    
-                    // 修改處：若角色為 student，跳轉至 student_subject.html
-                    let targetPage = 'student_subject.html'; // 預設改為科目選擇頁
-                    if (user.role === 'teacher') targetPage = 'teacher.html';
-                    if (user.role === 'researcher' || user.role === 'professor') targetPage = 'professor.html';
-                    if (user.role === 'admin') targetPage = 'admin.html';
+const user = result.user;
+const normalizedRole = normalizeRole(user.role);
 
-                    alert(result.message);
-                    window.location.href = targetPage;
+const userInfo = {
+    email: user.email,
+    name: user.name,
+    role: normalizedRole
+};
+sessionStorage.setItem("currentUser", JSON.stringify(userInfo));
+
+let targetPage = 'student_subject.html';
+if (normalizedRole === 'teacher') targetPage = 'teacher.html';
+if (normalizedRole === 'professor') targetPage = 'professor.html';
+if (normalizedRole === 'admin') targetPage = 'admin.html';
+
+alert(result.message + "\n即將跳轉至您的專屬頁面。");
+window.location.href = targetPage;
+
                     
                 } else {
                     alert(result.message);
@@ -1075,25 +1213,28 @@ try {
 }
 
 
-                if (result.result === 'success') {
-                    const user = result.user;
-                    
-                    const userInfo = {
-                        email: user.email,
-                        name: user.name,
-                        role: user.role
-                    };
-                    sessionStorage.setItem("currentUser", JSON.stringify(userInfo));
-                    
-                    // 修改處：若角色為 student，跳轉至 student_subject.html
-                    let targetPage = 'student_subject.html';
-                    if (user.role === 'teacher') targetPage = 'teacher.html';
-                    if (user.role === 'professor') targetPage = 'professor.html';
-                    alert(result.message + "\n即將跳轉至您的專屬頁面。");
-                    window.location.href = targetPage;
-                } else {
-                    alert("註冊失敗: " + result.message);
-                }
+if (result.result === 'success') {
+    const user = result.user;
+    const normalizedRole = normalizeRole(user.role);
+
+    const userInfo = {
+        email: user.email,
+        name: user.name,
+        role: normalizedRole
+    };
+
+    sessionStorage.setItem("currentUser", JSON.stringify(userInfo));
+
+    let targetPage = 'student_subject.html';
+    if (normalizedRole === 'teacher') targetPage = 'teacher.html';
+    if (normalizedRole === 'professor') targetPage = 'professor.html';
+    if (normalizedRole === 'admin') targetPage = 'admin.html';
+
+    alert(result.message + "\n即將跳轉至您的專屬頁面。");
+    window.location.href = targetPage;
+} else {
+    alert("註冊失敗: " + result.message);
+}
             } catch (error) {
                 alert("註冊處理錯誤，請檢查 GAS 連結或連線問題: " + error.toString());
             } finally {
@@ -1148,10 +1289,13 @@ function handleForgotPassword(e) {
         function closeLogoutModal() {
             document.getElementById('logout-modal').classList.add('hidden');
         }
-        function confirmLogout() {
-            sessionStorage.removeItem("currentUser");
-            location.reload();
-        }
+function confirmLogout() {
+    sessionStorage.removeItem("currentUser");
+    syncSessionUI();
+    goHome();
+    closeLogoutModal();
+}
+
     </script>
   
 </body>
