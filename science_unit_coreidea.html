@@ -20,12 +20,28 @@
                 }
             }
         }
-        mermaid.initialize({
-            startOnLoad: false,
-            theme: 'neutral',
-            securityLevel: 'loose',
-            flowchart: { useMaxWidth: false, htmlLabels: true }
-        });
+mermaid.initialize({
+    startOnLoad: false,
+    theme: 'neutral',
+    securityLevel: 'loose',
+    themeVariables: {
+        fontSize: '22px',
+        primaryColor: '#e0f2fe',
+        primaryTextColor: '#0f172a',
+        primaryBorderColor: '#38bdf8',
+        lineColor: '#0ea5e9',
+        secondaryColor: '#f8fafc',
+        tertiaryColor: '#ffffff'
+    },
+    flowchart: {
+        useMaxWidth: false,
+        htmlLabels: true,
+        nodeSpacing: 60,
+        rankSpacing: 80,
+        curve: 'basis'
+    }
+});
+
     </script>
     
     <style>
@@ -123,9 +139,55 @@
         }
         .vocab-item .text-slate-600 { color: #475569 !important; }
         
-        .loader { border-color: rgba(255,255,255,0.1); border-top-color: #38bdf8; }
-        .no-print { display: block; }
-        @media print { .no-print { display: none !important; } }
+.loader { border-color: rgba(255,255,255,0.1); border-top-color: #38bdf8; }
+.no-print { display: block; }
+@media print { .no-print { display: none !important; } }
+
+#chart-container {
+  min-height: 420px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+#mermaid-chart {
+  min-width: 900px;
+  width: 100%;
+}
+
+#mermaid-chart svg {
+  display: block;
+  margin: 0 auto;
+}
+
+#mermaid-chart .node text,
+#modal-content .node text {
+  font-size: 20px !important;
+  font-weight: 700 !important;
+}
+
+#mermaid-chart .label,
+#modal-content .label {
+  font-size: 20px !important;
+}
+
+@media (max-width: 640px) {
+  #chart-container {
+    min-height: 320px;
+  }
+
+  #mermaid-chart {
+    min-width: 700px;
+  }
+
+  #mermaid-chart .node text,
+  #modal-content .node text,
+  #mermaid-chart .label,
+  #modal-content .label {
+    font-size: 18px !important;
+  }
+}
+
 
         /* Loading 彩虹科技光條 + 文字亮度提升 */
 .loading-screen{
@@ -339,13 +401,17 @@
            7. 小科定位與特效
            ========================================= */
         #floating-chat {
-            position: fixed; 
-            bottom: 1.5rem; right: 1.5rem;
-            display: flex; flex-direction: column; align-items: end;
-            z-index: 9999;
-            touch-action: none; 
-            user-select: none;
-        }
+    position: fixed; 
+    bottom: 1.5rem; 
+    right: max(1.5rem, env(safe-area-inset-right));
+    display: flex; 
+    flex-direction: column; 
+    align-items: end;
+    z-index: 9999;
+    touch-action: none; 
+    user-select: none;
+}
+
         
         /* 桌面版：小科視窗強制定位在「圖示上方」且往左上方展開 */
         @media (min-width: 641px) {
@@ -392,7 +458,11 @@
             nav h1 { font-size: 1.1rem; }
             main { padding-top: 5rem !important; padding-bottom: 7rem !important; }
             
-            #floating-chat { bottom: 1rem; right: 1rem; }
+            #floating-chat { 
+    bottom: 1rem; 
+    right: max(1rem, env(safe-area-inset-right)); 
+}
+
             
             /* 手機版視窗佔滿底部 */
             #xiaoke-window {
@@ -484,10 +554,11 @@
 
         <div id="loading-view" class="hidden fixed inset-0 z-[9999] bg-[#0B1121] flex flex-col items-center justify-center">
     <div class="absolute top-10 text-center w-full px-4">
-        <h3 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 mb-2 animate-pulse">
-            AI 正在幫你整理重點，請耐心等候！
-        </h3>
-        <p class="text-slate-400 text-sm mb-4">等待時來玩個遊戲吧！<br>電腦：左右鍵移動 / 手機：點擊螢幕左右側</p>
+       <h3 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 mb-2 animate-pulse" data-i18n="loading_ai">
+    AI 正在幫你整理重點，請耐心等候！
+</h3>
+<p class="text-slate-400 text-sm mb-4" data-i18n="loading_game_tip">等待時來玩個遊戲吧！<br>電腦：左右鍵移動 / 手機：點擊螢幕左右側</p>
+
         <div class="inline-block bg-slate-800/80 border border-slate-600 px-4 py-2 rounded-lg">
             <span class="text-slate-300 text-xs uppercase tracking-wider">Score</span>
             <span id="game-score" class="text-xl font-mono font-bold text-yellow-400 ml-2">0</span>
@@ -527,12 +598,20 @@
                     <div id="summary-text" class="prose max-w-none leading-relaxed"></div>
                 </div>
                 
-                <div id="vocab-panel" class="glass-panel p-6 rounded-2xl shadow-sm flex flex-col">
-                    <h3 class="font-bold text-slate-700 mb-4 text-xl"><span data-i18n="title_vocab">科學詞彙與定義</span></h3>
-                    <div class="flex-1 overflow-y-auto custom-scrollbar min-h-0 pr-2">
-                        <div id="keywords-list" class="space-y-3 pb-2"></div>
-                    </div>
-                </div>
+             <div id="vocab-panel" class="glass-panel p-6 rounded-2xl shadow-sm flex flex-col">
+    <div class="flex justify-between items-center mb-4 cursor-pointer select-none" onclick="toggleSection('vocab-content', 'vocab-toggle-icon')">
+        <h3 class="font-bold text-slate-700 text-xl"><span data-i18n="title_vocab">科學詞彙與定義</span></h3>
+        <i id="vocab-toggle-icon" class="fa-solid fa-chevron-down text-slate-500 transition-transform"></i>
+    </div>
+    <div id="vocab-content" class="hidden">
+    <div class="text-xs text-slate-500 mb-3">展開後可查看本單元重要詞彙與定義</div>
+
+        <div class="flex-1 overflow-y-auto custom-scrollbar min-h-0 pr-2">
+            <div id="keywords-list" class="space-y-3 pb-2"></div>
+        </div>
+    </div>
+</div>
+
 
                 <div class="md:col-span-3 glass-panel p-6 rounded-2xl shadow-sm pdf-page-break">
                     <div class="flex justify-between items-center mb-4">
@@ -546,29 +625,45 @@
                         </button>
                     </div>
                     <div class="bg-slate-50 rounded-xl p-4 md:p-6 border border-slate-100 overflow-hidden w-full relative h-auto" id="chart-container">
-                        <div class="click-mask" onclick="openModal()"></div>
-                        <div id="mermaid-chart" class="w-full"></div>
-                    </div>
+    <div class="click-mask" onclick="openModal()"></div>
+    <div class="text-xs text-slate-500 mb-2 no-pdf">圖表過寬時可左右滑動，點擊可放大</div>
+    <div id="mermaid-chart" class="w-full"></div>
+</div>
+
                 </div>
                 
-                <div class="md:col-span-3 glass-panel p-6 rounded-2xl shadow-sm pdf-page-break">
-                    <h3 class="font-bold text-orange-600 mb-4 text-xl">
-                        <i class="fa-solid fa-lightbulb"></i> 
-                        <span data-i18n="title_myth">科學動動腦</span>
-                    </h3>
-                    <div id="myth-list" class="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch"></div>
-                </div>
+               <div class="md:col-span-3 glass-panel p-6 rounded-2xl shadow-sm pdf-page-break">
+    <div class="flex justify-between items-center mb-4 cursor-pointer select-none" onclick="toggleSection('myth-content', 'myth-toggle-icon')">
+        <h3 class="font-bold text-orange-600 text-xl">
+            <i class="fa-solid fa-lightbulb"></i> 
+            <span data-i18n="title_myth">科學動動腦</span>
+        </h3>
+        <i id="myth-toggle-icon" class="fa-solid fa-chevron-down text-slate-500 transition-transform"></i>
+    </div>
+    <div id="myth-content" class="hidden">
+    <div class="text-xs text-slate-500 mb-3">展開後可進行觀念判斷練習</div>
+        <div id="myth-list" class="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch"></div>
+    </div>
+</div>
 
-                <div id="quiz-panel" class="md:col-span-3 glass-panel p-6 rounded-2xl shadow-sm">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-emerald-700 text-xl flex items-center gap-2">
-                            <i class="fa-solid fa-circle-question"></i>
-                            <span id="quiz-title">單元小測驗</span>
-                        </h3>
-                        <div id="quiz-progress" class="text-xs font-bold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">
-                            第 0 題／共 0 題
-                        </div>
-                    </div>
+
+               <div id="quiz-panel" class="md:col-span-3 glass-panel p-6 rounded-2xl shadow-sm">
+    <div class="flex justify-between items-center mb-4 cursor-pointer select-none" onclick="toggleSection('quiz-content', 'quiz-toggle-icon')">
+        <h3 class="font-bold text-emerald-700 text-xl flex items-center gap-2">
+            <i class="fa-solid fa-circle-question"></i>
+            <span id="quiz-title">單元小測驗</span>
+        </h3>
+        <div class="flex items-center gap-3">
+            <div id="quiz-progress" class="text-xs font-bold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">
+                第 0 題／共 0 題
+            </div>
+            <i id="quiz-toggle-icon" class="fa-solid fa-chevron-down text-slate-500 transition-transform"></i>
+        </div>
+    </div>
+    <div id="quiz-content" class="hidden">
+    <div class="text-xs text-slate-500 mb-3">展開後可進行單元測驗與作答分析</div>
+
+
                     <div id="quiz-body" class="space-y-3">
                         <div id="quiz-question" class="font-bold text-slate-800 mb-2 leading-relaxed text-sm md:text-base"></div>
                         <div id="quiz-options" class="space-y-2"></div>
@@ -576,7 +671,7 @@
                         <div class="mt-4 flex justify-center items-center relative z-[200]">
                             <button id="quiz-main-btn" type="button" onclick="handleQuizMainButton()"
                                 class="text-xs px-4 py-2 rounded-full bg-emerald-600 text-white font-semibold shadow border border-emerald-700/60 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed">
-                                下一題
+                                <span data-i18n="quiz_next">下一題</span>
                             </button>
                         </div>
                     </div>
@@ -584,11 +679,11 @@
                     <div id="quiz-empty" class="text-sm text-slate-500">
                         本單元的小測驗尚未準備好，之後會由老師再補上喔。
                     </div>
-
                     <div id="quiz-result" class="mt-6 hidden rounded-2xl border border-emerald-300 bg-white shadow-sm p-4">
                         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
                             <div>
-                                <div class="text-xs font-semibold text-slate-500">你的測驗成績</div>
+                                <div class="text-xs font-semibold text-slate-500" data-i18n="label_score">你的測驗成績</div>
+
                                 <div id="quiz-score-number" class="text-3xl font-black text-emerald-700">0 分</div>
                                 <div id="quiz-score-label" class="text-xs font-semibold text-emerald-600 mt-1"></div>
                             </div>
@@ -604,7 +699,9 @@
                 </div>
             </div>
         </div>
+        </div>
     </main>
+
 
     <div id="floating-chat" class="hidden fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-3 no-print" style="touch-action: none; display: none;">
         
@@ -658,10 +755,48 @@ function getCurrentTimeString() {
     const ss = String(now.getSeconds()).padStart(2, '0');
     return `${hh}:${mm}:${ss}`;
 }
-        
-    let allData = [];
-    let filters = {};
-    let currentResultData = null;
+ function logEvent(eventName, detail = "", value = "", duration = "") {
+    let currentUser = { name: "訪客", account: "訪客" };
+
+    try {
+        const raw = sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser");
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            currentUser = {
+                name: parsed.name || "訪客",
+                account: parsed.account || parsed.name || "訪客"
+            };
+        }
+    } catch (e) {}
+
+    const payload = {
+        action: "log_event",
+        account: currentUser.account,
+        userName: currentUser.name,
+        session_id: sessionId,
+        event: eventName,
+        stage: filters.stage || "",
+        grade: filters.grade || "",
+        semester: filters.semester || "",
+        unitName: filters.unitName || "",
+        detail: detail || "",
+        value: value || "",
+        duration: duration || "",
+        page: "science_unit_coreidea"
+    };
+
+    fetch(GAS_API_URL, {
+        method: "POST",
+        body: JSON.stringify(payload)
+    }).catch(err => console.log("事件紀錄失敗（可忽略）:", err));
+}
+       
+let allData = [];
+let filters = {};
+let currentResultData = null;
+let sessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+let pageEnterTime = Date.now();
+
     let mythData = [];
     let quizState = {
         questions: [],
@@ -689,7 +824,24 @@ function getCurrentTimeString() {
             title_vocab:"科學詞彙與定義", 
             title_map:"知識架構圖", 
             title_myth:"科學動動腦",
-            select_default: "請選擇" 
+title_quiz:"單元小測驗",
+label_score:"你的測驗成績",
+loading_db:"Loading...",
+db_connected:"資料庫連線成功",
+db_failed:"連線失敗",
+db_retry:"連線失敗，請重試...",
+loading_ai:"AI 正在幫你整理重點，請耐心等候！",
+loading_game_tip:"等待時來玩個遊戲吧！\n電腦：左右鍵移動 / 手機：點擊螢幕左右側",
+quiz_no_data:"本單元的小測驗尚未準備好，之後會由老師再補上喔。",
+quiz_progress_empty:"第 0 題／共 0 題",
+quiz_next:"下一題",
+quiz_result:"看結果",
+quiz_correct:"恭喜答對了！你真棒！",
+quiz_wrong:"可惜答錯了，再試試！",
+myth_correct:"恭喜答對了！你真棒！",
+myth_wrong:"可惜答錯了，再試試！",
+select_default: "請選擇"
+
         },
         "en": { 
             back_home:"Back to AI Science", 
@@ -709,6 +861,23 @@ function getCurrentTimeString() {
             title_map:"Mind Map", 
             title_myth:"Thinking Check",
             select_default: "Select..." 
+            title_quiz:"Unit Quiz",
+label_score:"Your Quiz Score",
+loading_db:"Loading...",
+db_connected:"Database connected",
+db_failed:"Connection failed",
+db_retry:"Connection failed, please retry...",
+loading_ai:"AI is generating your summary. Please wait!",
+loading_game_tip:"Play a game while waiting!\nDesktop: arrow keys / Mobile: tap left or right side",
+quiz_no_data:"No quiz is available for this unit yet.",
+quiz_progress_empty:"Question 0 / 0",
+quiz_next:"Next",
+quiz_result:"See Result",
+quiz_correct:"Correct! Great job!",
+quiz_wrong:"Not quite, try again!",
+myth_correct:"Correct! Great job!",
+myth_wrong:"Not quite, try again!",
+
         },
         "ja": { 
             back_home:"AI Scienceに戻る", 
@@ -728,6 +897,23 @@ function getCurrentTimeString() {
             title_map:"知識マップ", 
             title_myth:"考えてみよう",
             select_default: "選択してください" 
+        title_quiz:"単元クイズ",
+label_score:"あなたの成績",
+loading_db:"読み込み中...",
+db_connected:"データベース接続成功",
+db_failed:"接続失敗",
+db_retry:"接続に失敗しました。再試行してください。",
+loading_ai:"AIが要点を整理しています。しばらくお待ちください！",
+loading_game_tip:"待っている間にゲームで遊ぼう！\nPC: 矢印キー / スマホ: 左右をタップ",
+quiz_no_data:"この単元のクイズはまだ準備中です。",
+quiz_progress_empty:"第 0 問 / 全 0 問",
+quiz_next:"次へ",
+quiz_result:"結果を見る",
+quiz_correct:"正解です！すばらしい！",
+quiz_wrong:"残念、もう一度！",
+myth_correct:"正解です！すばらしい！",
+myth_wrong:"残念、もう一度！",
+
         },
         "zh-CN": { 
             back_home:"返回 AI Science", 
@@ -747,6 +933,23 @@ function getCurrentTimeString() {
             title_map:"知识架构图", 
             title_myth:"科学动动脑",
             select_default: "请选择" 
+            title_quiz:"单元小测验",
+label_score:"你的测验成绩",
+loading_db:"Loading...",
+db_connected:"数据库连接成功",
+db_failed:"连接失败",
+db_retry:"连接失败，请重试...",
+loading_ai:"AI 正在帮你整理重点，请耐心等候！",
+loading_game_tip:"等待时来玩个游戏吧！\n电脑：左右键移动 / 手机：点击屏幕左右侧",
+quiz_no_data:"本单元的小测验尚未准备好，之后会由老师再补上哦。",
+quiz_progress_empty:"第 0 题／共 0 题",
+quiz_next:"下一题",
+quiz_result:"看结果",
+quiz_correct:"恭喜答对了！你真棒！",
+quiz_wrong:"可惜答错了，再试试！",
+myth_correct:"恭喜答对了！你真棒！",
+myth_wrong:"可惜答错了，再试试！",
+
         }
     };
 
@@ -777,6 +980,8 @@ if (userInfo) userInfo.innerText = user.name || "訪客";
 
 // 立刻把格式「正規化」回存，避免下次再爆
 sessionStorage.setItem("currentUser", JSON.stringify(user));
+        logEvent("page_view", "進入單元重點精熟頁");
+
 // 若你希望關掉瀏覽器也保留登入，再加這行：
 // localStorage.setItem("currentUser", JSON.stringify(user));
 
@@ -832,15 +1037,59 @@ sessionStorage.setItem("currentUser", JSON.stringify(user));
         }
     };
 
-    function changeLanguage() {
-        const langSel = document.getElementById("language-selector");
-        if (!langSel) return;
-        const lang = langSel.value;
-        document.querySelectorAll("[data-i18n]").forEach(el => {
-            const key = el.getAttribute("data-i18n");
-            if (i18n[lang][key]) el.innerText = i18n[lang][key];
-        });
+function changeLanguage() {
+    const langSel = document.getElementById("language-selector");
+    if (!langSel) return;
+
+    const lang = langSel.value;
+    const t = i18n[lang] || i18n["zh-TW"];
+
+document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    if (!t[key]) return;
+
+    if (key === "loading_game_tip") {
+        el.innerHTML = t[key].replace(/\n/g, "<br>");
+    } else {
+        el.innerText = t[key];
     }
+});
+
+
+    const dbStatus = document.getElementById("db-status");
+    if (dbStatus && dbStatus.innerText.includes("Loading")) {
+        dbStatus.innerText = t.loading_db || "Loading...";
+    }
+
+    const quizTitle = document.getElementById("quiz-title");
+    if (quizTitle && !filters.unitName) {
+        quizTitle.innerText = t.title_quiz || "單元小測驗";
+    }
+
+    const scoreLabel = document.getElementById("quiz-score-label");
+    if (scoreLabel && scoreLabel.previousElementSibling && scoreLabel.previousElementSibling.previousElementSibling) {
+        const labelEl = scoreLabel.previousElementSibling.previousElementSibling;
+        if (labelEl.classList.contains("text-xs")) {
+            labelEl.innerText = t.label_score || "你的測驗成績";
+        }
+    }
+
+    const quizEmpty = document.getElementById("quiz-empty");
+    if (quizEmpty) {
+        quizEmpty.innerText = t.quiz_no_data || "本單元的小測驗尚未準備好，之後會由老師再補上喔。";
+    }
+
+    const quizProgress = document.getElementById("quiz-progress");
+    if (quizProgress && quizProgress.innerText.includes("第 0")) {
+        quizProgress.innerText = t.quiz_progress_empty || "第 0 題／共 0 題";
+    }
+
+    const quizMainBtn = document.getElementById("quiz-main-btn");
+    if (quizMainBtn && quizMainBtn.innerText.trim() === "下一題") {
+        quizMainBtn.innerText = t.quiz_next || "下一題";
+    }
+}
+
 
     function initSelectors() {
         const stages = [...new Set(allData.map(d => d.stage))];
@@ -925,20 +1174,71 @@ sessionStorage.setItem("currentUser", JSON.stringify(user));
         });
         el.disabled=false;
     }
+function showLoadingView() {
+    const selPanel = document.getElementById("selection-panel");
+    const loading = document.getElementById("loading-view");
+    const contentView = document.getElementById("content-view");
+    const modal = document.getElementById("image-modal");
+    const chatWin = document.getElementById("xiaoke-window");
+
+    if (selPanel) selPanel.classList.add("hidden");
+    if (contentView) contentView.classList.add("hidden");
+
+    if (loading) {
+        loading.classList.remove("hidden");
+        loading.classList.add("flex");
+    }
+
+    if (modal) {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+    }
+
+    if (chatWin) {
+        chatWin.classList.add("closed");
+        chatWin.classList.add("hidden");
+    }
+}
+
+function showSelectionView() {
+    const selPanel = document.getElementById("selection-panel");
+    const loading = document.getElementById("loading-view");
+    const contentView = document.getElementById("content-view");
+
+    if (selPanel) selPanel.classList.remove("hidden");
+
+    if (loading) {
+        loading.classList.add("hidden");
+        loading.classList.remove("flex");
+    }
+
+    if (contentView) {
+        contentView.classList.add("hidden");
+    }
+
+    stopSpaceGame();
+}
+
+function showContentView() {
+    const loading = document.getElementById("loading-view");
+    const contentView = document.getElementById("content-view");
+
+    if (loading) {
+        loading.classList.add("hidden");
+        loading.classList.remove("flex");
+    }
+
+    if (contentView) {
+        contentView.classList.remove("hidden");
+    }
+
+    stopSpaceGame();
+}
 
 async function startGeneration() {
-        const selPanel = document.getElementById("selection-panel");
-        const loading = document.getElementById("loading-view");
-        
-        if (selPanel) selPanel.classList.add("hidden");
-        
-        if (loading) {
-            loading.classList.remove("hidden");
-            loading.classList.add("flex");
-            
-            // ★★★ 3.1 新增這行：顯示 Loading 時，同時啟動遊戲 ★★★
-            initSpaceGame();
-        }
+showLoadingView();
+initSpaceGame();
+logEvent("generate_start", "開始生成單元內容");
 
         try {
             const res = await fetch(GAS_API_URL, { 
@@ -961,24 +1261,18 @@ async function startGeneration() {
 
             if(json.status === "success") { 
                 currentResultData = json.data; 
+                logEvent("generate_success", "成功生成單元內容", filters.unitName || "");
                 renderResult(json.data); 
                 // 注意：renderResult 裡面我們已經加了 stopSpaceGame()，所以這裡不用加
             } else {
                 throw new Error(json.message || "API 返回狀態為失敗");
             }
 } catch(e) { 
+            logEvent("generate_fail", e.message || "unknown_error", filters.unitName || "");
             alert("AI 生成失敗！請檢查 API 或重試。\n錯誤訊息: " + e.message); 
             
-            const selPanelAgain = document.getElementById("selection-panel");
-            if (selPanelAgain) selPanelAgain.classList.remove("hidden");
-            
-            const loadingAgain = document.getElementById("loading-view");
-            if (loadingAgain) {
-                loadingAgain.classList.add("hidden");
-                loadingAgain.classList.remove("flex");
-                stopSpaceGame();
-            }
-            
+showSelectionView();
+           
             const btn = document.getElementById("btn-generate");
             if (btn) btn.disabled = false;
         }
@@ -1029,21 +1323,25 @@ async function renderMermaidSafe(targetEl, rawCode) {
         return;
     }
 
-    // 關鍵：用 textContent，不用 innerHTML（避免 <br> 等被瀏覽器當 HTML 吃掉）
     targetEl.innerHTML = "";
+    targetEl.style.overflowX = "auto";
+    targetEl.style.overflowY = "hidden";
+
     const wrapper = document.createElement("div");
     wrapper.className = "mermaid";
     wrapper.textContent = code;
+    wrapper.style.minWidth = "900px";
+    wrapper.style.padding = "12px";
     targetEl.appendChild(wrapper);
 
     try {
         if (mermaid.parse) {
             await mermaid.parse(code);
         }
+
         if (mermaid.run) {
             await mermaid.run({ nodes: [wrapper] });
         } else {
-            // 後備（理論上 v10 有 run）
             mermaid.init(undefined, [wrapper]);
         }
 
@@ -1051,18 +1349,31 @@ async function renderMermaidSafe(targetEl, rawCode) {
         if (svg) {
             svg.removeAttribute("width");
             svg.removeAttribute("height");
+
             svg.style.width = "100%";
             svg.style.height = "auto";
             svg.style.display = "block";
             svg.style.margin = "0 auto";
             svg.style.fontFamily = '"Microsoft JhengHei", "Noto Sans TC", sans-serif';
-            svg.style.fontSize = "30px";
+
+            if (!svg.getAttribute("viewBox")) {
+                const bbox = svg.getBBox();
+                svg.setAttribute("viewBox", `0 0 ${bbox.width + 40} ${bbox.height + 40}`);
+            }
+
+            const texts = svg.querySelectorAll("text");
+            texts.forEach(t => {
+                t.style.fontSize = "20px";
+                t.style.fontWeight = "700";
+            });
         }
     } catch (e) {
         console.error("Mermaid 繪圖失敗：", e, "\n原始碼：\n", code);
-        targetEl.innerHTML = "架構圖繪製失敗（Mermaid 語法錯誤）";
+        targetEl.innerHTML = `<div class="text-red-500 font-bold">架構圖繪製失敗（Mermaid 語法錯誤）</div>`;
     }
 }
+
+
 
 // ====== [新增：摘要內表格/圖片/Mermaid 強化] ======
 function enhanceSummaryMedia(summaryEl){
@@ -1104,212 +1415,245 @@ function enhanceSummaryMedia(summaryEl){
   }
 }
 
+function renderHeader(data) {
+    const raw = data.raw_content || {};
 
-        
-    function renderResult(data) {
-        console.log("渲染數據:", data);
+    const resultTitle = document.getElementById('result-title');
+    if (resultTitle) {
+        resultTitle.innerText =
+            data.topic ||
+            data.unitName ||
+            raw.unitName ||
+            filters.unitName ||
+            '無標題';
+    }
 
-        const raw = data.raw_content || {};
+    const resultTag = document.getElementById('result-tag');
+    if (resultTag) {
+        const p = data.publisher || filters.publisher || '';
+        const g = data.grade || filters.grade || '';
+        const rawS = data.semester || filters.semester || '';
 
-        const resultTitle = document.getElementById('result-title');
-        if (resultTitle) {
-            resultTitle.innerText =
-                data.topic ||
-                data.unitName ||
-                raw.unitName ||
-                filters.unitName ||
-                '無標題';
-        }
+        let s = rawS;
+        if (rawS === '上') s = '上學期';
+        else if (rawS === '下') s = '下學期';
 
-        const resultTag = document.getElementById('result-tag');
-        if (resultTag) {
-            const p = data.publisher || filters.publisher || '';
-            const g = data.grade || filters.grade || '';
-            const rawS = data.semester || filters.semester || '';
-
-            let s = rawS;
-            if (rawS === '上') s = '上學期';
-            else if (rawS === '下') s = '下學期';
-
-            resultTag.innerText = `${p} ${g}年級 ${s}`;
-        }
-
-        const summaryBox = document.getElementById('summary-text');
-        if (summaryBox) {
-            let content = data.summary;
-            if (typeof content === 'object') {
-                content = content.summary_html || content.html || content.content || content.text || content.summary || '';
-            } else if (!content && raw.text_summary) {
-                content = raw.text_summary;
-            }
-
-            if (content) {
-                if (!content.includes('<') && content.includes('\n')) {
-                    content = content.split('\n').map(line => {
-                        line = line.trim();
-                        if (!line) return '';
-                        if (/^[一二三四五六七八九十]、|^[0-9]+\./.test(line)) {
-                            return `<h3>${line}</h3>`;
-                        }
-                        if (/^[\(（][0-9]+[\)）]|^[-•]/.test(line)) {
-                            return `<ul><li>${line}</li></ul>`;
-                        }
-                        return `<p>${line}</p>`;
-                    }).join('');
-                }
-                
-                if (!content.includes('<div class="summary-card">')) {
-                   const parts = content.split(/(?=<h3>)/); 
-                   if (parts.length > 1) {
-                      content = parts.map(part => `<div class="summary-card">${part}</div>`).join('');
-                   } else {
-                      content = `<div class="summary-card">${content}</div>`;
-                   }
-                }
-                
-                content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            }
-            summaryBox.innerHTML = content || '生成摘要失敗...';
-            enhanceSummaryMedia(summaryBox);
-        }
-
-        const keywordList = document.getElementById('keywords-list');
-        if (keywordList) {
-            keywordList.innerHTML = '';
-
-            let kList =
-                data.keywords ||
-                (data.summary && (data.summary.keywords || data.summary.vocab_list)) ||
-                raw.vocab_list ||
-                [];
-
-            if (Array.isArray(kList) && kList.length > 0) {
-                kList.forEach(k => {
-                    const term = typeof k === 'object' ? (k.term || k.word || '') : k;
-                    const def  = typeof k === 'object' ? (k.def || k.definition || '') : '';
-
-                    if (!term) return;
-
-                    const div = document.createElement('div');
-                    div.className = 'vocab-item bg-white p-3 rounded-xl border border-blue-100 hover:border-blue-300 transition shadow-sm mb-2';
-                    div.innerHTML =
-                        `<span class="font-bold text-blue-700 text-lg block mb-1">${term}</span>` +
-                        `<span class="text-sm text-slate-600 leading-relaxed block">${def}</span>`;
-                    keywordList.appendChild(div);
-                });
-            } else {
-                keywordList.innerHTML = '<div class="text-slate-400 p-2">無詞彙資料</div>';
-                }
-        }
-
-const chartDiv = document.getElementById('mermaid-chart');
-if (chartDiv) {
-  let mapData =
-    data.mindMap ||
-    (data.summary && (data.summary.mindMap || data.summary.mermaid)) ||
-    '';
-
-  if (typeof mapData === 'string') {
-    mapData = mapData.replace(/```mermaid/i, '').replace(/```/g, '').trim();
-  }
-
-  if (mapData) {
-    renderMermaidSafe(chartDiv, mapData);
-  } else {
-    chartDiv.textContent = '無架構圖數據';
-  }
+        resultTag.innerText = `${p} ${g}年級 ${s}`;
+    }
 }
 
-        const mythListEl = document.getElementById('myth-list');
-        if (mythListEl) {
-            mythListEl.innerHTML = '';
+function renderSummarySection(data) {
+    const raw = data.raw_content || {};
+    const summaryBox = document.getElementById('summary-text');
+    if (!summaryBox) return;
 
-            let mList = data.myths || (data.summary && data.summary.myths) || [];
-            if (Array.isArray(mList) && mList.length > 0) {
-                const limitedMyths = mList.slice(0, 10);
-                mythData = limitedMyths;
+    let content = data.summary;
+    if (typeof content === 'object') {
+        content = content.summary_html || content.html || content.content || content.text || content.summary || '';
+    } else if (!content && raw.text_summary) {
+        content = raw.text_summary;
+    }
 
-                limitedMyths.forEach((m, index) => {
-                    const rawMyth    = m.myth || m.misconception || '';
-                    const correctExp = m.correct || m.explanation || '';
+    if (content) {
+        if (!content.includes('<') && content.includes('\n')) {
+            content = content.split('\n').map(line => {
+                line = line.trim();
+                if (!line) return '';
+                if (/^[一二三四五六七八九十]、|^[0-9]+\./.test(line)) {
+                    return `<h3>${line}</h3>`;
+                }
+                if (/^[\(（][0-9]+[\)）]|^[-•]/.test(line)) {
+                    return `<ul><li>${line}</li></ul>`;
+                }
+                return `<p>${line}</p>`;
+            }).join('');
+        }
 
-                    if (!rawMyth && !correctExp) return;
-
-                    let statement = m.question || rawMyth || '';
-                    statement = statement
-                        .replace(/^迷思[:：]\s*/,'')
-                        .replace(/^常見想法[:：]\s*/,'')
-                        .trim();
-
-                    const cardId = `myth-${index}`;
-                    const div = document.createElement('div');
-                    div.className = 'bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3';
-
-                    div.innerHTML = `
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-50 text-blue-600 text-xs font-bold">Q${index + 1}</span>
-                                <span class="text-xs font-bold text-slate-500">科學動動腦</span>
-                            </div>
-                            <span class="text-[11px] text-slate-400">先想一想，再作答</span>
-                        </div>
-                        <div class="text-sm md:text-base text-slate-800 leading-relaxed"><b>${statement}</b></div>
-                        <div class="flex flex-col sm:flex-row gap-2">
-                            <button id="${cardId}-btn-true" onclick="answerMyth(${index}, true)" class="myth-option-btn flex-1 px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-blue-300 text-slate-700 text-center">
-                                <span class="block font-semibold">正確 O</span>
-                            </button>
-                            <button id="${cardId}-btn-false" onclick="answerMyth(${index}, false)" class="myth-option-btn flex-1 px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-emerald-300 text-slate-700 text-center">
-                                <span class="block font-semibold">錯誤 X</span>
-                            </button>
-                        </div>
-                        <div id="${cardId}-feedback" class="mt-3 hidden text-sm leading-relaxed rounded-xl border border-slate-100 bg-slate-50 px-3 py-2"></div>
-                    `;
-                    mythListEl.appendChild(div);
-                });
+        if (!content.includes('<div class="summary-card">')) {
+            const parts = content.split(/(?=<h3>)/);
+            if (parts.length > 1) {
+                content = parts.map(part => `<div class="summary-card">${part}</div>`).join('');
             } else {
-                mythListEl.innerHTML = '<div class="text-slate-400 p-2">本單元暫無「科學動動腦」小題。</div>';
-                mythData = [];
+                content = `<div class="summary-card">${content}</div>`;
             }
         }
 
-       const quizRaw = data.quiz || (data.summary && data.summary.quiz) || [];
-        initQuiz(quizRaw);
+        content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    }
+
+    summaryBox.innerHTML = content || '生成摘要失敗...';
+    enhanceSummaryMedia(summaryBox);
+}
+
+function renderKeywordsSection(data) {
+    const raw = data.raw_content || {};
+    const keywordList = document.getElementById('keywords-list');
+    if (!keywordList) return;
+
+    keywordList.innerHTML = '';
+
+    let kList =
+        data.keywords ||
+        (data.summary && (data.summary.keywords || data.summary.vocab_list)) ||
+        raw.vocab_list ||
+        [];
+
+    if (Array.isArray(kList) && kList.length > 0) {
+        kList.forEach(k => {
+            const term = typeof k === 'object' ? (k.term || k.word || '') : k;
+            const def  = typeof k === 'object' ? (k.def || k.definition || '') : '';
+
+            if (!term) return;
+
+            const div = document.createElement('div');
+            div.className = 'vocab-item bg-white p-3 rounded-xl border border-blue-100 hover:border-blue-300 transition shadow-sm mb-2';
+            div.innerHTML =
+                `<span class="font-bold text-blue-700 text-lg block mb-1">${term}</span>` +
+                `<span class="text-sm text-slate-600 leading-relaxed block">${def}</span>`;
+            keywordList.appendChild(div);
+        });
+    } else {
+        keywordList.innerHTML = '<div class="text-slate-400 p-2">無詞彙資料</div>';
+    }
+}
+
+function renderMindMapSection(data) {
+    const chartDiv = document.getElementById('mermaid-chart');
+    if (!chartDiv) return;
+
+    let mapData =
+        data.mindMap ||
+        (data.summary && (data.summary.mindMap || data.summary.mermaid)) ||
+        '';
+
+    if (typeof mapData === 'string') {
+        mapData = mapData.replace(/```mermaid/i, '').replace(/```/g, '').trim();
+    }
+
+    if (mapData) {
+        renderMermaidSafe(chartDiv, mapData);
+    } else {
+        chartDiv.textContent = '無架構圖數據';
+    }
+}
+
+function renderMythsSection(data) {
+    const mythListEl = document.getElementById('myth-list');
+    if (!mythListEl) return;
+
+    mythListEl.innerHTML = '';
+
+    let mList = data.myths || (data.summary && data.summary.myths) || [];
+    if (Array.isArray(mList) && mList.length > 0) {
+        const limitedMyths = mList.slice(0, 10);
+        mythData = limitedMyths;
+
+        limitedMyths.forEach((m, index) => {
+            const rawMyth = m.myth || m.misconception || '';
+            const correctExp = m.correct || m.explanation || '';
+            if (!rawMyth && !correctExp) return;
+
+            let statement = m.question || rawMyth || '';
+            statement = statement.replace(/^迷思[:：]\s*/, '').replace(/^常見想法[:：]\s*/, '').trim();
+
+            const cardId = `myth-${index}`;
+            const div = document.createElement('div');
+            div.className = 'bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3';
+
+            div.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-50 text-blue-600 text-xs font-bold">Q${index + 1}</span>
+                        <span class="text-xs font-bold text-slate-500">科學動動腦</span>
+                    </div>
+                    <span class="text-[11px] text-slate-400">先想一想，再作答</span>
+                </div>
+                <div class="text-sm md:text-base text-slate-800 leading-relaxed"><b>${statement}</b></div>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <button id="${cardId}-btn-true" onclick="answerMyth(${index}, true)" class="myth-option-btn flex-1 px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-blue-300 text-slate-700 text-center">
+                        <span class="block font-semibold">正確 O</span>
+                    </button>
+                    <button id="${cardId}-btn-false" onclick="answerMyth(${index}, false)" class="myth-option-btn flex-1 px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-emerald-300 text-slate-700 text-center">
+                        <span class="block font-semibold">錯誤 X</span>
+                    </button>
+                </div>
+                <div id="${cardId}-feedback" class="mt-3 hidden text-sm leading-relaxed rounded-xl border border-slate-100 bg-slate-50 px-3 py-2"></div>
+            `;
+            mythListEl.appendChild(div);
+        });
+    } else {
+        mythListEl.innerHTML = '<div class="text-slate-400 p-2">本單元暫無「科學動動腦」小題。</div>';
+        mythData = [];
+    }
+}
+
+function renderQuizSection(data) {
+    const quizRaw = data.quiz || (data.summary && data.summary.quiz) || [];
+    initQuiz(quizRaw);
+}
+
+function finalizeResultView() {
+    const btn = document.getElementById('btn-generate');
+    const chatBtn = document.getElementById('floating-chat');
+    const chatWin = document.getElementById("xiaoke-window");
+    const tooltip = document.getElementById("xiaoke-tooltip");
+
+showContentView();
+
+
+    if (btn) btn.disabled = false;
+
+    if (chatBtn) {
+        chatBtn.classList.remove('hidden');
+        chatBtn.style.display = 'flex';
+    }
+
+    if (chatWin) {
+        chatWin.classList.add("closed");
+        chatWin.classList.add("hidden");
+    }
+
+    if (tooltip) {
+        tooltip.classList.remove("show");
+    }
+
+    setTimeout(syncVocabHeight, 100);
+        setTimeout(() => {
+        const summaryPanel = document.getElementById("summary-panel");
+        if (summaryPanel) {
+            summaryPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+    }, 180);
+}
+
+        
+function renderResult(data) {
+    console.log("渲染數據:", data);
+
+    try {
+        renderHeader(data);
+        renderSummarySection(data);
+        renderKeywordsSection(data);
+        renderMindMapSection(data);
+        renderMythsSection(data);
+        renderQuizSection(data);
+        finalizeResultView();
+    } catch (e) {
+        console.error("renderResult 發生錯誤：", e);
+        alert("內容生成成功，但畫面渲染失敗，請打開 F12 查看錯誤。");
 
         const loadingView = document.getElementById('loading-view');
-        const contentView = document.getElementById('content-view');
-        
         if (loadingView) {
             loadingView.classList.add('hidden');
             loadingView.classList.remove('flex');
             stopSpaceGame();
         }
-        
-        if (contentView) {
-            contentView.classList.remove('hidden');
-        }
 
         const btn = document.getElementById('btn-generate');
         if (btn) btn.disabled = false;
-        
-        // ★ [修正] 成功生成後，移除 inline style 顯示懸浮按鈕
-        const chatBtn = document.getElementById('floating-chat');
-        if (chatBtn) {
-            chatBtn.classList.remove('hidden'); 
-            chatBtn.style.display = 'flex'; // 恢復 flex 佈局
-        }
-        const chatWin = document.getElementById("xiaoke-window");
-        if(chatWin) {
-            chatWin.classList.add("closed");
-            chatWin.classList.add("hidden");
-        }
-        const tooltip = document.getElementById("xiaoke-tooltip");
-        if (tooltip) {
-            tooltip.classList.add("show");
-            setTimeout(() => { tooltip.classList.remove("show"); }, 5000);
-        }
-
-        setTimeout(syncVocabHeight, 100);
     }
+}
+
 // ===============================
 //  [TXT 百萬美元版] 工具函式
 //  放在 downloadTXT() 前面即可
@@ -1624,6 +1968,7 @@ function buildMillionDollarTXT() {
     alert("請先生成內容後再下載！");
     return;
   }
+logEvent("txt_download", "下載 TXT", filters.unitName || "");
 
   try {
     const unitName =
@@ -1677,7 +2022,17 @@ if (chatBody && chatBody.innerHTML.trim() === "") {
                     currentUnitName = sel.options[sel.selectedIndex].text;
                 }
 
-                const greetMsg = `Hi，你好！我是小科，關於【${currentUnitName}】，你有什麼問題要問我？`;
+                const lang = document.getElementById("language-selector")?.value || "zh-TW";
+let greetMsg = `Hi，你好！我是小科，關於【${currentUnitName}】，你有什麼問題要問我？`;
+
+if (lang === "en") {
+    greetMsg = `Hi! I'm XiaoKe. What would you like to ask about [${currentUnitName}]?`;
+} else if (lang === "ja") {
+    greetMsg = `こんにちは、私は小科です。【${currentUnitName}】について何を聞きたいですか？`;
+} else if (lang === "zh-CN") {
+    greetMsg = `Hi，你好！我是小科，关于【${currentUnitName}】，你有什么问题要问我？`;
+}
+
                 const timeStr = getCurrentTimeString(); // 取得時間
                 chatBody.innerHTML = `
                     <div class="self-start flex gap-2 max-w-[90%]">
@@ -1876,41 +2231,71 @@ if (cleanReply) {
   }
 }
 
-
-    function openModal() {
-        const chartDiv = document.getElementById("mermaid-chart");
-        if (!chartDiv || !chartDiv.innerHTML.trim() || chartDiv.innerText.includes("錯誤")) {
-            return;
-        }
-
-        const modal   = document.getElementById("image-modal");
-        const content = document.getElementById("modal-content");
-        if (!modal || !content) return;
-
-        content.innerHTML = chartDiv.innerHTML;
-        content.className = "bg-white rounded-lg shadow-2xl w-[98vw] h-auto max-h-[95vh] overflow-auto p-4 relative";
-
-        const wrapper = content.querySelector(".mermaid");
-        if (wrapper) {
-            wrapper.style.width = "100%";
-            wrapper.style.overflow = "auto";
-        }
-
-        const svg = content.querySelector("svg");
-        if (svg) {
-            svg.removeAttribute("style");
-            svg.removeAttribute("width");
-            svg.removeAttribute("height");
-
-            svg.style.display = "block";
-            svg.style.margin  = "0 auto";
-            svg.style.width  = "100%";   
-            svg.style.height = "auto";
-        }
-
-        modal.classList.remove("hidden");
-        modal.classList.add("flex");
+function openModal() {
+    const chartDiv = document.getElementById("mermaid-chart");
+    if (!chartDiv || !chartDiv.innerHTML.trim() || chartDiv.innerText.includes("錯誤")) {
+        return;
     }
+
+    const modal = document.getElementById("image-modal");
+    const content = document.getElementById("modal-content");
+    if (!modal || !content) return;
+
+    content.innerHTML = chartDiv.innerHTML;
+    content.className = "bg-white rounded-lg shadow-2xl w-[98vw] max-w-[1600px] h-auto max-h-[95vh] overflow-auto p-6 relative";
+
+    const wrapper = content.querySelector(".mermaid");
+    if (wrapper) {
+        wrapper.style.width = "max-content";
+        wrapper.style.minWidth = "1200px";
+        wrapper.style.padding = "20px";
+    }
+
+    const svg = content.querySelector("svg");
+    if (svg) {
+        svg.removeAttribute("width");
+        svg.removeAttribute("height");
+        svg.removeAttribute("style");
+
+        svg.style.display = "block";
+        svg.style.margin = "0 auto";
+        svg.style.width = "100%";
+        svg.style.height = "auto";
+        svg.style.minWidth = "1200px";
+
+        const texts = svg.querySelectorAll("text");
+        texts.forEach(t => {
+            t.style.fontSize = "24px";
+            t.style.fontWeight = "700";
+        });
+    }
+
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+    logEvent("mindmap_open", "開啟知識架構圖全螢幕");
+
+}
+function toggleSection(contentId, iconId) {
+    const content = document.getElementById(contentId);
+    const icon = document.getElementById(iconId);
+    if (!content || !icon) return;
+
+    const isHidden = content.classList.contains("hidden");
+    let actionText = "collapse";
+
+    if (isHidden) {
+        content.classList.remove("hidden");
+        icon.style.transform = "rotate(180deg)";
+        actionText = "expand";
+    } else {
+        content.classList.add("hidden");
+        icon.style.transform = "rotate(0deg)";
+        actionText = "collapse";
+    }
+
+    logEvent("section_toggle", contentId, actionText);
+    setTimeout(syncVocabHeight, 50);
+}
 
     function closeModal() {
         const modal = document.getElementById("image-modal");
@@ -1919,20 +2304,28 @@ if (cleanReply) {
         modal.classList.remove("flex");
     }
 
-    function syncVocabHeight() {
-        const summaryPanel = document.getElementById("summary-panel");
-        const vocabPanel   = document.getElementById("vocab-panel");
-        
-        if (!summaryPanel || !vocabPanel) return;
-        if (window.innerWidth < 768) {
-            vocabPanel.style.height = "auto";
-            return;
-        }
+function syncVocabHeight() {
+    const summaryPanel = document.getElementById("summary-panel");
+    const vocabPanel = document.getElementById("vocab-panel");
+    const vocabContent = document.getElementById("vocab-content");
 
+    if (!summaryPanel || !vocabPanel) return;
+
+    if (window.innerWidth < 768) {
         vocabPanel.style.height = "auto";
-        const targetHeight = summaryPanel.offsetHeight;
-        vocabPanel.style.height = targetHeight + "px";
+        return;
     }
+
+    if (vocabContent && vocabContent.classList.contains("hidden")) {
+        vocabPanel.style.height = "auto";
+        return;
+    }
+
+    vocabPanel.style.height = "auto";
+    const targetHeight = summaryPanel.offsetHeight;
+    vocabPanel.style.height = targetHeight + "px";
+}
+
 
     function answerMyth(index, chooseTrue) {
         if (!Array.isArray(mythData) || !mythData[index]) return;
@@ -2015,12 +2408,20 @@ if (cleanReply) {
     }
 
     function initQuiz(quizRaw) {
-        const quizPanel   = document.getElementById("quiz-panel");
-        const quizBody    = document.getElementById("quiz-body");
-        const quizEmpty   = document.getElementById("quiz-empty");
-        const quizTitleEl = document.getElementById("quiz-title");
+const quizPanel   = document.getElementById("quiz-panel");
+const quizBody    = document.getElementById("quiz-body");
+const quizEmpty   = document.getElementById("quiz-empty");
+const quizTitleEl = document.getElementById("quiz-title");
+const quizResult  = document.getElementById("quiz-result");
+const quizProgress = document.getElementById("quiz-progress");
+const btnMain = document.getElementById("quiz-main-btn");
 
-        if (!quizPanel || !quizBody || !quizEmpty || !quizTitleEl) return;
+if (!quizPanel || !quizBody || !quizEmpty || !quizTitleEl) return;
+
+if (quizResult) quizResult.classList.add("hidden");
+if (quizProgress) quizProgress.classList.remove("hidden");
+if (btnMain) btnMain.classList.remove("hidden");
+
 
         const unitName =
             (filters && filters.unitName) ||
@@ -2070,10 +2471,15 @@ if (cleanReply) {
         quizState.hasAnswered  = false;
         quizState.answers      = []; 
 
-        quizEmpty.classList.add("hidden");
-        quizBody.classList.remove("hidden");
+quizEmpty.classList.add("hidden");
+quizBody.classList.remove("hidden");
 
-        renderQuizQuestion();
+if (quizResult) quizResult.classList.add("hidden");
+if (quizProgress) quizProgress.classList.remove("hidden");
+if (btnMain) btnMain.classList.remove("hidden");
+
+renderQuizQuestion();
+
     }
 
     function renderQuizQuestion() {
