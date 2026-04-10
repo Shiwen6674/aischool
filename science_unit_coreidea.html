@@ -598,14 +598,13 @@ mermaid.initialize({
                     <div id="summary-text" class="prose max-w-none leading-relaxed"></div>
                 </div>
                 
-             <div id="vocab-panel" class="glass-panel p-6 rounded-2xl shadow-sm flex flex-col">
+             <div id="vocab-panel" class="glass-panel p-6 rounded-2xl shadow-sm flex flex-col overflow-hidden min-h-0">
     <div class="flex justify-between items-center mb-4 cursor-pointer select-none" onclick="toggleSection('vocab-content', 'vocab-toggle-icon')">
         <h3 class="font-bold text-slate-700 text-xl"><span data-i18n="title_vocab">科學詞彙與定義</span></h3>
         <i id="vocab-toggle-icon" class="fa-solid fa-chevron-down text-slate-500 transition-transform"></i>
     </div>
-    <div id="vocab-content" class="hidden">
+  <div id="vocab-content" class="hidden flex-1 min-h-0 flex flex-col">
     <div class="text-xs text-slate-500 mb-3">展開後可查看本單元重要詞彙與定義</div>
-
         <div class="flex-1 overflow-y-auto custom-scrollbar min-h-0 pr-2">
             <div id="keywords-list" class="space-y-3 pb-2"></div>
         </div>
@@ -2326,7 +2325,8 @@ function syncVocabHeight() {
 
     vocabPanel.style.height = "auto";
     const targetHeight = summaryPanel.offsetHeight;
-    vocabPanel.style.height = targetHeight + "px";
+    vocabPanel.style.maxHeight = targetHeight + "px";
+vocabPanel.style.height = targetHeight + "px";
 }
 
 
