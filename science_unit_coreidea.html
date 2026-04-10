@@ -962,11 +962,11 @@ try {
   if (rawUser) {
     const obj = JSON.parse(rawUser);
     user = {
-      ...obj,
-      // 兼容不同欄位命名
-      id: obj.id || obj.student_id || obj.studentId || obj.StudentID || "",
-      name: obj.name || obj.Name || obj.userName || obj.username || obj.email || "訪客"
-    };
+  ...obj,
+  id: obj.id || obj.student_id || obj.studentId || obj.StudentID || "",
+  account: obj.account || obj.id || obj.student_id || obj.studentId || obj.StudentID || "",
+  name: obj.name || obj.Name || obj.userName || obj.username || obj.email || "訪客"
+};
   }
 } catch (e) {
   // rawUser 不是 JSON（例如 [object Object] 或單純字串）→ 不要讓整頁掛掉
