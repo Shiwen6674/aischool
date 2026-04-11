@@ -252,6 +252,7 @@
 
         #canvas-container { position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: 0.6; }
     </style>
+    <script src="./assets/js/aischool-shared.js"></script>
 </head>
 <body class="min-h-screen flex flex-col font-sans selection:bg-teal-500/30 selection:text-teal-100">
 
@@ -438,10 +439,12 @@
 
     <script>
         // 1. Session & User Data
-        let currentUser = null;
-        try {
-            currentUser = JSON.parse(sessionStorage.getItem("currentUser"));
-        } catch(e) {}
+        let currentUser = window.AISchool ? window.AISchool.getCurrentUser() : null;
+        if (!currentUser) {
+            try {
+                currentUser = JSON.parse(sessionStorage.getItem("currentUser"));
+            } catch(e) {}
+        }
 
         if (currentUser) {
             document.getElementById("user-display").textContent = `${currentUser.role || 'Student'}: ${currentUser.name}`;
@@ -590,13 +593,17 @@
             document.getElementById("language-selector").value = selectedLang;
             
             // 存入 localStorage
-            localStorage.setItem("slh_lang", selectedLang);
+            if (window.AISchool) {
+                window.AISchool.setLanguage(selectedLang);
+            } else {
+                localStorage.setItem("slh_lang", selectedLang);
+            }
         }
 
         // 初始化與事件監聽 (Custom Select Logic)
         document.addEventListener('DOMContentLoaded', () => {
             // 1. 讀取語言設定 (預設繁體中文)
-            const savedLang = localStorage.getItem("slh_lang") || "zh-TW";
+            const savedLang = window.AISchool ? window.AISchool.getLanguage("zh-TW") : (localStorage.getItem("slh_lang") || "zh-TW");
             changeLanguage(savedLang);
 
             // 2. 自定義選單互動邏輯

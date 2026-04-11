@@ -129,6 +129,7 @@
       transform: translateY(-2px);
     }
   </style>
+  <script src="./assets/js/aischool-shared.js"></script>
 </head>
 
 <body class="min-h-screen flex flex-col font-sans selection:bg-purple-500/30 selection:text-purple-200">
@@ -1392,7 +1393,7 @@
       }
     };
 
-    let currentLang = localStorage.getItem("AI_SCHOOL_LANG") || "zh-TW";
+    let currentLang = window.AISchool ? window.AISchool.getLanguage("zh-TW") : "zh-TW";
 
     function applyI18n() {
       const t = translations[currentLang] || translations["zh-TW"];
@@ -1416,7 +1417,11 @@
 
     document.getElementById("language-selector").addEventListener("change", () => {
       currentLang = document.getElementById("language-selector").value;
-      localStorage.setItem("AI_SCHOOL_LANG", currentLang);
+      if (window.AISchool) {
+        window.AISchool.setLanguage(currentLang);
+      } else {
+        localStorage.setItem("AI_SCHOOL_LANG", currentLang);
+      }
       applyI18n();
     });
 
@@ -1440,8 +1445,7 @@ function normalizeRole(role) {
 }
 
 function getStoredUser() {
-  const raw = sessionStorage.getItem("currentUser");
-  const obj = safeJsonParse(raw);
+  const obj = window.AISchool ? window.AISchool.getCurrentUser() : safeJsonParse(sessionStorage.getItem("currentUser"));
   if (!obj) return null;
 
   return {
@@ -1455,6 +1459,10 @@ function getStoredUser() {
 
 
     function setStoredUser(u) {
+      if (window.AISchool) {
+        window.AISchool.setCurrentUser(u);
+        return;
+      }
       sessionStorage.setItem("currentUser", JSON.stringify(u));
     }
 
@@ -1702,7 +1710,11 @@ return { ok:false, error:"backend_unavailable" };
       // persist session end
       logEvent("prof.session.end", { activeMs, features:[...usedFeatures] });
 
-      sessionStorage.removeItem("currentUser");
+      if (window.AISchool) {
+        window.AISchool.clearCurrentUser();
+      } else {
+        sessionStorage.removeItem("currentUser");
+      }
       usedFeatures = new Set();
       activeMs = 0;
       loginCount = null;
@@ -2413,7 +2425,11 @@ if (stored && stored.role === "professor") {
     }
   });
 } else {
-  sessionStorage.setItem("redirectMsg", "請先登入教授帳號，再使用研究中心。");
+  if (window.AISchool) {
+    window.AISchool.setFlashMessage("請先登入教授帳號，再使用研究中心。");
+  } else {
+    sessionStorage.setItem("redirectMsg", "請先登入教授帳號，再使用研究中心。");
+  }
   window.location.href = "index.html";
 }
 

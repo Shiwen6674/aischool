@@ -378,7 +378,8 @@
       font-weight:700;
     }
   </style>
-</head>
+    <script src="./assets/js/aischool-shared.js"></script>
+  </head>
 
 <body>
   <div class="wrap">
@@ -495,6 +496,9 @@
     const GAS_URL = "https://script.google.com/macros/s/AKfycbwLgjsVkgeRU6XMPNTLJkDpkO7HOuD4mW-RmNG6fExlHuMsmRsl-0YlcrDQ3o51M31psw/exec";
 
     function getCurrentUser() {
+      if (window.AISchool) {
+        return window.AISchool.getCurrentUser();
+      }
       try {
         return JSON.parse(sessionStorage.getItem("currentUser") || "null");
       } catch {
@@ -503,6 +507,9 @@
     }
 
     function guardProfessorPage() {
+      if (window.AISchool) {
+        return Boolean(window.AISchool.requireRole(["professor"], "請先從首頁登入教授帳號，再使用文本相似性分析。", "index.html"));
+      }
       const user = getCurrentUser();
       const role = user?.role || user?.Role || "";
       const allowedRoles = new Set(["researcher", "professor"]);

@@ -17,6 +17,9 @@
   const ALLOWED_ROLES = new Set(["researcher", "professor"]);
 
   function getCurrentUser() {
+    if (window.AISchool) {
+      return window.AISchool.getCurrentUser();
+    }
     try {
       return JSON.parse(sessionStorage.getItem("currentUser") || "null");
     } catch {
@@ -25,6 +28,9 @@
   }
 
   function guardProfessorPage() {
+    if (window.AISchool) {
+      return window.AISchool.requireRole(["professor"], "請先從首頁登入教授帳號，再使用文字雲工具。", "index.html");
+    }
     const user = getCurrentUser();
     if (!user || !ALLOWED_ROLES.has(user.role)) {
       sessionStorage.setItem("redirectMsg", "請先從首頁登入教授帳號，再使用文字雲工具。");
@@ -397,6 +403,7 @@
       #canvas-wrapper { min-height: 420px; }
     }
   </style>
+  <script src="./assets/js/aischool-shared.js"></script>
 </head>
 <body>
   <nav class="sticky top-0 z-30 border-b border-slate-200/80 bg-white/85 backdrop-blur-xl">

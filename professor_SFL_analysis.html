@@ -277,6 +277,7 @@ select::placeholder, textarea::placeholder{
 }
 </style>
 
+<script src="./assets/js/aischool-shared.js"></script>
 </head>
 <body>
 <div class="container">
@@ -355,6 +356,9 @@ function renderCurrentUser() {
 }
 
 function getCurrentUser() {
+  if (window.AISchool) {
+    return window.AISchool.getCurrentUser();
+  }
   try {
     return JSON.parse(sessionStorage.getItem("currentUser") || "null");
   } catch {
@@ -363,6 +367,9 @@ function getCurrentUser() {
 }
 
 function guardProfessorPage() {
+  if (window.AISchool) {
+    return Boolean(window.AISchool.requireRole(["professor"], "請先從首頁登入教授帳號，再使用 SFL 語義分析。", "index.html"));
+  }
   const user = getCurrentUser();
   const role = user?.role || user?.Role || "";
   const allowedRoles = new Set(["researcher", "professor"]);

@@ -140,6 +140,7 @@
             transition: opacity 0.5s ease;
         }
     </style>
+    <script src="./assets/js/aischool-shared.js"></script>
 </head>
 <body class="min-h-screen flex flex-col font-sans selection:bg-cyan-500/30 selection:text-cyan-100">
 
@@ -400,9 +401,8 @@
             }, 1000);
 
             // 檢查是否登入 (簡單驗證)
-            const userJson = sessionStorage.getItem("currentUser");
-            if (userJson) {
-                const user = JSON.parse(userJson);
+            const user = window.AISchool ? window.AISchool.getCurrentUser() : null;
+            if (user) {
                 document.getElementById('user-name-display').textContent = user.name || "Student";
                 // 如果不是學生，可能需要警告，但這裡先允許瀏覽
             } else {
@@ -410,11 +410,16 @@
                 // window.location.href = 'index.html'; 
             }
 
+            const savedLang = window.AISchool ? window.AISchool.getLanguage("zh-TW") : document.getElementById("language-selector").value;
+            document.getElementById("language-selector").value = savedLang;
             changeLanguage();
         });
 
         function changeLanguage() {
             const lang = document.getElementById("language-selector").value;
+            if (window.AISchool) {
+                window.AISchool.setLanguage(lang);
+            }
             const t = translations[lang] || translations['en'];
             document.querySelectorAll("[data-i18n]").forEach(el => {
                 const key = el.getAttribute("data-i18n");
@@ -424,7 +429,11 @@
 
         function logout() {
             if(confirm("Terminate session?")) {
-                sessionStorage.removeItem("currentUser");
+                if (window.AISchool) {
+                    window.AISchool.clearCurrentUser();
+                } else {
+                    sessionStorage.removeItem("currentUser");
+                }
                 window.location.href = 'index.html';
             }
         }

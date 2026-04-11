@@ -94,6 +94,7 @@
             100% { background-position: 0% 50%; }
         }
     </style>
+    <script src="./assets/js/aischool-shared.js"></script>
 </head>
 <body class="min-h-screen font-sans flex flex-col text-slate-800 relative overflow-x-hidden selection:bg-green-200 selection:text-green-900">
 
@@ -331,17 +332,17 @@
         };
 
         // --- 1. 權限檢查 ---
-        const userJson = sessionStorage.getItem("currentUser");
+        const storedUser = window.AISchool ? window.AISchool.getCurrentUser() : null;
         // 為了開發方便暫時允許未登入 (實際上線可取消註解)
         // if (!userJson) { alert("請先登入！"); window.location.href = "index.html"; }
         
-        const currentUser = userJson ? JSON.parse(userJson) : { name: "訪客教師", role: "Teacher" };
+        const currentUser = storedUser || { name: "訪客教師", role: "Teacher" };
         document.getElementById("user-name-display").innerText = currentUser.name;
         document.getElementById("user-avatar").innerText = currentUser.name.charAt(0).toUpperCase();
 
         // --- 2. 語言邏輯 ---
         function initLanguage() {
-            const savedLang = localStorage.getItem("slh_lang");
+            const savedLang = window.AISchool ? window.AISchool.getLanguage("zh-TW") : localStorage.getItem("slh_lang");
             if (savedLang) {
                 document.getElementById("language-selector").value = savedLang;
                 changeLanguage();
@@ -350,7 +351,11 @@
 
         function changeLanguage() {
             const lang = document.getElementById("language-selector").value;
-            localStorage.setItem("slh_lang", lang);
+            if (window.AISchool) {
+                window.AISchool.setLanguage(lang);
+            } else {
+                localStorage.setItem("slh_lang", lang);
+            }
             const elements = document.querySelectorAll("[data-i18n]");
             elements.forEach(el => {
                 const key = el.getAttribute("data-i18n");
@@ -390,7 +395,11 @@
 
         function logout() {
             if(confirm("確定要登出嗎？")) {
-                sessionStorage.removeItem("currentUser");
+                if (window.AISchool) {
+                    window.AISchool.clearCurrentUser();
+                } else {
+                    sessionStorage.removeItem("currentUser");
+                }
                 window.location.href = "index.html";
             }
         }

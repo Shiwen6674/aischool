@@ -153,6 +153,7 @@ select:-webkit-autofill {
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
+    <script src="./assets/js/aischool-shared.js"></script>
 </head>
 <body class="min-h-screen flex flex-col font-sans selection:bg-purple-500/30 selection:text-purple-200">
 
@@ -763,7 +764,7 @@ function connect() {
             }
         });
 
-        let currentLang = localStorage.getItem("AI_SCHOOL_LANG") || "zh-TW";
+        let currentLang = window.AISchool ? window.AISchool.getLanguage("zh-TW") : "zh-TW";
 
 function changeLanguage() {
   const langSelector = document.getElementById("language-selector");
@@ -771,7 +772,11 @@ function changeLanguage() {
 
   const lang = langSelector.value;
   currentLang = lang;
-localStorage.setItem("AI_SCHOOL_LANG", currentLang);
+  if (window.AISchool) {
+    window.AISchool.setLanguage(currentLang);
+  } else {
+    localStorage.setItem("AI_SCHOOL_LANG", currentLang);
+  }
 
   const t = translations[lang] || translations["en"];
 
@@ -882,14 +887,19 @@ document.addEventListener('DOMContentLoaded', () => {
   syncSessionUI();
 
   // 如果是被 professor.html 擋回來，提示使用者先登入
-  const msg = sessionStorage.getItem("redirectMsg");
+  const msg = window.AISchool ? window.AISchool.readFlashMessage() : sessionStorage.getItem("redirectMsg");
   if (msg) {
-    sessionStorage.removeItem("redirectMsg");
+    if (!window.AISchool) {
+      sessionStorage.removeItem("redirectMsg");
+    }
     alert(msg);
   }
 });
 
 function getStoredUser() {
+  if (window.AISchool) {
+    return window.AISchool.getCurrentUser();
+  }
   try {
     return JSON.parse(sessionStorage.getItem("currentUser") || "null");
   } catch {
@@ -1118,7 +1128,11 @@ const userInfo = {
     name: user.name,
     role: normalizedRole
 };
-sessionStorage.setItem("currentUser", JSON.stringify(userInfo));
+if (window.AISchool) {
+    window.AISchool.setCurrentUser(userInfo);
+} else {
+    sessionStorage.setItem("currentUser", JSON.stringify(userInfo));
+}
 
 let targetPage = 'student_subject.html';
 if (normalizedRole === 'teacher') targetPage = 'teacher.html';
@@ -1224,7 +1238,11 @@ if (result.result === 'success') {
         role: normalizedRole
     };
 
-    sessionStorage.setItem("currentUser", JSON.stringify(userInfo));
+    if (window.AISchool) {
+        window.AISchool.setCurrentUser(userInfo);
+    } else {
+        sessionStorage.setItem("currentUser", JSON.stringify(userInfo));
+    }
 
     let targetPage = 'student_subject.html';
     if (normalizedRole === 'teacher') targetPage = 'teacher.html';
@@ -1291,7 +1309,11 @@ function handleForgotPassword(e) {
             document.getElementById('logout-modal').classList.add('hidden');
         }
 function confirmLogout() {
-    sessionStorage.removeItem("currentUser");
+    if (window.AISchool) {
+        window.AISchool.clearCurrentUser();
+    } else {
+        sessionStorage.removeItem("currentUser");
+    }
     syncSessionUI();
     goHome();
     closeLogoutModal();
