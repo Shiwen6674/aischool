@@ -66,69 +66,137 @@
     return chunks.length ? chunks : [String(text || "")];
   }
 
+  function getSpeechPlatform() {
+    if (isIOSDevice()) return "ios";
+    if (isAndroidDevice()) return "android";
+    return "desktop";
+  }
+
+  function getVoiceDescriptor(voice) {
+    const name = String(voice?.name || "").toLowerCase();
+    const uri = String(voice?.voiceURI || "").toLowerCase();
+    const lang = String(voice?.lang || "").toLowerCase().replace(/_/g, "-");
+
+    return {
+      name,
+      uri,
+      lang,
+      descriptor: `${name} ${uri}`.trim()
+    };
+  }
+
+  function getLanguageScore(lang, isEng) {
+    if (isEng) {
+      if (lang === "en-us") return 2400;
+      if (lang === "en-gb") return 2200;
+      if (lang === "en-au") return 2100;
+      if (lang.startsWith("en-")) return 1800;
+      if (lang === "en") return 1600;
+      return -100000;
+    }
+
+    if (lang === "zh-tw") return 2800;
+    if (lang === "cmn-hant-tw") return 2700;
+    if (lang === "zh-hk") return 2200;
+    if (lang === "zh-cn") return 2100;
+    if (lang.startsWith("zh-")) return 1700;
+    if (lang === "zh") return 1500;
+    return -100000;
+  }
+
+  function getVoiceProfilePatterns(platform, isEng, gender) {
+    const table = {
+      ios: {
+        en: {
+          female: [/samantha/, /ava/, /victoria/, /allison/, /serena/, /karen/, /moira/, /siri/],
+          male: [/daniel/, /alex/, /nathan/, /aaron/, /tom/, /fred/, /oliver/]
+        },
+        zh: {
+          female: [/mei-jia|meijia/, /ting-ting|tingting/, /sin-ji|sinji/, /hanhan/, /yating/, /xiaoxiao/, /hsiaochen|hsiaoyu/, /siri/],
+          male: [/yu-shu|yushu/, /li-mu|limu/, /yunxi/, /yunjian|yunyang/, /zhiwei/, /kangkang/]
+        }
+      },
+      android: {
+        en: {
+          female: [/google.*female.*en/, /google.*en-us/, /google.*english/, /jenny/, /zira/, /samantha/, /ava/, /aria/, /emma/],
+          male: [/google.*male.*en/, /google.*en-gb/, /daniel/, /alex/, /nathan/, /guy/, /david/, /ryan/]
+        },
+        zh: {
+          female: [/google.*zh/, /google.*mandarin/, /xiaoxiao/, /hanhan/, /yating/, /hsiaoyu|hsiaochen/, /huihui/],
+          male: [/yunxi/, /yunjian|yunyang/, /zhiwei/, /google.*male.*zh/, /google.*mandarin.*male/, /yu-shu|yushu/, /li-mu|limu/]
+        }
+      },
+      desktop: {
+        en: {
+          female: [/zira/, /jenny/, /aria/, /emma/, /samantha/, /ava/, /victoria/, /hazel/],
+          male: [/david/, /guy/, /mark/, /daniel/, /alex/, /nathan/, /aaron/, /tom/]
+        },
+        zh: {
+          female: [/mei-jia|meijia/, /hsiaochen|hsiaoyu/, /hanhan/, /yating/, /xiaoxiao/, /huihui/, /ting-ting|tingting/, /sin-ji|sinji/],
+          male: [/yu-shu|yushu/, /yunxi/, /yunjian|yunyang/, /zhiwei/, /kangkang/, /li-mu|limu/, /xiaoyi/]
+        }
+      }
+    };
+
+    const familyKey = isEng ? "en" : "zh";
+    return table[platform]?.[familyKey]?.[gender] || [];
+  }
+
+  function scoreProfileMatch(descriptor, patterns) {
+    let score = 0;
+    patterns.forEach((pattern, index) => {
+      if (pattern.test(descriptor)) {
+        score = Math.max(score, 16000 - index * 1200);
+      }
+    });
+    return score;
+  }
+
   function pickBestVoice(voices, isEng, gender) {
     if (!Array.isArray(voices) || voices.length === 0) return null;
 
-    const ios = isIOSDevice();
-    const android = isAndroidDevice();
-    const targetLang = isEng ? ["en-us", "en-gb", "en", "en-au"] : ["zh-tw", "zh-hk", "zh-cn", "zh"];
+    const platform = getSpeechPlatform();
+    const profilePatterns = getVoiceProfilePatterns(platform, isEng, gender);
 
     function getScore(voice) {
       let score = 0;
-      const name = String(voice.name || "").toLowerCase();
-      const uri = String(voice.voiceURI || "").toLowerCase();
-      const lang = String(voice.lang || "").toLowerCase().replace(/_/g, "-");
-      const descriptor = `${name} ${uri}`.trim();
+      const { name, lang, descriptor } = getVoiceDescriptor(voice);
+      score += getLanguageScore(lang, isEng);
+      if (score < 0) return score;
 
-      if (targetLang.some((target) => lang === target || lang.startsWith(target))) {
-        score += 1000;
-        if (!isEng && (lang === "zh-tw" || lang.includes("taiwan"))) score += 500;
-        if (isEng && lang === "en-us") score += 200;
-      } else {
-        return -100000;
-      }
+      if (voice.default) score += 300;
+      if (voice.localService) score += platform === "ios" ? 3200 : 800;
 
-      if (voice.default) score += 400;
-      if (voice.localService) score += ios ? 2500 : 400;
+      if (/enhanced|premium|natural|neural|studio|wavenet|online|cloud|high quality/.test(descriptor)) score += 6500;
+      if (/compact|espeak|ekho|festival|robot|legacy/.test(descriptor)) score -= 14000;
+      if (/siri/.test(descriptor)) score += isEng ? 2800 : 5200;
+      if (/google/.test(descriptor)) score += platform === "android" ? 3200 : 1400;
+      if (/microsoft/.test(descriptor) && platform === "desktop") score += 2200;
+      if (/apple/.test(descriptor) && platform !== "android") score += 1800;
 
-      if (/enhanced|premium|natural|neural|studio|wavenet|online|cloud/.test(descriptor)) score += 6000;
-      if (/compact|espeak|ekho|festival/.test(descriptor)) score -= 12000;
-      if (/siri/.test(descriptor)) score += isEng ? 2500 : 4500;
+      score += scoreProfileMatch(descriptor, profilePatterns);
 
       if (gender === "female") {
-        if (isEng) {
-          if (name.includes("samantha")) score += 12000;
-          else if (name.includes("ava")) score += 10000;
-          else if (name.includes("zira") || name.includes("susan")) score += 5000;
-          if (name.includes("male") || name.includes("man")) score -= 4000;
-        } else {
-          if (/mei-jia|meijia/.test(descriptor)) score += 15000;
-          else if (/ting-ting|tingting/.test(descriptor)) score += 14000;
-          else if (/sin-ji|sinji/.test(descriptor)) score += 13000;
-          else if (/hsiaoyu|xiaoxiao/.test(descriptor)) score += 12000;
-          else if (/hanhan|yating/.test(descriptor)) score += 9000;
-          else if (/google/.test(descriptor) && (lang === "zh-tw" || lang === "zh-cn")) score += 7000;
-          if (ios && /mei-jia|meijia|ting-ting|tingting|sin-ji|sinji/.test(descriptor)) score += 5000;
-          if (android && /google|xiaoxiao|hsiaoyu|hanhan|yating/.test(descriptor)) score += 4000;
-          if (name.includes("male") || name.includes("man")) score -= 4500;
+        if (/female|woman|girl|zira|samantha|ava|victoria|allison|serena|karen|moira|mei-jia|meijia|ting-ting|tingting|sin-ji|sinji|hanhan|yating|xiaoxiao|hsiaochen|hsiaoyu|jenny|aria|emma/.test(descriptor)) {
+          score += 2600;
         }
-      } else if (isEng) {
-        if (name.includes("daniel")) score += 12000;
-        else if (name.includes("alex")) score += 10000;
-        else if (name.includes("nathan")) score += 9000;
-        if (name.includes("female") || name.includes("woman")) score -= 4000;
+        if (/male|man|boy|daniel|alex|nathan|aaron|david|guy|mark|yu-shu|yushu|yunxi|yunjian|yunyang|zhiwei|kangkang|li-mu|limu/.test(descriptor)) {
+          score -= 5200;
+        }
       } else {
-        if (/yunxi/.test(descriptor)) score += 12000;
-        else if (/li-mu/.test(descriptor)) score += 10000;
-        else if (/zhiwei/.test(descriptor)) score += 9000;
-        else if (/google/.test(descriptor) && (lang === "zh-tw" || lang === "zh-cn")) score += 5000;
-        if (android && /google|yunxi|zhiwei/.test(descriptor)) score += 2500;
-        if (name.includes("female") || name.includes("woman") || /mei-jia|meijia/.test(descriptor)) score -= 4500;
+        if (/male|man|boy|daniel|alex|nathan|aaron|david|guy|mark|ryan|yu-shu|yushu|yunxi|yunjian|yunyang|zhiwei|kangkang|li-mu|limu/.test(descriptor)) {
+          score += 2600;
+        }
+        if (/female|woman|girl|zira|samantha|ava|victoria|allison|serena|karen|moira|mei-jia|meijia|ting-ting|tingting|sin-ji|sinji|hanhan|yating|xiaoxiao|hsiaochen|hsiaoyu|jenny|aria|emma/.test(descriptor)) {
+          score -= 5200;
+        }
       }
 
-      if (!isEng) {
-        if (/google/.test(descriptor) && ios) score -= 2500;
-        if (/samantha|ava|zira|susan/.test(descriptor)) score -= 5000;
+      if (!isEng && /samantha|ava|zira|victoria|daniel|alex|nathan|aaron|david|guy/.test(descriptor)) {
+        score -= 7000;
+      }
+      if (isEng && /mei-jia|meijia|ting-ting|tingting|sin-ji|sinji|yunxi|yunjian|yunyang|zhiwei|yu-shu|yushu/.test(descriptor)) {
+        score -= 7000;
       }
 
       return score;
@@ -137,48 +205,82 @@
     const ranked = voices
       .map((voice) => ({ voice, score: getScore(voice) }))
       .filter((item) => item.score > -5000)
-      .sort((a, b) => b.score - a.score);
+      .sort((a, b) => b.score - a.score || String(a.voice.name || "").localeCompare(String(b.voice.name || "")));
 
     return ranked.length ? ranked[0].voice : voices[0];
   }
 
   function getSpeechTuning(isEng, voice, gender, uiRate) {
-    const ios = isIOSDevice();
-    const android = isAndroidDevice();
-    const descriptor = `${voice?.name || ""} ${voice?.voiceURI || ""}`.toLowerCase();
-
-    if (isEng) {
-      return {
-        rate: clamp(ios ? uiRate * 0.96 : uiRate, 0.85, 1.15),
-        pitch: gender === "male" ? 0.94 : 1.02
-      };
-    }
-
-    let rate = uiRate;
-    let pitch = gender === "male" ? 0.9 : 0.98;
-
-    if (ios) {
-      rate = uiRate * 0.82;
-      pitch = gender === "male" ? 0.88 : 0.96;
-      if (/mei-jia|meijia|ting-ting|tingting|sin-ji|sinji|siri/.test(descriptor)) {
-        rate = uiRate * 0.86;
-        pitch = gender === "male" ? 0.9 : 0.98;
+    const platform = getSpeechPlatform();
+    const descriptor = getVoiceDescriptor(voice).descriptor;
+    const tuningProfiles = {
+      ios: {
+        en: {
+          female: { rate: 0.98, pitch: 1.0 },
+          male: { rate: 0.96, pitch: 0.9 }
+        },
+        zh: {
+          female: { rate: 0.86, pitch: 0.98 },
+          male: { rate: 0.84, pitch: 0.86 }
+        }
+      },
+      android: {
+        en: {
+          female: { rate: 1.0, pitch: 1.0 },
+          male: { rate: 0.98, pitch: 0.92 }
+        },
+        zh: {
+          female: { rate: 0.93, pitch: 0.99 },
+          male: { rate: 0.9, pitch: 0.86 }
+        }
+      },
+      desktop: {
+        en: {
+          female: { rate: 1.0, pitch: 1.0 },
+          male: { rate: 0.98, pitch: 0.93 }
+        },
+        zh: {
+          female: { rate: 0.94, pitch: 0.99 },
+          male: { rate: 0.9, pitch: 0.87 }
+        }
       }
-    } else if (android) {
-      rate = uiRate * 0.88;
-      pitch = gender === "male" ? 0.9 : 0.98;
-      if (/google|xiaoxiao|hsiaoyu|hanhan|yating/.test(descriptor)) {
-        rate = uiRate * 0.92;
-        pitch = gender === "male" ? 0.92 : 1.0;
+    };
+
+    const familyKey = isEng ? "en" : "zh";
+    const genderKey = gender === "male" ? "male" : "female";
+    const baseProfile = tuningProfiles[platform]?.[familyKey]?.[genderKey] || { rate: 1, pitch: 1 };
+
+    let rate = uiRate * baseProfile.rate;
+    let pitch = baseProfile.pitch;
+
+    if (!isEng) {
+      if (/mei-jia|meijia|siri|hsiaochen|hsiaoyu|hanhan|yating|xiaoxiao/.test(descriptor)) {
+        rate += 0.03;
+        pitch += gender === "male" ? 0.02 : 0.01;
+      }
+      if (/yu-shu|yushu|li-mu|limu|yunxi|yunjian|yunyang|zhiwei|kangkang/.test(descriptor)) {
+        rate -= 0.01;
+        pitch -= 0.02;
+      }
+      if (/google/.test(descriptor) && platform === "android") {
+        rate += 0.02;
       }
     } else {
-      rate = uiRate * 0.94;
-      pitch = gender === "male" ? 0.92 : 1.0;
+      if (/samantha|ava|victoria|allison|serena|karen|moira|jenny|aria|emma/.test(descriptor)) {
+        rate += 0.01;
+      }
+      if (/daniel|alex|nathan|aaron|david|guy|mark|ryan|tom/.test(descriptor)) {
+        rate -= 0.01;
+        pitch -= 0.01;
+      }
+      if (/google/.test(descriptor) && platform === "android") {
+        rate += 0.01;
+      }
     }
 
     return {
-      rate: clamp(rate, 0.72, 1.02),
-      pitch: clamp(pitch, 0.82, 1.02)
+      rate: clamp(rate, isEng ? 0.84 : 0.76, isEng ? 1.12 : 1.02),
+      pitch: clamp(pitch, gender === "male" ? 0.8 : 0.9, gender === "male" ? 0.98 : 1.06)
     };
   }
 

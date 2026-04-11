@@ -1316,119 +1316,23 @@ suppressModeTracking = false;
         }
 
         function pickBestVoice(isEng, gender) {
+            const helper = window.AISchoolTTS?.helpers?.pickBestVoice;
+            if (typeof helper === 'function' && window.speechSynthesis) {
+                return helper(window.speechSynthesis.getVoices(), isEng, gender);
+            }
             if (!window.speechSynthesis) return null;
             const voices = window.speechSynthesis.getVoices();
-            if (voices.length === 0) return null;
-
-            const ios = isIOSDevice();
-            const android = isAndroidDevice();
-            const targetLang = isEng ? ['en-us', 'en-gb', 'en', 'en-au'] : ['zh-tw', 'zh-hk', 'zh-cn', 'zh'];
-
-            const getScore = (voice) => {
-                let score = 0;
-                const name = voice.name.toLowerCase();
-                const uri = (voice.voiceURI || "").toLowerCase();
-                const lang = (voice.lang || "").toLowerCase().replace('_', '-');
-                const descriptor = `${name} ${uri}`.trim();
-
-                if (targetLang.some(t => lang === t || lang.startsWith(t))) { 
-                    score += 1000; 
-                    if (!isEng && (lang === 'zh-tw' || lang.includes('taiwan'))) score += 500;
-                    if (isEng && (lang === 'en-us')) score += 200;
-                } else { 
-                    return -100000;
-                }
-
-                if (voice.default) score += 400;
-                if (voice.localService) score += ios ? 2500 : 400;
-
-                if (/enhanced|premium|natural|neural|studio|wavenet|online|cloud/.test(descriptor)) score += 6000;
-                if (/compact|espeak|ekho|festival/.test(descriptor)) score -= 12000;
-                if (/siri/.test(descriptor)) score += isEng ? 2500 : 4500;
-
-                if (gender === 'female') {
-                    if (isEng) {
-                        if (name.includes('samantha')) score += 12000; 
-                        else if (name.includes('ava')) score += 10000;       
-                        else if (name.includes('zira') || name.includes('susan')) score += 5000;
-                        if (name.includes('male') || name.includes('man')) score -= 4000;
-                    } 
-                    else { 
-                        if (/mei-jia|meijia/.test(descriptor)) score += 15000;
-                        else if (/ting-ting|tingting/.test(descriptor)) score += 14000;
-                        else if (/sin-ji|sinji/.test(descriptor)) score += 13000;
-                        else if (/hsiaoyu|xiaoxiao/.test(descriptor)) score += 12000;
-                        else if (/hanhan|yating/.test(descriptor)) score += 9000;
-                        else if (/google/.test(descriptor) && (lang === 'zh-tw' || lang === 'zh-cn')) score += 7000;
-                        if (ios && /mei-jia|meijia|ting-ting|tingting|sin-ji|sinji/.test(descriptor)) score += 5000;
-                        if (android && /google|xiaoxiao|hsiaoyu|hanhan|yating/.test(descriptor)) score += 4000;
-                        if (name.includes('male') || name.includes('man')) score -= 4500;
-                    }
-                } else {
-                    if (isEng) {
-                        if (name.includes('daniel')) score += 12000; 
-                        else if (name.includes('alex')) score += 10000;
-                        else if (name.includes('nathan')) score += 9000;
-                        if (name.includes('female') || name.includes('woman')) score -= 4000;
-                    } 
-                    else { 
-                        if (/yunxi/.test(descriptor)) score += 12000; 
-                        else if (/li-mu/.test(descriptor)) score += 10000; 
-                        else if (/zhiwei/.test(descriptor)) score += 9000;
-                        else if (/google/.test(descriptor) && (lang === 'zh-tw' || lang === 'zh-cn')) score += 5000;
-                        if (android && /google|yunxi|zhiwei/.test(descriptor)) score += 2500;
-                        if (name.includes('female') || name.includes('woman') || /mei-jia|meijia/.test(descriptor)) score -= 4500;
-                    }
-                }
-
-                if (!isEng) {
-                    if (/google/.test(descriptor) && ios) score -= 2500;
-                    if (/samantha|ava|zira|susan/.test(descriptor)) score -= 5000;
-                }
-                return score;
-            };
-
-            const sorted = voices.map(v => ({ v, score: getScore(v) })).filter(item => item.score > -5000).sort((a, b) => b.score - a.score);
-            return sorted.length > 0 ? sorted[0].v : voices[0];
+            return voices.length > 0 ? voices[0] : null;
         }
 
         function getSpeechTuning(isEng, voice, uiRate) {
-            const ios = isIOSDevice();
-            const android = isAndroidDevice();
-            const descriptor = `${voice?.name || ''} ${voice?.voiceURI || ''}`.toLowerCase();
-
-            if (isEng) {
-                return {
-                    rate: clamp(ios ? uiRate * 0.96 : uiRate, 0.85, 1.15),
-                    pitch: currentVoice === 'male' ? 0.94 : 1.02
-                };
+            const helper = window.AISchoolTTS?.helpers?.getSpeechTuning;
+            if (typeof helper === 'function') {
+                return helper(isEng, voice, currentVoice, uiRate);
             }
-
-            let rate = uiRate;
-            let pitch = currentVoice === 'male' ? 0.9 : 0.98;
-
-            if (ios) {
-                rate = uiRate * 0.82;
-                pitch = currentVoice === 'male' ? 0.88 : 0.96;
-                if (/mei-jia|meijia|ting-ting|tingting|sin-ji|sinji|siri/.test(descriptor)) {
-                    rate = uiRate * 0.86;
-                    pitch = currentVoice === 'male' ? 0.9 : 0.98;
-                }
-            } else if (android) {
-                rate = uiRate * 0.88;
-                pitch = currentVoice === 'male' ? 0.9 : 0.98;
-                if (/google|xiaoxiao|hsiaoyu|hanhan|yating/.test(descriptor)) {
-                    rate = uiRate * 0.92;
-                    pitch = currentVoice === 'male' ? 0.92 : 1.0;
-                }
-            } else {
-                rate = uiRate * 0.94;
-                pitch = currentVoice === 'male' ? 0.92 : 1.0;
-            }
-
             return {
-                rate: clamp(rate, 0.72, 1.02),
-                pitch: clamp(pitch, 0.82, 1.02)
+                rate: clamp(uiRate, 0.8, 1.1),
+                pitch: currentVoice === 'male' ? 0.92 : 1.0
             };
         }
 
@@ -1600,9 +1504,14 @@ function speakText(txt, onComplete) {
     if (synth) {
         const latin = (cleanTxt.match(/[A-Za-z]/g) || []).length;
         const cjk = (cleanTxt.match(/[\u4E00-\u9FFF]/g) || []).length;
+        const isEng = latin > cjk * 2;
         const utterance = new SpeechSynthesisUtterance(cleanTxt);
-        utterance.lang = latin > cjk * 2 ? 'en-US' : 'zh-TW';
-        utterance.rate = getUiRate();
+        const voice = pickBestVoice(isEng, currentVoice);
+        utterance.lang = voice?.lang || (isEng ? 'en-US' : 'zh-TW');
+        if (voice) utterance.voice = voice;
+        const tuning = getSpeechTuning(isEng, voice, getUiRate());
+        utterance.rate = tuning.rate;
+        utterance.pitch = tuning.pitch;
         utterance.onend = finishPlayback;
         utterance.onerror = finishPlayback;
         synth.cancel();
