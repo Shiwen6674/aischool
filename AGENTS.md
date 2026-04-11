@@ -18,6 +18,7 @@
 - 大部分頁面把 HTML、CSS、JavaScript 都寫在同一檔。
 - 共用依賴主要透過 CDN 載入，例如 Tailwind、Font Awesome、Chart.js、Cytoscape。
 - `assets/js/aischool-shared.js` 已成為全站主要的共用 runtime，集中管理 session、flash message、語言 key 與 GAS endpoint。
+- `assets/js/aischool-shared.js` 現在也集中管理 AI School 主試算表設定；目前主表 ID 是 `1cDOsaa7E0EwD1R9CeCWoGf8_9ZMcFv8fxQ5d-LWUKu8`。
 - `assets/js/aischool-tts.js` 是語音播放的共用 runtime，集中管理裝置語音挑選、手機語速調校，以及可選的雲端 TTS fallback。
 - `assets/css/student-hub.css` 與 `assets/js/student-hub.js` 是學生學習中心的共用骨架，優先用來承接原本的 placeholder 頁。
 - 學生端原本的空白 placeholder 頁已升級成可用的學習中心頁，但多數仍屬內容導向頁，而不是完整 API 工具。
@@ -39,6 +40,7 @@
   - `professor.html`
   - 受保護的 professor 子頁
 - 若調整 GAS endpoint，不要只改單一頁面；優先改 `assets/js/aischool-shared.js`，再確認引用頁是否都跟上。
+- 若調整 Google 試算表、教材 CSV 或工作表名稱，不要只改單一頁面；優先改 `assets/js/aischool-shared.js` 的 spreadsheet config，再確認 `student_science_bilingual.html` 與 `science_adaptive_testing.html` 是否都跟上。
 - 若調整語音播放或雲端 TTS，優先改 `assets/js/aischool-tts.js` 與 `assets/js/aischool-shared.js` 的 `cloudTts` 設定，不要把任何供應商金鑰直接寫進前端頁面。
 - 若調整學生學習中心頁，優先沿用 `assets/css/student-hub.css` 與 `assets/js/student-hub.js`，除非該頁真的需要獨立互動架構。
 - `student_subject.html` 現在多了一個 `student_keyidea.html` 的跨科入口，動學生主導航時要一起檢查。
@@ -84,6 +86,7 @@
 - 教師工具：先讀 `teacher.html`，再讀目標工具頁
 - 教授工具：先讀 `professor.html`，再讀對應外部功能頁
 - GAS 或資料記錄問題：先全文盤點所有硬編碼 `script.google.com/macros/s/.../exec`
+- Google 試算表或教材來源問題：先讀 `assets/js/aischool-shared.js` 的 `getSpreadsheetConfig()`，再確認雙語頁與適性測驗頁的 fallback 行為
 - 多語系問題：先確認該頁用的是哪個 key
   - `AI_SCHOOL_LANG`
   - `slh_lang`
@@ -109,5 +112,6 @@
 - 不同頁面的語言設定 key 不一致。
 - `teacher_CAT_review.html` 現在會優先讀 `teacherCatReview`，若仍是 placeholder 會暫時回退到 `studentAdaptiveTesting`；這是依資料契約推得的預設值，不等於已確認真實教師後端。
 - 目前真正使用瀏覽器朗讀/TTS 的頁面只有 `student_science_bilingual.html`；若未來新增中文朗讀頁，應優先沿用 `assets/js/aischool-tts.js`。
+- `student_science_bilingual.html` 仍需要「可匿名讀取」的教材 CSV；我已驗證主試算表直接走 `gviz/tq?tqx=out:csv` 目前會要求登入，因此 shared runtime 仍保留 legacy published CSV fallback，直到你提供新的公開 CSV 或後端代理。
 - repo 目前沒有 `.github/workflows/pages.yml`；GitHub Pages 是否能自動發布，仍取決於 repo settings，而不是 repo 內建 CI。
 - 多個頁面直接各自維護視覺與 API 邏輯，重複碼很多，改動容易只修一半。

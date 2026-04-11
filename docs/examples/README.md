@@ -10,3 +10,4 @@
 - `04-run-smoke-test.md`
 - `05-pages-preflight.md`
 - `06-cloud-tts.md`
+- `07-align-spreadsheet-config.md`

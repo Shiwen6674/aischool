@@ -447,8 +447,11 @@
     </div>
 
     <script>
-        const SHEET_ID = '1cEfMEy3bvDa1tET3xmh7ShGeJy8KLUMa_JuULGBD-mk';
-        const TARGET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRbgkNiMflfeLQd3KN8F4yjjIr6G2flnCAy-nUPMiC7_xDfdg_0hJ2Qzbsr92u8htlPLFR8GwwQPK_g/pub?gid=0&single=true&output=csv';
+        const spreadsheetConfig = window.AISchool?.getSpreadsheetConfig?.() || {};
+        const SHEET_ID = spreadsheetConfig.scienceContentSpreadsheetId || spreadsheetConfig.aiSchoolSpreadsheetId || '1cDOsaa7E0EwD1R9CeCWoGf8_9ZMcFv8fxQ5d-LWUKu8';
+        const TARGET_URL = spreadsheetConfig.scienceContentCsvUrl || '';
+        const TARGET_URL_SOURCE = spreadsheetConfig.scienceContentCsvUrlSource || 'missing';
+        const NEEDS_PRIMARY_CSV_PUBLICATION = Boolean(spreadsheetConfig.requiresPublishedScienceContentCsv);
 
         const COL_STAGE=0, COL_VERSION=2, COL_GRADE=3, COL_SEMESTER=4, COL_UNIT_NUM=6, COL_UNIT_NAME=7,
               COL_CONTENT=8, COL_CKIP=9, COL_VOCAB=18;
@@ -538,6 +541,9 @@ let ttsPlayer = null;
         document.addEventListener('DOMContentLoaded', () => {
             initLanguage();
             fetchData();
+            if (TARGET_URL_SOURCE === 'legacy-fallback' && NEEDS_PRIMARY_CSV_PUBLICATION) {
+                console.warn(`[AISchool] student_science_bilingual is still using legacy published CSV because spreadsheet ${SHEET_ID} is not configured with a public content CSV URL.`);
+            }
             if (window.AISchoolTTS?.createPlayer) {
                 ttsPlayer = window.AISchoolTTS.createPlayer({
                     endpointKey: 'cloudTts',
@@ -634,6 +640,11 @@ if (mobileBox) {
         function goBack() { window.location.href = 'student_science.html'; }
 
         function fetchData() {
+            if (!TARGET_URL) {
+                document.getElementById('loader-overlay').innerHTML = '<div class="text-red-500">教材資料來源尚未設定，請先補上公開 CSV。</div>';
+                return;
+            }
+
             Papa.parse(TARGET_URL, {
                 download: true, header: false,
                 skipEmptyLines: true, 

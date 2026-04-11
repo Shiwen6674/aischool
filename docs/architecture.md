@@ -146,6 +146,28 @@ flowchart LR
 
 不過主入口頁現在已透過 `assets/js/aischool-shared.js` 同步寫入統一 key `AISCHOOL_LANG` 與舊 key，作為相容過渡。
 
+### Spreadsheet Configuration
+
+AI School 現在有一份集中式 spreadsheet config，位於 `assets/js/aischool-shared.js`：
+
+- `aiSchoolSpreadsheetId`
+- `scienceContentSpreadsheetId`
+- `scienceContentSheetName`
+- `scienceContentCsvUrl`
+- `scienceLegacyContentCsvUrl`
+- `scienceUserSpreadsheetId`
+- `scienceUserSheetName`
+- `scienceUserStudentIdCol`
+
+目前主試算表 ID 已對齊到 `1cDOsaa7E0EwD1R9CeCWoGf8_9ZMcFv8fxQ5d-LWUKu8`。
+
+關鍵差異要注意：
+
+- `science_adaptive_testing.html` 會把 content/user spreadsheet ID 與 sheet name 帶給 GAS，因此它可以優先嘗試主試算表。
+- `student_science_bilingual.html` 直接吃公開 CSV，無法只靠 spreadsheet ID 運作。
+- 我已實測主試算表的 `gviz/tq?tqx=out:csv` 目前會要求登入，因此對 GitHub Pages 這種公開站不安全。
+- 因此 shared runtime 目前仍保留 `scienceLegacyContentCsvUrl` 作為 fallback，直到你提供新的 published CSV URL 或改走後端代理。
+
 ## 5. External Dependencies
 
 ### CDN Libraries
@@ -171,6 +193,7 @@ flowchart LR
 重要事實：
 
 - `assets/js/aischool-shared.js` 現在負責共用的 session、flash、語言 key 與 GAS endpoint 查找，但尚未覆蓋全站所有頁面。
+- `assets/js/aischool-shared.js` 也負責主試算表與教材 CSV 設定；試算表變更不應再散落在各頁常數中。
 - `assets/js/aischool-tts.js` 負責雙語頁的語音播放策略：優先選擇較自然的裝置語音，並在 `cloudTts` 已配置時優先使用雲端音訊。
 - 主要 GAS URL 已集中到 shared runtime，但 teacher/professor 的實際部署仍是多後端拓樸
 - `teacher_CAT_review.html` 會先找 `teacherCatReview`；若仍是 placeholder，shared runtime 目前會回退到 `studentAdaptiveTesting`，作為同一 CAT 資料域的推定預設值。

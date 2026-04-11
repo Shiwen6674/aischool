@@ -626,12 +626,14 @@ rp { display: none !important; }
        0) CONFIG & I18N
        =========================== */
     const GAS_API_URL = window.AISchool.getGasUrl("studentAdaptiveTesting");
-    const CONTENT_DB_ID = "1cEfMEy3bvDa1tET3xmh7ShGeJy8KLUMa_JuULGBD-mk";
-    const CONTENT_SHEET_NAME = "Sheet1";
-    const USER_DB_ID = "1cDOsaa7E0EwD1R9CeCWoGf8_9ZMcFv8fxQ5d-LWUKu8";
-    const USER_SHEET_NAME = "Users_student";
-    const USER_STUDENTID_COL = "J";
-    const MATERIALS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRbgkNiMflfeLQd3KN8F4yjjIr6G2flnCAy-nUPMiC7_xDfdg_0hJ2Qzbsr92u8htlPLFR8GwwQPK_g/pub?gid=0&single=true&output=csv";
+    const spreadsheetConfig = window.AISchool?.getSpreadsheetConfig?.() || {};
+    const CONTENT_DB_ID = spreadsheetConfig.scienceContentSpreadsheetId || spreadsheetConfig.aiSchoolSpreadsheetId || "1cDOsaa7E0EwD1R9CeCWoGf8_9ZMcFv8fxQ5d-LWUKu8";
+    const CONTENT_SHEET_NAME = spreadsheetConfig.scienceContentSheetName || "Sheet1";
+    const USER_DB_ID = spreadsheetConfig.scienceUserSpreadsheetId || spreadsheetConfig.aiSchoolSpreadsheetId || "1cDOsaa7E0EwD1R9CeCWoGf8_9ZMcFv8fxQ5d-LWUKu8";
+    const USER_SHEET_NAME = spreadsheetConfig.scienceUserSheetName || "Users_student";
+    const USER_STUDENTID_COL = spreadsheetConfig.scienceUserStudentIdCol || "J";
+    const MATERIALS_CSV_URL = spreadsheetConfig.scienceContentCsvUrl || "";
+    const MATERIALS_CSV_SOURCE = spreadsheetConfig.scienceContentCsvUrlSource || "missing";
 
     const i18n = {
       "zh-TW": {
@@ -716,6 +718,10 @@ rp { display: none !important; }
     const CAT = { started: false, test_id: "", student_id: "", current: null, next: null, selected: "", n: 15, step: 0, itemMap: {} };
     const ACTION = { GET_UNIT_OPTIONS: "getUnitOptions", START_CAT: "startCAT", SUBMIT_NEXT: "submitAndNext", FINISH_CAT: "finishCAT" };
     const META_ACTION_CANDIDATES = ["get_metadata", "getMetadata", "action_get_metadata"];
+
+    if (MATERIALS_CSV_SOURCE === "legacy-fallback") {
+      console.warn(`[AISchool] science_adaptive_testing is using the legacy published CSV fallback because spreadsheet ${CONTENT_DB_ID} has no configured public content CSV URL.`);
+    }
 
 /* ===========================
        2) HELPER FUNCTIONS (修正版)
@@ -937,7 +943,14 @@ function _parseCSV(text){
 
 
     async function _loadRowsFromPublicCSV(){
+        if (!MATERIALS_CSV_URL) {
+            throw new Error("No public materials CSV is configured for science content.");
+        }
+
         const res = await fetch(MATERIALS_CSV_URL, { cache: "no-store" });
+        if (!res.ok) {
+            throw new Error(`Public materials CSV request failed: HTTP ${res.status}`);
+        }
         const text = await res.text();
         return _parseCSV(text);
     }

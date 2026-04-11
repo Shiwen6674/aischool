@@ -87,6 +87,35 @@
 - 至少做靜態比對，確認沒有舊 URL 殘留
 - 若外部 GAS 無法本地驗證，要在回報中明說
 
+## 3.5 Spreadsheet Or CSV Source Change
+
+適用情境：更換 Google 試算表 ID、調整教材工作表名稱、整理公開 CSV 來源。
+
+先做：
+
+1. 全 repo 搜尋所有 spreadsheet ID、`docs.google.com/spreadsheets` 與 published CSV URL
+2. 先確認目標來源是：
+   - GAS 後端讀取的私有試算表
+   - 還是 GitHub Pages 直接讀取的公開 CSV
+3. 優先改 `assets/js/aischool-shared.js` 的 spreadsheet config，不要只改單頁常數
+4. 若是公開站內容頁，先驗證新試算表是否真的可匿名讀取
+5. 若不能匿名讀取，不要盲目把 published CSV 換成原始 spreadsheet ID；應保留 legacy fallback，或改成後端代理
+
+檢查點：
+
+- `science_adaptive_testing.html` 與 `student_science_bilingual.html` 是否已讀同一份 shared config
+- 新 spreadsheet ID 是否真的能支援對應的 sheet name
+- 公開 CSV 若仍未配置，頁面是否有合理錯誤提示或 fallback
+- 回報裡是否清楚區分：
+  - 已對齊的主試算表設定
+  - 仍待提供的新 public CSV / 後端代理
+
+完成後驗證：
+
+- 靜態搜尋時，不應再有分散的主試算表 ID
+- 若 public CSV 仍走 legacy fallback，要在回報中明講原因
+- 若能實測公開讀取，需註明是匿名可讀還是仍要求登入
+
 ## 4. Session Or Auth Hardening
 
 適用情境：調整登入、保護頁、使用者資訊格式。

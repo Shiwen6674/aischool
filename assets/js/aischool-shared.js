@@ -5,6 +5,10 @@
   const LEGACY_LANGUAGE_KEYS = ["AI_SCHOOL_LANG", "slh_lang", "appLang"];
   const LEGACY_USER_STORAGE_KEYS = ["currentUser"];
   const GAS_ENDPOINT_OVERRIDE_KEY = "AISCHOOL_GAS_OVERRIDES";
+  const SPREADSHEET_OVERRIDE_KEY = "AISCHOOL_SPREADSHEET_OVERRIDES";
+  const PRIMARY_SPREADSHEET_ID = "1cDOsaa7E0EwD1R9CeCWoGf8_9ZMcFv8fxQ5d-LWUKu8";
+  const LEGACY_SCIENCE_CONTENT_CSV_URL =
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vRbgkNiMflfeLQd3KN8F4yjjIr6G2flnCAy-nUPMiC7_xDfdg_0hJ2Qzbsr92u8htlPLFR8GwwQPK_g/pub?gid=0&single=true&output=csv";
   const GAS_ENDPOINTS = {
     authHub: "https://script.google.com/macros/s/AKfycbzcDKkz8Tilzb3qbx0_fDR7QoG4-c2JCtsa4p9V8_1gBjZaEMlvQHd72OD0kZq_jW8H/exec",
     teacherItemVocabulary: "https://script.google.com/macros/s/AKfycbxbZPCCWFwFel6KjEzga-P_YJJccBevBMMCmgq_qVt1PfQEl2Som7z-DD2rU8kexrnGtA/exec",
@@ -23,6 +27,16 @@
   const GAS_ENDPOINT_FALLBACKS = {
     teacherCatReview: "studentAdaptiveTesting"
   };
+  const SPREADSHEET_CONFIG = Object.freeze({
+    aiSchoolSpreadsheetId: PRIMARY_SPREADSHEET_ID,
+    scienceContentSpreadsheetId: PRIMARY_SPREADSHEET_ID,
+    scienceContentSheetName: "Sheet1",
+    scienceContentCsvUrl: "",
+    scienceLegacyContentCsvUrl: LEGACY_SCIENCE_CONTENT_CSV_URL,
+    scienceUserSpreadsheetId: PRIMARY_SPREADSHEET_ID,
+    scienceUserSheetName: "Users_student",
+    scienceUserStudentIdCol: "J"
+  });
   const SESSION_KEYS_TO_CLEAR = [
     SESSION_USER_KEY,
     FLASH_MESSAGE_KEY,
@@ -50,6 +64,24 @@
   function getGasOverrides() {
     const parsed = safeParse(localStorage.getItem(GAS_ENDPOINT_OVERRIDE_KEY));
     return parsed && typeof parsed === "object" ? parsed : {};
+  }
+
+  function getSpreadsheetOverrides() {
+    const parsed = safeParse(localStorage.getItem(SPREADSHEET_OVERRIDE_KEY));
+    return parsed && typeof parsed === "object" ? parsed : {};
+  }
+
+  function normalizeSpreadsheetConfig(raw) {
+    const source = raw && typeof raw === "object" ? raw : {};
+    const next = {};
+
+    Object.keys(SPREADSHEET_CONFIG).forEach((key) => {
+      const value = source[key];
+      if (value === undefined || value === null) return;
+      next[key] = String(value).trim();
+    });
+
+    return next;
   }
 
   function normalizeRole(role) {
@@ -208,6 +240,33 @@
     return getGasUrlInfo(key, fallback).url;
   }
 
+  function getSpreadsheetConfig() {
+    const overrides = normalizeSpreadsheetConfig(getSpreadsheetOverrides());
+    const merged = {
+      ...SPREADSHEET_CONFIG,
+      ...overrides
+    };
+
+    const primaryId = merged.aiSchoolSpreadsheetId || PRIMARY_SPREADSHEET_ID;
+    const explicitScienceContentId = merged.scienceContentSpreadsheetId || primaryId;
+    const explicitScienceUserId = merged.scienceUserSpreadsheetId || primaryId;
+    const explicitCsvUrl = String(merged.scienceContentCsvUrl || "").trim();
+    const legacyCsvUrl = String(
+      merged.scienceLegacyContentCsvUrl || LEGACY_SCIENCE_CONTENT_CSV_URL
+    ).trim();
+
+    return {
+      ...merged,
+      aiSchoolSpreadsheetId: primaryId,
+      scienceContentSpreadsheetId: explicitScienceContentId,
+      scienceUserSpreadsheetId: explicitScienceUserId,
+      scienceContentCsvUrl: explicitCsvUrl || legacyCsvUrl,
+      scienceContentCsvUrlSource: explicitCsvUrl ? "configured" : "legacy-fallback",
+      requiresPublishedScienceContentCsv: !explicitCsvUrl,
+      hasPublishedScienceContentCsv: Boolean(explicitCsvUrl)
+    };
+  }
+
   function setGasOverride(key, url) {
     const overrides = getGasOverrides();
     const value = String(url || "").trim();
@@ -222,8 +281,27 @@
     return getGasUrlInfo(key);
   }
 
+  function setSpreadsheetOverride(key, value) {
+    if (!(key in SPREADSHEET_CONFIG)) {
+      throw new Error(`Unknown spreadsheet config key: ${key}`);
+    }
+
+    const overrides = getSpreadsheetOverrides();
+    const nextValue = String(value || "").trim();
+
+    if (!nextValue) {
+      delete overrides[key];
+    } else {
+      overrides[key] = nextValue;
+    }
+
+    localStorage.setItem(SPREADSHEET_OVERRIDE_KEY, JSON.stringify(overrides));
+    return getSpreadsheetConfig();
+  }
+
   window.AISchoolConfig = {
-    gas: GAS_ENDPOINTS
+    gas: GAS_ENDPOINTS,
+    spreadsheets: SPREADSHEET_CONFIG
   };
   window.AISchool = {
     clearCurrentUser,
@@ -231,6 +309,7 @@
     getGasUrl,
     getGasUrlInfo,
     getLanguage,
+    getSpreadsheetConfig,
     isPlaceholderGasUrl,
     normalizeRole,
     normalizeUser,
@@ -238,6 +317,7 @@
     requireRole,
     setCurrentUser,
     setGasOverride,
+    setSpreadsheetOverride,
     setFlashMessage,
     setLanguage
   };
