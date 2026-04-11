@@ -4,6 +4,7 @@
   const PRIMARY_LANGUAGE_KEY = "AISCHOOL_LANG";
   const LEGACY_LANGUAGE_KEYS = ["AI_SCHOOL_LANG", "slh_lang", "appLang"];
   const LEGACY_USER_STORAGE_KEYS = ["currentUser"];
+  const GAS_ENDPOINT_OVERRIDE_KEY = "AISCHOOL_GAS_OVERRIDES";
   const GAS_ENDPOINTS = {
     authHub: "https://script.google.com/macros/s/AKfycbzcDKkz8Tilzb3qbx0_fDR7QoG4-c2JCtsa4p9V8_1gBjZaEMlvQHd72OD0kZq_jW8H/exec",
     teacherItemVocabulary: "https://script.google.com/macros/s/AKfycbxbZPCCWFwFel6KjEzga-P_YJJccBevBMMCmgq_qVt1PfQEl2Som7z-DD2rU8kexrnGtA/exec",
@@ -17,6 +18,9 @@
     studentAdaptiveTesting: "https://script.google.com/macros/s/AKfycbxvAOgRDBE6T-2R37UeTzo0RSQukgGOlEYyBrTw8zUSOlIKNIzLdJXozjNx4Hn6brc2/exec",
     studentUnitCoreIdea: "https://script.google.com/macros/s/AKfycbynf2DkhZ6V9lCLH3MH-Ud7DjTMPDKAu2DJm3OC22lTYaPJe5TiA8GRfyG0lihLUZxa/exec",
     studentBilingualTracking: "https://script.google.com/macros/s/AKfycbwXvqOFGVuay1_jZ7dau5VkNqSqGppQ3ffIizlcyB4R0XwvQU7Km5JFuYR4wfFG2OMxHA/exec"
+  };
+  const GAS_ENDPOINT_FALLBACKS = {
+    teacherCatReview: "studentAdaptiveTesting"
   };
   const SESSION_KEYS_TO_CLEAR = [
     SESSION_USER_KEY,
@@ -33,6 +37,18 @@
     } catch {
       return null;
     }
+  }
+
+  function isPlaceholderGasUrl(url) {
+    const value = String(url || "").trim();
+    if (!value) return true;
+
+    return /你的發布ID|your[-_\s]?deploy[-_\s]?id|changeme|example\.com/i.test(value);
+  }
+
+  function getGasOverrides() {
+    const parsed = safeParse(localStorage.getItem(GAS_ENDPOINT_OVERRIDE_KEY));
+    return parsed && typeof parsed === "object" ? parsed : {};
   }
 
   function normalizeRole(role) {
@@ -134,8 +150,75 @@
     return null;
   }
 
+  function getGasUrlInfo(key, fallback) {
+    const overrides = getGasOverrides();
+    const overrideUrl = String(overrides[key] || "").trim();
+
+    if (overrideUrl && !isPlaceholderGasUrl(overrideUrl)) {
+      return {
+        key,
+        url: overrideUrl,
+        source: "override",
+        fallbackKey: "",
+        isPlaceholder: false,
+        isConfigured: true
+      };
+    }
+
+    const directUrl = String(GAS_ENDPOINTS[key] || "").trim();
+    if (directUrl && !isPlaceholderGasUrl(directUrl)) {
+      return {
+        key,
+        url: directUrl,
+        source: "default",
+        fallbackKey: "",
+        isPlaceholder: false,
+        isConfigured: true
+      };
+    }
+
+    const fallbackKey = GAS_ENDPOINT_FALLBACKS[key] || "";
+    const fallbackUrl = fallbackKey ? String(GAS_ENDPOINTS[fallbackKey] || "").trim() : "";
+    if (fallbackUrl && !isPlaceholderGasUrl(fallbackUrl)) {
+      return {
+        key,
+        url: fallbackUrl,
+        source: `fallback:${fallbackKey}`,
+        fallbackKey,
+        isPlaceholder: false,
+        isConfigured: true
+      };
+    }
+
+    const legacyFallback = String(fallback || "").trim();
+    const hasLegacyFallback = legacyFallback && !isPlaceholderGasUrl(legacyFallback);
+
+    return {
+      key,
+      url: hasLegacyFallback ? legacyFallback : directUrl || legacyFallback || "",
+      source: hasLegacyFallback ? "callsite-fallback" : (directUrl ? "placeholder" : "missing"),
+      fallbackKey,
+      isPlaceholder: true,
+      isConfigured: hasLegacyFallback
+    };
+  }
+
   function getGasUrl(key, fallback) {
-    return GAS_ENDPOINTS[key] || fallback || "";
+    return getGasUrlInfo(key, fallback).url;
+  }
+
+  function setGasOverride(key, url) {
+    const overrides = getGasOverrides();
+    const value = String(url || "").trim();
+
+    if (!value) {
+      delete overrides[key];
+    } else {
+      overrides[key] = value;
+    }
+
+    localStorage.setItem(GAS_ENDPOINT_OVERRIDE_KEY, JSON.stringify(overrides));
+    return getGasUrlInfo(key);
   }
 
   window.AISchoolConfig = {
@@ -145,12 +228,15 @@
     clearCurrentUser,
     getCurrentUser,
     getGasUrl,
+    getGasUrlInfo,
     getLanguage,
+    isPlaceholderGasUrl,
     normalizeRole,
     normalizeUser,
     readFlashMessage,
     requireRole,
     setCurrentUser,
+    setGasOverride,
     setFlashMessage,
     setLanguage
   };

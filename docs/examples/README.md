@@ -8,3 +8,4 @@
 - `02-promote-placeholder-page.md`
 - `03-harden-login-session.md`
 - `04-run-smoke-test.md`
+- `05-pages-preflight.md`

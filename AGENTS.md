@@ -20,7 +20,7 @@
 - `assets/js/aischool-shared.js` 已成為全站主要的共用 runtime，集中管理 session、flash message、語言 key 與 GAS endpoint。
 - `assets/css/student-hub.css` 與 `assets/js/student-hub.js` 是學生學習中心的共用骨架，優先用來承接原本的 placeholder 頁。
 - 學生端原本的空白 placeholder 頁已升級成可用的學習中心頁，但多數仍屬內容導向頁，而不是完整 API 工具。
-- 登入狀態仍以 `currentUser` 為主，但 professor 頁家族還沒有完全與 shared runtime 對齊。
+- 登入狀態仍以 `currentUser` 為主；主要入口頁與 professor 保護頁已對齊 shared runtime，但仍有部分舊頁保留各自的 UI/API 邏輯。
 
 ## Non-Negotiables
 
@@ -97,7 +97,7 @@
    - `teacher.html`
    - `professor.html`
 2. 受保護頁是否仍能從 session 恢復使用者資訊。
-3. 目標頁若依賴 GAS，失敗時是否有合理提示。
+3. 目標頁若依賴 GAS，未配置或失敗時是否有合理提示。
 4. 若改到學生學習中心頁，確認主導航、共用骨架與文件都同步更新。
 
 ## Known Drift To Watch
@@ -105,5 +105,6 @@
 - `professor` 與 `researcher` 命名在不同 DOM 與文案層混用。
 - `currentUser`、`isLoggedIn`、`redirectMsg` 都存在，但不是每頁都用同一套。
 - 不同頁面的語言設定 key 不一致。
-- `teacher_CAT_review.html` 的 GAS endpoint 仍需要真實部署 ID，shared config 只是把它集中起來，沒有替它憑空補出可用後端。
+- `teacher_CAT_review.html` 現在會優先讀 `teacherCatReview`，若仍是 placeholder 會暫時回退到 `studentAdaptiveTesting`；這是依資料契約推得的預設值，不等於已確認真實教師後端。
+- repo 目前沒有 `.github/workflows/pages.yml`；GitHub Pages 是否能自動發布，仍取決於 repo settings，而不是 repo 內建 CI。
 - 多個頁面直接各自維護視覺與 API 邏輯，重複碼很多，改動容易只修一半。

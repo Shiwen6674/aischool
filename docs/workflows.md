@@ -73,12 +73,14 @@
 2. 盤點受影響頁面
 3. 確認哪些頁共用同一個 endpoint，哪些不是
 4. 優先確認 shared runtime 是否已經有對應 key，再決定要不要新增
+5. 若 endpoint 仍是 placeholder，先決定是要補真實部署，還是只能安全地提供 fallback 與明確提示
 
 檢查點：
 
 - `fetch(..., mode: "cors")` 是否仍符合需求
 - `no-cors` 是否只用於 logging/tracking
 - 錯誤提示是否仍能告知使用者後端不可用
+- 若使用 shared runtime fallback，要在回報裡明講它是推定值，不是 live 驗證結果
 
 完成後驗證：
 
@@ -170,3 +172,23 @@
 - 說明哪些步驟是實際靜態驗證
 - 說明哪些步驟因缺少 GAS 或外部服務只能推斷
 - 額外列出 session、endpoint、內容頁與未驗證外部服務風險
+
+## 8. GitHub Pages Preflight
+
+適用情境：準備上線、剛整理完多頁面改動、想先確認 repo 本身是否適合靜態部署。
+
+步驟：
+
+1. 檢查所有 `.html` 的本地 `href` / `src` 是否都有對應檔案
+2. 檢查是否存在 root-relative 路徑、大小寫風險或只在本機有效的連結
+3. 檢查 repo 內是否有 `.github/workflows/pages.yml`、`CNAME`、`404.html` 等部署訊號
+4. 盤點所有外部 CDN 與 GAS 依賴
+5. 區分：
+   - GitHub Pages 能保證的靜態檔案可達性
+   - 仍需要人工驗證的外部服務可用性
+
+完成後驗證：
+
+- 能明確說出哪些頁面是「靜態可上線」
+- 能明確說出哪些功能仍依賴 GAS / CDN / Google 服務
+- 若 repo 沒有 Pages workflow，不要假設 GitHub 端一定已正確設定

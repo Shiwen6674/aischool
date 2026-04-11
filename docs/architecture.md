@@ -171,6 +171,7 @@ flowchart LR
 
 - `assets/js/aischool-shared.js` 現在負責共用的 session、flash、語言 key 與 GAS endpoint 查找，但尚未覆蓋全站所有頁面。
 - 主要 GAS URL 已集中到 shared runtime，但 teacher/professor 的實際部署仍是多後端拓樸
+- `teacher_CAT_review.html` 會先找 `teacherCatReview`；若仍是 placeholder，shared runtime 目前會回退到 `studentAdaptiveTesting`，作為同一 CAT 資料域的推定預設值。
 - 不同功能常綁定不同部署
 - 某些頁面使用 `mode: "cors"`
 - 某些 logging 或 tracking 使用 `mode: "no-cors"`
@@ -221,5 +222,11 @@ flowchart LR
 - session 與 language key 命名不一致，容易造成跨頁狀態漂移。
 - 某些 API fallback 使用 `no-cors`，只能 fire-and-forget，失敗可觀測性有限。
 - `professor/researcher` 命名漂移可能在 role 判斷時踩坑。
-- `teacher_CAT_review.html` 目前仍缺真實的部署 URL，shared runtime 只是把它集中管理，沒有替它補出實際後端。
+- `teacher_CAT_review.html` 雖然已有 fallback 機制，但真正的教師報表後端是否與學生 CAT 共用，仍未經 live 驗證。
 - `science_csat.html` 的檔名與實際內容已出現語意落差：檔名保留舊連結，但頁面內容已對齊高中學測自然科戰略。
+
+## 9. GitHub Pages Preflight Notes
+
+- repo 內目前沒有 `.github/workflows/pages.yml`，代表 Pages 發布方式不是由 repo 內建 workflow 自我描述。
+- 現有 HTML 頁面使用的本地資產路徑以相對路徑為主，靜態部署相容性比 root-relative 路徑高。
+- 但頁面大量依賴外部 CDN 與 Apps Script；因此 Pages 成功發布，不等於 teacher/professor/student 的 API 功能一定可用。

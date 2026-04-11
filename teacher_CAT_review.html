@@ -17,6 +17,12 @@
     input[type="password"] { padding: 10px; width: 200px; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 16px; }
     button.btn-primary { padding: 10px 20px; background: #3498db; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; transition: 0.3s; }
     button.btn-primary:hover { background: #2980b9; }
+    button.btn-primary:disabled { opacity: 0.7; cursor: wait; }
+    .helper-text { color: #5d6d7e; font-size: 14px; margin-top: 12px; line-height: 1.6; }
+    .alert-banner { display: none; margin: 0 0 20px; padding: 14px 16px; border-radius: 8px; line-height: 1.6; }
+    .alert-info { background: #eef6ff; border: 1px solid #b7d8f8; color: #22577a; }
+    .alert-warn { background: #fff4e5; border: 1px solid #f5c97a; color: #8a4b08; }
+    code { background: rgba(15, 23, 42, 0.08); padding: 2px 6px; border-radius: 4px; }
 
     /* 表格區塊 */
     #dashboard { display: none; } /* 預設隱藏，登入後顯示 */
@@ -49,12 +55,16 @@
 
 <div class="container">
   <h1>👨‍🏫 教師後台：AI 學習診斷儀表板</h1>
+  <div id="endpointNotice" class="alert-banner"></div>
 
   <div class="login-box" id="loginSection">
     <p>請輸入教師通關密碼</p>
     <input type="password" id="teacherPwd" placeholder="輸入密碼 (預設: admin)">
-    <button class="btn-primary" onclick="fetchTeacherData()">登入查詢</button>
+    <button id="teacherLoginBtn" class="btn-primary" onclick="fetchTeacherData()">登入查詢</button>
     <div id="loadingText" class="loading">資料讀取中，請稍候...</div>
+    <div class="helper-text">
+      此頁會讀取 CAT 測驗的教師檢視報表。若看到後端設定提示，代表前端已準備好，但仍需要對應的 Apps Script Web App 支援 <code>get_teacher_data</code>。
+    </div>
   </div>
 
   <div id="dashboard">
@@ -90,95 +100,251 @@
 
 <script>
   /* === 2. JavaScript 邏輯 === */
-  
-  // ★★★ 請務必修改這裡：換成你發布後的 Web App 網址 ★★★
-  const GAS_URL = window.AISchool.getGasUrl("teacherCatReview"); 
+  const teacherCatEndpoint = window.AISchool?.getGasUrlInfo?.("teacherCatReview") || {
+    url: window.AISchool?.getGasUrl?.("teacherCatReview") || "",
+    source: "legacy",
+    fallbackKey: "",
+    isConfigured: Boolean(window.AISchool?.getGasUrl?.("teacherCatReview")),
+    isPlaceholder: !window.AISchool?.getGasUrl?.("teacherCatReview")
+  };
+  const GAS_URL = teacherCatEndpoint.url;
 
-  // 1. 獲取資料
+  function setLoading(isLoading) {
+    const loadingText = document.getElementById('loadingText');
+    const loginButton = document.getElementById('teacherLoginBtn');
+
+    if (loadingText) {
+      loadingText.style.display = isLoading ? 'block' : 'none';
+    }
+    if (loginButton) {
+      loginButton.disabled = isLoading;
+      loginButton.textContent = isLoading ? '讀取中...' : '登入查詢';
+    }
+  }
+
+  function renderEndpointNotice() {
+    const notice = document.getElementById('endpointNotice');
+    if (!notice) return;
+
+    notice.style.display = 'none';
+    notice.className = 'alert-banner';
+
+    if (!teacherCatEndpoint.isConfigured || !GAS_URL) {
+      notice.classList.add('alert-warn');
+      notice.innerHTML = '尚未設定教師 CAT 報表後端。請先在 <code>assets/js/aischool-shared.js</code> 的 <code>teacherCatReview</code> 放入真實 Apps Script Web App URL，或透過 shared runtime 覆寫。';
+      notice.style.display = 'block';
+      return;
+    }
+
+    if (String(teacherCatEndpoint.source).startsWith('fallback:')) {
+      notice.classList.add('alert-info');
+      notice.innerHTML = '目前此頁預設共用學生 CAT 後端 <code>' + teacherCatEndpoint.fallbackKey + '</code>。這是依照本地資料契約推得的最佳預設值；若你有獨立的教師報表部署，請把 <code>teacherCatReview</code> 改成實際 URL。';
+      notice.style.display = 'block';
+    }
+  }
+
+  function parseMaybeJson(raw) {
+    if (typeof raw !== 'string') return null;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+
+  function normalizeFeedback(raw) {
+    if (!raw) {
+      return { summary: '', weakness_analysis: '', action_plan: [] };
+    }
+
+    if (typeof raw === 'string') {
+      const parsed = parseMaybeJson(raw);
+      if (parsed) {
+        return normalizeFeedback(parsed);
+      }
+      return { summary: '', weakness_analysis: raw.trim(), action_plan: [] };
+    }
+
+    const obj = typeof raw === 'object' ? raw : {};
+    let actionPlan = [];
+
+    if (Array.isArray(obj.action_plan)) {
+      actionPlan = obj.action_plan;
+    } else if (typeof obj.action_plan === 'string') {
+      actionPlan = obj.action_plan.split(/\n|；|;/).map(item => item.trim()).filter(Boolean);
+    }
+
+    return {
+      ...obj,
+      summary: String(obj.summary || obj.ai_summary || '').trim(),
+      weakness_analysis: String(obj.weakness_analysis || obj.weaknessAnalysis || obj.analysis || '').trim(),
+      action_plan: actionPlan.map(item => String(item || '').trim()).filter(Boolean)
+    };
+  }
+
+  function normalizeReportRow(row) {
+    const source = row && typeof row === 'object' ? row : {};
+    const feedback = normalizeFeedback(source.full_feedback || source.ai_feedback || source.feedback || source.analysis || {});
+    const numericScore = Number(source.score ?? source.score_100 ?? source.totalScore);
+
+    return {
+      ...source,
+      timestamp: source.timestamp || source.createdAt || source.created_at || source.date || '',
+      student_id: source.student_id || source.studentId || source.student || source.email || '未命名學生',
+      score: Number.isFinite(numericScore) ? numericScore : String(source.score ?? source.score_100 ?? '--'),
+      theta: source.theta ?? source.ability ?? source.ability_value ?? '--',
+      summary: String(source.summary || feedback.summary || source.ai_summary || '').trim(),
+      full_feedback: feedback
+    };
+  }
+
+  function formatTime(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return value ? String(value) : '—';
+    }
+
+    return date.toLocaleString('zh-TW', {
+      month: 'numeric',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  function buildCell(tagName, text, className) {
+    const cell = document.createElement(tagName);
+    if (className) {
+      cell.className = className;
+    }
+    if (text !== undefined && text !== null) {
+      cell.textContent = String(text);
+    }
+    return cell;
+  }
+
   function fetchTeacherData() {
     const pwd = document.getElementById('teacherPwd').value.trim();
-    if(!pwd) { alert("請輸入密碼！"); return; }
+    if (!pwd) {
+      alert('請輸入密碼！');
+      return;
+    }
 
-    // 顯示 Loading
-    document.getElementById('loadingText').style.display = 'block';
-    
-    // 發送請求
+    if (!teacherCatEndpoint.isConfigured || !GAS_URL) {
+      alert('教師 CAT 報表後端尚未設定完成，請先在 shared runtime 放入可用的 Apps Script Web App URL。');
+      return;
+    }
+
+    setLoading(true);
+
     const apiUrl = `${GAS_URL}?action=get_teacher_data&password=${encodeURIComponent(pwd)}`;
 
-    fetch(apiUrl)
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById('loadingText').style.display = 'none';
-        
-        if (!data.ok) {
-          alert("錯誤：" + (data.error || "無法讀取資料"));
+    fetch(apiUrl, {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+      redirect: 'follow'
+    })
+      .then(async (res) => {
+        const text = await res.text();
+        let data = {};
+
+        try {
+          data = text ? JSON.parse(text) : {};
+        } catch {
+          throw new Error('後端沒有回傳 JSON，請確認 GAS Web App 已正確部署並允許瀏覽器讀取。');
+        }
+
+        if (!res.ok) {
+          throw new Error(data.error || `HTTP ${res.status}`);
+        }
+
+        return data;
+      })
+      .then((data) => {
+        setLoading(false);
+
+        if (!data || data.ok === false) {
+          alert('錯誤：' + (data?.error || '無法讀取資料'));
           return;
         }
 
-        if (data.reports.length === 0) {
-          alert("目前尚無學生測驗資料。");
+        const reports = Array.isArray(data.reports) ? data.reports.map(normalizeReportRow) : [];
+        if (reports.length === 0) {
+          alert('目前尚無學生測驗資料。');
           return;
         }
 
-        // 登入成功，切換畫面
         document.getElementById('loginSection').style.display = 'none';
         document.getElementById('dashboard').style.display = 'block';
-        
-        renderTable(data.reports);
+
+        renderTable(reports);
       })
-      .catch(err => {
-        document.getElementById('loadingText').style.display = 'none';
-        alert("連線失敗，請檢查網址或網路狀態。\n" + err);
+      .catch((err) => {
+        setLoading(false);
+        alert('連線失敗，請檢查教師 CAT 後端設定或網路狀態。\n' + (err?.message || err));
       });
   }
 
-  // 2. 渲染表格
   function renderTable(reports) {
-    const tbody = document.querySelector("#reportTable tbody");
-    tbody.innerHTML = ""; // 清空舊資料
+    const tbody = document.querySelector('#reportTable tbody');
+    tbody.innerHTML = '';
 
-    reports.forEach(row => {
-      const tr = document.createElement("tr");
-      
-      // 時間格式化
-      const date = new Date(row.timestamp);
-      const timeStr = date.toLocaleString('zh-TW', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
+    reports.forEach((row) => {
+      const tr = document.createElement('tr');
+      const badgeClass = Number(row.score) >= 80 ? 'high' : Number(row.score) >= 60 ? 'mid' : 'low';
 
-      // 分數顏色標記
-      let badgeClass = "low";
-      if(row.score >= 80) badgeClass = "high";
-      else if(row.score >= 60) badgeClass = "mid";
+      const timeCell = buildCell('td', formatTime(row.timestamp));
+      const studentCell = buildCell('td');
+      const studentStrong = document.createElement('strong');
+      studentStrong.textContent = row.student_id;
+      studentCell.appendChild(studentStrong);
 
-      tr.innerHTML = `
-        <td>${timeStr}</td>
-        <td><strong>${row.student_id}</strong></td>
-        <td><span class="score-badge ${badgeClass}">${row.score}</span></td>
-        <td>${row.theta}</td>
-        <td style="color:#555; max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-          ${row.summary || "(無摘要)"}
-        </td>
-        <td><button style="padding:5px 10px; cursor:pointer;" onclick="showDetail(${rowsJson(row)})">查看處方籤</button></td>
-      `;
-      
-      // 點擊整行也可以開
-      tr.addEventListener('click', (e) => {
-        // 避免點到按鈕時觸發兩次
-        if(e.target.tagName !== 'BUTTON') showDetail(row);
+      const scoreCell = buildCell('td');
+      const scoreBadge = document.createElement('span');
+      scoreBadge.className = `score-badge ${badgeClass}`;
+      scoreBadge.textContent = String(row.score);
+      scoreCell.appendChild(scoreBadge);
+
+      const thetaCell = buildCell('td', row.theta);
+      const summaryCell = buildCell('td', row.summary || '(無摘要)');
+      summaryCell.style.color = '#555';
+      summaryCell.style.maxWidth = '300px';
+      summaryCell.style.overflow = 'hidden';
+      summaryCell.style.textOverflow = 'ellipsis';
+      summaryCell.style.whiteSpace = 'nowrap';
+      summaryCell.title = row.summary || '(無摘要)';
+
+      const actionCell = buildCell('td');
+      const detailButton = document.createElement('button');
+      detailButton.type = 'button';
+      detailButton.textContent = '查看處方籤';
+      detailButton.style.padding = '5px 10px';
+      detailButton.style.cursor = 'pointer';
+      detailButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        showDetail(row);
       });
+      actionCell.appendChild(detailButton);
 
+      [timeCell, studentCell, scoreCell, thetaCell, summaryCell, actionCell].forEach((cell) => tr.appendChild(cell));
+
+      tr.addEventListener('click', () => showDetail(row));
       tbody.appendChild(tr);
     });
   }
 
-  // 輔助：將物件轉為 JSON 字串傳遞 (需處理跳脫字元)
-  function rowsJson(row) {
-    // 這裡為了簡單，直接在 onclick 傳遞物件索引會比較安全，
-    // 但因為我們是生成 HTML，直接用閉包概念在 renderTable 裡的 addEventListener 處理最好 (如上方的 tr.addEventListener)
-    // 這裡只是為了 button onclick 語法相容，實際上 tr.addEventListener 已足夠。
-    return ""; 
+  function createSection(titleText) {
+    const section = document.createElement('div');
+    section.className = 'diag-section';
+
+    const title = document.createElement('div');
+    title.className = 'diag-title';
+    title.textContent = titleText;
+    section.appendChild(title);
+
+    return section;
   }
 
-  // 3. 顯示彈窗詳情
   function showDetail(row) {
     const modal = document.getElementById('detailModal');
     const title = document.getElementById('modalTitle');
@@ -186,45 +352,44 @@
 
     title.innerText = `學生：${row.student_id} (得分:${row.score})`;
 
-    // 取出完整 AI 回饋
-    const ai = row.full_feedback || {};
-    const weak = ai.weakness_analysis || "無弱點分析";
-    const plans = Array.isArray(ai.action_plan) ? ai.action_plan : ["無具體建議"];
+    const feedback = normalizeFeedback(row.full_feedback || {});
+    const weakness = feedback.weakness_analysis || '無弱點分析';
+    const plans = feedback.action_plan.length ? feedback.action_plan : ['無具體建議'];
 
-    // 組裝 HTML
-    let html = "";
+    body.innerHTML = '';
 
-    // 弱點分析區塊
-    html += `
-      <div class="diag-section">
-        <div class="diag-title">🔍 弱點診斷與迷思概念</div>
-        <div style="white-space: pre-line; color:#34495e; background:#f9f9f9; padding:10px; border-radius:5px;">
-          ${weak}
-        </div>
-      </div>
-    `;
+    const weaknessSection = createSection('🔍 弱點診斷與迷思概念');
+    const weaknessContent = document.createElement('div');
+    weaknessContent.style.whiteSpace = 'pre-line';
+    weaknessContent.style.color = '#34495e';
+    weaknessContent.style.background = '#f9f9f9';
+    weaknessContent.style.padding = '10px';
+    weaknessContent.style.borderRadius = '5px';
+    weaknessContent.textContent = weakness;
+    weaknessSection.appendChild(weaknessContent);
 
-    // 處方籤區塊
-    html += `
-      <div class="diag-section">
-        <div class="diag-title">💊 AI 學習處方籤 (Action Plan)</div>
-        <ul class="action-list">
-          ${plans.map(p => `<li>${p}</li>`).join('')}
-        </ul>
-      </div>
-    `;
+    const actionSection = createSection('💊 AI 學習處方籤 (Action Plan)');
+    const planList = document.createElement('ul');
+    planList.className = 'action-list';
+    plans.forEach((plan) => {
+      const item = document.createElement('li');
+      item.textContent = plan;
+      planList.appendChild(item);
+    });
+    actionSection.appendChild(planList);
 
-    body.innerHTML = html;
+    body.appendChild(weaknessSection);
+    body.appendChild(actionSection);
     modal.style.display = 'flex';
   }
 
-  // 4. 關閉彈窗
   function closeModal(e) {
-    // 點擊遮罩或 X 按鈕才關閉
     if (e.target.id === 'detailModal' || e.target.classList.contains('close-btn')) {
       document.getElementById('detailModal').style.display = 'none';
     }
   }
+
+  renderEndpointNotice();
 </script>
 
 </body>
