@@ -1341,72 +1341,428 @@ function processStem(rawStem) {
 
       
 // 1) 把 feedback_student 可能是「物件」或「JSON字串」統一成物件
-function normalizeAiFeedback(aiDataRaw){
+const AI_FAILURE_PATTERNS = [
+  /AI未能生成弱點分析/i,
+  /AI未能生成弱点分析/i,
+  /未能生成(?:弱點|弱点|分析|回饋|反馈)/i,
+  /無法生成(?:弱點|弱点|分析|回饋|反馈)/i,
+  /請稍後再試/i,
+  /please try again later/i,
+  /^error[:：]?\s*/i,
+  /^failed[:：]?\s*/i,
+  /^null$/i,
+  /^undefined$/i
+];
+
+function normalizeAiText(text) {
+  return String(text || "")
+    .replace(/^\)\]\}',?\s*/, "")
+    .replace(/```(?:json|text|markdown)?/gi, "")
+    .replace(/```/g, "")
+    .replace(/\r\n/g, "\n")
+    .trim();
+}
+
+function isFailureAiText(text) {
+  const value = normalizeAiText(text);
+  if (!value) return false;
+  return AI_FAILURE_PATTERNS.some((pattern) => pattern.test(value));
+}
+
+function hasMeaningfulAiText(text) {
+  const value = normalizeAiText(text);
+  return Boolean(value) && !isFailureAiText(value);
+}
+
+function splitActionLines(text) {
+  return normalizeAiText(text)
+    .split(/\n|；|;|•|●/)
+    .map((item) => item.replace(/^\s*(?:[-*]|\d+[.)、])\s*/, "").trim())
+    .filter(Boolean);
+}
+
+function normalizeActionPlan(value) {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => normalizeAiText(item))
+      .filter((item) => hasMeaningfulAiText(item));
+  }
+
+  if (typeof value === "string") {
+    return splitActionLines(value).filter((item) => hasMeaningfulAiText(item));
+  }
+
+  return [];
+}
+
+function tryParseJsonText(text) {
+  const value = normalizeAiText(text);
+  if (!value) return null;
+
+  try {
+    return JSON.parse(value);
+  } catch {
+    const objectMatch = value.match(/\{[\s\S]*\}/);
+    if (objectMatch) {
+      try {
+        return JSON.parse(objectMatch[0]);
+      } catch {}
+    }
+  }
+
+  return null;
+}
+
+function extractTextFromStructuredValue(value, depth = 0) {
+  if (depth > 5 || value == null) return "";
+
+  if (typeof value === "string") {
+    return normalizeAiText(value);
+  }
+
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => extractTextFromStructuredValue(item, depth + 1))
+      .filter(Boolean)
+      .join("\n");
+  }
+
+  if (typeof value !== "object") {
+    return "";
+  }
+
+  const directKeys = ["text", "content", "message", "output_text", "response"];
+  for (const key of directKeys) {
+    if (typeof value[key] === "string" && value[key].trim()) {
+      return normalizeAiText(value[key]);
+    }
+  }
+
+  if (Array.isArray(value.parts)) {
+    return extractTextFromStructuredValue(value.parts, depth + 1);
+  }
+
+  if (Array.isArray(value.candidates)) {
+    return extractTextFromStructuredValue(value.candidates, depth + 1);
+  }
+
+  if (value.content) {
+    return extractTextFromStructuredValue(value.content, depth + 1);
+  }
+
+  return "";
+}
+
+function parseSectionedAiText(text) {
+  const value = normalizeAiText(text);
+  const result = { summary: "", weakness_analysis: "", action_plan: [] };
+  if (!value || isFailureAiText(value)) return result;
+
+  const lines = value.split("\n");
+  let currentKey = "";
+  const buckets = {
+    summary: [],
+    weakness_analysis: [],
+    action_plan: []
+  };
+
+  function resolveSectionKey(title) {
+    const raw = String(title || "").trim();
+    if (!raw) return "";
+
+    if (/總體評估|整體評估|總體表現|overview|summary/i.test(raw)) {
+      return "summary";
+    }
+    if (/弱點分析|迷思分析|概念迷思|misconceptions?|weakness|analysis/i.test(raw)) {
+      return "weakness_analysis";
+    }
+    if (/學習建議|建議|action\s*plan|recommendations?/i.test(raw)) {
+      return "action_plan";
+    }
+    return "";
+  }
+
+  for (const rawLine of lines) {
+    const line = String(rawLine || "").trim();
+    if (!line) continue;
+
+    const bracketHeading = line.match(/^【([^】]+)】\s*(.*)$/);
+    if (bracketHeading) {
+      currentKey = resolveSectionKey(bracketHeading[1]);
+      if (currentKey && bracketHeading[2]) buckets[currentKey].push(bracketHeading[2].trim());
+      continue;
+    }
+
+    const markdownHeading = line.match(/^#{1,6}\s*([^:：]+?)\s*[:：]?\s*(.*)$/);
+    if (markdownHeading) {
+      const headingKey = resolveSectionKey(markdownHeading[1]);
+      if (headingKey) {
+        currentKey = headingKey;
+        if (markdownHeading[2]) buckets[currentKey].push(markdownHeading[2].trim());
+        continue;
+      }
+    }
+
+    const colonHeading = line.match(/^(總體評估|整體評估|總體表現|overview|summary|弱點分析|迷思分析|概念迷思|misconceptions?|weakness|analysis|學習建議|建議|action\s*plan|recommendations?)\s*[:：]\s*(.*)$/i);
+    if (colonHeading) {
+      currentKey = resolveSectionKey(colonHeading[1]);
+      if (currentKey && colonHeading[2]) buckets[currentKey].push(colonHeading[2].trim());
+      continue;
+    }
+
+    if (currentKey) {
+      buckets[currentKey].push(line);
+    }
+  }
+
+  result.summary = buckets.summary.join("\n").trim();
+  result.weakness_analysis = buckets.weakness_analysis.join("\n").trim();
+  result.action_plan = buckets.action_plan
+    .flatMap((item) => splitActionLines(item))
+    .filter((item) => hasMeaningfulAiText(item));
+
+  return result;
+}
+
+function normalizeAiFeedback(aiDataRaw, depth = 0){
   const empty = { summary:"", weakness_analysis:"", action_plan:[] };
+  if (depth > 5 || aiDataRaw == null) return empty;
 
   function toNormalized(obj){
     if (!obj || typeof obj !== "object") return empty;
 
     const summary =
-      obj.summary ||
-      obj.overview ||
-      obj["總體評估"] ||
-      obj["整體評估"] ||
+      obj.summary ??
+      obj.overview ??
+      obj.overall_summary ??
+      obj["總體評估"] ??
+      obj["整體評估"] ??
+      obj["總體表現"] ??
       "";
 
     const weakness =
-      obj.weakness_analysis ||
-      obj.misconception_analysis ||
-      obj.misconceptions ||
-      obj["迷思分析"] ||
-      obj["概念迷思"] ||
+      obj.weakness_analysis ??
+      obj.misconception_analysis ??
+      obj.misconceptions ??
+      obj.weakness ??
+      obj.analysis ??
+      obj["迷思分析"] ??
+      obj["概念迷思"] ??
+      obj["弱點分析"] ??
       "";
 
-    let actions =
-      Array.isArray(obj.action_plan) ? obj.action_plan :
-      Array.isArray(obj.recommendations) ? obj.recommendations :
-      Array.isArray(obj["學習建議"]) ? obj["學習建議"] :
+    const directActions =
+      obj.action_plan ??
+      obj.recommendations ??
+      obj.suggestions ??
+      obj["學習建議"] ??
+      obj["建議"] ??
       [];
 
-    if (!actions.length && typeof obj.action_plan === "string") {
-      actions = obj.action_plan.split(/\n|；|;/).map(s => s.trim()).filter(Boolean);
-    }
-
-    if (!actions.length && typeof obj["學習建議"] === "string") {
-      actions = obj["學習建議"].split(/\n|；|;/).map(s => s.trim()).filter(Boolean);
-    }
-
-    return {
-      summary: String(summary || "").trim(),
-      weakness_analysis: String(weakness || "").trim(),
-      action_plan: actions.map(x => String(x || "").trim()).filter(Boolean)
+    const direct = {
+      summary: normalizeAiText(summary),
+      weakness_analysis: normalizeAiText(weakness),
+      action_plan: normalizeActionPlan(directActions)
     };
-  }
 
-  if (!aiDataRaw) return empty;
+    if (
+      hasMeaningfulAiText(direct.summary) ||
+      hasMeaningfulAiText(direct.weakness_analysis) ||
+      direct.action_plan.length
+    ) {
+      return direct;
+    }
+
+    const structuredText = extractTextFromStructuredValue(obj);
+    if (hasMeaningfulAiText(structuredText)) {
+      const parsedFromText = normalizeAiFeedback(structuredText, depth + 1);
+      if (
+        hasMeaningfulAiText(parsedFromText.summary) ||
+        hasMeaningfulAiText(parsedFromText.weakness_analysis) ||
+        parsedFromText.action_plan.length
+      ) {
+        return parsedFromText;
+      }
+    }
+
+    const nestedKeys = [
+      "feedback_student",
+      "ai_feedback",
+      "feedback",
+      "result",
+      "data",
+      "payload",
+      "output",
+      "response"
+    ];
+
+    for (const key of nestedKeys) {
+      if (obj[key] == null) continue;
+      const nested = normalizeAiFeedback(obj[key], depth + 1);
+      if (
+        hasMeaningfulAiText(nested.summary) ||
+        hasMeaningfulAiText(nested.weakness_analysis) ||
+        nested.action_plan.length
+      ) {
+        return nested;
+      }
+    }
+
+    return direct;
+  }
 
   if (typeof aiDataRaw === "object") {
     return toNormalized(aiDataRaw);
   }
 
   if (typeof aiDataRaw === "string") {
-    const s = aiDataRaw.trim();
+    const s = normalizeAiText(aiDataRaw);
     if (!s) return empty;
 
-    try {
-      const obj = JSON.parse(s);
-
-      if (typeof obj === "string") {
-        return toNormalized(JSON.parse(obj));
+    const parsedJson = tryParseJsonText(s);
+    if (parsedJson != null) {
+      const parsed = normalizeAiFeedback(parsedJson, depth + 1);
+      if (
+        hasMeaningfulAiText(parsed.summary) ||
+        hasMeaningfulAiText(parsed.weakness_analysis) ||
+        parsed.action_plan.length
+      ) {
+        return parsed;
       }
-
-      return toNormalized(obj);
-    } catch (e) {
-      return { summary:"", weakness_analysis:s, action_plan:[] };
     }
+
+    const parsedSections = parseSectionedAiText(s);
+    if (
+      hasMeaningfulAiText(parsedSections.summary) ||
+      hasMeaningfulAiText(parsedSections.weakness_analysis) ||
+      parsedSections.action_plan.length
+    ) {
+      return parsedSections;
+    }
+
+    return {
+      summary: "",
+      weakness_analysis: hasMeaningfulAiText(s) ? s : "",
+      action_plan: []
+    };
   }
 
   return empty;
+}
+
+function stripHtmlTags(text) {
+  return String(text || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function shortText(text, maxLength) {
+  const value = stripHtmlTags(text);
+  if (value.length <= maxLength) return value;
+  return `${value.slice(0, Math.max(0, maxLength - 1)).trim()}…`;
+}
+
+function uniqueTexts(items) {
+  const seen = new Set();
+  const result = [];
+
+  for (const item of items || []) {
+    const value = normalizeAiText(item);
+    if (!value || seen.has(value)) continue;
+    seen.add(value);
+    result.push(value);
+  }
+
+  return result;
+}
+
+function buildFallbackAiFeedback(context) {
+  const wrongItems = Array.isArray(context?.wrongItems) ? context.wrongItems : [];
+  const score = Number(context?.score100) || 0;
+  const correct = Number(context?.correct) || 0;
+  const total = Number(context?.total) || 0;
+  const wrongCount = wrongItems.length;
+
+  const remedialNotes = uniqueTexts(
+    wrongItems.map((item) =>
+      stripHtmlTags(
+        item?.remedial_text ||
+        item?.analysis ||
+        item?.weakness_analysis ||
+        item?.explanation ||
+        ""
+      )
+    )
+  );
+
+  const stemNotes = uniqueTexts(
+    wrongItems.map((item) =>
+      shortText(
+        String(item?.stem || "")
+          .replace(/\[STIMULUS_JSON\][\s\S]*$/, "")
+          .replace(/\n/g, " "),
+        42
+      )
+    )
+  );
+
+  let summary = "";
+  if (total > 0) {
+    if (score >= 85) {
+      summary = `本次測驗共 ${total} 題，答對 ${correct} 題。整體表現穩定，主要需要針對少數失分觀念做精準補強。`;
+    } else if (score >= 60) {
+      summary = `本次測驗共 ${total} 題，答對 ${correct} 題。基礎理解已建立，但仍有 ${wrongCount} 題顯示部分概念連結不夠穩定。`;
+    } else {
+      summary = `本次測驗共 ${total} 題，答對 ${correct} 題。建議先回到核心概念與題意判讀，逐步補強本次失分最多的觀念。`;
+    }
+  } else {
+    summary = "測驗已完成，但目前僅能先依錯題內容提供基礎診斷摘要。";
+  }
+
+  let weakness = "";
+  if (remedialNotes.length) {
+    weakness = remedialNotes
+      .slice(0, 3)
+      .map((note, index) => `重點 ${index + 1}：${note}`)
+      .join("\n\n");
+  } else if (stemNotes.length) {
+    weakness = [
+      "本次錯題主要集中在以下題型或情境：",
+      ...stemNotes.slice(0, 3).map((note, index) => `${index + 1}. ${note}`),
+      "",
+      "建議逐題對照題幹關鍵條件、作答依據與正解理由。"
+    ].join("\n");
+  } else {
+    weakness = "目前未取得完整 AI 迷思分析，因此先依錯題結果推定：你需要優先檢查題意判讀、概念連結與作答依據是否一致。";
+  }
+
+  const actions = uniqueTexts([
+    `先完整回看本次 ${wrongCount || total || 0} 題的錯題診斷，逐題確認自己錯在概念、判讀還是選項辨識。`,
+    remedialNotes[0] ? `優先複習：「${shortText(remedialNotes[0], 32)}」對應的核心概念。` : "",
+    stemNotes[0] ? `重新練習與「${shortText(stemNotes[0], 24)}」相近的題型，確認是否真的理解。` : "",
+    "完成複習後，再做一次同單元測驗，確認錯誤是否已下降。"
+  ]).slice(0, 4);
+
+  return {
+    summary,
+    weakness_analysis: weakness,
+    action_plan: actions
+  };
+}
+
+function mergeAiFeedbackWithFallback(aiFeedback, context) {
+  const fallback = buildFallbackAiFeedback(context);
+  const source = aiFeedback && typeof aiFeedback === "object" ? aiFeedback : {};
+  const sourceActions = normalizeActionPlan(source.action_plan);
+
+  return {
+    summary: hasMeaningfulAiText(source.summary) ? normalizeAiText(source.summary) : fallback.summary,
+    weakness_analysis: hasMeaningfulAiText(source.weakness_analysis)
+      ? normalizeAiText(source.weakness_analysis)
+      : fallback.weakness_analysis,
+    action_plan: sourceActions.length ? sourceActions : fallback.action_plan
+  };
 }
 
 
@@ -1437,6 +1793,14 @@ function splitWeaknessSections(text){
       pushCurrent();
       current.title = m[1].trim();
       if (m[2] && m[2].trim()) current.body = m[2].trim(); // 容錯：標題後同一行有內容
+      continue;
+    }
+
+    const md = line.match(/^#{1,6}\s*([^:：]+?)\s*[:：]?\s*(.*)$/);
+    if (md){
+      pushCurrent();
+      current.title = md[1].trim();
+      if (md[2] && md[2].trim()) current.body = md[2].trim();
       continue;
     }
 
@@ -1724,21 +2088,36 @@ console.log("wrongItems =", wrongItems);
     }
 
     // ... (後續 AI 分析部分保持不變) ...
-    const aiRaw =
+const aiRaw =
   json.feedback_student ??
   json.data?.feedback_student ??
   json.result?.feedback_student ??
+  json.data?.result?.feedback_student ??
   json.ai_feedback ??
   json.data?.ai_feedback ??
   json.result?.ai_feedback ??
+  json.data?.result?.ai_feedback ??
   json.feedback ??
   json.data?.feedback ??
+  json.result?.analysis ??
+  json.analysis ??
+  json.data?.analysis ??
   json.result?.feedback ??
   "";
 
-const aiObj = normalizeAiFeedback(aiRaw);
+const aiCandidate = aiRaw || json;
+const aiObj = mergeAiFeedbackWithFallback(
+  normalizeAiFeedback(aiCandidate),
+  {
+    wrongItems,
+    score100,
+    correct,
+    total
+  }
+);
 
 console.log("AI 原始欄位 aiRaw =", aiRaw);
+console.log("AI 實際解析來源 aiCandidate =", aiCandidate);
 console.log("AI 解析後 aiObj =", aiObj);
 
     const webAiBox = document.getElementById("resAiFeedback");
@@ -1806,19 +2185,19 @@ console.log("AI 解析後 aiObj =", aiObj);
     pdfAiBox.innerHTML = `
       <div class="advice-card advice-blue">
         <div class="advice-title">總體評估 OVERVIEW</div>
-        <div class="advice-content">${overviewText.replace(/\n/g, "<br>")}</div>
+        <div class="advice-content">${safeTextHtml(overviewText)}</div>
       </div>
 
       <div class="advice-card advice-yellow">
         <div class="advice-title">迷思分析 MISCONCEPTIONS</div>
-        <div class="advice-content">${misconceptionText.replace(/\n/g, "<br>")}</div>
+        <div class="advice-content">${safeTextHtml(misconceptionText)}</div>
       </div>
 
       <div class="advice-card advice-green">
         <div class="advice-title">學習建議 RECOMMENDATIONS</div>
         <div class="advice-content">
           <ul style="margin:0; padding-left:24px; list-style-type: disc;">
-            ${actions.map(a => `<li style="margin-bottom:8px; list-style-type: disc;">${a}</li>`).join("")}
+            ${actions.map(a => `<li style="margin-bottom:8px; list-style-type: disc;">${safeTextHtml(a)}</li>`).join("")}
           </ul>
         </div>
       </div>
