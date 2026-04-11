@@ -408,7 +408,7 @@
        class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-green-500"
        oninput="updateRateDisplay(this.value)"
        onchange="trackEvent('speed_changed', { value: this.value })">
-                <span id="tts-status" class="mt-1 text-[9px] font-bold uppercase tracking-wide text-cyan-400">CN Device</span>
+<span id="tts-status" class="mt-1 text-[9px] font-bold uppercase tracking-wide text-cyan-400">Voice Device</span>
 
             </div>
 
@@ -547,6 +547,7 @@ let ttsPlayer = null;
             if (window.AISchoolTTS?.createPlayer) {
                 ttsPlayer = window.AISchoolTTS.createPlayer({
                     endpointKey: 'cloudTts',
+                    preferCloud: true,
                     getGender: () => currentVoice,
                     getRate: () => getUiRate(),
                     onModeChange: (mode) => updateTtsStatus(mode),
@@ -953,18 +954,18 @@ function updateTtsStatus(modeOverride) {
     const cloudReady = Boolean(ttsPlayer?.isCloudConfigured?.('cloudTts'));
 
     if (mode === 'cloud') {
-        status.textContent = 'CN Cloud';
+        status.textContent = 'Voice Cloud';
         status.className = 'mt-1 text-[9px] font-bold uppercase tracking-wide text-emerald-400';
         return;
     }
 
     if (cloudReady) {
-        status.textContent = 'CN Ready';
+        status.textContent = 'Cloud Ready';
         status.className = 'mt-1 text-[9px] font-bold uppercase tracking-wide text-cyan-400';
         return;
     }
 
-    status.textContent = 'CN Device';
+    status.textContent = 'Voice Device';
     status.className = 'mt-1 text-[9px] font-bold uppercase tracking-wide text-slate-400';
 }
 

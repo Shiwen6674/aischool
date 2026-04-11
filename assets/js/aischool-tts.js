@@ -169,7 +169,7 @@
 
       if (/enhanced|premium|natural|neural|studio|wavenet|online|cloud|high quality/.test(descriptor)) score += 6500;
       if (/compact|espeak|ekho|festival|robot|legacy/.test(descriptor)) score -= 14000;
-      if (/siri/.test(descriptor)) score += isEng ? 2800 : 5200;
+      if (/siri/.test(descriptor)) score += isEng ? 1200 : 5200;
       if (/google/.test(descriptor)) score += platform === "android" ? 3200 : 1400;
       if (/microsoft/.test(descriptor) && platform === "desktop") score += 2200;
       if (/apple/.test(descriptor) && platform !== "android") score += 1800;
@@ -198,6 +198,12 @@
       if (isEng && /mei-jia|meijia|ting-ting|tingting|sin-ji|sinji|yunxi|yunjian|yunyang|zhiwei|yu-shu|yushu/.test(descriptor)) {
         score -= 7000;
       }
+      if (isEng && gender === "female" && /siri/.test(descriptor)) {
+        score -= 3200;
+      }
+      if (isEng && gender === "female" && /zira/.test(descriptor) && platform !== "desktop") {
+        score -= 2200;
+      }
 
       return score;
     }
@@ -216,7 +222,7 @@
     const tuningProfiles = {
       ios: {
         en: {
-          female: { rate: 0.98, pitch: 1.0 },
+          female: { rate: 0.95, pitch: 0.94 },
           male: { rate: 0.96, pitch: 0.9 }
         },
         zh: {
@@ -226,7 +232,7 @@
       },
       android: {
         en: {
-          female: { rate: 1.0, pitch: 1.0 },
+          female: { rate: 0.97, pitch: 0.95 },
           male: { rate: 0.98, pitch: 0.92 }
         },
         zh: {
@@ -236,7 +242,7 @@
       },
       desktop: {
         en: {
-          female: { rate: 1.0, pitch: 1.0 },
+          female: { rate: 0.98, pitch: 0.96 },
           male: { rate: 0.98, pitch: 0.93 }
         },
         zh: {
@@ -276,11 +282,27 @@
       if (/google/.test(descriptor) && platform === "android") {
         rate += 0.01;
       }
+      if (/siri|zira/.test(descriptor) && gender !== "male") {
+        rate -= 0.03;
+        pitch -= 0.03;
+      }
     }
 
     return {
       rate: clamp(rate, isEng ? 0.84 : 0.76, isEng ? 1.12 : 1.02),
       pitch: clamp(pitch, gender === "male" ? 0.8 : 0.9, gender === "male" ? 0.98 : 1.06)
+    };
+  }
+
+  function buildCloudVoiceProfile(request) {
+    const platform = getSpeechPlatform();
+    const family = request?.isEng ? "en" : "zh";
+    const gender = request?.gender === "male" ? "male" : "female";
+    return {
+      platform,
+      family,
+      gender,
+      profileId: `${platform}-${family}-${gender}`
     };
   }
 
@@ -371,7 +393,12 @@
           lang: request.lang,
           gender: request.gender,
           rate: request.rate,
-          format: "mp3"
+          format: "mp3",
+          languageFamily: request.isEng ? "en" : "zh",
+          voiceProfile: buildCloudVoiceProfile(request),
+          deviceClass: getSpeechPlatform(),
+          preferredEngine: "cloud-first",
+          preferredQuality: "high"
         }),
         redirect: "follow"
       });
@@ -543,7 +570,7 @@
     async function speak(text, optionsOverride) {
       const request = {
         endpointKey: config.endpointKey || "cloudTts",
-        preferCloudForChinese: config.preferCloudForChinese !== false,
+        preferCloud: config.preferCloud !== false,
         gender: typeof config.getGender === "function" ? config.getGender() : "female",
         rate: typeof config.getRate === "function" ? config.getRate() : 1,
         ...optionsOverride
@@ -563,7 +590,7 @@
       request.isEng = typeof request.isEng === "boolean" ? request.isEng : isMostlyEnglish(cleanText);
       request.lang = request.lang || (request.isEng ? "en-US" : "zh-TW");
 
-      if (!request.isEng && request.preferCloudForChinese && isCloudConfigured(request.endpointKey)) {
+      if (request.preferCloud && isCloudConfigured(request.endpointKey)) {
         try {
           return await playCloud(cleanText, request, expectedRunId);
         } catch {
@@ -598,6 +625,7 @@
     clamp,
     createPlayer,
     helpers: {
+      buildCloudVoiceProfile,
       getSpeechTuning,
       isAndroidDevice,
       isIOSDevice,
