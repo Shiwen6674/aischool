@@ -9,3 +9,4 @@
 - `03-harden-login-session.md`
 - `04-run-smoke-test.md`
 - `05-pages-preflight.md`
+- `06-cloud-tts.md`

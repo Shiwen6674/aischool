@@ -6,6 +6,7 @@
     <title>AI Science | 科學雙語閱讀</title>
     
 <script src="./assets/js/aischool-shared.js"></script>
+<script src="./assets/js/aischool-tts.js"></script>
 <script>
     window.AISchool.requireRole(["student"], "請先登入學生帳號，再使用科學雙語閱讀。", "index.html");
 </script>
@@ -407,6 +408,7 @@
        class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-green-500"
        oninput="updateRateDisplay(this.value)"
        onchange="trackEvent('speed_changed', { value: this.value })">
+                <span id="tts-status" class="mt-1 text-[9px] font-bold uppercase tracking-wide text-cyan-400">CN Device</span>
 
             </div>
 
@@ -466,6 +468,7 @@ let completedUnits = new Set();
 let lastTrackedBlockKey = '';
 let suppressModeTracking = false;
 let suppressVoiceTracking = false;
+let ttsPlayer = null;
 
 
         
@@ -535,7 +538,17 @@ let suppressVoiceTracking = false;
         document.addEventListener('DOMContentLoaded', () => {
             initLanguage();
             fetchData();
-            if(synth) synth.onvoiceschanged = () => synth.getVoices();
+            if (window.AISchoolTTS?.createPlayer) {
+                ttsPlayer = window.AISchoolTTS.createPlayer({
+                    endpointKey: 'cloudTts',
+                    getGender: () => currentVoice,
+                    getRate: () => getUiRate(),
+                    onModeChange: (mode) => updateTtsStatus(mode),
+                    onCloudFallback: () => updateTtsStatus('browser')
+                });
+            }
+            updateTtsStatus();
+            if(synth) synth.onvoiceschanged = () => { synth.getVoices(); updateTtsStatus(); };
             suppressVoiceTracking = true;
 setVoice('female');
 suppressVoiceTracking = false;
@@ -917,13 +930,43 @@ function updateRateDisplay(val) {
     document.getElementById('rate-display').innerText = val + 'x';
 }
 
+function getUiRate() {
+    return parseFloat(document.getElementById('play-rate')?.value || "1.0");
+}
+
+function updateTtsStatus(modeOverride) {
+    const status = document.getElementById('tts-status');
+    if (!status) return;
+
+    const mode = modeOverride || ttsPlayer?.getMode?.() || 'idle';
+    const cloudReady = Boolean(ttsPlayer?.isCloudConfigured?.('cloudTts'));
+
+    if (mode === 'cloud') {
+        status.textContent = 'CN Cloud';
+        status.className = 'mt-1 text-[9px] font-bold uppercase tracking-wide text-emerald-400';
+        return;
+    }
+
+    if (cloudReady) {
+        status.textContent = 'CN Ready';
+        status.className = 'mt-1 text-[9px] font-bold uppercase tracking-wide text-cyan-400';
+        return;
+    }
+
+    status.textContent = 'CN Device';
+    status.className = 'mt-1 text-[9px] font-bold uppercase tracking-wide text-slate-400';
+}
+
 
         // [核心修正] 停止聲音但不重置索引
 function stopAudioOnly() {
     isSpeaking = false;
-    if (synth) {
+    if (ttsPlayer?.cancel) {
+        ttsPlayer.cancel();
+    } else if (synth) {
         synth.cancel();
     }
+    updateTtsStatus('idle');
     const btn = document.getElementById('btn-play');
     if (btn) btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>';
 }
@@ -943,7 +986,11 @@ function stopAudioOnly() {
            trackEvent('audio_prev');
             // 1. 強制切斷所有發音與自動連結
             isSpeaking = false; 
-            synth.cancel();
+            if (ttsPlayer?.cancel) {
+                ttsPlayer.cancel();
+            } else if (synth) {
+                synth.cancel();
+            }
 
             // 2. 移動索引
             const blocks = document.querySelectorAll('.content-block, .section-header');
@@ -968,7 +1015,11 @@ function stopAudioOnly() {
             trackEvent('audio_next');
             // 1. 強制切斷所有發音與自動連結
             isSpeaking = false; 
-            synth.cancel();
+            if (ttsPlayer?.cancel) {
+                ttsPlayer.cancel();
+            } else if (synth) {
+                synth.cancel();
+            }
 
             // 2. 移動索引
             const blocks = document.querySelectorAll('.content-block, .section-header');
@@ -1370,7 +1421,7 @@ suppressModeTracking = false;
             };
         }
 
-        function speakText(txt, onComplete) {
+        function speakTextLegacy(txt, onComplete) {
             if (!synth) return;
             isSpeaking = true;
             if (synth.paused) synth.resume();
@@ -1468,7 +1519,7 @@ suppressModeTracking = false;
             return chunks.length ? chunks : [text];
         }
 
-function toggleSpeech() {
+function toggleSpeechLegacy() {
     const btn = document.getElementById('btn-play');
     if (!synth) return;
 
@@ -1491,6 +1542,107 @@ function toggleSpeech() {
     if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
 
     if (synth.getVoices().length === 0 && synth.onvoiceschanged) {
+        synth.onvoiceschanged();
+    }
+
+    const blocks = document.querySelectorAll('.content-block, .section-header');
+    if (currentBlockIndex >= blocks.length) currentBlockIndex = 0;
+    setTimeout(() => { if (isSpeaking) playSequence(); }, 10);
+}
+
+function speakText(txt, onComplete) {
+    if (!ttsPlayer && !synth) return;
+    isSpeaking = true;
+
+    const btn = document.getElementById('btn-play');
+    if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+
+    const cleanTxt = (txt || "").toString().replace(/<[^>]*>/g, "").replace(/\u00A0/g, " ").trim();
+    if (!cleanTxt) {
+        if (onComplete) { setTimeout(() => { if (isSpeaking) onComplete(); }, 10); }
+        else { isSpeaking = false; if (btn) btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>'; }
+        return;
+    }
+
+    const finishPlayback = () => {
+        updateTtsStatus();
+        if (onComplete) {
+            onComplete();
+        } else {
+            isSpeaking = false;
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>';
+        }
+    };
+
+    if (ttsPlayer?.speak) {
+        ttsPlayer.speak(cleanTxt, {
+            gender: currentVoice,
+            rate: getUiRate(),
+            onComplete: finishPlayback
+        }).catch(() => {
+            updateTtsStatus('browser');
+            finishPlayback();
+        });
+        return;
+    }
+
+    if (synth) {
+        const latin = (cleanTxt.match(/[A-Za-z]/g) || []).length;
+        const cjk = (cleanTxt.match(/[\u4E00-\u9FFF]/g) || []).length;
+        const utterance = new SpeechSynthesisUtterance(cleanTxt);
+        utterance.lang = latin > cjk * 2 ? 'en-US' : 'zh-TW';
+        utterance.rate = getUiRate();
+        utterance.onend = finishPlayback;
+        utterance.onerror = finishPlayback;
+        synth.cancel();
+        synth.speak(utterance);
+        return;
+    }
+
+    finishPlayback();
+}
+
+function toggleSpeech() {
+    const btn = document.getElementById('btn-play');
+    if (!ttsPlayer && !synth) return;
+
+    if (isSpeaking && ttsPlayer?.pause && !ttsPlayer.isPaused()) {
+        trackEvent('audio_pause');
+        ttsPlayer.pause();
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>';
+        updateTtsStatus();
+        return;
+    }
+
+    if (ttsPlayer?.resume && ttsPlayer.isPaused()) {
+        trackEvent('audio_play');
+        ttsPlayer.resume();
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        updateTtsStatus();
+        return;
+    }
+
+    if (!ttsPlayer && synth) {
+        if (isSpeaking && !synth.paused) {
+            trackEvent('audio_pause');
+            synth.pause();
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>';
+            return;
+        }
+
+        if (synth.paused) {
+            trackEvent('audio_play');
+            synth.resume();
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+            return;
+        }
+    }
+
+    trackEvent('audio_play');
+    isSpeaking = true;
+    if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+
+    if (synth && synth.getVoices().length === 0 && synth.onvoiceschanged) {
         synth.onvoiceschanged();
     }
 
@@ -1533,6 +1685,7 @@ function setVoice(g) {
 document.getElementById('btn-female').className = g==='female'
   ? 'w-9 h-9 md:w-7 md:h-7 rounded-full flex items-center justify-center transition bg-green-500 text-white shadow-lg'
   : 'w-9 h-9 md:w-7 md:h-7 rounded-full flex items-center justify-center transition text-slate-400 hover:text-white';
+            updateTtsStatus();
             stopAudioOnly();
         }
 

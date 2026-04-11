@@ -150,6 +150,31 @@
 - 這些依賴是分散寫在各頁，不是集中管理
 - 不要假設改一頁就全站生效
 
+## 6.5 Cloud TTS Change
+
+適用情境：想讓手機中文語音更自然、想接外部 TTS 供應商、或想把裝置語音改成雲端優先。
+
+先讀：
+
+- `assets/js/aischool-tts.js`
+- `assets/js/aischool-shared.js`
+- 使用語音的頁面，目前是 `student_science_bilingual.html`
+
+必查：
+
+- 前端是否仍然沒有任何供應商 secret
+- `cloudTts` 是否只是代理端點，而不是直接暴露供應商 API
+- 後端回應是否符合：
+  - `audioUrl`
+  - 或 `audioContent + mimeType`
+- 雲端失敗時是否能安全回退到裝置語音
+
+完成後驗證：
+
+- 手機上中文語音是否優先使用雲端
+- 未配置 `cloudTts` 時頁面是否仍能正常朗讀
+- 狀態提示是否能分辨 `Cloud`、`Ready`、`Device`
+
 ## 7. Manual Smoke Test
 
 本 repo 沒有測試框架，預設 smoke test 如下：

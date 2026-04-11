@@ -76,6 +76,7 @@ flowchart LR
   - 導向閱讀、核心概念、適性測驗與其他延伸模組
 - `student_science_bilingual.html`
   - 雙語閱讀/語音/翻譯/追蹤
+  - 目前是全 repo 唯一有正式 TTS 播放控制的頁面
 - `science_unit_coreidea.html`
   - 單元核心概念與互動內容
 - `science_adaptive_testing.html`
@@ -170,6 +171,7 @@ flowchart LR
 重要事實：
 
 - `assets/js/aischool-shared.js` 現在負責共用的 session、flash、語言 key 與 GAS endpoint 查找，但尚未覆蓋全站所有頁面。
+- `assets/js/aischool-tts.js` 負責雙語頁的語音播放策略：優先選擇較自然的裝置語音，並在 `cloudTts` 已配置時優先使用雲端音訊。
 - 主要 GAS URL 已集中到 shared runtime，但 teacher/professor 的實際部署仍是多後端拓樸
 - `teacher_CAT_review.html` 會先找 `teacherCatReview`；若仍是 placeholder，shared runtime 目前會回退到 `studentAdaptiveTesting`，作為同一 CAT 資料域的推定預設值。
 - 不同功能常綁定不同部署
@@ -230,3 +232,12 @@ flowchart LR
 - repo 內目前沒有 `.github/workflows/pages.yml`，代表 Pages 發布方式不是由 repo 內建 workflow 自我描述。
 - 現有 HTML 頁面使用的本地資產路徑以相對路徑為主，靜態部署相容性比 root-relative 路徑高。
 - 但頁面大量依賴外部 CDN 與 Apps Script；因此 Pages 成功發布，不等於 teacher/professor/student 的 API 功能一定可用。
+
+## 10. Cloud TTS Contract
+
+- 前端不直接持有 TTS 供應商金鑰。
+- `assets/js/aischool-shared.js` 的 `cloudTts` 應指向你自己的安全代理端點，例如 Apps Script、Cloud Run 或其他後端。
+- `assets/js/aischool-tts.js` 目前支援兩種回應：
+  - `{"ok": true, "audioUrl": "..."}`
+  - `{"ok": true, "audioContent": "<base64>", "mimeType": "audio/mpeg"}`
+- 若 `cloudTts` 未配置或失敗，頁面會回退到瀏覽器內建語音。
