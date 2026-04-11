@@ -337,7 +337,7 @@ select::placeholder, textarea::placeholder{
 </div>
 
 <script>
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxbW0q_tOM6woE9lt6r9Nbf-MUIdS4jgTYsWVTj-kViSDQ2Ymu4RmKzPrrLMjO2FSq6uQ/exec";
+const GAS_URL = window.AISchool.getGasUrl("professorSfl");
 const $ = id => document.getElementById(id);
   const EXAMPLE_TEXT = "當聲音經由空氣傳播時，會引起空氣分子的振動。這些振動以波的形式向外傳遞，因此人們可以在不同位置聽到聲音。若障礙物阻擋聲波，聲音的傳播效果就會改變。";
 
@@ -356,30 +356,14 @@ function renderCurrentUser() {
 }
 
 function getCurrentUser() {
-  if (window.AISchool) {
-    return window.AISchool.getCurrentUser();
-  }
-  try {
-    return JSON.parse(sessionStorage.getItem("currentUser") || "null");
-  } catch {
-    return null;
-  }
+  return window.AISchool ? window.AISchool.getCurrentUser() : null;
 }
 
 function guardProfessorPage() {
   if (window.AISchool) {
     return Boolean(window.AISchool.requireRole(["professor"], "請先從首頁登入教授帳號，再使用 SFL 語義分析。", "index.html"));
   }
-  const user = getCurrentUser();
-  const role = user?.role || user?.Role || "";
-  const allowedRoles = new Set(["researcher", "professor"]);
-
-  if (!user || !allowedRoles.has(role)) {
-    sessionStorage.setItem("redirectMsg", "請先從首頁登入教授帳號，再使用 SFL 語義分析。");
-    window.location.replace("index.html");
-    return false;
-  }
-  return true;
+  return false;
 }
 
 function goBackProfessor() {

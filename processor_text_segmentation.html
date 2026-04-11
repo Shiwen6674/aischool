@@ -126,6 +126,7 @@
     th { background:#fafafa; color:#475569; font-weight:800; position:sticky; top:0; }
     .kbd { font-family:'JetBrains Mono', monospace; border:1px solid #d1d5db; background:#fff; border-radius:.5rem; padding:.1rem .38rem; font-size:.76rem; }
   </style>
+  <script src="./assets/js/aischool-shared.js"></script>
 </head>
 <body class="min-h-screen flex flex-col" style="visibility:hidden;">
   <div id="canvas-container"><canvas id="network-canvas"></canvas></div>
@@ -357,7 +358,7 @@
 
   <script>
     // 保留原常數名稱，避免你原本部署方式受影響
-    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxt_6RXtT2DklrwLO7g2jQ4LnfTDEvpS1jQ-f4gRf-N_QOwBzT1_SfaDf1CPNBtZ1Z5Yg/exec';
+    const GAS_API_URL = window.AISchool.getGasUrl("professorSegmentation");
 
     const translations = {
       'zh-TW': {

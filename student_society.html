@@ -1,1 +1,42 @@
-
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI School | 社會學習中心</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&family=Outfit:wght@500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="./assets/css/student-hub.css">
+    <script src="./assets/js/aischool-shared.js"></script>
+    <script>
+        window.AISchoolHubConfig = {
+            slug: "student-society",
+            icon: "fa-solid fa-earth-asia",
+            eyebrow: "Social Studies Center",
+            title: "社會學習中心",
+            description: "用時間、空間、因果三條線整理社會科內容。這一頁先幫你把事件脈絡理順，再把關鍵概念帶到跨科整理頁。",
+            accent: "#ec4899",
+            accentSoft: "rgba(236, 72, 153, 0.16)",
+            accentStrong: "rgba(236, 72, 153, 0.34)",
+            studyTime: "20-30 分鐘",
+            focus: "脈絡整理與觀點比較",
+            parent: { label: "學生學習模組", href: "student_subject.html" },
+            stats: [{ value: "3 軸", label: "時間、地點、影響同步整理" }, { value: "2 觀點", label: "至少比較兩種不同立場" }, { value: "1 張圖", label: "畫出事件因果鏈" }],
+            goals: ["先搞清楚事件發生在什麼時空背景，再談影響。", "比較兩種觀點時，先找相同點，再找真正分歧在哪裡。", "不要只背年份，要知道「為什麼會發生」與「造成了什麼後果」。"],
+            pathways: [{ title: "事件脈絡整理", description: "從時間、地點、人物與影響四格開始，快速搭好理解骨架。", href: "#checklist", meta: "必做", cta: "開始今日任務" }, { title: "跨科核心概念", description: "把制度、資源、變遷等概念整理到共用概念頁，之後可跨科回看。", href: "student_keyidea.html", meta: "延伸", cta: "前往概念導航" }, { title: "切換其他科目", description: "想先補自然、國語或英語時，可直接切回模組頁，保留今天的筆記。", href: "student_subject.html", meta: "Navigation", cta: "回到模組頁" }, { title: "筆記歸檔", description: "把你今天比較出的立場差異、因果鏈與疑問留在本頁筆記。", href: "#notes", meta: "On page", cta: "整理筆記" }],
+            checklist: ["挑一個今天要整理的主題，先寫下事件發生的時間與地點。", "列出 2 個主要行動者，說明他們各自立場。", "畫出至少 3 個因果節點，確認不是只背結果。", "比較兩種不同觀點，寫下它們最大的差別。", "把還想追問的歷史或公民問題留在筆記區。"],
+            prompts: [{ title: "時代背景", description: "如果把這件事放回當時的社會條件，哪些限制會讓人只能做出某些選擇？" }, { title: "觀點比較", description: "不同群體為什麼會對同一件事有不同評價？他們各自重視什麼？" }, { title: "影響追問", description: "這個事件留下的影響是短期的、長期的，還是直到今天都還看得到？" }],
+            resources: [{ title: "核心概念導航", description: "把事件中的制度、權力、資源等概念整理成能跨科回用的圖。", href: "student_keyidea.html", meta: "Concept map", cta: "整理概念" }, { title: "學習筆記", description: "記下今天做好的因果鏈與觀點比較，下次可直接延續。", href: "#notes", meta: "On page", cta: "前往筆記" }, { title: "學生模組首頁", description: "回到學習模組總覽，繼續安排今天其他科目的順序。", href: "student_subject.html", meta: "Navigation", cta: "回到模組入口" }],
+            notePrompt: "寫下今天的事件因果鏈、對立場比較的觀察，還有你最想再查的一個問題。",
+            footerNote: "這一頁先把社會科的學習流程與記錄點建立起來，後續若要再深化，可接史料閱讀、圖表解析或時事辯論工具。",
+            quote: "社會科不是背事件清單，而是學會理解人、制度與變化之間的關係。"
+        };
+    </script>
+    <script src="./assets/js/student-hub.js" defer></script>
+</head>
+<body>
+    <div id="app"></div>
+</body>
+</html>

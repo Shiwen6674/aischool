@@ -22,26 +22,30 @@ flowchart LR
   E --> F["student_science_bilingual.html"]
   E --> G["science_unit_coreidea.html"]
   E --> H["science_adaptive_testing.html"]
-  E --> I["placeholder pages"]
+  B --> I["student_keyidea.html"]
+  B --> J["subject learning hubs"]
+  E --> K["science_virtural_lab.html"]
+  E --> L["science_cap.html"]
+  E --> M["science_csat.html"]
 
-  C --> J["teacher_itemvocabularyexamination.html"]
-  C --> K["inline teacher tools"]
+  C --> N["teacher_itemvocabularyexamination.html"]
+  C --> O["inline teacher tools"]
 
-  D --> L["professor_SFL_analysis.html"]
-  D --> M["professor_conceptnetwork.html"]
-  D --> N["professor_science_text_query.html"]
-  D --> O["professor_text_readability.html"]
-  D --> P["professor_text_similarity.html"]
-  D --> Q["professor_textvocabularycomparison.html"]
-  D --> R["professor_wordcloud.html"]
-  D --> S["processor_text_segmentation.html"]
+  D --> P["professor_SFL_analysis.html"]
+  D --> Q["professor_conceptnetwork.html"]
+  D --> R["professor_science_text_query.html"]
+  D --> S["professor_text_readability.html"]
+  D --> T["professor_text_similarity.html"]
+  D --> U["professor_textvocabularycomparison.html"]
+  D --> V["professor_wordcloud.html"]
+  D --> W["processor_text_segmentation.html"]
 
-  A --> T["Apps Script login/register"]
-  C --> U["Apps Script logging"]
-  D --> V["Apps Script professor APIs"]
-  F --> W["Apps Script tracking + Google Translate"]
-  G --> X["Apps Script learning data"]
-  H --> Y["Apps Script CAT backend"]
+  A --> X["Apps Script login/register"]
+  C --> Y["Apps Script logging"]
+  D --> Z["Apps Script professor APIs"]
+  F --> AA["Apps Script tracking + Google Translate"]
+  G --> AB["Apps Script learning data"]
+  H --> AC["Apps Script CAT backend"]
 ```
 
 ## 3. Page Families
@@ -60,25 +64,29 @@ flowchart LR
 - `student_subject.html`
   - 學生入口 hub
   - 科目分流頁
+- Subject learning hubs
+  - `student_keyidea.html`
+  - `student_chinese.html`
+  - `student_english.html`
+  - `student_math.html`
+  - `student_society.html`
+  - 這些頁面共用 `assets/css/student-hub.css` 與 `assets/js/student-hub.js`
 - `student_science.html`
   - 自然科工具 hub
   - 導向閱讀、核心概念、適性測驗與其他延伸模組
 - `student_science_bilingual.html`
   - 雙語閱讀/語音/翻譯/追蹤
-  - 有開發用登入 bypass
 - `science_unit_coreidea.html`
   - 單元核心概念與互動內容
 - `science_adaptive_testing.html`
   - CAT 測驗頁
-- Placeholder pages
+- Additional science hubs
   - `science_cap.html`
+    - 對齊國中教育會考自然科模擬
   - `science_csat.html`
+    - 內容對齊高中學測自然科戰略
   - `science_virtural_lab.html`
-  - `student_chinese.html`
-  - `student_english.html`
-  - `student_keyidea.html`
-  - `student_math.html`
-  - `student_society.html`
+  - 目前已補成可使用的學習中心頁，不再是空白 placeholder
 
 ### Teacher
 
@@ -116,7 +124,7 @@ flowchart LR
 
 - `sessionStorage.currentUser`
 
-主入口頁與部分 professor 子頁現在會優先透過 `assets/js/aischool-shared.js` 讀寫這個 key。
+主入口頁、主要 student hub，以及部分 professor 子頁現在會優先透過 `assets/js/aischool-shared.js` 讀寫這個 key。
 
 但實際上還有其他 key：
 
@@ -161,8 +169,8 @@ flowchart LR
 
 重要事實：
 
-- `assets/js/aischool-shared.js` 現在負責共用的 session、flash 與語言 key 行為，但尚未覆蓋全站所有頁面。
-- 不是所有頁面共用同一個 GAS URL
+- `assets/js/aischool-shared.js` 現在負責共用的 session、flash、語言 key 與 GAS endpoint 查找，但尚未覆蓋全站所有頁面。
+- 主要 GAS URL 已集中到 shared runtime，但 teacher/professor 的實際部署仍是多後端拓樸
 - 不同功能常綁定不同部署
 - 某些頁面使用 `mode: "cors"`
 - 某些 logging 或 tracking 使用 `mode: "no-cors"`
@@ -185,11 +193,13 @@ flowchart LR
 
 1. `student_subject.html` 選自然科
 2. 進到 `student_science.html`
-3. 再導向：
+3. 可再導向：
    - `student_science_bilingual.html`
    - `science_unit_coreidea.html`
    - `science_adaptive_testing.html`
-   - 或 placeholder 頁
+   - `science_virtural_lab.html`
+   - `science_cap.html`
+   - `science_csat.html`
 
 ### Flow C: Teacher Hub
 
@@ -207,9 +217,9 @@ flowchart LR
 
 ## 8. Current Risks
 
-- 空白 placeholder 頁很多，但仍存在正式導航入口。
 - 多個 GAS URL 分散在不同頁，變更成本高且容易漏改。
-- `DEV_BYPASS_LOGIN = true` 代表某些學生頁在開發模式下可跳過登入。
 - session 與 language key 命名不一致，容易造成跨頁狀態漂移。
 - 某些 API fallback 使用 `no-cors`，只能 fire-and-forget，失敗可觀測性有限。
 - `professor/researcher` 命名漂移可能在 role 判斷時踩坑。
+- `teacher_CAT_review.html` 目前仍缺真實的部署 URL，shared runtime 只是把它集中管理，沒有替它補出實際後端。
+- `science_csat.html` 的檔名與實際內容已出現語意落差：檔名保留舊連結，但頁面內容已對齊高中學測自然科戰略。

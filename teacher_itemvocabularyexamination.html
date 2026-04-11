@@ -81,6 +81,7 @@
             opacity: 1;
         }
     </style>
+    <script src="./assets/js/aischool-shared.js"></script>
 </head>
 <body class="p-4 md:p-8 relative overflow-x-hidden text-slate-800">
 
@@ -268,7 +269,7 @@
 
     <script>
         // ★★★ 請務必確認這裡的 GAS_URL 是您後端部署後的正確網址 ★★★
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbxbZPCCWFwFel6KjEzga-P_YJJccBevBMMCmgq_qVt1PfQEl2Som7z-DD2rU8kexrnGtA/exec";
+        const GAS_URL = window.AISchool.getGasUrl("teacherItemVocabulary");
         
         const translations = {
             "zh-TW": {

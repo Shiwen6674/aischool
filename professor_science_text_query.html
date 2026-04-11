@@ -44,6 +44,7 @@
         /* 載入中遮罩 */
         .loading-overlay { position: absolute; inset: 0; background: rgba(255,255,255,0.7); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; z-index: 50; border-radius: 1.5rem; }
     </style>
+    <script src="./assets/js/aischool-shared.js"></script>
 </head>
 <body class="min-h-screen font-sans flex flex-col text-slate-700 relative overflow-x-hidden selection:bg-purple-200 selection:text-purple-900">
 
@@ -216,7 +217,7 @@
 
     <script>
         // 🔴 請在此填入剛剛部署 GAS 後取得的網址 (結尾是 /exec)
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyswFkjh-wlWpgZMD02eyO4vBhLX2-HdkYY4AAaonG-LxJuL5Ioi02MyZukgj73q82b_A/exec"; 
+        const GAS_API_URL = window.AISchool.getGasUrl("professorScienceQuery"); 
 
         // *** 多語系設定 (完整4國語言) ***
         const translations = {

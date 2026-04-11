@@ -17,27 +17,14 @@
   const ALLOWED_ROLES = new Set(["researcher", "professor"]);
 
   function getCurrentUser() {
-    if (window.AISchool) {
-      return window.AISchool.getCurrentUser();
-    }
-    try {
-      return JSON.parse(sessionStorage.getItem("currentUser") || "null");
-    } catch {
-      return null;
-    }
+    return window.AISchool ? window.AISchool.getCurrentUser() : null;
   }
 
   function guardProfessorPage() {
     if (window.AISchool) {
       return window.AISchool.requireRole(["professor"], "請先從首頁登入教授帳號，再使用文字雲工具。", "index.html");
     }
-    const user = getCurrentUser();
-    if (!user || !ALLOWED_ROLES.has(user.role)) {
-      sessionStorage.setItem("redirectMsg", "請先從首頁登入教授帳號，再使用文字雲工具。");
-      window.location.replace("index.html");
-      return null;
-    }
-    return user;
+    return null;
   }
 </script>
 
@@ -658,7 +645,7 @@
   <div id="toast" class="toast rounded-full bg-slate-900 px-5 py-3 text-sm font-bold text-white shadow-2xl"><span id="toast-msg">Notification</span></div>
   <div id="pdf-generator-container"></div>
   <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbw3UqYr976wAd9aeEsLpTDSlGaUVdBpaErqZi-zHgNzh_Gd0SuggfdI7ldVzrqR1Ygd/exec";
+    const GAS_URL = window.AISchool.getGasUrl("professorWordcloud");
 
     const App = {
       state: {

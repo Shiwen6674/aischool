@@ -3,6 +3,21 @@
   const FLASH_MESSAGE_KEY = "redirectMsg";
   const PRIMARY_LANGUAGE_KEY = "AISCHOOL_LANG";
   const LEGACY_LANGUAGE_KEYS = ["AI_SCHOOL_LANG", "slh_lang", "appLang"];
+  const LEGACY_USER_STORAGE_KEYS = ["currentUser"];
+  const GAS_ENDPOINTS = {
+    authHub: "https://script.google.com/macros/s/AKfycbzcDKkz8Tilzb3qbx0_fDR7QoG4-c2JCtsa4p9V8_1gBjZaEMlvQHd72OD0kZq_jW8H/exec",
+    teacherItemVocabulary: "https://script.google.com/macros/s/AKfycbxbZPCCWFwFel6KjEzga-P_YJJccBevBMMCmgq_qVt1PfQEl2Som7z-DD2rU8kexrnGtA/exec",
+    teacherCatReview: "https://script.google.com/macros/s/你的發布ID/exec",
+    professorSegmentation: "https://script.google.com/macros/s/AKfycbxt_6RXtT2DklrwLO7g2jQ4LnfTDEvpS1jQ-f4gRf-N_QOwBzT1_SfaDf1CPNBtZ1Z5Yg/exec",
+    professorSfl: "https://script.google.com/macros/s/AKfycbxbW0q_tOM6woE9lt6r9Nbf-MUIdS4jgTYsWVTj-kViSDQ2Ymu4RmKzPrrLMjO2FSq6uQ/exec",
+    professorScienceQuery: "https://script.google.com/macros/s/AKfycbyswFkjh-wlWpgZMD02eyO4vBhLX2-HdkYY4AAaonG-LxJuL5Ioi02MyZukgj73q82b_A/exec",
+    professorReadability: "https://script.google.com/macros/s/AKfycbwUe1jcuUo3lk2jR8R0ubCRLlcfa0XJJQhVXS_7nEmm2svslmyeDeP4XT-S_PmUu2T69w/exec",
+    professorTextSimilarity: "https://script.google.com/macros/s/AKfycbwLgjsVkgeRU6XMPNTLJkDpkO7HOuD4mW-RmNG6fExlHuMsmRsl-0YlcrDQ3o51M31psw/exec",
+    professorWordcloud: "https://script.google.com/macros/s/AKfycbw3UqYr976wAd9aeEsLpTDSlGaUVdBpaErqZi-zHgNzh_Gd0SuggfdI7ldVzrqR1Ygd/exec",
+    studentAdaptiveTesting: "https://script.google.com/macros/s/AKfycbxvAOgRDBE6T-2R37UeTzo0RSQukgGOlEYyBrTw8zUSOlIKNIzLdJXozjNx4Hn6brc2/exec",
+    studentUnitCoreIdea: "https://script.google.com/macros/s/AKfycbynf2DkhZ6V9lCLH3MH-Ud7DjTMPDKAu2DJm3OC22lTYaPJe5TiA8GRfyG0lihLUZxa/exec",
+    studentBilingualTracking: "https://script.google.com/macros/s/AKfycbwXvqOFGVuay1_jZ7dau5VkNqSqGppQ3ffIizlcyB4R0XwvQU7Km5JFuYR4wfFG2OMxHA/exec"
+  };
   const SESSION_KEYS_TO_CLEAR = [
     SESSION_USER_KEY,
     FLASH_MESSAGE_KEY,
@@ -45,7 +60,14 @@
   }
 
   function getCurrentUser() {
-    return normalizeUser(safeParse(sessionStorage.getItem(SESSION_USER_KEY)));
+    const sessionUser = normalizeUser(safeParse(sessionStorage.getItem(SESSION_USER_KEY)));
+    if (sessionUser) return sessionUser;
+
+    for (const key of LEGACY_USER_STORAGE_KEYS) {
+      const localUser = normalizeUser(safeParse(localStorage.getItem(key)));
+      if (localUser) return localUser;
+    }
+    return null;
   }
 
   function setCurrentUser(user) {
@@ -55,10 +77,14 @@
       return;
     }
     sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(normalized));
+    localStorage.setItem(SESSION_USER_KEY, JSON.stringify(normalized));
+    sessionStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("isLoggedIn", "true");
   }
 
   function clearCurrentUser() {
     SESSION_KEYS_TO_CLEAR.forEach((key) => sessionStorage.removeItem(key));
+    SESSION_KEYS_TO_CLEAR.forEach((key) => localStorage.removeItem(key));
   }
 
   function setFlashMessage(message) {
@@ -108,9 +134,17 @@
     return null;
   }
 
+  function getGasUrl(key, fallback) {
+    return GAS_ENDPOINTS[key] || fallback || "";
+  }
+
+  window.AISchoolConfig = {
+    gas: GAS_ENDPOINTS
+  };
   window.AISchool = {
     clearCurrentUser,
     getCurrentUser,
+    getGasUrl,
     getLanguage,
     normalizeRole,
     normalizeUser,

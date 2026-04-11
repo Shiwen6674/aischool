@@ -5,12 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Science | 科學雙語閱讀</title>
     
+<script src="./assets/js/aischool-shared.js"></script>
 <script>
-    const DEV_BYPASS_LOGIN = true; // 測試時才改成 true
-
-    if (!DEV_BYPASS_LOGIN && !sessionStorage.getItem('isLoggedIn')) {
-        window.location.href = 'index.html';
-    }
+    window.AISchool.requireRole(["student"], "請先登入學生帳號，再使用科學雙語閱讀。", "index.html");
 </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -471,8 +468,8 @@ let activeVocabMap = {};
 let currentBlockIndex = 0;
 let currentUnitTitleZh = "";
 let currentUnitTitleEn = "";
-let currentLang = localStorage.getItem('appLang') || 'zh-TW';
-const TRACKING_URL = 'https://script.google.com/macros/s/AKfycbwXvqOFGVuay1_jZ7dau5VkNqSqGppQ3ffIizlcyB4R0XwvQU7Km5JFuYR4wfFG2OMxHA/exec';
+let currentLang = window.AISchool.getLanguage('zh-TW');
+const TRACKING_URL = window.AISchool.getGasUrl("studentBilingualTracking");
 let pageEnterTime = Date.now();
 let currentMode = 'dual';
 let currentUnitData = null;
@@ -1523,11 +1520,14 @@ function getStudentInfo() {
     let studentId = '';
     let studentName = '';
 
-    try {
-        const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
-        studentId = currentUser.id || currentUser.studentId || currentUser.username || '';
-        studentName = currentUser.name || '';
-    } catch (e) {}
+    const currentUser = window.AISchool && window.AISchool.getCurrentUser
+        ? window.AISchool.getCurrentUser()
+        : null;
+
+    if (currentUser) {
+        studentId = currentUser.id || currentUser.email || currentUser.account || currentUser.studentId || currentUser.username || '';
+        studentName = currentUser.name || currentUser.email || '';
+    }
 
     return { studentId, studentName };
 }

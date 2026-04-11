@@ -1,1 +1,42 @@
-
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI School | 虛擬實驗導學中心</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&family=Outfit:wght@500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="./assets/css/student-hub.css">
+    <script src="./assets/js/aischool-shared.js"></script>
+    <script>
+        window.AISchoolHubConfig = {
+            slug: "science-virtual-lab",
+            icon: "fa-solid fa-flask-vial",
+            eyebrow: "Science Virtual Lab",
+            title: "虛擬實驗導學中心",
+            description: "先用這頁整理實驗變因、步驟與預測，再銜接正式的自然科工具。即使現在沒有完整模擬器，學生也能先把探究流程走對。",
+            accent: "#10b981",
+            accentSoft: "rgba(16, 185, 129, 0.16)",
+            accentStrong: "rgba(16, 185, 129, 0.34)",
+            studyTime: "20 分鐘",
+            focus: "變因控制與實驗預測",
+            parent: { label: "自然科學模組", href: "student_science.html" },
+            stats: [{ value: "3 類", label: "自變因、應變因、控制變因" }, { value: "2 次", label: "做出至少兩種結果預測" }, { value: "1 張表", label: "把實驗步驟整理成操作單" }],
+            goals: ["做實驗前先寫預測，才能在結果出來時知道自己改變了什麼想法。", "把變因分類清楚，比背操作步驟更重要。", "觀察結果時，不只看「有沒有成功」，也要記錄可能的干擾因素。"],
+            pathways: [{ title: "實驗設計暖身", description: "先用本頁任務清單把變因與流程理清，再進入其他自然科工具。", href: "#checklist", meta: "先做", cta: "開始暖身" }, { title: "核心概念精熟", description: "若需要補該單元的概念背景，可先進自然核心概念頁。", href: "science_unit_coreidea.html", meta: "Concept support", cta: "前往核心概念" }, { title: "雙語閱讀補背景", description: "先讀相關科學文章，再回來設計實驗假說，會更有方向。", href: "student_science_bilingual.html", meta: "Reading first", cta: "前往雙語閱讀" }, { title: "適性診斷檢查", description: "做完設計後，可用適性診斷頁檢查自己對單元概念是否真的理解。", href: "science_adaptive_testing.html", meta: "Check understanding", cta: "前往適性診斷" }],
+            checklist: ["寫下你今天想探究的問題，盡量用「如果...那麼...」的形式。", "列出自變因、應變因與至少 2 個控制變因。", "把操作步驟拆成 4-6 個可執行的小步驟。", "先寫兩種可能結果，以及它們各自代表什麼意思。", "在筆記區記下最可能影響結果的干擾因素。"],
+            prompts: [{ title: "變因真的分清楚了嗎", description: "你改變的是哪一個條件？你觀察的是哪一個結果？其他條件有沒有固定住？" }, { title: "預測與解釋", description: "如果結果和預測不同，可能是哪一段假設出了問題？" }, { title: "資料該怎麼記", description: "你要記錄的是數值、現象、還是比較結果？表格欄位應該先怎麼設計？" }],
+            resources: [{ title: "自然核心概念精熟", description: "先補單元背景與關鍵詞，再回來做實驗設計。", href: "science_unit_coreidea.html", meta: "Science concept", cta: "補核心概念" }, { title: "科學雙語閱讀", description: "用雙語文章補充科學背景、實驗情境與主題詞彙。", href: "student_science_bilingual.html", meta: "Reading", cta: "閱讀文章" }, { title: "本頁筆記", description: "把實驗假說、變因與預測結果整理成你的實驗草稿。", href: "#notes", meta: "On page", cta: "整理筆記" }],
+            notePrompt: "寫下你今天的探究問題、變因設計、結果預測，以及最可能的干擾因素。",
+            footerNote: "目前這一頁先提供探究流程與學生自我管理，不是假裝已有完整模擬器。之後若有實際實驗資料或模擬 API，再把這裡接成正式入口會更穩。",
+            quote: "好的實驗不只是做出結果，而是先把你要證明什麼想清楚。"
+        };
+    </script>
+    <script src="./assets/js/student-hub.js" defer></script>
+</head>
+<body>
+    <div id="app"></div>
+</body>
+</html>

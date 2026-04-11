@@ -144,6 +144,7 @@
         .checkbox-label:hover { color: #7e22ce; }
         .checkbox-label input { accent-color: #9333ea; width: 1.1rem; height: 1.1rem; }
     </style>
+    <script src="./assets/js/aischool-shared.js"></script>
 </head>
 <body class="min-h-screen flex flex-col">
 
@@ -371,7 +372,7 @@
     </div>
 
     <script>
-        const gasWebAppUrl = "https://script.google.com/macros/s/AKfycbwUe1jcuUo3lk2jR8R0ubCRLlcfa0XJJQhVXS_7nEmm2svslmyeDeP4XT-S_PmUu2T69w/exec";
+        const gasWebAppUrl = window.AISchool.getGasUrl("professorReadability");
 
 
         // *** 多語系字典 (完整補齊) ***

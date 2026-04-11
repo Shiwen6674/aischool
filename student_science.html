@@ -253,6 +253,9 @@
         #canvas-container { position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: 0.6; }
     </style>
     <script src="./assets/js/aischool-shared.js"></script>
+    <script>
+        window.AISchool.requireRole(["student"], "請先登入學生帳號，再進入自然科學模組。", "index.html");
+    </script>
 </head>
 <body class="min-h-screen flex flex-col font-sans selection:bg-teal-500/30 selection:text-teal-100">
 
@@ -440,11 +443,6 @@
     <script>
         // 1. Session & User Data
         let currentUser = window.AISchool ? window.AISchool.getCurrentUser() : null;
-        if (!currentUser) {
-            try {
-                currentUser = JSON.parse(sessionStorage.getItem("currentUser"));
-            } catch(e) {}
-        }
 
         if (currentUser) {
             document.getElementById("user-display").textContent = `${currentUser.role || 'Student'}: ${currentUser.name}`;

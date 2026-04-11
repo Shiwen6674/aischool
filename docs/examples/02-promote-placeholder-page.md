@@ -15,5 +15,6 @@
 ## Good Output Looks Like
 
 - 先確認入口來源
+- 學生內容頁優先沿用 `assets/css/student-hub.css` 與 `assets/js/student-hub.js`
 - 不會只做靜態畫面而忘了導頁與 session
 - 文件裡的 placeholder 狀態會同步更新

@@ -43,6 +43,7 @@
     .action-list li { margin-bottom: 8px; line-height: 1.6; }
     .loading { text-align: center; color: #7f8c8d; font-style: italic; display: none; margin-top: 10px; }
   </style>
+  <script src="./assets/js/aischool-shared.js"></script>
 </head>
 <body>
 
@@ -91,7 +92,7 @@
   /* === 2. JavaScript 邏輯 === */
   
   // ★★★ 請務必修改這裡：換成你發布後的 Web App 網址 ★★★
-  const GAS_URL = "https://script.google.com/macros/s/你的發布ID/exec"; 
+  const GAS_URL = window.AISchool.getGasUrl("teacherCatReview"); 
 
   // 1. 獲取資料
   function fetchTeacherData() {

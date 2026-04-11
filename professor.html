@@ -833,7 +833,7 @@
      * 0) CONFIG
      ***********************/
     // 你的既有 Web App URL（保留同一條；後台新增 action 路由即可）
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzcDKkz8Tilzb3qbx0_fDR7QoG4-c2JCtsa4p9V8_1gBjZaEMlvQHd72OD0kZq_jW8H/exec";
+    const GAS_URL = window.AISchool.getGasUrl("authHub");
 
     // 功能 ID -> 用於追蹤與問卷
     const FEATURE_CATALOG = [
@@ -1445,7 +1445,7 @@ function normalizeRole(role) {
 }
 
 function getStoredUser() {
-  const obj = window.AISchool ? window.AISchool.getCurrentUser() : safeJsonParse(sessionStorage.getItem("currentUser"));
+  const obj = window.AISchool ? window.AISchool.getCurrentUser() : null;
   if (!obj) return null;
 
   return {
@@ -1461,9 +1461,7 @@ function getStoredUser() {
     function setStoredUser(u) {
       if (window.AISchool) {
         window.AISchool.setCurrentUser(u);
-        return;
       }
-      sessionStorage.setItem("currentUser", JSON.stringify(u));
     }
 
     function uiSetLoggedIn(u) {
@@ -1712,8 +1710,6 @@ return { ok:false, error:"backend_unavailable" };
 
       if (window.AISchool) {
         window.AISchool.clearCurrentUser();
-      } else {
-        sessionStorage.removeItem("currentUser");
       }
       usedFeatures = new Set();
       activeMs = 0;
@@ -2427,8 +2423,6 @@ if (stored && stored.role === "professor") {
 } else {
   if (window.AISchool) {
     window.AISchool.setFlashMessage("請先登入教授帳號，再使用研究中心。");
-  } else {
-    sessionStorage.setItem("redirectMsg", "請先登入教授帳號，再使用研究中心。");
   }
   window.location.href = "index.html";
 }

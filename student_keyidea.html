@@ -1,1 +1,42 @@
-
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI School | 跨科核心概念導航</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&family=Outfit:wght@500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="./assets/css/student-hub.css">
+    <script src="./assets/js/aischool-shared.js"></script>
+    <script>
+        window.AISchoolHubConfig = {
+            slug: "student-keyidea",
+            icon: "fa-solid fa-diagram-project",
+            eyebrow: "Cross-discipline Navigator",
+            title: "跨科核心概念導航",
+            description: "把你在不同科目遇到的概念放在同一張地圖上。這頁的目標不是背更多，而是看出概念之間如何彼此支撐。",
+            accent: "#06b6d4",
+            accentSoft: "rgba(6, 182, 212, 0.16)",
+            accentStrong: "rgba(6, 182, 212, 0.34)",
+            studyTime: "15-20 分鐘",
+            focus: "概念連結與跨科遷移",
+            parent: { label: "學生學習模組", href: "student_subject.html" },
+            stats: [{ value: "5 科", label: "把不同學科放進同一張概念圖" }, { value: "3 連結", label: "至少建立三條跨科連結" }, { value: "1 主題", label: "今天先聚焦一個核心概念" }],
+            goals: ["選一個主題概念，例如「變化」「系統」「證據」，再往各科延伸。", "用自己的話說出這個概念在不同學科裡各代表什麼。", "把今天學到的內容連回既有知識，不要讓每科都變成孤島。"],
+            pathways: [{ title: "回到國語文", description: "把閱讀文本中的主旨、角色與觀點搬回概念圖，整理成可比較的主題。", href: "student_chinese.html", meta: "Mandarin", cta: "前往國語文" }, { title: "回到英語", description: "把今天的主題詞彙與句型放進概念圖，建立跨語言的理解。", href: "student_english.html", meta: "English", cta: "前往英語" }, { title: "回到數學", description: "把比例、函數、資料判讀等概念與其他學科對照，提升遷移能力。", href: "student_math.html", meta: "Math", cta: "前往數學" }, { title: "回到自然", description: "如果要進一步看正式的核心概念工具，可以直接進自然科精熟頁。", href: "science_unit_coreidea.html", meta: "Science tool", cta: "前往自然核心概念" }],
+            checklist: ["選一個今天最想整理的核心概念，不要同時開太多主題。", "寫下這個概念在至少 3 個學科中會如何出現。", "為概念畫出 3 條關聯線，說明彼此是因果、對比還是支援關係。", "回到其中一科，檢查剛剛的連結是否真的能幫你理解內容。", "把今天的概念圖摘要與下次要補的節點寫在筆記區。"],
+            prompts: [{ title: "一個概念，多個學科", description: "同一個概念在國語、自然、社會裡，代表的是同一件事，還是不同層次的意思？" }, { title: "概念真的連起來了嗎", description: "如果把某一條連結拿掉，你會不會突然看不懂其他科的內容？" }, { title: "回到題目時有沒有用", description: "這個概念圖是否真的能幫你解題、摘要或比較觀點，而不是只畫得漂亮？" }],
+            resources: [{ title: "學生學習模組首頁", description: "回到科目選單，決定要從哪一科繼續往下做。", href: "student_subject.html", meta: "Navigation", cta: "回到模組入口" }, { title: "自然核心概念精熟", description: "目前 repo 中最成熟的核心概念工具，可當作概念整理的正式入口。", href: "science_unit_coreidea.html", meta: "Formal tool", cta: "打開自然工具" }, { title: "學習筆記", description: "把你剛剛建立的跨科連結與下一步問題存下來。", href: "#notes", meta: "On page", cta: "前往筆記" }],
+            notePrompt: "寫下今天的主題概念、你建立的跨科連結，以及哪一條連結最值得下次再驗證。",
+            footerNote: "這一頁是新的跨科樞紐頁，後續若要擴充，可以接概念圖編輯器、標籤分類或推薦相關頁面。",
+            quote: "真正有用的知識，不是分散在很多頁面，而是能在你腦中彼此連起來。"
+        };
+    </script>
+    <script src="./assets/js/student-hub.js" defer></script>
+</head>
+<body>
+    <div id="app"></div>
+</body>
+</html>

@@ -591,7 +591,7 @@ function connect() {
         let currentUser = null;
         let targetRole = null;
         let roleLocked = false;
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbzcDKkz8Tilzb3qbx0_fDR7QoG4-c2JCtsa4p9V8_1gBjZaEMlvQHd72OD0kZq_jW8H/exec"; 
+        const GAS_URL = window.AISchool.getGasUrl("authHub"); 
 
         // *** 2. 資料庫 ***
         const countryList = [
@@ -887,24 +887,14 @@ document.addEventListener('DOMContentLoaded', () => {
   syncSessionUI();
 
   // 如果是被 professor.html 擋回來，提示使用者先登入
-  const msg = window.AISchool ? window.AISchool.readFlashMessage() : sessionStorage.getItem("redirectMsg");
+  const msg = window.AISchool ? window.AISchool.readFlashMessage() : "";
   if (msg) {
-    if (!window.AISchool) {
-      sessionStorage.removeItem("redirectMsg");
-    }
     alert(msg);
   }
 });
 
 function getStoredUser() {
-  if (window.AISchool) {
-    return window.AISchool.getCurrentUser();
-  }
-  try {
-    return JSON.parse(sessionStorage.getItem("currentUser") || "null");
-  } catch {
-    return null;
-  }
+  return window.AISchool ? window.AISchool.getCurrentUser() : null;
 }
 
 function normalizeRole(role) {
@@ -1130,8 +1120,6 @@ const userInfo = {
 };
 if (window.AISchool) {
     window.AISchool.setCurrentUser(userInfo);
-} else {
-    sessionStorage.setItem("currentUser", JSON.stringify(userInfo));
 }
 
 let targetPage = 'student_subject.html';
@@ -1240,8 +1228,6 @@ if (result.result === 'success') {
 
     if (window.AISchool) {
         window.AISchool.setCurrentUser(userInfo);
-    } else {
-        sessionStorage.setItem("currentUser", JSON.stringify(userInfo));
     }
 
     let targetPage = 'student_subject.html';
@@ -1311,8 +1297,6 @@ function handleForgotPassword(e) {
 function confirmLogout() {
     if (window.AISchool) {
         window.AISchool.clearCurrentUser();
-    } else {
-        sessionStorage.removeItem("currentUser");
     }
     syncSessionUI();
     goHome();

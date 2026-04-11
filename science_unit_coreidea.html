@@ -474,6 +474,10 @@ mermaid.initialize({
             .xiaoke-glow { cursor: default; } 
         }
     </style>
+    <script src="./assets/js/aischool-shared.js"></script>
+    <script>
+        window.AISchool.requireRole(["student"], "請先登入學生帳號，再使用單元重點精熟。", "index.html");
+    </script>
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col">
 
@@ -744,7 +748,7 @@ mermaid.initialize({
     </div>
 
     <script>
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbynf2DkhZ6V9lCLH3MH-Ud7DjTMPDKAu2DJm3OC22lTYaPJe5TiA8GRfyG0lihLUZxa/exec";
+    const GAS_API_URL = window.AISchool.getGasUrl("studentUnitCoreIdea");
 
 // 取得現在時間 (格式：22:01:34)
 function getCurrentTimeString() {
@@ -754,19 +758,27 @@ function getCurrentTimeString() {
     const ss = String(now.getSeconds()).padStart(2, '0');
     return `${hh}:${mm}:${ss}`;
 }
- function logEvent(eventName, detail = "", value = "", duration = "") {
-    let currentUser = { name: "訪客", account: "訪客" };
 
-    try {
-        const raw = sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser");
-        if (raw) {
-            const parsed = JSON.parse(raw);
-            currentUser = {
-                name: parsed.name || "訪客",
-                account: parsed.account || parsed.name || "訪客"
-            };
-        }
-    } catch (e) {}
+function getActiveStudentUser() {
+    const fallback = { name: "訪客", account: "訪客", id: "" };
+    const sharedUser = window.AISchool && window.AISchool.getCurrentUser
+        ? window.AISchool.getCurrentUser()
+        : null;
+
+    if (!sharedUser) {
+        return fallback;
+    }
+
+    return {
+        ...sharedUser,
+        id: sharedUser.id || sharedUser.email || sharedUser.account || "",
+        name: sharedUser.name || sharedUser.Name || sharedUser.email || "訪客",
+        account: sharedUser.account || sharedUser.email || sharedUser.id || sharedUser.name || "訪客"
+    };
+}
+
+ function logEvent(eventName, detail = "", value = "", duration = "") {
+    const currentUser = getActiveStudentUser();
 
     const payload = {
     action: "log_event",
@@ -954,30 +966,15 @@ myth_wrong:"可惜答错了，再试试！",
     window.onload = async () => {
         const userInfo = document.getElementById("user-info");
 
-let rawUser = sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser");
-let user = { name: "訪客" };
-
-try {
-  if (rawUser) {
-    const obj = JSON.parse(rawUser);
-    user = {
-  ...obj,
-  id: obj.id || obj.student_id || obj.studentId || obj.StudentID || "",
-  account: obj.account || obj.id || obj.student_id || obj.studentId || obj.StudentID || "",
-  name: obj.name || obj.Name || obj.userName || obj.username || obj.email || "訪客"
-};
-  }
-} catch (e) {
-  // rawUser 不是 JSON（例如 [object Object] 或單純字串）→ 不要讓整頁掛掉
-  const s = String(rawUser || "");
-  user = { id: s, name: s || "訪客" };
-}
+let user = getActiveStudentUser();
 
 // 顯示姓名
 if (userInfo) userInfo.innerText = user.name || "訪客";
 
 // 立刻把格式「正規化」回存，避免下次再爆
-sessionStorage.setItem("currentUser", JSON.stringify(user));
+if (window.AISchool && window.AISchool.setCurrentUser && user.account !== "訪客") {
+    window.AISchool.setCurrentUser(user);
+}
         logEvent("page_view", "進入單元重點精熟頁");
 
 // 若你希望關掉瀏覽器也保留登入，再加這行：
@@ -2157,11 +2154,7 @@ if (chatBody) {
     pendingEl = wrap;
   }
 
-  let currentUser = { name: "訪客" };
-  try {
-    const raw = sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser");
-    if (raw) currentUser = JSON.parse(raw);
-  } catch (e) {}
+  const currentUser = getActiveStudentUser();
 
   const contextTextFull  = currentResultData?.raw_content?.text || "";
   const contextVocabFull = currentResultData?.raw_content?.vocab_str || "";
@@ -2719,17 +2712,7 @@ function submitQuizLog(question, selectedIndex, correctIndex, isCorrect) {
     if (!question) return;
 
     // 取得使用者資料 (優先抓 account)
-    let currentUser = { name: "訪客", account: "訪客" };
-    try {
-        const raw = sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser");
-        if (raw) {
-            const parsed = JSON.parse(raw);
-            currentUser = {
-                name: parsed.name || "訪客",
-                account: parsed.account || parsed.name || "訪客" // 確保有帳號
-            };
-        }
-    } catch (e) {}
+    const currentUser = getActiveStudentUser();
 
     const payload = {
         action: "log_quiz_answer",
@@ -2818,17 +2801,7 @@ function requestQuizAISummary(score, concepts, conceptScores, correctCount, tota
     if (!detailEl || !scoreLabelEl) return;
 
     // 取得使用者資料
-    let currentUser = { name: "訪客", account: "訪客" };
-    try {
-        const raw = sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser");
-        if (raw) {
-            const parsed = JSON.parse(raw);
-            currentUser = {
-                name: parsed.name || "訪客",
-                account: parsed.account || parsed.name || "訪客"
-            };
-        }
-    } catch (e) {}
+    const currentUser = getActiveStudentUser();
 
     const rawContent = currentResultData && currentResultData.raw_content ? currentResultData.raw_content : {};
     const contextText = rawContent.text || rawContent.text_summary || "";

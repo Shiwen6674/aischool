@@ -19,7 +19,7 @@
 
 - 能說出任務落在哪一個頁面家族
 - 能列出受影響的頁面
-- 知道是否碰到 session、語系、GAS endpoint 或 placeholder 風險
+- 知道是否碰到 session、語系、GAS endpoint 或學習中心頁風險
 
 ## 1. Single-Page UI Change
 
@@ -55,7 +55,7 @@
 
 - `sessionStorage.currentUser`
 - role 命名是否用 `professor` 或 `researcher`
-- 導向 URL 是否指到 placeholder
+- 導向 URL 是否指到仍未接上後端的內容頁
 
 完成後驗證：
 
@@ -72,6 +72,7 @@
 1. 全 repo 搜尋 `script.google.com/macros/s/`
 2. 盤點受影響頁面
 3. 確認哪些頁共用同一個 endpoint，哪些不是
+4. 優先確認 shared runtime 是否已經有對應 key，再決定要不要新增
 
 檢查點：
 
@@ -102,7 +103,7 @@
 - `currentUser` 欄位格式是否一致
 - 是否有額外使用 `isLoggedIn`
 - `redirectMsg` 是否仍在受保護頁流程中使用
-- 是否存在開發 bypass
+- 學生深層頁是否仍直接讀寫 `sessionStorage.currentUser`
 
 完成後驗證：
 
@@ -110,23 +111,25 @@
 - 登出後 session 被清掉
 - 受保護 professor 頁仍會攔未登入使用者
 
-## 5. Promote A Placeholder Page
+## 5. Promote A Learning Hub Page
 
-適用情境：把空白頁升級為正式功能頁。
+適用情境：把空白頁或內容薄弱頁升級為正式的學生學習中心頁。
 
 步驟：
 
 1. 先確認它是從哪個 hub 被導過來
-2. 補上最小可用頁面內容
+2. 若頁面屬於學生內容中心，優先沿用 `assets/css/student-hub.css` 與 `assets/js/student-hub.js`
 3. 若需要登入，對齊現有 session 模式
-4. 若需要追蹤或 API，明確選定 endpoint
-5. 更新 `docs/architecture.md`
-6. 更新 `docs/examples/`
+4. 若需要追蹤或 API，優先從 `assets/js/aischool-shared.js` 取 endpoint
+5. 把主導航接回去，避免新頁成為孤兒頁
+6. 更新 `docs/architecture.md`
+7. 視需要更新 `docs/examples/`
 
 完成後驗證：
 
 - 導頁不再落到空白頁
-- 文件中的 placeholder 清單同步更新
+- 主導航與子導航都能找到新頁
+- 文件中的頁面狀態同步更新
 
 ## 6. Dependency Or CDN Review
 
@@ -150,17 +153,20 @@
 本 repo 沒有測試框架，預設 smoke test 如下：
 
 1. 檢查 `index.html` 是否仍能登入/註冊並決定角色導向
-2. 檢查 `student_subject.html` 是否能導到 `student_science.html`
-3. 檢查 `student_science.html` 的三個正式入口：
+2. 檢查 `student_subject.html` 是否能導到 `student_science.html` 與 `student_keyidea.html`
+3. 檢查 `student_science.html` 的正式入口：
    - 雙語閱讀
    - 核心概念
    - 適性測驗
-4. 檢查 `teacher.html` dashboard 與獨立工具頁導向
-5. 檢查 `professor.html` 與至少一個 professor 子頁的 session 相依行為
-6. 盤點所有 placeholder 頁是否仍被正式入口連到
+   - 虛擬實驗
+   - CAP（國中教育會考自然科模擬）
+   - CSAT（高中學測自然科戰略頁，保留舊檔名）
+4. 檢查新的 subject/science learning hub 頁是否都能正常渲染
+5. 檢查 `teacher.html` dashboard 與獨立工具頁導向
+6. 檢查 `professor.html` 與至少一個 professor 子頁的 session 相依行為
 
 回報方式：
 
 - 說明哪些步驟是實際靜態驗證
 - 說明哪些步驟因缺少 GAS 或外部服務只能推斷
-- 額外列出 session、endpoint、placeholder 風險
+- 額外列出 session、endpoint、內容頁與未驗證外部服務風險

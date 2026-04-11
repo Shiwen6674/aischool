@@ -1,1 +1,42 @@
-
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI School | 數學學習中心</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&family=Outfit:wght@500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="./assets/css/student-hub.css">
+    <script src="./assets/js/aischool-shared.js"></script>
+    <script>
+        window.AISchoolHubConfig = {
+            slug: "student-math",
+            icon: "fa-solid fa-square-root-variable",
+            eyebrow: "Math Learning Center",
+            title: "數學學習中心",
+            description: "把題目拆成條件、未知數與策略三塊來看。這一頁先幫你把每天的數學複盤做穩，再決定是否要接診斷工具。",
+            accent: "#3b82f6",
+            accentSoft: "rgba(59, 130, 246, 0.16)",
+            accentStrong: "rgba(59, 130, 246, 0.34)",
+            studyTime: "20-25 分鐘",
+            focus: "題意拆解與錯因回顧",
+            parent: { label: "學生學習模組", href: "student_subject.html" },
+            stats: [{ value: "3 欄", label: "條件、方法、答案分欄整理" }, { value: "2 題", label: "至少回顧兩題曾經做錯的題目" }, { value: "1 次", label: "寫下今天最常見的錯因" }],
+            goals: ["讀題時先圈出已知條件與真正要求，不要一開始就急著代公式。", "把錯題分類成觀念錯、運算錯、粗心錯，才知道下一輪該補哪裡。", "每做完一題，都留一句「如果重做一次，我先看哪裡」。"],
+            pathways: [{ title: "題意拆解流程", description: "把題目中的數字、限制與目標拆開寫，降低看錯題的機率。", href: "#checklist", meta: "基礎流程", cta: "開始今日拆解" }, { title: "核心概念整理", description: "把今天碰到的數學概念整理到跨科概念頁，建立長期記憶。", href: "student_keyidea.html", meta: "概念連結", cta: "前往概念導航" }, { title: "學習模組切換", description: "完成今天數學複盤後，可直接切回其他學科，保持節奏不中斷。", href: "student_subject.html", meta: "Navigation", cta: "回到模組頁" }, { title: "筆記歸檔", description: "把公式、解題步驟與常見錯因記在本頁，當成自己的錯題索引。", href: "#notes", meta: "On page", cta: "整理筆記" }],
+            checklist: ["選 2 題今天最值得複盤的題目，不要只挑最簡單的。", "每題都列出已知條件、未知數與你打算採用的方法。", "把錯誤來源分類成觀念、步驟或粗心。", "寫一句「下次看到類似題時，我會先做什麼」。", "把最需要複習的公式或概念寫到筆記區。"],
+            prompts: [{ title: "看不懂題目時", description: "題目真正要我求的是什麼？我是不是只看到數字，卻沒看到條件限制？" }, { title: "算錯時", description: "這是公式不熟、步驟跳太快，還是沒有先估答案範圍？" }, { title: "回頭整理時", description: "如果要教別人做這題，我會先提醒哪一個容易掉坑的地方？" }],
+            resources: [{ title: "核心概念導航", description: "把易混淆概念整理到同一張圖上，避免每次重頭想。", href: "student_keyidea.html", meta: "Concept map", cta: "整理概念" }, { title: "學習筆記", description: "把今天的錯因與公式整理到本頁筆記，下次直接回來查。", href: "#notes", meta: "On page", cta: "前往筆記" }, { title: "學生學習模組首頁", description: "若今天要切換去自然或英語，可直接回到模組總覽。", href: "student_subject.html", meta: "Navigation", cta: "回到模組入口" }],
+            notePrompt: "寫下今天最常出現的錯因、要補的公式，以及你想提醒未來自己的解題順序。",
+            footerNote: "數學頁目前先做成學生複盤與自我管理中心；之後若要再升級，可接題庫診斷、步驟分析或解題推薦。",
+            quote: "數學進步的關鍵，不只是做對，而是知道自己為什麼會做錯。"
+        };
+    </script>
+    <script src="./assets/js/student-hub.js" defer></script>
+</head>
+<body>
+    <div id="app"></div>
+</body>
+</html>

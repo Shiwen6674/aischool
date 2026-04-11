@@ -321,6 +321,10 @@ rp { display: none !important; }
 }
     
   </style>
+  <script src="./assets/js/aischool-shared.js"></script>
+  <script>
+    window.AISchool.requireRole(["student"], "請先登入學生帳號，再使用 AI 適性診斷。", "index.html");
+  </script>
 </head>
 
 <body class="antialiased selection:bg-blue-500 selection:text-white">
@@ -621,7 +625,7 @@ rp { display: none !important; }
     /* ===========================
        0) CONFIG & I18N
        =========================== */
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxvAOgRDBE6T-2R37UeTzo0RSQukgGOlEYyBrTw8zUSOlIKNIzLdJXozjNx4Hn6brc2/exec";
+    const GAS_API_URL = window.AISchool.getGasUrl("studentAdaptiveTesting");
     const CONTENT_DB_ID = "1cEfMEy3bvDa1tET3xmh7ShGeJy8KLUMa_JuULGBD-mk";
     const CONTENT_SHEET_NAME = "Sheet1";
     const USER_DB_ID = "1cDOsaa7E0EwD1R9CeCWoGf8_9ZMcFv8fxQ5d-LWUKu8";
@@ -719,32 +723,18 @@ rp { display: none !important; }
     
     // 1. 統一讀取使用者資訊的函式
     function __loadCurrentUser() {
-        const raw = sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser") || "";
-        
-        // 預設訪客物件
         const guestUser = { name: "訪客", id: "guest_" + Date.now() };
+        const sharedUser = window.AISchool && window.AISchool.getCurrentUser
+            ? window.AISchool.getCurrentUser()
+            : null;
 
-        if (!raw) return guestUser;
+        if (!sharedUser) return guestUser;
 
-        try {
-            const obj = JSON.parse(raw);
-            
-            // ★ 關鍵修正：對應試算表邏輯
-            // ID 優先抓取 email (A欄) 或 account，若無則抓 id
-            const finalId = obj.email || obj.account || obj.id || guestUser.id;
-            
-            // Name 優先抓取 name (D欄) 或 Name，若無則抓 username
-            const finalName = obj.name || obj.Name || obj.username || "訪客";
-
-            return {
-                id: finalId,      // 這是要傳給後端紀錄的唯一識別 (Email)
-                name: finalName,  // 這是顯示在右上角的姓名
-                ...obj            // 保留其他原始欄位
-            };
-        } catch (e) {
-            console.error("解析使用者資料失敗", e);
-            return guestUser;
-        }
+        return {
+            ...sharedUser,
+            id: sharedUser.email || sharedUser.account || sharedUser.id || guestUser.id,
+            name: sharedUser.name || sharedUser.Name || sharedUser.username || "訪客"
+        };
     }
 
     // 2. 取得學生 ID (用於 API 呼叫)
@@ -755,7 +745,7 @@ rp { display: none !important; }
 
     // 3. 非同步確保 ID (用於 startTest)
 async function ensureStudentId(){
-  const user = window.currentUser || __loadCurrentUser();
+  const user = __loadCurrentUser();
 
   // 以 Email/Account/ID 為唯一識別（符合你後端用 Email 做鍵的設計）
   let sid = user.email || user.account || user.id || user.StudentID || user.student_id || user.studentId || "";
