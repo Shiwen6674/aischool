@@ -730,6 +730,9 @@ mermaid.initialize({
            
             <div class="p-3 bg-white border-t border-slate-100 flex gap-2">
                 <input type="text" id="chat-input" placeholder="問問小科..." class="flex-1 bg-slate-100 border-none rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-cyan-400 outline-none transition text-slate-800" onkeypress="if(event.key==='Enter') sendChatMessage()">
+                <button id="chat-voice-btn" type="button" onclick="toggleChatVoiceInput()" title="語音輸入" aria-label="語音輸入" aria-pressed="false" class="bg-slate-200 text-slate-700 w-10 h-10 rounded-full hover:bg-slate-300 hover:shadow-lg hover:scale-105 transition flex items-center justify-center shadow-sm">
+                    <i id="chat-voice-icon" class="fa-solid fa-microphone text-xs"></i>
+                </button>
                 <button onclick="sendChatMessage()" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white w-10 h-10 rounded-full hover:shadow-lg hover:scale-105 transition flex items-center justify-center shadow-md">
                     <i class="fa-solid fa-paper-plane text-xs"></i>
                 </button>
@@ -2041,6 +2044,7 @@ if (lang === "en") {
                     </div>`;
             }
         } else {
+            stopChatVoiceInput();
             win.classList.add("closed");
             setTimeout(() => win.classList.add("hidden"), 300);
         }
@@ -2049,6 +2053,10 @@ if (lang === "en") {
     let isDragging = false;
     let dragStartX, dragStartY;
     let initialLeft, initialTop;
+    const ChatSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+    let chatRecognition = null;
+    let isChatListening = false;
+    let chatRecognitionBaseValue = "";
 
     function startDrag(e) {
         if (e.type === 'mousedown' && e.button !== 0) return;
@@ -2117,9 +2125,216 @@ if (lang === "en") {
         setTimeout(() => { isDragging = false; }, 100);
     }
 
+function getChatVoiceElements() {
+    return {
+        input: document.getElementById("chat-input"),
+        button: document.getElementById("chat-voice-btn"),
+        icon: document.getElementById("chat-voice-icon")
+    };
+}
+
+function getChatVoiceLocale() {
+    const lang = document.getElementById("language-selector")?.value || "zh-TW";
+
+    if (lang === "en") return "en-US";
+    if (lang === "ja") return "ja-JP";
+    if (lang === "zh-CN") return "zh-CN";
+    return "zh-TW";
+}
+
+function getChatVoiceLabels() {
+    const lang = document.getElementById("language-selector")?.value || "zh-TW";
+
+    if (lang === "en") {
+        return {
+            idle: "Voice input",
+            listening: "Stop voice input",
+            unsupported: "Voice input is not supported in this browser. Please use Chrome or Edge.",
+            blocked: "Microphone permission is blocked. Please allow microphone access and try again.",
+            unavailable: "Voice input is temporarily unavailable. Please try again."
+        };
+    }
+
+    if (lang === "ja") {
+        return {
+            idle: "音声入力",
+            listening: "音声入力を停止",
+            unsupported: "このブラウザは音声入力に対応していません。Chrome または Edge をご利用ください。",
+            blocked: "マイクの使用が許可されていません。マイク権限を許可してから再試行してください。",
+            unavailable: "音声入力は一時的に利用できません。もう一度お試しください。"
+        };
+    }
+
+    if (lang === "zh-CN") {
+        return {
+            idle: "语音输入",
+            listening: "停止语音输入",
+            unsupported: "当前浏览器不支持语音输入，请改用 Chrome 或 Edge。",
+            blocked: "麦克风权限被阻止，请先允许麦克风权限后再试。",
+            unavailable: "语音输入暂时无法使用，请稍后再试。"
+        };
+    }
+
+    return {
+        idle: "語音輸入",
+        listening: "停止語音輸入",
+        unsupported: "目前瀏覽器不支援語音輸入，請改用 Chrome 或 Edge。",
+        blocked: "麥克風權限被阻擋，請先允許麥克風後再試一次。",
+        unavailable: "語音輸入暫時無法使用，請稍後再試。"
+    };
+}
+
+function mergeChatTranscript(baseValue, transcript, locale) {
+    const cleanBase = String(baseValue || "").trim();
+    const cleanTranscript = String(transcript || "").trim();
+
+    if (!cleanTranscript) return cleanBase;
+    if (!cleanBase) return cleanTranscript;
+
+    const separator = locale.startsWith("en") ? " " : "";
+    return `${cleanBase}${separator}${cleanTranscript}`.trim();
+}
+
+function setChatVoiceListeningState(listening) {
+    const { input, button, icon } = getChatVoiceElements();
+    if (!button || !icon) return;
+
+    const labels = getChatVoiceLabels();
+    const nextTitle = listening ? labels.listening : labels.idle;
+
+    button.setAttribute("title", nextTitle);
+    button.setAttribute("aria-label", nextTitle);
+    button.setAttribute("aria-pressed", listening ? "true" : "false");
+
+    if (listening) {
+        button.classList.remove("bg-slate-200", "text-slate-700", "hover:bg-slate-300");
+        button.classList.add("bg-red-500", "text-white", "hover:bg-red-600", "animate-pulse");
+        icon.classList.remove("fa-microphone");
+        icon.classList.add("fa-stop");
+        if (input && !input.dataset.defaultPlaceholder) {
+            input.dataset.defaultPlaceholder = input.getAttribute("placeholder") || "";
+        }
+        if (input) input.setAttribute("placeholder", labels.listening);
+        return;
+    }
+
+    button.classList.remove("bg-red-500", "text-white", "hover:bg-red-600", "animate-pulse");
+    button.classList.add("bg-slate-200", "text-slate-700", "hover:bg-slate-300");
+    icon.classList.remove("fa-stop");
+    icon.classList.add("fa-microphone");
+
+    if (input) {
+        const fallbackPlaceholder = input.dataset.defaultPlaceholder || "問問小科...";
+        input.setAttribute("placeholder", fallbackPlaceholder);
+    }
+}
+
+function stopChatVoiceInput() {
+    if (chatRecognition && isChatListening) {
+        chatRecognition.stop();
+        return;
+    }
+
+    isChatListening = false;
+    setChatVoiceListeningState(false);
+}
+
+function getOrCreateChatRecognition() {
+    if (chatRecognition || !ChatSpeechRecognition) return chatRecognition;
+
+    chatRecognition = new ChatSpeechRecognition();
+    chatRecognition.continuous = false;
+    chatRecognition.interimResults = true;
+    chatRecognition.maxAlternatives = 1;
+
+    chatRecognition.onstart = () => {
+        isChatListening = true;
+        setChatVoiceListeningState(true);
+    };
+
+    chatRecognition.onresult = (event) => {
+        const { input } = getChatVoiceElements();
+        if (!input) return;
+
+        let transcript = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            transcript += event.results[i][0]?.transcript || "";
+        }
+
+        input.value = mergeChatTranscript(chatRecognitionBaseValue, transcript, getChatVoiceLocale());
+    };
+
+    chatRecognition.onerror = (event) => {
+        if (!event || event.error === "aborted" || event.error === "no-speech") {
+            return;
+        }
+
+        const labels = getChatVoiceLabels();
+        if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+            alert(labels.blocked);
+            return;
+        }
+
+        alert(labels.unavailable);
+    };
+
+    chatRecognition.onend = () => {
+        isChatListening = false;
+        setChatVoiceListeningState(false);
+
+        const { input } = getChatVoiceElements();
+        if (input) {
+            input.focus();
+            const cursor = input.value.length;
+            input.setSelectionRange(cursor, cursor);
+        }
+    };
+
+    return chatRecognition;
+}
+
+function toggleChatVoiceInput() {
+    const { input } = getChatVoiceElements();
+    if (!input) return;
+
+    const labels = getChatVoiceLabels();
+    if (!ChatSpeechRecognition) {
+        alert(labels.unsupported);
+        return;
+    }
+
+    const recognition = getOrCreateChatRecognition();
+    if (!recognition) {
+        alert(labels.unavailable);
+        return;
+    }
+
+    if (isChatListening) {
+        recognition.stop();
+        return;
+    }
+
+    chatRecognitionBaseValue = input.value.trim();
+    recognition.lang = getChatVoiceLocale();
+
+    try {
+        recognition.start();
+    } catch (error) {
+        if (error && error.name === "InvalidStateError") {
+            recognition.stop();
+            return;
+        }
+
+        alert(labels.unavailable);
+    }
+}
+
+setChatVoiceListeningState(false);
+
 async function sendChatMessage() {
   const input = document.getElementById("chat-input");
   if (!input) return;
+  if (isChatListening) stopChatVoiceInput();
 
   const msg = input.value.trim();
   if (!msg) return;
