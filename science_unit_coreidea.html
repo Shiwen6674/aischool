@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
 
     <script>
         tailwind.config = {
@@ -145,17 +146,191 @@ mermaid.initialize({
 
 #chart-container {
   min-height: 420px;
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: hidden;
   -webkit-overflow-scrolling: touch;
 }
 
 #mermaid-chart {
-  min-width: 900px;
   width: 100%;
 }
 
-#mermaid-chart svg {
+.mindmap-surface {
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.14), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.18), transparent 28%),
+    linear-gradient(135deg, #0f172a 0%, #111827 52%, #020617 100%);
+  border: 1px solid rgba(125, 211, 252, 0.18);
+  border-radius: 1.5rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 18px 36px rgba(2, 6, 23, 0.32);
+  padding: 1rem;
+  color: #e2e8f0;
+}
+
+.mindmap-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.85rem;
+}
+
+.mindmap-hint {
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: #cbd5e1;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.mindmap-hint i {
+  color: #7dd3fc;
+}
+
+.mindmap-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.mindmap-action-btn {
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: rgba(15, 23, 42, 0.82);
+  color: #e2e8f0;
+  border-radius: 999px;
+  padding: 0.48rem 0.9rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.mindmap-action-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(125, 211, 252, 0.5);
+  background: rgba(30, 41, 59, 0.95);
+}
+
+.mindmap-viewport {
+  position: relative;
+  width: 100%;
+  height: 520px;
+  overflow: hidden;
+  border-radius: 1.2rem;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.3), rgba(15, 23, 42, 0.06)),
+    rgba(2, 6, 23, 0.18);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.mindmap-surface.is-modal .mindmap-viewport {
+  height: min(78vh, 860px);
+}
+
+.mindmap-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+  touch-action: none;
+}
+
+.mindmap-svg:active {
+  cursor: grabbing;
+}
+
+.mindmap-link {
+  fill: none;
+  stroke: rgba(147, 197, 253, 0.8);
+  stroke-width: 2.4px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mindmap-node {
+  cursor: pointer;
+}
+
+.mindmap-node rect {
+  stroke-width: 1.5px;
+  rx: 18px;
+  ry: 18px;
+  transition: filter 0.2s ease, stroke 0.2s ease, fill 0.2s ease;
+}
+
+.mindmap-node:hover rect {
+  filter: drop-shadow(0 0 10px rgba(125, 211, 252, 0.16));
+}
+
+.mindmap-node text {
+  fill: #f8fafc;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.mindmap-node .node-subtext {
+  fill: rgba(226, 232, 240, 0.78);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.mindmap-node-depth-0 rect {
+  fill: #4b5a87;
+  stroke: rgba(196, 181, 253, 0.92);
+}
+
+.mindmap-node-depth-1 rect {
+  fill: #334155;
+  stroke: rgba(148, 163, 184, 0.9);
+}
+
+.mindmap-node-depth-2 rect,
+.mindmap-node-depth-3 rect,
+.mindmap-node-depth-4 rect {
+  fill: #21453b;
+  stroke: rgba(110, 231, 183, 0.82);
+}
+
+.mindmap-node.has-hidden rect {
+  stroke: rgba(125, 211, 252, 0.95);
+}
+
+.mindmap-toggle-badge {
+  fill: rgba(15, 23, 42, 0.98);
+  stroke: rgba(125, 211, 252, 0.88);
+  stroke-width: 1.6px;
+}
+
+.mindmap-toggle-symbol {
+  fill: #e0f2fe;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.mindmap-empty {
+  min-height: 360px;
+  border-radius: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #cbd5e1;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px dashed rgba(148, 163, 184, 0.25);
+  text-align: center;
+  padding: 1.25rem;
+}
+
+#mermaid-chart .mermaid {
+  min-width: 900px;
+}
+
+#mermaid-chart svg,
+#modal-content svg {
   display: block;
   margin: 0 auto;
 }
@@ -176,7 +351,30 @@ mermaid.initialize({
     min-height: 320px;
   }
 
-  #mermaid-chart {
+  .mindmap-toolbar {
+    align-items: stretch;
+  }
+
+  .mindmap-actions {
+    width: 100%;
+  }
+
+  .mindmap-action-btn {
+    flex: 1 1 0;
+    justify-content: center;
+    text-align: center;
+    min-width: 0;
+  }
+
+  .mindmap-viewport {
+    height: 420px;
+  }
+
+  .mindmap-node text {
+    font-size: 15px;
+  }
+
+  #mermaid-chart .mermaid {
     min-width: 700px;
   }
 
@@ -628,7 +826,6 @@ mermaid.initialize({
                         </button>
                     </div>
                     <div class="bg-slate-50 rounded-xl p-4 md:p-6 border border-slate-100 overflow-hidden w-full relative h-auto" id="chart-container">
-    <div class="click-mask" onclick="openModal()"></div>
     <div class="text-xs text-slate-500 mb-2 no-pdf">圖表過寬時可左右滑動，點擊可放大</div>
     <div id="mermaid-chart" class="w-full"></div>
 </div>
@@ -809,6 +1006,10 @@ function getActiveStudentUser() {
 let allData = [];
 let filters = {};
 let currentResultData = null;
+let currentMindMapCode = "";
+let currentMindMapTreeTemplate = null;
+let currentMindMapState = null;
+let currentMindMapInteractive = false;
 let sessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 let pageEnterTime = Date.now();
 
@@ -1374,6 +1575,724 @@ async function renderMermaidSafe(targetEl, rawCode) {
 
 
 // ====== [新增：摘要內表格/圖片/Mermaid 強化] ======
+function cleanupMindMapRenderer(targetEl) {
+    if (targetEl && targetEl.__mindMapRenderer && typeof targetEl.__mindMapRenderer.cleanup === "function") {
+        targetEl.__mindMapRenderer.cleanup();
+    }
+    if (targetEl) {
+        delete targetEl.__mindMapRenderer;
+    }
+}
+
+function cloneMindMapTreeState(node) {
+    if (!node) return null;
+
+    const copy = {
+        id: node.id || "",
+        label: node.label || "",
+        children: Array.isArray(node.children) ? node.children.map(cloneMindMapTreeState) : []
+    };
+
+    if (Array.isArray(node._children) && node._children.length) {
+        copy._children = node._children.map(cloneMindMapTreeState);
+    }
+
+    return copy;
+}
+
+function expandMindMapTree(node) {
+    if (!node) return;
+
+    if (Array.isArray(node._children) && node._children.length) {
+        node.children = Array.isArray(node.children) ? node.children.concat(node._children) : node._children.slice();
+        delete node._children;
+    }
+
+    if (Array.isArray(node.children)) {
+        node.children.forEach(expandMindMapTree);
+    }
+}
+
+function collapseMindMapTreeToDepth(node, maxDepth, depth = 0) {
+    if (!node) return;
+
+    const mergedChildren = [];
+    if (Array.isArray(node.children) && node.children.length) mergedChildren.push(...node.children);
+    if (Array.isArray(node._children) && node._children.length) mergedChildren.push(...node._children);
+
+    if (!mergedChildren.length) {
+        node.children = [];
+        delete node._children;
+        return;
+    }
+
+    node.children = mergedChildren;
+    delete node._children;
+
+    if (depth >= maxDepth) {
+        node._children = node.children;
+        node.children = [];
+        return;
+    }
+
+    node.children.forEach(child => collapseMindMapTreeToDepth(child, maxDepth, depth + 1));
+}
+
+function toggleMindMapNode(node) {
+    if (!node) return;
+
+    if (Array.isArray(node.children) && node.children.length) {
+        node._children = node.children;
+        node.children = [];
+        return;
+    }
+
+    if (Array.isArray(node._children) && node._children.length) {
+        node.children = node._children;
+        delete node._children;
+    }
+}
+
+function hasMindMapChildren(node) {
+    return Boolean(
+        (Array.isArray(node.children) && node.children.length) ||
+        (Array.isArray(node._children) && node._children.length)
+    );
+}
+
+function sanitizeMindMapLabel(value) {
+    return String(value || "")
+        .replace(/<br\s*\/?>/gi, "\n")
+        .replace(/&nbsp;/gi, " ")
+        .replace(/&quot;/gi, '"')
+        .replace(/&#39;/gi, "'")
+        .replace(/<[^>]+>/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function stripMermaidLabelShell(token) {
+    const text = String(token || "").trim();
+    if (!text) return "";
+
+    const wrappers = [
+        ["[[", "]]"],
+        ["((", "))"],
+        ["[", "]"],
+        ["(", ")"],
+        ["{", "}"],
+        ['"', '"'],
+        ["'", "'"],
+        ["/", "/"]
+    ];
+
+    for (const [open, close] of wrappers) {
+        if (text.startsWith(open) && text.endsWith(close)) {
+            return sanitizeMindMapLabel(text.slice(open.length, text.length - close.length));
+        }
+    }
+
+    return sanitizeMindMapLabel(text);
+}
+
+function measureMindMapUnits(text) {
+    return Array.from(String(text || "")).reduce((total, char) => {
+        if (/\s/.test(char)) return total + 0.28;
+        if (/[\u0000-\u00ff]/.test(char)) return total + 0.58;
+        return total + 1;
+    }, 0);
+}
+
+function wrapMindMapLabel(label, maxUnits = 14) {
+    const normalized = sanitizeMindMapLabel(label).replace(/\n+/g, "\n");
+    if (!normalized) return [""];
+
+    const chunks = normalized.split("\n");
+    const lines = [];
+
+    chunks.forEach(chunk => {
+        let current = "";
+        let currentUnits = 0;
+
+        Array.from(chunk).forEach(char => {
+            const units = measureMindMapUnits(char);
+            if (current && currentUnits + units > maxUnits) {
+                lines.push(current.trim());
+                current = char;
+                currentUnits = units;
+                return;
+            }
+
+            current += char;
+            currentUnits += units;
+        });
+
+        if (current.trim()) {
+            lines.push(current.trim());
+        }
+    });
+
+    return lines.length ? lines : [normalized];
+}
+
+function getMindMapTitleText() {
+    const title = document.getElementById("result-title");
+    return title?.innerText?.trim() || "概念架構";
+}
+
+function updateMindMapHints(interactive) {
+    const hint = document.querySelector("#chart-container .text-xs.text-slate-500");
+    if (hint) {
+        hint.textContent = interactive
+            ? "拖曳平移、滾輪縮放，點節點可逐層展開或收合；需要更大視野時可切換全螢幕。"
+            : "圖表過寬時可左右滑動，點擊可放大。";
+        hint.classList.toggle("mb-3", interactive);
+        hint.classList.toggle("mb-2", !interactive);
+    }
+
+    const chip = document.querySelector("h3 .text-xs.bg-cyan-100");
+    if (chip) {
+        chip.textContent = interactive ? "可逐層展開" : "點擊放大";
+    }
+}
+
+function extractMermaidNodeRefs(segment) {
+    const cleaned = String(segment || "")
+        .replace(/:::[\w-]+/g, " ")
+        .replace(/,\s*/g, " ")
+        .trim();
+
+    if (!cleaned) return [];
+
+    const refs = [];
+    const reserved = new Set(["graph", "flowchart", "mindmap", "subgraph", "end", "class", "style", "linkstyle", "click", "direction"]);
+    const pattern = /([A-Za-z0-9_][\w-]*)(?:\s*(\(\([^)]+\)\)|\[\[[^\]]+\]\]|\[[^\]]+\]|\([^)]+\)|\{[^}]+\}|"(?:[^"\\]|\\.)+"|'(?:[^'\\]|\\.)+'|\/[^/]+\/))?/g;
+    let match;
+
+    while ((match = pattern.exec(cleaned))) {
+        const id = match[1];
+        const shell = match[2];
+        const lowered = String(id).toLowerCase();
+        if (reserved.has(lowered) && !shell) continue;
+
+        refs.push({
+            id,
+            label: shell ? stripMermaidLabelShell(shell) : sanitizeMindMapLabel(id)
+        });
+    }
+
+    return refs;
+}
+
+function buildMindMapTreeFromGraph(nodes, adjacency, indegree, fallbackTitle) {
+    const ids = Array.from(nodes.keys());
+    if (!ids.length) return null;
+
+    const getChildren = id => Array.from(adjacency.get(id) || []);
+    const getOutDegree = id => getChildren(id).length;
+    const roots = ids
+        .filter(id => (indegree.get(id) || 0) === 0)
+        .sort((a, b) => getOutDegree(b) - getOutDegree(a));
+
+    const claimed = new Set();
+    const locale = "zh-Hant";
+
+    const buildBranch = (id, ancestry = new Set()) => {
+        claimed.add(id);
+        const node = {
+            id,
+            label: sanitizeMindMapLabel(nodes.get(id) || id),
+            children: []
+        };
+
+        const nextAncestry = new Set(ancestry);
+        nextAncestry.add(id);
+
+        const children = getChildren(id).sort((a, b) => {
+            const byDegree = getOutDegree(b) - getOutDegree(a);
+            if (byDegree !== 0) return byDegree;
+            return String(nodes.get(a) || a).localeCompare(String(nodes.get(b) || b), locale);
+        });
+
+        children.forEach(childId => {
+            if (nextAncestry.has(childId) || claimed.has(childId)) return;
+            node.children.push(buildBranch(childId, nextAncestry));
+        });
+
+        return node;
+    };
+
+    if (roots.length === 1) {
+        const root = buildBranch(roots[0]);
+        ids.forEach(id => {
+            if (claimed.has(id)) return;
+            root.children.push(buildBranch(id));
+        });
+        return root;
+    }
+
+    const syntheticRoot = {
+        id: "__root__",
+        label: fallbackTitle || "概念架構",
+        children: []
+    };
+
+    const initialRoots = roots.length ? roots : [ids[0]];
+    initialRoots.forEach(id => {
+        if (claimed.has(id)) return;
+        syntheticRoot.children.push(buildBranch(id));
+    });
+
+    ids.forEach(id => {
+        if (claimed.has(id)) return;
+        syntheticRoot.children.push(buildBranch(id));
+    });
+
+    return syntheticRoot;
+}
+
+function parseMermaidFlowchartTree(code, fallbackTitle) {
+    const lines = String(code || "").split("\n");
+    const nodes = new Map();
+    const adjacency = new Map();
+    const indegree = new Map();
+
+    const registerNode = (ref) => {
+        if (!ref || !ref.id) return;
+        if (!nodes.has(ref.id) || ref.label !== ref.id) {
+            nodes.set(ref.id, ref.label || ref.id);
+        }
+        if (!adjacency.has(ref.id)) adjacency.set(ref.id, new Set());
+        if (!indegree.has(ref.id)) indegree.set(ref.id, indegree.get(ref.id) || 0);
+    };
+
+    const addEdge = (sourceId, targetId) => {
+        if (!sourceId || !targetId || sourceId === targetId) return;
+        if (!adjacency.has(sourceId)) adjacency.set(sourceId, new Set());
+        if (!adjacency.has(targetId)) adjacency.set(targetId, new Set());
+        if (!adjacency.get(sourceId).has(targetId)) {
+            adjacency.get(sourceId).add(targetId);
+            indegree.set(targetId, (indegree.get(targetId) || 0) + 1);
+        }
+        if (!indegree.has(sourceId)) indegree.set(sourceId, indegree.get(sourceId) || 0);
+    };
+
+    lines.forEach(rawLine => {
+        const line = rawLine.replace(/%%.*$/, "").trim();
+        if (!line) return;
+
+        const lowered = line.toLowerCase();
+        if (
+            lowered.startsWith("graph ") ||
+            lowered.startsWith("flowchart ") ||
+            lowered.startsWith("classdef ") ||
+            lowered.startsWith("class ") ||
+            lowered.startsWith("style ") ||
+            lowered.startsWith("linkstyle ") ||
+            lowered.startsWith("click ") ||
+            lowered.startsWith("direction ") ||
+            lowered === "end"
+        ) {
+            return;
+        }
+
+        if (lowered.startsWith("subgraph ")) {
+            extractMermaidNodeRefs(line.replace(/^subgraph\s+/i, "")).forEach(registerNode);
+            return;
+        }
+
+        const withoutEdgeLabels = line.replace(/\|[^|]*\|/g, " ");
+        const hasEdge = /<-->|<--|-->|---|-.->|==>|=>|->/.test(withoutEdgeLabels);
+
+        if (!hasEdge) {
+            extractMermaidNodeRefs(line).forEach(registerNode);
+            return;
+        }
+
+        const segments = withoutEdgeLabels
+            .replace(/<-->|<--|-->|---|-.->|==>|=>|->/g, "__EDGE__")
+            .split("__EDGE__")
+            .map(part => extractMermaidNodeRefs(part))
+            .filter(part => part.length);
+
+        if (!segments.length) return;
+
+        segments.forEach(part => part.forEach(registerNode));
+
+        for (let index = 0; index < segments.length - 1; index++) {
+            segments[index].forEach(source => {
+                segments[index + 1].forEach(target => addEdge(source.id, target.id));
+            });
+        }
+    });
+
+    return buildMindMapTreeFromGraph(nodes, adjacency, indegree, fallbackTitle);
+}
+
+function parseMermaidMindmapTree(code, fallbackTitle) {
+    const rawLines = String(code || "").split("\n");
+    const lines = [];
+    let bodyStarted = false;
+
+    rawLines.forEach(rawLine => {
+        const cleaned = rawLine.replace(/%%.*$/, "");
+        const trimmed = cleaned.trim();
+        if (!trimmed) return;
+
+        if (!bodyStarted) {
+            if (trimmed.toLowerCase().startsWith("mindmap")) {
+                bodyStarted = true;
+            }
+            return;
+        }
+
+        lines.push(cleaned.replace(/\t/g, "    "));
+    });
+
+    if (!lines.length) return null;
+
+    const stack = [];
+    let root = null;
+    let sequence = 0;
+
+    lines.forEach(rawLine => {
+        const indent = (rawLine.match(/^\s*/) || [""])[0].length;
+        const cleaned = rawLine
+            .trim()
+            .replace(/^[-+*]\s*/, "")
+            .replace(/:::[\w-]+/g, "")
+            .trim();
+
+        if (!cleaned) return;
+
+        const refs = extractMermaidNodeRefs(cleaned);
+        let label = refs.length ? refs[0].label : cleaned.replace(/^root\b/i, "").trim();
+        label = sanitizeMindMapLabel(label || fallbackTitle || `node-${sequence + 1}`);
+
+        const node = {
+            id: `mindmap_${sequence++}`,
+            label,
+            children: []
+        };
+
+        if (!root) {
+            root = node;
+            stack[0] = node;
+            return;
+        }
+
+        const depth = Math.max(1, Math.floor(indent / 2));
+        const parent = stack[depth - 1] || stack[0];
+        if (!parent.children) parent.children = [];
+        parent.children.push(node);
+        stack[depth] = node;
+        stack.length = depth + 1;
+    });
+
+    return root;
+}
+
+function parseMermaidToInteractiveTree(rawCode, fallbackTitle) {
+    const code = normalizeMermaidCode(rawCode);
+    if (!code) return null;
+
+    const header = code
+        .split("\n")
+        .map(line => line.trim())
+        .find(line => line && !line.startsWith("%%"));
+
+    if (!header) return null;
+
+    const lowered = header.toLowerCase();
+    const parsed = lowered.startsWith("mindmap")
+        ? parseMermaidMindmapTree(code, fallbackTitle)
+        : parseMermaidFlowchartTree(code, fallbackTitle);
+
+    return parsed && sanitizeMindMapLabel(parsed.label) ? parsed : null;
+}
+
+function renderInteractiveMindMap(targetEl, treeState, options = {}) {
+    if (!targetEl || !treeState || !window.d3) return null;
+
+    cleanupMindMapRenderer(targetEl);
+    targetEl.innerHTML = "";
+
+    const isModal = Boolean(options.fullscreen);
+    const surface = document.createElement("div");
+    surface.className = `mindmap-surface${isModal ? " is-modal" : ""}`;
+
+    const toolbar = document.createElement("div");
+    toolbar.className = "mindmap-toolbar no-pdf";
+
+    const hint = document.createElement("div");
+    hint.className = "mindmap-hint";
+    hint.innerHTML = `<i class="fa-solid fa-hand-pointer"></i><span>拖曳平移、滾輪縮放，點節點可逐層展開或收合。</span>`;
+
+    const actions = document.createElement("div");
+    actions.className = "mindmap-actions";
+
+    const expandBtn = document.createElement("button");
+    expandBtn.type = "button";
+    expandBtn.className = "mindmap-action-btn";
+    expandBtn.innerHTML = `<i class="fa-solid fa-plus mr-1"></i>展開全部`;
+
+    const collapseBtn = document.createElement("button");
+    collapseBtn.type = "button";
+    collapseBtn.className = "mindmap-action-btn";
+    collapseBtn.innerHTML = `<i class="fa-solid fa-layer-group mr-1"></i>收合到第一層`;
+
+    const resetBtn = document.createElement("button");
+    resetBtn.type = "button";
+    resetBtn.className = "mindmap-action-btn";
+    resetBtn.innerHTML = `<i class="fa-solid fa-arrows-to-circle mr-1"></i>重設視角`;
+
+    actions.append(expandBtn, collapseBtn, resetBtn);
+    toolbar.append(hint, actions);
+
+    const viewport = document.createElement("div");
+    viewport.className = "mindmap-viewport";
+
+    surface.append(toolbar, viewport);
+    targetEl.appendChild(surface);
+
+    const svg = d3.select(viewport)
+        .append("svg")
+        .attr("class", "mindmap-svg")
+        .attr("role", "img")
+        .attr("aria-label", `${options.title || getMindMapTitleText()} 概念架構圖`);
+
+    const zoomLayer = svg.append("g").attr("class", "mindmap-zoom-layer");
+    const linkLayer = zoomLayer.append("g").attr("class", "mindmap-links");
+    const nodeLayer = zoomLayer.append("g").attr("class", "mindmap-nodes");
+
+    const zoom = d3.zoom()
+        .scaleExtent([0.38, 2.8])
+        .on("zoom", (event) => {
+            zoomLayer.attr("transform", event.transform);
+        });
+
+    svg.call(zoom);
+    svg.on("dblclick.zoom", null);
+
+    let lastBounds = null;
+    let resizeTimer = null;
+
+    const getViewportSize = () => ({
+        width: Math.max(320, Math.round(viewport.clientWidth || (isModal ? 1400 : 1100))),
+        height: Math.max(360, Math.round(viewport.clientHeight || (isModal ? Math.min(window.innerHeight * 0.78, 860) : (window.innerWidth < 640 ? 420 : 520))))
+    });
+
+    const applyNodeMetrics = (node, depth = 0) => {
+        const maxUnits = depth === 0 ? (isModal ? 18 : 15) : depth === 1 ? (isModal ? 17 : 14) : (isModal ? 16 : 13);
+        const labelLines = wrapMindMapLabel(node.label, maxUnits);
+        const maxLineUnits = labelLines.reduce((max, line) => Math.max(max, measureMindMapUnits(line)), 4);
+        node.__labelLines = labelLines;
+        node.__boxWidth = Math.max(122, Math.min(isModal ? 430 : 320, Math.round(maxLineUnits * (depth === 0 ? 17 : 15.5) + 46)));
+        node.__boxHeight = Math.max(depth === 0 ? 72 : 62, labelLines.length * 23 + 30);
+
+        if (Array.isArray(node.children)) node.children.forEach(child => applyNodeMetrics(child, depth + 1));
+        if (Array.isArray(node._children)) node._children.forEach(child => applyNodeMetrics(child, depth + 1));
+    };
+
+    const fitToView = (duration = 420) => {
+        if (!lastBounds) return;
+
+        const { width, height } = getViewportSize();
+        const padding = isModal ? 46 : 32;
+        const contentWidth = Math.max(1, lastBounds.maxX - lastBounds.minX);
+        const contentHeight = Math.max(1, lastBounds.maxY - lastBounds.minY);
+        const maxScale = isModal ? 1.38 : 1.18;
+        const scale = Math.max(0.44, Math.min(
+            (width - padding * 2) / contentWidth,
+            (height - padding * 2) / contentHeight,
+            maxScale
+        ));
+
+        const translateX = padding + ((width - padding * 2) - contentWidth * scale) / 2 - lastBounds.minX * scale;
+        const translateY = padding + ((height - padding * 2) - contentHeight * scale) / 2 - lastBounds.minY * scale;
+
+        svg.transition()
+            .duration(duration)
+            .call(zoom.transform, d3.zoomIdentity.translate(translateX, translateY).scale(scale));
+    };
+
+    const draw = (shouldFit = false) => {
+        if (!treeState) return;
+
+        applyNodeMetrics(treeState);
+
+        const hierarchy = d3.hierarchy(treeState, d =>
+            Array.isArray(d.children) && d.children.length ? d.children : null
+        );
+
+        let uniqueIndex = 0;
+        hierarchy.each(d => {
+            if (!d.data.__uid) {
+                d.data.__uid = `mindmap_${Date.now()}_${uniqueIndex++}_${Math.random().toString(36).slice(2, 6)}`;
+            }
+            d.id = d.data.__uid;
+        });
+
+        const depthWidth = isModal ? 350 : (window.innerWidth < 640 ? 250 : 300);
+        const rowHeight = isModal ? 112 : (window.innerWidth < 640 ? 92 : 96);
+
+        d3.tree()
+            .nodeSize([rowHeight, depthWidth])
+            .separation((a, b) => (a.parent === b.parent ? 1.06 : 1.32))(hierarchy);
+
+        const nodes = hierarchy.descendants();
+        const links = hierarchy.links();
+
+        if (!nodes.length) {
+            viewport.innerHTML = `<div class="mindmap-empty">目前沒有可顯示的概念架構。</div>`;
+            return;
+        }
+
+        let minVertical = Infinity;
+        nodes.forEach(d => {
+            minVertical = Math.min(minVertical, d.x - d.data.__boxHeight / 2);
+        });
+
+        nodes.forEach(d => {
+            d.renderX = d.x - minVertical + 72;
+            d.renderY = d.y + 90;
+        });
+
+        const bounds = { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity };
+        nodes.forEach(d => {
+            bounds.minX = Math.min(bounds.minX, d.renderY - d.data.__boxWidth / 2);
+            bounds.maxX = Math.max(bounds.maxX, d.renderY + d.data.__boxWidth / 2);
+            bounds.minY = Math.min(bounds.minY, d.renderX - d.data.__boxHeight / 2);
+            bounds.maxY = Math.max(bounds.maxY, d.renderX + d.data.__boxHeight / 2);
+        });
+
+        lastBounds = bounds;
+
+        const { width, height } = getViewportSize();
+        svg.attr("viewBox", `0 0 ${width} ${height}`)
+            .attr("width", width)
+            .attr("height", height);
+
+        linkLayer.selectAll("*").remove();
+        nodeLayer.selectAll("*").remove();
+
+        linkLayer.selectAll("path")
+            .data(links, d => `${d.source.id}-${d.target.id}`)
+            .enter()
+            .append("path")
+            .attr("class", "mindmap-link")
+            .attr("d", d => {
+                const sourceX = d.source.renderY + d.source.data.__boxWidth / 2 - 8;
+                const sourceY = d.source.renderX;
+                const targetX = d.target.renderY - d.target.data.__boxWidth / 2 + 8;
+                const targetY = d.target.renderX;
+                const midX = sourceX + (targetX - sourceX) * 0.5;
+                return `M${sourceX},${sourceY}C${midX},${sourceY} ${midX},${targetY} ${targetX},${targetY}`;
+            });
+
+        const nodesSelection = nodeLayer.selectAll("g")
+            .data(nodes, d => d.id)
+            .enter()
+            .append("g")
+            .attr("class", d => {
+                const classes = ["mindmap-node", `mindmap-node-depth-${Math.min(d.depth, 4)}`];
+                if (Array.isArray(d.data._children) && d.data._children.length) classes.push("has-hidden");
+                return classes.join(" ");
+            })
+            .attr("transform", d => `translate(${d.renderY},${d.renderX})`)
+            .on("click", (event, d) => {
+                event.preventDefault();
+                event.stopPropagation();
+                if (!hasMindMapChildren(d.data)) return;
+                toggleMindMapNode(d.data);
+                draw(false);
+            });
+
+        nodesSelection.each(function(d) {
+            const group = d3.select(this);
+            const boxWidth = d.data.__boxWidth;
+            const boxHeight = d.data.__boxHeight;
+            const lines = d.data.__labelLines || [d.data.label];
+            const lineHeight = 23;
+            const startY = -((lines.length - 1) * lineHeight) / 2 + 6;
+
+            group.append("rect")
+                .attr("x", -boxWidth / 2)
+                .attr("y", -boxHeight / 2)
+                .attr("width", boxWidth)
+                .attr("height", boxHeight);
+
+            const text = group.append("text").attr("text-anchor", "middle");
+            lines.forEach((line, index) => {
+                text.append("tspan")
+                    .attr("x", 0)
+                    .attr("y", startY + index * lineHeight)
+                    .text(line);
+            });
+
+            if (hasMindMapChildren(d.data)) {
+                const badgeX = boxWidth / 2 - 16;
+
+                group.append("circle")
+                    .attr("class", "mindmap-toggle-badge")
+                    .attr("cx", badgeX)
+                    .attr("cy", 0)
+                    .attr("r", 13);
+
+                group.append("text")
+                    .attr("class", "mindmap-toggle-symbol")
+                    .attr("x", badgeX)
+                    .attr("y", 5)
+                    .attr("text-anchor", "middle")
+                    .text(Array.isArray(d.data._children) && d.data._children.length ? "+" : "-");
+            }
+        });
+
+        if (shouldFit) fitToView(360);
+    };
+
+    const handleResize = () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => draw(true), 120);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    expandBtn.addEventListener("click", () => {
+        expandMindMapTree(treeState);
+        draw(true);
+    });
+
+    collapseBtn.addEventListener("click", () => {
+        collapseMindMapTreeToDepth(treeState, 1);
+        draw(true);
+    });
+
+    resetBtn.addEventListener("click", () => fitToView(260));
+
+    const renderer = {
+        state: treeState,
+        fit: () => fitToView(260),
+        expandAll: () => {
+            expandMindMapTree(treeState);
+            draw(true);
+        },
+        collapseToFirstLevel: () => {
+            collapseMindMapTreeToDepth(treeState, 1);
+            draw(true);
+        },
+        redraw: () => draw(false),
+        cleanup: () => {
+            clearTimeout(resizeTimer);
+            window.removeEventListener("resize", handleResize);
+        }
+    };
+
+    targetEl.__mindMapRenderer = renderer;
+    draw(true);
+    return renderer;
+}
+
 function enhanceSummaryMedia(summaryEl){
   if(!summaryEl) return;
 
@@ -1519,6 +2438,12 @@ function renderMindMapSection(data) {
     const chartDiv = document.getElementById('mermaid-chart');
     if (!chartDiv) return;
 
+    cleanupMindMapRenderer(chartDiv);
+    currentMindMapCode = "";
+    currentMindMapTreeTemplate = null;
+    currentMindMapState = null;
+    currentMindMapInteractive = false;
+
     let mapData =
         data.mindMap ||
         (data.summary && (data.summary.mindMap || data.summary.mermaid)) ||
@@ -1529,8 +2454,25 @@ function renderMindMapSection(data) {
     }
 
     if (mapData) {
+        currentMindMapCode = mapData;
+
+        const fallbackTitle = getMindMapTitleText();
+        const parsedTree = parseMermaidToInteractiveTree(mapData, fallbackTitle);
+
+        if (parsedTree && window.d3) {
+            currentMindMapTreeTemplate = parsedTree;
+            currentMindMapState = cloneMindMapTreeState(parsedTree);
+            collapseMindMapTreeToDepth(currentMindMapState, 1);
+            currentMindMapInteractive = true;
+            updateMindMapHints(true);
+            renderInteractiveMindMap(chartDiv, currentMindMapState, { title: fallbackTitle });
+            return;
+        }
+
+        updateMindMapHints(false);
         renderMermaidSafe(chartDiv, mapData);
     } else {
+        updateMindMapHints(false);
         chartDiv.textContent = '無架構圖數據';
     }
 }
@@ -2449,35 +3391,49 @@ function openModal() {
 
     const modal = document.getElementById("image-modal");
     const content = document.getElementById("modal-content");
-    if (!modal || !content) return;
+    if (!chartDiv || !modal || !content) return;
+    if (!currentMindMapInteractive && (!chartDiv.innerHTML.trim() || chartDiv.querySelector(".text-red-500"))) return;
+    if (!currentMindMapInteractive && (!chartDiv.innerHTML.trim() || chartDiv.innerText.includes("éŒ¯èª¤"))) return;
 
-    content.innerHTML = chartDiv.innerHTML;
-    content.className = "bg-white rounded-lg shadow-2xl w-[98vw] max-w-[1600px] h-auto max-h-[95vh] overflow-auto p-6 relative";
+    cleanupMindMapRenderer(content);
+    content.innerHTML = "";
 
-    const wrapper = content.querySelector(".mermaid");
-    if (wrapper) {
-        wrapper.style.width = "max-content";
-        wrapper.style.minWidth = "1200px";
-        wrapper.style.padding = "20px";
-    }
-
-    const svg = content.querySelector("svg");
-    if (svg) {
-        svg.removeAttribute("width");
-        svg.removeAttribute("height");
-        svg.removeAttribute("style");
-
-        svg.style.display = "block";
-        svg.style.margin = "0 auto";
-        svg.style.width = "100%";
-        svg.style.height = "auto";
-        svg.style.minWidth = "1200px";
-
-        const texts = svg.querySelectorAll("text");
-        texts.forEach(t => {
-            t.style.fontSize = "24px";
-            t.style.fontWeight = "700";
+    if (currentMindMapInteractive && currentMindMapState) {
+        const modalState = cloneMindMapTreeState(currentMindMapState);
+        content.className = "w-[98vw] max-w-[1800px] h-auto max-h-[95vh] overflow-auto p-0 relative";
+        renderInteractiveMindMap(content, modalState, {
+            fullscreen: true,
+            title: getMindMapTitleText()
         });
+    } else {
+        content.innerHTML = chartDiv.innerHTML;
+        content.className = "bg-white rounded-lg shadow-2xl w-[98vw] max-w-[1600px] h-auto max-h-[95vh] overflow-auto p-6 relative";
+
+        const wrapper = content.querySelector(".mermaid");
+        if (wrapper) {
+            wrapper.style.width = "max-content";
+            wrapper.style.minWidth = "1200px";
+            wrapper.style.padding = "20px";
+        }
+
+        const svg = content.querySelector("svg");
+        if (svg) {
+            svg.removeAttribute("width");
+            svg.removeAttribute("height");
+            svg.removeAttribute("style");
+
+            svg.style.display = "block";
+            svg.style.margin = "0 auto";
+            svg.style.width = "100%";
+            svg.style.height = "auto";
+            svg.style.minWidth = "1200px";
+
+            const texts = svg.querySelectorAll("text");
+            texts.forEach(t => {
+                t.style.fontSize = "24px";
+                t.style.fontWeight = "700";
+            });
+        }
     }
 
     modal.classList.remove("hidden");
@@ -2509,7 +3465,12 @@ function toggleSection(contentId, iconId) {
 
     function closeModal() {
         const modal = document.getElementById("image-modal");
+        const content = document.getElementById("modal-content");
         if (!modal) return;
+        if (content) {
+            cleanupMindMapRenderer(content);
+            content.innerHTML = "";
+        }
         modal.classList.add("hidden");
         modal.classList.remove("flex");
     }
