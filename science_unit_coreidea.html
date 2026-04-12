@@ -488,7 +488,290 @@ mermaid.initialize({
         /* =========================================
            5. 核心概念排版 (卡片式)
            ========================================= */
-        #summary-panel { border-left: 5px solid #3b82f6 !important; background: #f8fafc !important; }
+        #summary-panel {
+            border-left: 5px solid #3b82f6 !important;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef6ff 100%) !important;
+        }
+
+        .summary-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.85rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .summary-source-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.78rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            line-height: 1;
+            border: 1px solid transparent;
+            color: #0f172a;
+            background: rgba(255, 255, 255, 0.82);
+            box-shadow: 0 8px 18px rgba(148, 163, 184, 0.14);
+        }
+
+        .summary-source-badge.is-hidden {
+            display: none;
+        }
+
+        .summary-source-badge.source-local {
+            color: #065f46;
+            background: rgba(220, 252, 231, 0.95);
+            border-color: rgba(16, 185, 129, 0.25);
+        }
+
+        .summary-source-badge.source-sheet {
+            color: #1d4ed8;
+            background: rgba(219, 234, 254, 0.95);
+            border-color: rgba(59, 130, 246, 0.22);
+        }
+
+        .summary-source-badge.source-generated,
+        .summary-source-badge.source-api {
+            color: #7c2d12;
+            background: rgba(255, 237, 213, 0.96);
+            border-color: rgba(249, 115, 22, 0.22);
+        }
+
+        .summary-note {
+            background:
+                radial-gradient(circle at top right, rgba(125, 211, 252, 0.28), transparent 30%),
+                linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            border: 1px solid rgba(191, 219, 254, 0.95);
+            border-radius: 1.5rem;
+            padding: 1.4rem;
+            color: #0f172a !important;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.9),
+                0 18px 36px rgba(59, 130, 246, 0.08);
+        }
+
+        .summary-note-hero {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1.25rem;
+            padding: 1.25rem 1.25rem 1.1rem;
+            background:
+                linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(59, 130, 246, 0.08)),
+                rgba(255, 255, 255, 0.94);
+            border: 1px solid rgba(125, 211, 252, 0.22);
+        }
+
+        .summary-note-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.74rem;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            color: #0f766e;
+            text-transform: uppercase;
+        }
+
+        .summary-note-title {
+            margin-top: 0.7rem;
+            font-size: clamp(1.45rem, 2vw, 1.9rem);
+            font-weight: 900;
+            line-height: 1.35;
+            color: #0f172a;
+        }
+
+        .summary-note-lead {
+            margin-top: 0.7rem;
+            font-size: 1rem;
+            line-height: 1.8;
+            color: #334155 !important;
+        }
+
+        .summary-note-chip-row {
+            display: flex;
+            gap: 0.55rem;
+            flex-wrap: wrap;
+            margin-top: 0.95rem;
+        }
+
+        .summary-note-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.44rem 0.8rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: #1e3a8a;
+            background: rgba(219, 234, 254, 0.82);
+            border: 1px solid rgba(96, 165, 250, 0.22);
+        }
+
+        .summary-note-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-top: 1.15rem;
+        }
+
+        .summary-note-card {
+            --summary-accent: #0ea5e9;
+            --summary-accent-soft: rgba(14, 165, 233, 0.12);
+            position: relative;
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid rgba(226, 232, 240, 0.95);
+            border-radius: 1.2rem;
+            padding: 1rem 1rem 0.95rem;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+        }
+
+        .summary-note-card::before {
+            content: "";
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 0.35rem;
+            border-radius: 1.2rem 0 0 1.2rem;
+            background: linear-gradient(180deg, var(--summary-accent), rgba(255, 255, 255, 0.7));
+        }
+
+        .summary-note-card[data-accent="sky"] {
+            --summary-accent: #0284c7;
+            --summary-accent-soft: rgba(14, 165, 233, 0.12);
+        }
+
+        .summary-note-card[data-accent="indigo"] {
+            --summary-accent: #4f46e5;
+            --summary-accent-soft: rgba(99, 102, 241, 0.12);
+        }
+
+        .summary-note-card[data-accent="emerald"] {
+            --summary-accent: #059669;
+            --summary-accent-soft: rgba(16, 185, 129, 0.12);
+        }
+
+        .summary-note-card[data-accent="amber"] {
+            --summary-accent: #d97706;
+            --summary-accent-soft: rgba(245, 158, 11, 0.15);
+        }
+
+        .summary-note-card[data-accent="rose"] {
+            --summary-accent: #e11d48;
+            --summary-accent-soft: rgba(244, 63, 94, 0.12);
+        }
+
+        .summary-note-kicker {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.34rem 0.65rem;
+            border-radius: 999px;
+            background: var(--summary-accent-soft);
+            color: var(--summary-accent);
+            font-size: 0.74rem;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+        }
+
+        .summary-note-card h4 {
+            margin-top: 0.8rem;
+            margin-bottom: 0.55rem;
+            font-size: 1.05rem;
+            font-weight: 900;
+            color: #0f172a !important;
+            line-height: 1.5;
+        }
+
+        .summary-note-body {
+            font-size: 0.95rem;
+            line-height: 1.8;
+            color: #475569 !important;
+            margin-bottom: 0.7rem;
+        }
+
+        .summary-note-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            gap: 0.55rem;
+        }
+
+        .summary-note-list li {
+            position: relative;
+            padding-left: 1.2rem;
+            line-height: 1.7;
+            color: #334155 !important;
+            font-size: 0.95rem;
+        }
+
+        .summary-note-list li::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0.58rem;
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 999px;
+            background: var(--summary-accent);
+            box-shadow: 0 0 0 4px var(--summary-accent-soft);
+        }
+
+        .summary-note-footer {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .summary-note-block {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(226, 232, 240, 0.92);
+            border-radius: 1.2rem;
+            padding: 1rem;
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.04);
+        }
+
+        .summary-note-block h5 {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.92rem;
+            font-weight: 900;
+            color: #0f172a !important;
+            margin-bottom: 0.75rem;
+        }
+
+        .summary-note-relations,
+        .summary-note-takeaways {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            gap: 0.55rem;
+        }
+
+        .summary-note-relations li,
+        .summary-note-takeaways li {
+            color: #334155 !important;
+            line-height: 1.7;
+            font-size: 0.94rem;
+            padding: 0.8rem 0.9rem;
+            border-radius: 0.95rem;
+            background: rgba(248, 250, 252, 0.92);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+        }
+
+        .summary-note-relation-arrow {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 1.7rem;
+            margin: 0 0.28rem;
+            color: #2563eb;
+            font-weight: 900;
+        }
         
         .summary-card {
             background-color: #ffffff;
@@ -507,6 +790,10 @@ mermaid.initialize({
         }
         
         #summary-text { font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif; }
+        #summary-text p {
+            line-height: 1.85;
+            color: #475569 !important;
+        }
         
         #summary-text h3 {
             font-size: 1.35rem; font-weight: 800; color: #1e3a8a !important;
@@ -796,7 +1083,10 @@ mermaid.initialize({
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start"> 
                 
                 <div id="summary-panel" class="md:col-span-2 glass-panel p-6 rounded-2xl shadow-sm">
-                    <h3 class="font-bold text-blue-800 mb-4 text-xl"><i class="fa-solid fa-star text-yellow-400"></i> <span data-i18n="title_summary">核心概念摘要</span></h3>
+                    <div class="summary-panel-header">
+                        <h3 class="font-bold text-blue-800 text-xl"><i class="fa-solid fa-star text-yellow-400"></i> <span data-i18n="title_summary">核心概念摘要</span></h3>
+                        <div id="summary-source" class="summary-source-badge is-hidden"></div>
+                    </div>
                     <div id="summary-text" class="prose max-w-none leading-relaxed"></div>
                 </div>
                 
@@ -1012,6 +1302,15 @@ let currentMindMapState = null;
 let currentMindMapInteractive = false;
 let sessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 let pageEnterTime = Date.now();
+const UNIT_COREIDEA_CACHE_VERSION = "2026-04-12-v1";
+const UNIT_METADATA_CACHE_KEY = `aischool:unit-coreidea:metadata:${UNIT_COREIDEA_CACHE_VERSION}`;
+const UNIT_RESULT_CACHE_PREFIX = `aischool:unit-coreidea:result:${UNIT_COREIDEA_CACHE_VERSION}:`;
+const UNIT_RESULT_INDEX_KEY = `aischool:unit-coreidea:result-index:${UNIT_COREIDEA_CACHE_VERSION}`;
+const CACHE_TTL_MS = Object.freeze({
+    metadata: 12 * 60 * 60 * 1000,
+    result: 7 * 24 * 60 * 60 * 1000
+});
+const MAX_UNIT_RESULT_CACHE = 12;
 
     let mythData = [];
     let quizState = {
@@ -1167,6 +1466,267 @@ myth_wrong:"可惜答错了，再试试！",
         }
     };
 
+const SUMMARY_UI_TEXT = Object.freeze({
+    "zh-TW": {
+        db_cached: "已載入快取資料",
+        db_cached_stale: "連線失敗，已改用快取資料",
+        source_local: "本機快取",
+        source_sheet: "工作表快取",
+        source_generated: "即時生成",
+        source_api: "API 回傳",
+        source_unknown: "摘要資料",
+        eyebrow: "自然老師整理版",
+        chip_concept: "概念節點整理",
+        chip_layered: "層次筆記",
+        card_focus: "先掌握",
+        card_structure: "重點整理",
+        card_connection: "觀念連結",
+        card_application: "應用延伸",
+        heading_focus: "基礎概念",
+        heading_structure: "重要內容",
+        heading_connection: "關係理解",
+        heading_application: "生活應用",
+        lead_structured: "依照「基礎概念、重點整理、觀念連結、應用延伸」四層來整理本單元。",
+        body_focus: "先把最核心的名詞、構造或現象看懂，後面的概念才容易連起來。",
+        body_structure: "把相關概念一起讀，可以更快掌握同一主題的重點脈絡。",
+        body_connection: "看到變化、影響或作用關係時，要特別留意它們如何彼此連動。",
+        body_application: "最後再把重點放回生活情境、實作活動或學習提醒中，記憶會更穩。",
+        relations_title: "概念關係",
+        takeaways_title: "學習提醒",
+        takeaway_order: "複習時可依「先概念、再特徵、後關係、最後應用」的順序整理。",
+        takeaway_count_prefix: "本單元共整理",
+        takeaway_count_suffix: "個核心概念，建議搭配知識架構圖一起記憶。",
+        fallback_title: "單元核心概念"
+    },
+    en: {
+        db_cached: "Loaded from cache",
+        db_cached_stale: "Offline, using cached data",
+        source_local: "Local cache",
+        source_sheet: "Sheet cache",
+        source_generated: "Fresh summary",
+        source_api: "API payload",
+        source_unknown: "Summary data",
+        eyebrow: "Teacher note style",
+        chip_concept: "Concept-based",
+        chip_layered: "Layered notes",
+        card_focus: "Start Here",
+        card_structure: "Key Ideas",
+        card_connection: "Connections",
+        card_application: "Applications",
+        heading_focus: "Core Concepts",
+        heading_structure: "Important Details",
+        heading_connection: "Relationships",
+        heading_application: "Real-life Use",
+        lead_structured: "This unit is organized into four layers: concepts, details, relationships, and applications.",
+        body_focus: "Start with the most central terms, structures, or phenomena.",
+        body_structure: "Study related ideas together to see the bigger picture more quickly.",
+        body_connection: "Pay special attention to how changes, influences, or interactions connect.",
+        body_application: "Finish by linking the ideas back to everyday situations or learning tasks.",
+        relations_title: "Concept Links",
+        takeaways_title: "Study Tips",
+        takeaway_order: "Review in this order: concepts, features, relationships, then applications.",
+        takeaway_count_prefix: "This unit includes",
+        takeaway_count_suffix: "core concepts. Pair them with the mind map for stronger recall.",
+        fallback_title: "Core Concepts"
+    }
+});
+
+function getCurrentUiLanguage() {
+    const selector = document.getElementById("language-selector");
+    if (selector && selector.value) return selector.value;
+    if (window.AISchool && window.AISchool.getLanguage) {
+        return window.AISchool.getLanguage("zh-TW");
+    }
+    return "zh-TW";
+}
+
+function getSummaryUiText(key, fallback = "") {
+    const lang = getCurrentUiLanguage();
+    const dict = SUMMARY_UI_TEXT[lang] || SUMMARY_UI_TEXT["zh-TW"] || {};
+    return dict[key] || fallback || key;
+}
+
+function safeJsonParse(raw, fallback = null) {
+    if (!raw) return fallback;
+    try {
+        return JSON.parse(raw);
+    } catch (error) {
+        return fallback;
+    }
+}
+
+function readCacheEntry(key, ttlMs) {
+    try {
+        const parsed = safeJsonParse(localStorage.getItem(key));
+        if (!parsed || typeof parsed !== "object") return null;
+        const savedAt = Number(parsed.savedAt || 0);
+        if (!savedAt) return null;
+        if (ttlMs && Date.now() - savedAt > ttlMs) {
+            localStorage.removeItem(key);
+            return null;
+        }
+        return parsed.value ?? null;
+    } catch (error) {
+        console.warn("讀取快取失敗:", error);
+        return null;
+    }
+}
+
+function writeCacheEntry(key, value) {
+    try {
+        localStorage.setItem(key, JSON.stringify({ savedAt: Date.now(), value: value }));
+        return true;
+    } catch (error) {
+        console.warn("寫入快取失敗:", error);
+        return false;
+    }
+}
+
+function buildFilterSnapshot(sourceFilters = filters) {
+    return {
+        stage: String(sourceFilters.stage || ""),
+        publisher: String(sourceFilters.publisher || ""),
+        grade: String(sourceFilters.grade || ""),
+        semester: String(sourceFilters.semester || ""),
+        unitName: String(sourceFilters.unitName || "")
+    };
+}
+
+function buildUnitResultCacheKey(snapshot = buildFilterSnapshot()) {
+    const ordered = [snapshot.stage, snapshot.publisher, snapshot.grade, snapshot.semester, snapshot.unitName];
+    return UNIT_RESULT_CACHE_PREFIX + ordered.map(value => encodeURIComponent(value || "")).join("::");
+}
+
+function touchResultCacheIndex(cacheKey) {
+    const current = safeJsonParse(localStorage.getItem(UNIT_RESULT_INDEX_KEY), []);
+    const next = Array.isArray(current) ? current.filter(item => item && item.key !== cacheKey) : [];
+    next.unshift({ key: cacheKey, savedAt: Date.now() });
+    localStorage.setItem(UNIT_RESULT_INDEX_KEY, JSON.stringify(next.slice(0, MAX_UNIT_RESULT_CACHE)));
+}
+
+function pruneResultCache() {
+    const current = safeJsonParse(localStorage.getItem(UNIT_RESULT_INDEX_KEY), []);
+    if (!Array.isArray(current) || current.length <= MAX_UNIT_RESULT_CACHE) return;
+    const keep = current.slice(0, MAX_UNIT_RESULT_CACHE);
+    current.slice(MAX_UNIT_RESULT_CACHE).forEach(item => {
+        if (item && item.key) localStorage.removeItem(item.key);
+    });
+    localStorage.setItem(UNIT_RESULT_INDEX_KEY, JSON.stringify(keep));
+}
+
+function cloneSerializableData(data) {
+    return safeJsonParse(JSON.stringify(data), null);
+}
+
+function readCachedUnitResult(snapshot = buildFilterSnapshot()) {
+    return readCacheEntry(buildUnitResultCacheKey(snapshot), CACHE_TTL_MS.result);
+}
+
+function saveCachedUnitResult(snapshot, data) {
+    if (!snapshot || !snapshot.unitName) return;
+    const cacheKey = buildUnitResultCacheKey(snapshot);
+    const serializable = cloneSerializableData(data);
+    if (!serializable) return;
+    delete serializable.__clientCacheSource;
+    if (writeCacheEntry(cacheKey, serializable)) {
+        touchResultCacheIndex(cacheKey);
+        pruneResultCache();
+    }
+}
+
+function loadCachedMetadata() {
+    return readCacheEntry(UNIT_METADATA_CACHE_KEY, CACHE_TTL_MS.metadata);
+}
+
+function saveCachedMetadata(data) {
+    if (Array.isArray(data) && data.length) {
+        writeCacheEntry(UNIT_METADATA_CACHE_KEY, data);
+    }
+}
+
+function withClientSummarySource(data, source) {
+    const next = cloneSerializableData(data) || data;
+    if (next && typeof next === "object") {
+        next.__clientCacheSource = source;
+    }
+    return next;
+}
+
+function setDbStatusState(kind) {
+    const dbStatus = document.getElementById("db-status");
+    if (!dbStatus) return;
+
+    const lang = getCurrentUiLanguage();
+    const t = i18n[lang] || i18n["zh-TW"] || {};
+
+    if (kind === "connected") {
+        dbStatus.innerHTML = `<i class="fa-solid fa-check"></i> ${t.db_connected || "資料庫連線成功"}`;
+        dbStatus.className = "text-xs font-bold text-green-600";
+        return;
+    }
+
+    if (kind === "cached") {
+        dbStatus.innerHTML = `<i class="fa-solid fa-bolt"></i> ${getSummaryUiText("db_cached", "已載入快取資料")}`;
+        dbStatus.className = "text-xs font-bold text-cyan-600";
+        return;
+    }
+
+    if (kind === "cached-stale") {
+        dbStatus.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${getSummaryUiText("db_cached_stale", "連線失敗，已改用快取資料")}`;
+        dbStatus.className = "text-xs font-bold text-amber-600";
+    }
+}
+
+async function fetchUnitMetadataFromApi() {
+    const res = await fetch(GAS_API_URL + "?action=get_metadata");
+    if (!res.ok) {
+        throw new Error(`伺服器 HTTP 錯誤: ${res.status}`);
+    }
+
+    const text = await res.text();
+    const json = safeJsonParse(text);
+    if (!json) {
+        throw new Error(`API 回應格式錯誤，原始內容開頭: ${text.substring(0, 50)}...`);
+    }
+    if (json.status !== "success") {
+        throw new Error(json.message || "API 回應狀態非成功");
+    }
+    return json.data;
+}
+
+async function fetchGeneratedUnitContent(snapshot) {
+    const res = await fetch(GAS_API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+            action: "get_content_and_generate",
+            filters: snapshot,
+            client_options: {
+                prefer_local_cache: true,
+                prefer_sheet_summary: true,
+                concept_column: "T",
+                summary_column: "U",
+                summary_format: "structured_summary_v1"
+            }
+        })
+    });
+
+    if (!res.ok) {
+        throw new Error(`HTTP 錯誤! 狀態碼: ${res.status}`);
+    }
+
+    const text = await res.text();
+    const json = safeJsonParse(text);
+    if (!json) {
+        console.error("JSON 解析失敗的原始文本:", text);
+        throw new Error("API 返回資料格式錯誤 (非完整 JSON)。");
+    }
+    if (json.status !== "success") {
+        throw new Error(json.message || "API 返回狀態為失敗");
+    }
+
+    return json.data;
+}
+
     window.onload = async () => {
         const userInfo = document.getElementById("user-info");
 
@@ -1191,34 +1751,25 @@ if (window.AISchool && window.AISchool.setCurrentUser && user.account !== "訪�
 
         const selStage = document.getElementById("sel-stage");
 
-        try {
-            const res = await fetch(GAS_API_URL + "?action=get_metadata");
-            if (!res.ok) {
-                throw new Error(`伺服器 HTTP 錯誤: ${res.status}`);
-            }
+        const cachedMetadata = loadCachedMetadata();
+        if (Array.isArray(cachedMetadata) && cachedMetadata.length > 0) {
+            allData = cachedMetadata;
+            setDbStatusState("cached");
+            initSelectors();
+        }
 
-            const text = await res.text();
-            let json;
-            try {
-                json = JSON.parse(text);
-            } catch (parseError) {
-                console.error("JSON 解析失敗的原始文本:", text);
-                throw new Error(`API 回應格式錯誤，原始內容開頭: ${text.substring(0, 50)}...`);
-            }
-            
-            if(json.status === "success") {
-                allData = json.data;
-                const dbStatus = document.getElementById("db-status");
-                if (dbStatus) {
-                    dbStatus.innerHTML = `<i class="fa-solid fa-check"></i> 資料庫連線成功`;
-                    dbStatus.className = "text-xs font-bold text-green-600";
-                }
-                initSelectors();
-            } else {
-                throw new Error(json.message || "API 回應狀態非成功");
-            }
+        try {
+            const metadata = await fetchUnitMetadataFromApi();
+            allData = metadata;
+            saveCachedMetadata(metadata);
+            setDbStatusState("connected");
+            initSelectors();
         } catch(e) {
             console.error("載入元數據失敗:", e);
+            if (Array.isArray(cachedMetadata) && cachedMetadata.length > 0) {
+                setDbStatusState("cached-stale");
+                return;
+            }
             const dbStatus = document.getElementById("db-status");
             
             if (dbStatus) {
@@ -1435,47 +1986,36 @@ function showContentView() {
 }
 
 async function startGeneration() {
-showLoadingView();
-initSpaceGame();
-logEvent("generate_start", "開始生成單元內容");
+    const snapshot = buildFilterSnapshot();
+    const cachedResult = readCachedUnitResult(snapshot);
 
-        try {
-            const res = await fetch(GAS_API_URL, { 
-                method: "POST", 
-                body: JSON.stringify({ action: "get_content_and_generate", filters: filters }) 
-            });
-            
-            if (!res.ok) {
-                throw new Error(`HTTP 錯誤! 狀態碼: ${res.status}`);
-            }
-            
-            const text = await res.text();
-            let json;
-            try {
-                json = JSON.parse(text);
-            } catch(parseError) {
-                console.error("JSON 解析失敗的原始文本:", text);
-                throw new Error("API 返回資料格式錯誤 (非完整 JSON)。");
-            }
-
-            if(json.status === "success") { 
-                currentResultData = json.data; 
-                logEvent("generate_success", "成功生成單元內容", filters.unitName || "");
-                renderResult(json.data); 
-                // 注意：renderResult 裡面我們已經加了 stopSpaceGame()，所以這裡不用加
-            } else {
-                throw new Error(json.message || "API 返回狀態為失敗");
-            }
-} catch(e) { 
-            logEvent("generate_fail", e.message || "unknown_error", filters.unitName || "");
-            alert("AI 生成失敗！請檢查 API 或重試。\n錯誤訊息: " + e.message); 
-            
-showSelectionView();
-           
-            const btn = document.getElementById("btn-generate");
-            if (btn) btn.disabled = false;
-        }
+    if (cachedResult) {
+        currentResultData = withClientSummarySource(cachedResult, "local_cache");
+        logEvent("generate_cache_hit", "使用本機快取", snapshot.unitName || "");
+        renderResult(currentResultData);
+        return;
     }
+
+    showLoadingView();
+    initSpaceGame();
+    logEvent("generate_start", "開始生成單元內容");
+
+    try {
+        const responseData = await fetchGeneratedUnitContent(snapshot);
+        currentResultData = withClientSummarySource(responseData, "live_api");
+        saveCachedUnitResult(snapshot, currentResultData);
+        logEvent("generate_success", "成功生成單元內容", snapshot.unitName || "");
+        renderResult(currentResultData);
+    } catch(e) { 
+        logEvent("generate_fail", e.message || "unknown_error", snapshot.unitName || "");
+        alert("AI 生成失敗！請檢查 API 或重試。\n錯誤訊息: " + e.message); 
+        
+        showSelectionView();
+       
+        const btn = document.getElementById("btn-generate");
+        if (btn) btn.disabled = false;
+    }
+}
 
         
 function normalizeMermaidCode(code) {
@@ -2332,6 +2872,350 @@ function enhanceSummaryMedia(summaryEl){
   }
 }
 
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+function parseConceptNodeText(text) {
+    return String(text || "")
+        .replace(/\r\n/g, "\n")
+        .replace(/[；;]+/g, "\n")
+        .split(/\n+/)
+        .map(line => line.replace(/^\s*(?:\d+\s*[.)、．]|[一二三四五六七八九十]+\s*[、.])\s*/u, "").trim())
+        .filter(Boolean);
+}
+
+function normalizeTextList(value) {
+    if (Array.isArray(value)) {
+        return value
+            .map(item => {
+                if (typeof item === "string") return item.trim();
+                if (item && typeof item === "object") {
+                    return String(item.text || item.label || item.title || item.name || "").trim();
+                }
+                return "";
+            })
+            .filter(Boolean);
+    }
+
+    if (typeof value === "string") {
+        const parsed = parseConceptNodeText(value);
+        if (parsed.length) return parsed;
+        return value
+            .split(/\n+/)
+            .map(item => item.trim())
+            .filter(Boolean);
+    }
+
+    return [];
+}
+
+function looksLikeConceptNodeText(text) {
+    if (typeof text !== "string" || !text.trim()) return false;
+    const concepts = parseConceptNodeText(text);
+    return concepts.length >= 6 && /(?:\d+\s*[.)、．])/.test(text);
+}
+
+function splitConceptsIntoChunks(concepts, targetCount = 4) {
+    if (!Array.isArray(concepts) || concepts.length === 0) return [];
+    const chunkCount = Math.min(targetCount, Math.max(2, concepts.length >= 12 ? 4 : 3));
+    const baseSize = Math.floor(concepts.length / chunkCount);
+    const extra = concepts.length % chunkCount;
+    const chunks = [];
+    let cursor = 0;
+
+    for (let index = 0; index < chunkCount; index += 1) {
+        const size = baseSize + (index < extra ? 1 : 0);
+        const chunk = concepts.slice(cursor, cursor + size);
+        if (chunk.length) chunks.push(chunk);
+        cursor += size;
+    }
+
+    return chunks;
+}
+
+function normalizeRelationList(value) {
+    if (!Array.isArray(value)) return [];
+    return value
+        .map(item => {
+            if (typeof item === "string") {
+                return item.trim() ? { text: item.trim() } : null;
+            }
+
+            if (!item || typeof item !== "object") return null;
+            const from = String(item.from || item.source || item.left || "").trim();
+            const to = String(item.to || item.target || item.right || "").trim();
+            const label = String(item.label || item.relation || item.connector || "連結到").trim();
+            const text = String(item.text || item.description || "").trim();
+
+            if (text) return { text: text };
+            if (from && to) return { from: from, label: label, to: to };
+            return null;
+        })
+        .filter(Boolean);
+}
+
+function normalizeStructuredSection(section, index) {
+    const accents = ["sky", "indigo", "emerald", "amber", "rose"];
+    const labels = [
+        getSummaryUiText("card_focus", "先掌握"),
+        getSummaryUiText("card_structure", "重點整理"),
+        getSummaryUiText("card_connection", "觀念連結"),
+        getSummaryUiText("card_application", "應用延伸")
+    ];
+    const headings = [
+        getSummaryUiText("heading_focus", "基礎概念"),
+        getSummaryUiText("heading_structure", "重要內容"),
+        getSummaryUiText("heading_connection", "關係理解"),
+        getSummaryUiText("heading_application", "生活應用")
+    ];
+
+    if (typeof section === "string") {
+        return {
+            label: labels[index % labels.length],
+            heading: headings[index % headings.length],
+            body: "",
+            points: [section.trim()],
+            accent: accents[index % accents.length]
+        };
+    }
+
+    if (!section || typeof section !== "object") return null;
+    const points = normalizeTextList(section.points || section.bullets || section.items || section.list);
+    const heading = String(section.heading || section.title || section.name || section.topic || "").trim();
+    const body = String(section.body || section.description || section.summary || "").trim();
+
+    if (!heading && !body && !points.length) return null;
+
+    return {
+        label: String(section.label || section.kicker || labels[index % labels.length]).trim(),
+        heading: heading || headings[index % headings.length],
+        body: body,
+        points: points,
+        accent: String(section.accent || accents[index % accents.length]).trim() || accents[index % accents.length]
+    };
+}
+
+function buildDerivedConceptSummary(concepts, data) {
+    if (!Array.isArray(concepts) || concepts.length === 0) return null;
+
+    const bodies = [
+        getSummaryUiText("body_focus", "先把最核心的名詞、構造或現象看懂，後面的概念才容易連起來。"),
+        getSummaryUiText("body_structure", "把相關概念一起讀，可以更快掌握同一主題的重點脈絡。"),
+        getSummaryUiText("body_connection", "看到變化、影響或作用關係時，要特別留意它們如何彼此連動。"),
+        getSummaryUiText("body_application", "最後再把重點放回生活情境、實作活動或學習提醒中，記憶會更穩。")
+    ];
+
+    const sections = splitConceptsIntoChunks(concepts).map((chunk, index) => {
+        const normalized = normalizeStructuredSection({ points: chunk }, index);
+        if (normalized) normalized.body = bodies[index] || "";
+        return normalized;
+    }).filter(Boolean);
+
+    const relationTexts = concepts
+        .filter(text => /關係|影響|循環|變化|作用|連結|轉換|互動/u.test(text))
+        .slice(0, 3)
+        .map(text => ({ text: text }));
+
+    return {
+        title: String(data.topic || data.unitName || (data.raw_content && data.raw_content.unitName) || filters.unitName || "").trim(),
+        lead: getSummaryUiText("lead_structured", "依照「基礎概念、重點整理、觀念連結、應用延伸」四層來整理本單元。"),
+        chips: [
+            getSummaryUiText("chip_concept", "概念節點整理"),
+            getSummaryUiText("chip_layered", "層次筆記")
+        ],
+        sections: sections,
+        relations: relationTexts,
+        takeaways: [
+            getSummaryUiText("takeaway_order", "複習時可依「先概念、再特徵、後關係、最後應用」的順序整理。"),
+            `${getSummaryUiText("takeaway_count_prefix", "本單元共整理")} ${concepts.length} ${getSummaryUiText("takeaway_count_suffix", "個核心概念，建議搭配知識架構圖一起記憶。")}`
+        ]
+    };
+}
+
+function normalizeStructuredSummaryPayload(candidate, data) {
+    let value = candidate;
+    if (!value) return null;
+
+    if (typeof value === "string") {
+        const parsed = safeJsonParse(value);
+        if (!parsed || typeof parsed !== "object") return null;
+        value = parsed;
+    }
+
+    if (Array.isArray(value)) {
+        value = { sections: value };
+    }
+
+    if (!value || typeof value !== "object") return null;
+
+    const rawSections = value.sections || value.cards || value.blocks || [];
+    const sections = Array.isArray(rawSections)
+        ? rawSections.map((section, index) => normalizeStructuredSection(section, index)).filter(Boolean)
+        : [];
+    const relations = normalizeRelationList(value.relationships || value.relations || value.links || []);
+    const takeaways = normalizeTextList(value.takeaways || value.tips || value.reminders || value.key_takeaways);
+
+    if (!sections.length && !relations.length && !takeaways.length) return null;
+
+    return {
+        title: String(value.title || value.heading || value.topic || data.topic || data.unitName || filters.unitName || "").trim(),
+        lead: String(value.lead || value.intro || value.description || value.summary || "").trim(),
+        chips: normalizeTextList(value.chips || value.tags || value.badges).slice(0, 4),
+        sections: sections,
+        relations: relations,
+        takeaways: takeaways
+    };
+}
+
+function getStructuredSummaryCandidate(data, rawSummaryText) {
+    const raw = data.raw_content || {};
+    const summaryObj = data.summary && typeof data.summary === "object" ? data.summary : null;
+    const structuredCandidates = [
+        summaryObj && (summaryObj.structured_notes || summaryObj.structuredSummary || summaryObj.unit_concept_summary || summaryObj.summary_json || summaryObj.note),
+        raw.unit_concept_summary,
+        raw.summary_cache,
+        raw.summary_json
+    ];
+
+    for (const candidate of structuredCandidates) {
+        const normalized = normalizeStructuredSummaryPayload(candidate, data);
+        if (normalized) return normalized;
+    }
+
+    const conceptCandidates = [
+        summaryObj && (summaryObj.concept_nodes || summaryObj.concepts || summaryObj.core_concepts),
+        raw.concept_nodes,
+        raw.concepts,
+        raw.core_concepts,
+        raw.unit_concepts
+    ];
+
+    for (const candidate of conceptCandidates) {
+        const concepts = normalizeTextList(candidate);
+        if (concepts.length) return buildDerivedConceptSummary(concepts, data);
+    }
+
+    if (looksLikeConceptNodeText(rawSummaryText)) {
+        return buildDerivedConceptSummary(parseConceptNodeText(rawSummaryText), data);
+    }
+
+    return null;
+}
+
+function detectSummarySourceInfo(data) {
+    const raw = data.raw_content || {};
+    const summaryObj = data.summary && typeof data.summary === "object" ? data.summary : null;
+    const sourceValue = [
+        data.__clientCacheSource === "local_cache" ? "local_cache" : "",
+        data.summary_metadata && data.summary_metadata.source,
+        data.summary_source,
+        summaryObj && (summaryObj.source || summaryObj.summary_source),
+        raw.summary_source,
+        data.cache && data.cache.source,
+        data.__clientCacheSource
+    ].find(Boolean);
+
+    const normalized = String(sourceValue || "").toLowerCase();
+    if (!normalized) return null;
+    if (normalized.includes("local")) {
+        return { type: "local", label: getSummaryUiText("source_local", "本機快取") };
+    }
+    if (normalized.includes("sheet") || normalized.includes("spreadsheet") || normalized.includes("column") || normalized.includes("cache")) {
+        return { type: "sheet", label: getSummaryUiText("source_sheet", "工作表快取") };
+    }
+    if (normalized.includes("live") || normalized.includes("fresh") || normalized.includes("generate") || normalized.includes("ai")) {
+        return { type: "generated", label: getSummaryUiText("source_generated", "即時生成") };
+    }
+    return { type: "api", label: getSummaryUiText("source_api", "API 回傳") };
+}
+
+function updateSummarySourceBadge(data) {
+    const badge = document.getElementById("summary-source");
+    if (!badge) return;
+
+    const info = detectSummarySourceInfo(data);
+    if (!info) {
+        badge.textContent = "";
+        badge.className = "summary-source-badge is-hidden";
+        return;
+    }
+
+    badge.textContent = info.label || getSummaryUiText("source_unknown", "摘要資料");
+    badge.className = `summary-source-badge source-${info.type || "api"}`;
+}
+
+function buildStructuredSummaryHtml(note) {
+    const title = escapeHtml(note.title || getSummaryUiText("fallback_title", "單元核心概念"));
+    const lead = note.lead ? `<p class="summary-note-lead">${escapeHtml(note.lead)}</p>` : "";
+    const chips = Array.isArray(note.chips) && note.chips.length
+        ? `<div class="summary-note-chip-row">${note.chips.map(chip => `<span class="summary-note-chip">${escapeHtml(chip)}</span>`).join("")}</div>`
+        : "";
+    const sections = (note.sections || []).map(section => {
+        const points = (section.points || []).length
+            ? `<ul class="summary-note-list">${section.points.map(point => `<li>${escapeHtml(point)}</li>`).join("")}</ul>`
+            : "";
+        const body = section.body ? `<div class="summary-note-body">${escapeHtml(section.body)}</div>` : "";
+
+        return `
+            <section class="summary-note-card" data-accent="${escapeHtml(section.accent || "sky")}">
+                <div class="summary-note-kicker">${escapeHtml(section.label || "")}</div>
+                <h4>${escapeHtml(section.heading || "")}</h4>
+                ${body}
+                ${points}
+            </section>
+        `;
+    }).join("");
+
+    const relations = (note.relations || []).length
+        ? `
+            <div class="summary-note-block">
+                <h5><i class="fa-solid fa-arrows-left-right"></i>${escapeHtml(getSummaryUiText("relations_title", "概念關係"))}</h5>
+                <ul class="summary-note-relations">
+                    ${(note.relations || []).map(item => {
+                        if (item.text) {
+                            return `<li>${escapeHtml(item.text)}</li>`;
+                        }
+                        return `<li>${escapeHtml(item.from || "")}<span class="summary-note-relation-arrow">→</span>${escapeHtml(item.to || "")}</li>`;
+                    }).join("")}
+                </ul>
+            </div>
+        `
+        : "";
+
+    const takeaways = (note.takeaways || []).length
+        ? `
+            <div class="summary-note-block">
+                <h5><i class="fa-solid fa-highlighter"></i>${escapeHtml(getSummaryUiText("takeaways_title", "學習提醒"))}</h5>
+                <ul class="summary-note-takeaways">
+                    ${(note.takeaways || []).map(item => `<li>${escapeHtml(item)}</li>`).join("")}
+                </ul>
+            </div>
+        `
+        : "";
+
+    return `
+        <article class="summary-note">
+            <div class="summary-note-hero">
+                <div class="summary-note-eyebrow">
+                    <i class="fa-solid fa-sparkles"></i>
+                    <span>${escapeHtml(getSummaryUiText("eyebrow", "自然老師整理版"))}</span>
+                </div>
+                <div class="summary-note-title">${title}</div>
+                ${lead}
+                ${chips}
+            </div>
+            <div class="summary-note-grid">${sections}</div>
+            ${(relations || takeaways) ? `<div class="summary-note-footer">${relations}${takeaways}</div>` : ""}
+        </article>
+    `;
+}
+
 function renderHeader(data) {
     const raw = data.raw_content || {};
 
@@ -2371,18 +3255,23 @@ function renderSummarySection(data) {
         content = raw.text_summary;
     }
 
-    if (content) {
+    const structuredSummary = getStructuredSummaryCandidate(data, content);
+    updateSummarySourceBadge(data);
+
+    if (structuredSummary) {
+        content = buildStructuredSummaryHtml(structuredSummary);
+    } else if (content) {
         if (!content.includes('<') && content.includes('\n')) {
             content = content.split('\n').map(line => {
                 line = line.trim();
                 if (!line) return '';
                 if (/^[一二三四五六七八九十]、|^[0-9]+\./.test(line)) {
-                    return `<h3>${line}</h3>`;
+                    return `<h3>${escapeHtml(line)}</h3>`;
                 }
                 if (/^[\(（][0-9]+[\)）]|^[-•]/.test(line)) {
-                    return `<ul><li>${line}</li></ul>`;
+                    return `<ul><li>${escapeHtml(line)}</li></ul>`;
                 }
-                return `<p>${line}</p>`;
+                return `<p>${escapeHtml(line)}</p>`;
             }).join('');
         }
 
