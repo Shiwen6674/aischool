@@ -452,6 +452,31 @@
             return pos;
         }
 
+        function expandParticleTerm(term, pos) {
+            const t = normalizeTerm(term);
+            const p = normalizePos(pos);
+            if (!t) return [];
+
+            if (t === "的") return [{ term: "的", pos: "DE" }];
+
+            if (t.startsWith("的") && t.length > 1) {
+                const rest = t.slice(1).trim();
+                const out = [{ term: "的", pos: "DE" }];
+                if (isUsableTerm(rest)) out.push({ term: rest, pos: p });
+                return out;
+            }
+
+            if (t.endsWith("的") && t.length > 1) {
+                const stem = t.slice(0, -1).trim();
+                const out = [];
+                if (isUsableTerm(stem)) out.push({ term: stem, pos: p });
+                out.push({ term: "的", pos: "DE" });
+                return out;
+            }
+
+            return [{ term: t, pos: p }];
+        }
+
         function isUsableTerm(term) {
             if (!term || term.length < 2) return false;
             if (/^[\d.]+$/.test(term)) return false;
@@ -490,13 +515,19 @@
                 const term = normalizeTerm(m[1]);
                 const pos = normalizePos(m[2]);
                 if (!isUsableTerm(term) || !pos || pos.includes("CATEGORY")) continue;
-                pairs.push([term, pos]);
+                const expanded = expandParticleTerm(term, pos);
+                for (const item of expanded) {
+                    pairs.push([item.term, item.pos]);
+                }
             }
 
             if (!pairs.length) {
                 const terms = extractFallbackTerms(text);
                 for (const term of terms) {
-                    pairs.push([term, normalizePos(fallbackPos)]);
+                    const expanded = expandParticleTerm(term, fallbackPos);
+                    for (const item of expanded) {
+                        pairs.push([item.term, item.pos]);
+                    }
                 }
             }
 
@@ -817,6 +848,7 @@
                 let j = i + 1;
                 while (j < text.length) {
                     if (isSplitChar(text[j])) break;
+                    if (findForcedBoundaryHit(text, j)) break;
                     if (findLongestHit(text, j, null)) break;
                     j += 1;
                 }
