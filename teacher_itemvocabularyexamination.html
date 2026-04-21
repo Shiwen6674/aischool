@@ -341,7 +341,7 @@
         const SCIENCE_SHEET_NAME = "Bilingual terms";
         const SCIENCE_SHEET_RANGE = "A:A";
         const GVIZ_BASE = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
-        const VOCAB_CACHE_KEY = "teacher_item_vocab_sheet_jlnpr_bilingual_v3";
+        const VOCAB_CACHE_KEY = "teacher_item_vocab_sheet_jlnpr_bilingual_v4";
         const SCIENCE_FALLBACK_POS = "Na";
         const BUILT_IN_SCIENCE_TERMS = [
             "複式顯微鏡", "目鏡", "物鏡", "反光鏡", "光圈",
@@ -353,6 +353,8 @@
             { term: "適當", pos: "VH" },
             { term: "的", pos: "DE" }
         ];
+        const FORCED_BOUNDARY_TERMS = [...BUILT_IN_BOUNDARY_TERMS]
+            .sort((a, b) => b.term.length - a.term.length);
         let vocabModel = null;
         let termTimelineModel = new Map();
         let lastAnalysisContext = null;
@@ -774,6 +776,15 @@
             return null;
         }
 
+        function findForcedBoundaryHit(text, start) {
+            for (const entry of FORCED_BOUNDARY_TERMS) {
+                if (text.startsWith(entry.term, start)) {
+                    return { term: entry.term, pos: normalizePos(entry.pos || "O") };
+                }
+            }
+            return null;
+        }
+
         function isSplitChar(ch) {
             return /[\s\r\n\t，。、；：、！？,.!?()（）「」『』【】《》〈〉<>"'`~\-+*/=|\\]/u.test(ch);
         }
@@ -786,6 +797,13 @@
                 const ch = text[i];
                 if (isSplitChar(ch)) {
                     i += 1;
+                    continue;
+                }
+
+                const forcedHit = findForcedBoundaryHit(text, i);
+                if (forcedHit) {
+                    tokens.push({ type: "matched", value: forcedHit.term, pos: forcedHit.pos });
+                    i += forcedHit.term.length;
                     continue;
                 }
 
