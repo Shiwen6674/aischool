@@ -908,7 +908,27 @@
             });
 
             if (!filtered.length) return null;
-            return filtered.reduce((best, occ) => (occ.index < best.index ? occ : best), filtered[0]);
+            const minIndex = filtered.reduce((best, occ) => Math.min(best, occ.index), filtered[0].index);
+            const earliest = filtered.filter((occ) => occ.index === minIndex);
+            if (!earliest.length) return null;
+
+            const first = earliest[0];
+            if (context.version) return first;
+
+            const publishers = Array.from(new Set(
+                earliest
+                    .map((occ) => String(occ.publisher || "").trim())
+                    .filter(Boolean)
+            )).sort((a, b) => a.localeCompare(b, "zh-Hant"));
+
+            if (publishers.length <= 1) {
+                return first;
+            }
+
+            return {
+                ...first,
+                publisher: publishers.join("/")
+            };
         }
 
         function evaluateTermState(term, context) {
