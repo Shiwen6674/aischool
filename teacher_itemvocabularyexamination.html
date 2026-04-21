@@ -208,7 +208,7 @@
                             <div class="text-4xl font-black text-green-600" id="res-score">--</div>
                             <div class="tooltip-content">
                                 <div class="font-bold text-green-400 mb-1 border-b border-slate-600 pb-1">計算公式</div>
-                                <div class="mb-2">100 - Σ (學期差 × 2)</div>
+                                <div class="mb-2">符合詞彙數 / 分析詞彙數 × 100</div>
                                 <div class="font-bold text-green-400 mb-1 border-b border-slate-600 pb-1">本次算式</div>
                                 <div id="res-score-detail" class="text-slate-300">請先進行分析...</div>
                             </div>
@@ -238,7 +238,8 @@
                                     <tr class="text-slate-600 text-sm font-bold border-b border-green-200">
                                         <th class="pb-4 pt-4 pl-4" data-i18n="th_term">詞彙</th>
                                         <th class="pb-4 pt-4" data-i18n="th_pos">詞性</th>
-                                        <th class="pb-4 pt-4" data-i18n="th_first">資料庫首次出現</th>
+                                        <th class="pb-4 pt-4" data-i18n="th_first">首次出現</th>
+                                        <th class="pb-4 pt-4 text-center" data-i18n="th_count">次數(文本)</th>
                                         <th class="pb-4 pt-4 text-center" data-i18n="th_diff">學期差</th>
                                         <th class="pb-4 pt-4 text-center" data-i18n="th_status">判定</th>
                                     </tr>
@@ -287,7 +288,7 @@
                 "pos_n": "名詞 (Na/Nb/Nc/Nf)", "pos_v": "動詞", "pos_a": "形容詞", "pos_d": "副詞", "pos_c": "連接詞", "pos_o": "其他",
                 "btn_start": "開始 AI 檢測", "label_text_input": "試題文本", "btn_example": "載入範例", "placeholder_text": "請在此貼上包含題幹與選項的完整試題內容...",
                 "kpi_score": "適切性評分", "kpi_total": "分析詞彙數", "kpi_safe": "符合目標年級", "kpi_risk": "超前/未見",
-                "table_title": "詞彙年級分佈分析", "th_term": "詞彙", "th_pos": "詞性", "th_first": "資料庫首次出現", "th_diff": "學期差", "th_status": "判定",
+                "table_title": "詞彙年級分佈分析", "th_term": "詞彙", "th_pos": "詞性", "th_first": "首次出現", "th_count": "次數(文本)", "th_diff": "學期差", "th_status": "判定",
                 "ai_feedback_title": "AI 深度命題回饋", "status_analyzing": "正在進行 AI 分析與資料比對...",
                 "msg_select_stage": "請先選擇學習階段！", "msg_input_text": "請輸入試題文本！", "msg_analysis_done": "分析完成！", "msg_analysis_fail": "分析失敗：",
                 "grade_3": "三年級", "grade_4": "四年級", "grade_5": "五年級", "grade_6": "六年級", "grade_7": "七年級", "grade_8": "八年級", "grade_9": "九年級"
@@ -300,7 +301,7 @@
                 "pos_n": "Noun (Na/Nb/Nc/Nf)", "pos_v": "Verb", "pos_a": "Adj", "pos_d": "Adv", "pos_c": "Conj", "pos_o": "Other",
                 "btn_start": "Analyze", "label_text_input": "Exam Text", "btn_example": "Load Example", "placeholder_text": "Paste text here...",
                 "kpi_score": "Suitability", "kpi_total": "Total Terms", "kpi_safe": "Safe", "kpi_risk": "Risk",
-                "table_title": "Vocabulary Analysis", "th_term": "Term", "th_pos": "POS", "th_first": "First Seen", "th_diff": "Sem Gap", "th_status": "Status",
+                "table_title": "Vocabulary Analysis", "th_term": "Term", "th_pos": "POS", "th_first": "First Seen", "th_count": "Count(Text)", "th_diff": "Sem Gap", "th_status": "Status",
                 "ai_feedback_title": "AI Feedback", "status_analyzing": "Analyzing...",
                 "msg_select_stage": "Select stage first!", "msg_input_text": "Input text!", "msg_analysis_done": "Done!", "msg_analysis_fail": "Failed: ",
                 "grade_3": "G3", "grade_4": "G4", "grade_5": "G5", "grade_6": "G6", "grade_7": "G7", "grade_8": "G8", "grade_9": "G9"
@@ -313,7 +314,7 @@
                 "pos_n": "名詞 (Na/Nb/Nc/Nf)", "pos_v": "動詞", "pos_a": "形容詞", "pos_d": "副詞", "pos_c": "接続詞", "pos_o": "その他",
                 "btn_start": "分析開始", "label_text_input": "問題文", "btn_example": "例文をロード", "placeholder_text": "ここに貼り付けてください...",
                 "kpi_score": "適合スコア", "kpi_total": "分析単語数", "kpi_safe": "学年適合", "kpi_risk": "未習リスク",
-                "table_title": "単語分布分析", "th_term": "単語", "th_pos": "品詞", "th_first": "初出", "th_diff": "学期差", "th_status": "判定",
+                "table_title": "単語分布分析", "th_term": "単語", "th_pos": "品詞", "th_first": "初出", "th_count": "回数(本文)", "th_diff": "学期差", "th_status": "判定",
                 "ai_feedback_title": "AI フィードバック", "status_analyzing": "分析中...",
                 "msg_select_stage": "学習段階を選択してください！", "msg_input_text": "テキストを入力してください！", "msg_analysis_done": "完了！", "msg_analysis_fail": "失敗：",
                 "grade_3": "小3", "grade_4": "小4", "grade_5": "小5", "grade_6": "小6", "grade_7": "中1", "grade_8": "中2", "grade_9": "中3"
@@ -326,7 +327,7 @@
                 "pos_n": "名词 (Na/Nb/Nc/Nf)", "pos_v": "动词", "pos_a": "形容词", "pos_d": "副词", "pos_c": "连接词", "pos_o": "其他",
                 "btn_start": "开始检测", "label_text_input": "试题文本", "btn_example": "载入范例", "placeholder_text": "请在此粘贴试题内容...",
                 "kpi_score": "适切性评分", "kpi_total": "分析词汇数", "kpi_safe": "符合目标年级", "kpi_risk": "超前/未见",
-                "table_title": "词汇年级分布分析", "th_term": "词汇", "th_pos": "词性", "th_first": "数据库首次出现", "th_diff": "学期差", "th_status": "判定",
+                "table_title": "词汇年级分布分析", "th_term": "词汇", "th_pos": "词性", "th_first": "首次出现", "th_count": "次数(文本)", "th_diff": "学期差", "th_status": "判定",
                 "ai_feedback_title": "AI 深度命题反馈", "status_analyzing": "正在进行 AI 分析与资料比对...",
                 "msg_select_stage": "请先选择学习阶段！", "msg_input_text": "请输入试题文本！", "msg_analysis_done": "分析完成！", "msg_analysis_fail": "分析失败：",
                 "grade_3": "三年级", "grade_4": "四年级", "grade_5": "五年级", "grade_6": "六年级", "grade_7": "七年级", "grade_8": "八年级", "grade_9": "九年级"
@@ -844,7 +845,8 @@
 
         function formatOccurrence(occ) {
             const publisher = occ.publisher || "版本未標示";
-            return `${publisher} ${occ.grade}年級${occ.semester}`;
+            const semText = occ.semester === "下" ? "下學期" : "上學期";
+            return `${publisher}${occ.grade}年級${semText}`;
         }
 
         function resolveTermTiming(term, context) {
@@ -862,7 +864,7 @@
         function evaluateTermState(term, context) {
             const firstOcc = resolveTermTiming(term, context);
             if (!firstOcc) {
-                return { first: "資料庫未見", diff: -100, state: "missing" };
+                return { first: "未見", diff: -100, state: "missing" };
             }
 
             const targetIndex = getTargetSemesterIndex(context);
@@ -906,7 +908,8 @@
                 table.push({
                     term,
                     pos: normalizePos(pos),
-                    first: `${evalState.first}（${count}次）`,
+                    first: evalState.first,
+                    count,
                     diff: evalState.diff,
                     state: evalState.state
                 });
@@ -917,7 +920,8 @@
                 table.push({
                     term: item.value,
                     pos: "O",
-                    first: `待確認詞彙 (${item.count}次)`,
+                    first: "待確認詞彙",
+                    count: item.count,
                     diff: -100,
                     state: "missing"
                 });
@@ -970,7 +974,7 @@
             document.getElementById('result-area').classList.remove('hidden');
             document.getElementById('ai-feedback-content').innerHTML = "";
             document.getElementById('ai-feedback-loader').classList.remove('hidden');
-            document.getElementById('result-table-body').innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-500 italic">${t.status_analyzing}</td></tr>`;
+            document.getElementById('result-table-body').innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-500 italic">${t.status_analyzing}</td></tr>`;
             document.getElementById('result-area').scrollIntoView({ behavior: 'smooth' });
 
             try {
@@ -1007,7 +1011,7 @@
 
         function renderResults(data) {
             document.getElementById('res-score').innerText = data.summary.score;
-            document.getElementById('res-score-detail').innerText = data.summary.scoreFormula || "無扣分資料";
+            document.getElementById('res-score-detail').innerText = data.summary.scoreFormula || "請先進行分析...";
             document.getElementById('res-total').innerText = data.summary.total;
             document.getElementById('res-safe').innerText = data.summary.safe;
             document.getElementById('res-risk').innerText = data.summary.risk;
@@ -1018,7 +1022,7 @@
 
             const tbody = document.getElementById('result-table-body');
             if (data.table.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-slate-500">沒有符合篩選條件的詞彙。</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-slate-500">沒有符合篩選條件的詞彙。</td></tr>';
                 return;
             }
 
@@ -1051,6 +1055,7 @@
                     <td class="py-3 pl-4 font-bold text-slate-700">${escapeHtml(item.term)}</td>
                     <td class="py-3 font-mono text-sm text-slate-500">${escapeHtml(item.pos)}</td>
                     <td class="py-3 text-slate-600 text-sm">${escapeHtml(item.first)}</td>
+                    <td class="py-3 text-center font-mono text-slate-700">${escapeHtml(item.count != null ? item.count : 0)}</td>
                     <td class="py-3 font-mono font-bold text-center text-slate-700" title="相差學期數">${escapeHtml(diffText)}</td>
                     <td class="py-3 text-center">
                         <span class="${badgeClass} text-white text-xs px-3 py-1 rounded-full shadow-sm font-bold inline-block min-w-[60px]">
