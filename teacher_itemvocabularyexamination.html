@@ -966,15 +966,17 @@
             }
 
             const unmatchedSummary = summarizeUnmatched(unmatched);
-            for (const item of unmatchedSummary) {
-                table.push({
-                    term: item.value,
-                    pos: "O",
-                    first: "待確認詞彙",
-                    count: item.count,
-                    diff: -100,
-                    state: "missing"
-                });
+            if (selectedGroups.has("O")) {
+                for (const item of unmatchedSummary) {
+                    table.push({
+                        term: item.value,
+                        pos: "O",
+                        first: "待確認詞彙",
+                        count: item.count,
+                        diff: -100,
+                        state: "missing"
+                    });
+                }
             }
 
             table.sort((a, b) => {
