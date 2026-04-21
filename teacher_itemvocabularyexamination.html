@@ -341,7 +341,7 @@
         const SCIENCE_SHEET_NAME = "Bilingual terms";
         const SCIENCE_SHEET_RANGE = "A:A";
         const GVIZ_BASE = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
-        const VOCAB_CACHE_KEY = "teacher_item_vocab_sheet_jlnpr_bilingual_v5";
+        const VOCAB_CACHE_KEY = "teacher_item_vocab_sheet_jlnpr_bilingual_v6";
         const SCIENCE_FALLBACK_POS = "Na";
         const BUILT_IN_SCIENCE_TERMS = [
             "複式顯微鏡", "目鏡", "物鏡", "反光鏡", "光圈",
@@ -567,6 +567,59 @@
                 const c = rewritten[i + 2];
                 const d = rewritten[i + 3];
                 const e = rewritten[i + 4];
+
+                if (a && a[0] === "馬英久" && a[1] === "Nb") {
+                    normalized.push(["馬英九", "Nb"]);
+                    continue;
+                }
+
+                if (
+                    a && b && c &&
+                    a[0] === "羽球" && a[1] === "Na" &&
+                    b[0] === "拍賣" && b[1] === "VA" &&
+                    c[0] === "完了" && c[1] === "Di"
+                ) {
+                    normalized.push(["羽球拍", "Na"], ["賣完了", "VE"]);
+                    i += 2;
+                    continue;
+                }
+
+                if (
+                    a && b && c &&
+                    a[0] === "電能" && a[1] === "Na" &&
+                    b[0] === "生" && b[1] === "VC" &&
+                    c[0] === "磁" && c[1] === "Na"
+                ) {
+                    normalized.push(["電", "Na"], ["能", "D"], ["生", "VC"], ["磁", "Na"]);
+                    i += 2;
+                    continue;
+                }
+
+                if (
+                    a && b && c &&
+                    a[0] === "波" && a[1] === "Na" &&
+                    b[0] === "以" && b[1] === "P" &&
+                    c[0] === "耳" && c[1] === "Na"
+                ) {
+                    normalized.push(["波以耳", "Nb"]);
+                    i += 2;
+                    continue;
+                }
+
+                if (
+                    a && b &&
+                    a[0] === "演算" && a[1] === "Na" &&
+                    b[0] === "法" && b[1] === "Na"
+                ) {
+                    normalized.push(["演算法", "Na"]);
+                    i += 1;
+                    continue;
+                }
+
+                if (a && a[0] === "約分" && a[1] === "VE") {
+                    normalized.push(["約分", "Nb"]);
+                    continue;
+                }
 
                 if (
                     a && b && c && d && e &&
