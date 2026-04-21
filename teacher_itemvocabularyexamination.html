@@ -334,8 +334,18 @@
         };
 
         let currentLang = 'zh-TW';
-        const SHEET_GVIZ_URL = "https://docs.google.com/spreadsheets/d/1cEfMEy3bvDa1tET3xmh7ShGeJy8KLUMa_JuULGBD-mk/gviz/tq?tqx=out:json&sheet=Sheet1&range=J:J";
-        const VOCAB_CACHE_KEY = "teacher_item_vocab_j_column_cache_v1";
+        const SHEET_ID = "1cEfMEy3bvDa1tET3xmh7ShGeJy8KLUMa_JuULGBD-mk";
+        const PRIMARY_SHEET_NAME = "Sheet1";
+        const PRIMARY_SHEET_COLUMNS = ["J:J", "L:L", "N:N", "P:P", "R:R"];
+        const SCIENCE_SHEET_NAME = "Bilingual terms";
+        const SCIENCE_SHEET_RANGE = "A:A";
+        const GVIZ_BASE = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+        const VOCAB_CACHE_KEY = "teacher_item_vocab_sheet_jlnpr_bilingual_v3";
+        const SCIENCE_FALLBACK_POS = "Na";
+        const BUILT_IN_SCIENCE_TERMS = [
+            "複式顯微鏡", "目鏡", "物鏡", "反光鏡", "光圈",
+            "粗調節輪", "細調節輪", "載玻片", "蓋玻片", "玻片標本"
+        ];
         let vocabModel = null;
         let lastAnalysisContext = null;
         let lastAiPrompt = "";
@@ -388,7 +398,7 @@
             document.getElementById('grades').value = "七年級";
             document.getElementById('semester').value = "上";
             document.getElementById('version').value = "";
-            document.getElementById('text').value = 
+            document.getElementById('text').value =
 `1. 使用複式顯微鏡觀察玻片標本時，如果想得到適當的光線，應調節下列哪些部位？
 (A) 目鏡、物鏡
 (B) 反光鏡、光圈
@@ -397,105 +407,259 @@
             showToast("範例已載入，請按「開始 AI 檢測」", "success");
         }
 
-        async function initializeLexicon() {
-            const fromBundle = window.TEACHER_ITEM_VOCAB_DATA;
-            if (fromBundle?.terms?.length) {
-                vocabModel = buildVocabModel(fromBundle.terms);
-            }
-
-            const cached = readCachedTerms();
-            if (cached?.length && (!vocabModel || cached.length > vocabModel.totalTerms)) {
-                vocabModel = buildVocabModel(cached);
-            }
-
-            try {
-                const terms = await fetchTermsFromSheet();
-                if (terms.length) {
-                    vocabModel = buildVocabModel(terms);
-                    cacheTerms(terms);
-                    showToast(`詞彙表已同步 (${terms.length} 詞)`, "success");
-                }
-            } catch (error) {
-                console.warn("fetchTermsFromSheet failed", error);
-                if (vocabModel) {
-                    showToast(`詞彙表同步失敗，改用快取 (${vocabModel.totalTerms} 詞)`, "warning");
-                } else {
-                    showToast("詞彙表載入失敗，請檢查 Sheet 權限。", "error");
-                }
-            }
+        function buildGvizUrl(sheetName, rangeA1) {
+            return `${GVIZ_BASE}&sheet=${encodeURIComponent(sheetName)}&range=${encodeURIComponent(rangeA1)}`;
         }
 
-        async function fetchTermsFromSheet() {
-            const resp = await fetch(SHEET_GVIZ_URL, { cache: "no-store" });
+        function parseGvizPayload(rawText) {
+            const match = rawText.match(/setResponse\(([\s\S]+)\);?\s*$/);
+            if (!match) throw new Error("Sheet 回應格式錯誤");
+            return JSON.parse(match[1]);
+        }
+
+        async function fetchColumnValues(sheetName, rangeA1) {
+            const url = buildGvizUrl(sheetName, rangeA1);
+            const resp = await fetch(url, { cache: "no-store" });
             if (!resp.ok) throw new Error(`Sheet 讀取失敗 (${resp.status})`);
             const text = await resp.text();
-            const match = text.match(/setResponse\(([\s\S]+)\);?\s*$/);
-            if (!match) throw new Error("Sheet 回應格式錯誤");
+            const payload = parseGvizPayload(text);
+            const rows = (((payload || {}).table || {}).rows || []);
+            return rows.map((row) => {
+                const cell = row && row.c && row.c[0] ? row.c[0].v : "";
+                return String(cell || "").trim();
+            }).filter(Boolean);
+        }
 
-            const payload = JSON.parse(match[1]);
-            const rows = (((payload || {}).table || {}).rows || [])
-                .map((row) => row?.c?.[0]?.v || "")
-                .filter(Boolean);
+        function normalizeTerm(rawTerm) {
+            if (!rawTerm) return "";
+            return String(rawTerm).replace(/\u3000/g, " ").replace(/\s+/g, " ").trim();
+        }
 
-            const regex = /([^()\s\u3000]+)\(([A-Za-z0-9_]+)\)/g;
-            const termStats = new Map();
+        function normalizePos(rawPos) {
+            const pos = String(rawPos || "").trim();
+            if (!pos) return "O";
+            if (pos.toUpperCase() === "UNK") return "O";
+            return pos;
+        }
 
-            for (const rowText of rows) {
-                regex.lastIndex = 0;
-                let m;
-                while ((m = regex.exec(rowText)) !== null) {
-                    const term = (m[1] || "").trim();
-                    const pos = (m[2] || "").trim();
-                    if (!term || !pos || pos.includes("CATEGORY")) continue;
-                    if (/^[\p{P}\p{S}]+$/u.test(term)) continue;
+        function isUsableTerm(term) {
+            if (!term || term.length < 2) return false;
+            if (/^[\d.]+$/.test(term)) return false;
+            if (/^[^\u3400-\u9fffA-Za-z0-9]+$/.test(term)) return false;
+            return /[\u3400-\u9fffA-Za-z]/.test(term);
+        }
 
-                    if (!termStats.has(term)) termStats.set(term, new Map());
-                    const posCounter = termStats.get(term);
-                    posCounter.set(pos, (posCounter.get(pos) || 0) + 1);
+        function extractFallbackTerms(rawText) {
+            const normalized = normalizeTerm(rawText);
+            if (!normalized) return [];
+
+            const candidates = new Set();
+            const split = normalized.split(/[\s,，、;；|｜]+/);
+            for (const part of split) {
+                const cleaned = normalizeTerm(part.replace(/[()（）\[\]{}]/g, ""));
+                if (isUsableTerm(cleaned)) candidates.add(cleaned);
+                const noSpace = cleaned.replace(/\s+/g, "");
+                if (noSpace !== cleaned && isUsableTerm(noSpace)) candidates.add(noSpace);
+            }
+
+            const cjkChunks = normalized.match(/[\u3400-\u9fff]{2,}/g) || [];
+            for (const c of cjkChunks) {
+                if (isUsableTerm(c)) candidates.add(c);
+            }
+
+            return Array.from(candidates);
+        }
+
+        function extractFallbackTerms(rawText) {
+            const normalized = normalizeTerm(rawText);
+            if (!normalized) return [];
+
+            const candidates = new Set();
+            const split = normalized.split(/[\s,\uFF0C\u3001;\uFF1B|]+/);
+            for (const part of split) {
+                const cleaned = normalizeTerm(part.replace(/[()\uFF08\uFF09\[\]{}]/g, ""));
+                if (isUsableTerm(cleaned)) candidates.add(cleaned);
+                const noSpace = cleaned.replace(/\s+/g, "");
+                if (noSpace !== cleaned && isUsableTerm(noSpace)) candidates.add(noSpace);
+            }
+
+            const cjkChunks = normalized.match(/[\u3400-\u9fff]{2,}/g) || [];
+            for (const c of cjkChunks) {
+                if (isUsableTerm(c)) candidates.add(c);
+            }
+
+            return Array.from(candidates);
+        }
+
+        function extractTermPosPairs(rawText, fallbackPos = "O") {
+            const text = String(rawText || "");
+            const pairs = [];
+            const regex = /([^()\s\u3000]+)\s*\(([A-Za-z][A-Za-z0-9_]*)\)/g;
+            let m;
+
+            while ((m = regex.exec(text)) !== null) {
+                const term = normalizeTerm(m[1]);
+                const pos = normalizePos(m[2]);
+                if (!isUsableTerm(term) || !pos || pos.includes("CATEGORY")) continue;
+                pairs.push([term, pos]);
+            }
+
+            if (!pairs.length) {
+                const terms = extractFallbackTerms(text);
+                for (const term of terms) {
+                    pairs.push([term, normalizePos(fallbackPos)]);
                 }
             }
 
+            return pairs;
+        }
+
+        function mergePosStats(termStats, term, pos) {
+            if (!termStats.has(term)) termStats.set(term, new Map());
+            const posCounter = termStats.get(term);
+            posCounter.set(pos, (posCounter.get(pos) || 0) + 1);
+        }
+
+        function posStatsToEntries(termStats, priority) {
             return Array.from(termStats.entries()).map(([term, posMap]) => {
                 const ranked = Array.from(posMap.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
-                return [term, ranked[0][0]];
+                return { term, pos: normalizePos(ranked[0][0]), priority };
             });
         }
 
-        function readCachedTerms() {
+        async function fetchTermsFromSheetColumns() {
+            const columnRows = await Promise.all(
+                PRIMARY_SHEET_COLUMNS.map((rangeA1) => fetchColumnValues(PRIMARY_SHEET_NAME, rangeA1))
+            );
+
+            const termStats = new Map();
+            for (const rows of columnRows) {
+                for (const rowText of rows) {
+                    const pairs = extractTermPosPairs(rowText, "O");
+                    for (const [term, pos] of pairs) {
+                        mergePosStats(termStats, term, pos);
+                    }
+                }
+            }
+
+            return posStatsToEntries(termStats, 4);
+        }
+
+        async function fetchScienceTerms() {
+            const rows = await fetchColumnValues(SCIENCE_SHEET_NAME, SCIENCE_SHEET_RANGE);
+            const termStats = new Map();
+
+            for (const rowText of rows) {
+                const pairs = extractTermPosPairs(rowText, SCIENCE_FALLBACK_POS);
+                for (const [term, pos] of pairs) {
+                    mergePosStats(termStats, term, pos || SCIENCE_FALLBACK_POS);
+                }
+            }
+
+            return posStatsToEntries(termStats, 8);
+        }
+
+        async function initializeLexicon() {
+            const seedEntries = BUILT_IN_SCIENCE_TERMS.map((term) => ({
+                term,
+                pos: SCIENCE_FALLBACK_POS,
+                priority: 10
+            }));
+
+            const fromBundle = window.TEACHER_ITEM_VOCAB_DATA;
+            if (fromBundle && fromBundle.terms && fromBundle.terms.length) {
+                seedEntries.push(...fromBundle.terms.map(([term, pos]) => ({ term, pos, priority: 1 })));
+            }
+
+            const cached = readCachedEntries();
+            if (cached && cached.length) {
+                seedEntries.push(...cached.map((x) => ({ ...x, priority: Math.max(2, x.priority || 2) })));
+            }
+
+            vocabModel = buildVocabModel(seedEntries);
+
+            try {
+                const [sheetEntries, scienceEntries] = await Promise.all([
+                    fetchTermsFromSheetColumns(),
+                    fetchScienceTerms()
+                ]);
+
+                const liveEntries = [...seedEntries, ...sheetEntries, ...scienceEntries];
+                vocabModel = buildVocabModel(liveEntries);
+                cacheEntries([...sheetEntries, ...scienceEntries]);
+            } catch (error) {
+                console.warn("initializeLexicon fallback to local/cache", error);
+            }
+        }
+
+        function readCachedEntries() {
             try {
                 const raw = localStorage.getItem(VOCAB_CACHE_KEY);
                 if (!raw) return null;
                 const parsed = JSON.parse(raw);
-                return Array.isArray(parsed?.terms) ? parsed.terms : null;
-            } catch {
+                if (!parsed || !Array.isArray(parsed.entries)) return null;
+                return parsed.entries
+                    .filter((x) => x && typeof x.term === "string")
+                    .map((x) => ({ term: x.term, pos: normalizePos(x.pos), priority: Number(x.priority || 2) }));
+            } catch (e) {
                 return null;
             }
         }
 
-        function cacheTerms(terms) {
+        function cacheEntries(entries) {
             try {
                 localStorage.setItem(VOCAB_CACHE_KEY, JSON.stringify({
                     savedAt: new Date().toISOString(),
-                    terms
+                    entries
                 }));
-            } catch {
+            } catch (e) {
                 // ignore storage failure
             }
         }
 
-        function buildVocabModel(terms) {
+        function buildVocabModel(entries) {
+            const merged = new Map();
+
+            for (const item of entries || []) {
+                const term = normalizeTerm((item && item.term) || (item && item[0]) || "");
+                const pos = normalizePos((item && item.pos) || (item && item[1]) || "O");
+                const priority = Number((item && item.priority) || 1);
+                if (!isUsableTerm(term)) continue;
+
+                const current = merged.get(term);
+                if (!current) {
+                    merged.set(term, { term, pos, priority });
+                    continue;
+                }
+
+                if (priority > current.priority || (current.pos === "O" && pos !== "O")) {
+                    merged.set(term, { term, pos, priority });
+                }
+            }
+
             const grouped = new Map();
-            for (const item of terms) {
-                const term = (item?.[0] || "").trim();
-                const pos = (item?.[1] || "UNK").trim() || "UNK";
-                if (!term) continue;
-                const key = term[0];
+            for (const entry of merged.values()) {
+                const key = entry.term[0];
                 if (!grouped.has(key)) grouped.set(key, []);
-                grouped.get(key).push({ term, pos });
+                grouped.get(key).push(entry);
+
+                if (entry.term.includes(" ")) {
+                    const noSpace = entry.term.replace(/\s+/g, "");
+                    if (isUsableTerm(noSpace) && noSpace !== entry.term) {
+                        if (!grouped.has(noSpace[0])) grouped.set(noSpace[0], []);
+                        grouped.get(noSpace[0]).push({ term: noSpace, pos: entry.pos, priority: entry.priority });
+                    }
+                }
             }
+
             for (const list of grouped.values()) {
-                list.sort((a, b) => b.term.length - a.term.length || a.term.localeCompare(b.term, "zh-Hant"));
+                list.sort((a, b) =>
+                    b.term.length - a.term.length ||
+                    b.priority - a.priority ||
+                    a.term.localeCompare(b.term, "zh-Hant")
+                );
             }
+
             let totalTerms = 0;
             for (const list of grouped.values()) totalTerms += list.length;
             return { grouped, totalTerms };
@@ -522,7 +686,7 @@
         }
 
         function isSplitChar(ch) {
-            return /[\s\r\n，。、；：！？,.!?()（）「」『』【】《》〈〉]/u.test(ch);
+            return /[\s\r\n\t，。、；：、！？,.!?()（）「」『』【】《》〈〉<>"'`~\-+*/=|\\]/u.test(ch);
         }
 
         function segmentWithLexicon(text, selectedGroups) {
@@ -559,7 +723,7 @@
             const count = new Map();
             for (const token of unmatchedTokens) {
                 const value = token.trim();
-                if (!value) continue;
+                if (!value || value.length < 2) continue;
                 count.set(value, (count.get(value) || 0) + 1);
             }
             return Array.from(count.entries())
@@ -588,8 +752,8 @@
                 const [term, pos] = key.split("||");
                 table.push({
                     term,
-                    pos,
-                    first: `詞彙表命中 (${count}次)`,
+                    pos: normalizePos(pos),
+                    first: `詞彙命中 (${count}次)`,
                     diff: 0,
                     state: "fit"
                 });
@@ -599,8 +763,8 @@
             for (const item of unmatchedSummary) {
                 table.push({
                     term: item.value,
-                    pos: "UNK",
-                    first: `詞彙表未命中 (${item.count}次)`,
+                    pos: "O",
+                    first: `待確認詞彙 (${item.count}次)`,
                     diff: -100,
                     state: "risk"
                 });
@@ -629,9 +793,9 @@
                 table,
                 aiFeedback: `
                     <div class="space-y-3">
-                        <p><strong>詞彙表檢測已完成。</strong> 已改為使用 Sheet1 的 J 欄詞彙表斷詞，不使用 API token 自動斷詞。</p>
-                        <p>建議優先檢查片段：${checkList.length ? checkList.join("、") : "無"}</p>
-                        <p class="text-slate-500">需要 AI 協助命題修正時，請按下方按鍵手動觸發提示詞。</p>
+                        <p><strong>詞彙檢測已完成。</strong> 請優先檢查下列待確認詞彙是否需調整用語。</p>
+                        <p>建議優先檢查：${checkList.length ? checkList.join("、") : "無"}</p>
+                        <p class="text-slate-500">若需要協助，可使用下方按鈕產生 AI 修題提示詞。</p>
                     </div>
                 `
             };
@@ -657,7 +821,7 @@
             document.getElementById('result-area').scrollIntoView({ behavior: 'smooth' });
 
             try {
-                if (!vocabModel) throw new Error("詞彙表尚未完成載入");
+                if (!vocabModel) throw new Error("分析資料尚未就緒，請稍後再試");
                 const posFilter = Array.from(document.querySelectorAll('input[name="pos"]:checked')).map(cb => cb.value);
                 const localResult = analyzeByLexicon(text, posFilter);
                 renderResults(localResult);
@@ -734,7 +898,7 @@
 
         function generateAiPrompt() {
             if (!lastAnalysisContext) {
-                showToast("請先完成一次詞彙表檢測。", "warning");
+                showToast("請先完成一次詞彙檢測。", "warning");
                 return;
             }
             const unmatched = lastAnalysisContext.result.table
@@ -752,7 +916,7 @@
                 "原始試題：",
                 lastAnalysisContext.text,
                 "",
-                `詞彙表未命中片段：${unmatched.length ? unmatched.join("、") : "無"}`,
+                `待確認片段：${unmatched.length ? unmatched.join("、") : "無"}`,
                 "",
                 "請輸出：",
                 "1) 是否建議修正",
@@ -777,8 +941,8 @@
 
         function setAiPanelIdle() {
             document.getElementById('ai-feedback-content').innerHTML = `
-                <p class="text-slate-600">本頁已改為詞彙表斷詞（Sheet1 J欄），保持原有版面。</p>
-                <p class="text-slate-500">先按「開始 AI 檢測」完成比對，再手動觸發 AI 命題修正按鍵。</p>
+                <p class="text-slate-600">先完成詞彙檢測，再決定是否需要修題建議。</p>
+                <p class="text-slate-500">若要請 AI 協助，可在分析完成後按下下方按鈕產生提示詞。</p>
             `;
             document.getElementById('manual-ai-btn').disabled = true;
             document.getElementById('copy-ai-btn').classList.add('hidden');
