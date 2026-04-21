@@ -1,1018 +1,793 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中小學自然科命題斷詞檢修 | Science Learning Hub</title>
+    <title>命題用語檢核 | Science Learning Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <script src="./assets/js/aischool-shared.js"></script>
-    <script src="./assets/js/teacher-item-vocab-data.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        teacher: {
-                            light: "#dcfce7",
-                            DEFAULT: "#16a34a",
-                            dark: "#166534"
-                        }
+                        teacher: { light: '#bbf7d0', DEFAULT: '#22c55e', dark: '#15803d' },
                     },
-                    boxShadow: {
-                        panel: "0 24px 60px rgba(22, 101, 52, 0.12)"
-                    }
+                    animation: { "fade-in-up": "fadeInUp 0.5s ease-out forwards" },
+                    keyframes: { "fadeInUp": { "0%": { opacity: "0", transform: "translateY(10px)" }, "100%": { opacity: "1", transform: "translateY(0)" } } }
                 }
             }
-        };
+        }
     </script>
     <style>
         body {
-            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
-            background:
-                radial-gradient(circle at top left, rgba(134, 239, 172, 0.35), transparent 28%),
-                radial-gradient(circle at bottom right, rgba(52, 211, 153, 0.25), transparent 24%),
-                linear-gradient(135deg, #f7fee7 0%, #ecfdf5 42%, #f8fafc 100%);
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
             min-height: 100vh;
         }
-
         .glass-panel {
-            background: rgba(255, 255, 255, 0.82);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.65);
-            box-shadow: 0 24px 60px rgba(22, 101, 52, 0.12);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 25px -5px rgba(22, 163, 74, 0.1), 0 8px 10px -6px rgba(22, 163, 74, 0.1);
         }
-
-        .input-field {
-            transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
-            border: 1px solid #cbd5e1;
+        .input-field { transition: all 0.2s; border: 1px solid #d1d5db; }
+        .input-field:focus { box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.3); border-color: #22c55e; outline: none; }
+        .loader { border: 3px solid rgba(34, 197, 94, 0.2); border-radius: 50%; border-top: 3px solid #22c55e; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .bg-safe-deep { background-color: #166534; color: white; } 
+        .bg-safe-light { background-color: #22c55e; color: white; } 
+        .bg-warn { background-color: #f97316; color: white; } 
+        .bg-danger { background-color: #dc2626; color: white; } 
+        .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+        .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+        .scrollbar-thin::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 3px; }
+        
+        /* Tooltip 樣式 */
+        .tooltip-container { position: relative; display: inline-block; cursor: help; }
+        .tooltip-content {
+            visibility: hidden;
+            width: 280px;
+            background-color: #1e293b;
+            color: #fff;
+            text-align: left;
+            border-radius: 8px;
+            padding: 12px;
+            position: absolute;
+            z-index: 100;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.75rem;
+            line-height: 1.4;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            pointer-events: none;
         }
-
-        .input-field:focus {
-            outline: none;
-            border-color: #16a34a;
-            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.18);
+        .tooltip-content::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #1e293b transparent transparent transparent;
         }
-
-        .token-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            padding: 0.42rem 0.75rem;
-            border-radius: 999px;
-            font-size: 0.92rem;
-            line-height: 1;
-            border: 1px solid transparent;
-            margin: 0.2rem 0.25rem 0.2rem 0;
-            white-space: nowrap;
-        }
-
-        .token-chip--matched {
-            background: #dcfce7;
-            color: #166534;
-            border-color: #86efac;
-        }
-
-        .token-chip--unmatched {
-            background: #fff7ed;
-            color: #c2410c;
-            border-color: #fdba74;
-        }
-
-        .token-chip--punct {
-            background: #f1f5f9;
-            color: #475569;
-            border-color: #cbd5e1;
-        }
-
-        .loader {
-            width: 18px;
-            height: 18px;
-            border-radius: 999px;
-            border: 3px solid rgba(22, 163, 74, 0.2);
-            border-top-color: #16a34a;
-            animation: spin 0.9s linear infinite;
-        }
-
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        .tooltip-container:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
         }
     </style>
+    <script src="./assets/js/aischool-shared.js"></script>
+    <script src="./assets/js/teacher-item-vocab-data.js"></script>
 </head>
-<body class="px-4 py-6 md:px-8 md:py-8 text-slate-800">
-    <nav class="glass-panel sticky top-3 z-40 mx-auto mb-8 flex max-w-7xl items-center justify-between rounded-3xl px-5 py-4">
-        <button type="button" onclick="window.location.href='teacher.html'" class="group inline-flex items-center gap-3 rounded-2xl px-3 py-2 text-left transition hover:bg-white/70">
-            <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-green-100 text-green-700 transition group-hover:bg-green-600 group-hover:text-white">
-                <i class="fa-solid fa-chevron-left"></i>
-            </span>
-            <span>
-                <span class="block text-xs tracking-[0.28em] text-slate-500">TEACHER HUB</span>
-                <span class="block text-base font-bold text-slate-700">返回教學中心</span>
-            </span>
-        </button>
+<body class="p-4 md:p-8 relative overflow-x-hidden text-slate-800">
 
-        <div class="flex items-center gap-3 text-sm">
-            <a href="https://docs.google.com/spreadsheets/d/1cEfMEy3bvDa1tET3xmh7ShGeJy8KLUMa_JuULGBD-mk/edit?gid=0#gid=0" target="_blank" rel="noreferrer" class="hidden rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 font-medium text-emerald-700 transition hover:bg-emerald-100 md:inline-flex md:items-center md:gap-2">
-                <i class="fa-solid fa-table-cells-large"></i>
-                詞庫來源 Sheet1!J:J
-            </a>
-            <span id="datasetStatusBadge" class="rounded-full border border-slate-200 bg-white px-4 py-2 font-medium text-slate-600">載入詞庫中</span>
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+        <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-green-200/30 blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-200/20 blur-3xl animate-pulse" style="animation-delay: 2s;"></div>
+    </div>
+
+    <nav class="glass-panel sticky top-2 z-50 rounded-2xl mb-8 p-4 flex justify-between items-center max-w-7xl mx-auto">
+        <div class="flex items-center space-x-3 cursor-pointer group" onclick="window.location.href='teacher.html'">
+            <div class="bg-green-100 p-2 rounded-xl text-green-600 group-hover:bg-green-600 group-hover:text-white transition">
+                <i class="fa-solid fa-chevron-left"></i>
+            </div>
+            <span class="text-lg font-bold tracking-tight text-slate-700" data-i18n="back_btn">返回教學中心</span>
+        </div>
+        <div class="flex items-center gap-3">
+            <i class="fa-solid fa-globe text-slate-500"></i>
+            <select id="language-selector" onchange="changeLanguage()" class="bg-white/50 border border-slate-200 text-slate-600 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2 outline-none hover:bg-white transition cursor-pointer">
+                <option value="zh-TW">繁體中文</option>
+                <option value="en">English</option>
+                <option value="ja">日本語</option>
+                <option value="zh-CN">简体中文</option>
+            </select>
         </div>
     </nav>
 
-    <main class="mx-auto max-w-7xl space-y-8">
-        <section class="space-y-5">
-            <div class="inline-flex items-center gap-2 rounded-full border border-green-200 bg-white/70 px-4 py-2 text-sm font-medium text-green-800">
-                <i class="fa-solid fa-screwdriver-wrench"></i>
-                已改為詞彙表斷詞，不再依賴自動 AI 斷詞
-            </div>
-            <div class="grid gap-8 lg:grid-cols-[1.05fr_1.35fr]">
-                <div class="glass-panel rounded-[2rem] p-6 md:p-8">
-                    <div class="mb-6 flex items-start justify-between gap-4">
+    <main class="max-w-7xl mx-auto animate-fade-in-up">
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-700 to-emerald-600 mb-3" data-i18n="page_title">
+                中小學自然科命題用詞 AI 檢核
+            </h1>
+            <p class="text-slate-600 text-lg" data-i18n="page_subtitle">
+                結合大數據資料庫與生成式 AI，精準診斷命題適切性
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div class="lg:col-span-4 space-y-6">
+                <div class="glass-panel p-6 rounded-3xl">
+                    <h2 class="text-xl font-bold text-slate-700 mb-5 border-b border-green-100 pb-3 flex items-center">
+                        <i class="fa-solid fa-sliders mr-3 text-green-600"></i> <span data-i18n="settings_title">參數設定</span>
+                    </h2>
+                    <div class="space-y-5">
                         <div>
-                            <div class="mb-2 text-sm font-black tracking-[0.24em] text-green-700">QUESTION SEGMENTATION</div>
-                            <h1 class="text-3xl font-black text-slate-900 md:text-4xl">中小學自然科命題斷詞檢修</h1>
-                        </div>
-                        <div class="hidden rounded-3xl bg-gradient-to-br from-green-500 to-emerald-600 p-4 text-white shadow-lg md:block">
-                            <i class="fa-solid fa-scissors text-2xl"></i>
-                        </div>
-                    </div>
-
-                    <p class="mb-6 text-base leading-8 text-slate-600">
-                        這個頁面現在會先用 <strong>Google Sheet `Sheet1!J:J`</strong> 萃取出的 CKIP 詞彙表做最長詞優先斷詞。
-                        如果斷詞後還想請 AI 協助修正命題用語，再按下「AI 命題修正建議」即可。
-                    </p>
-
-                    <div class="grid gap-4 md:grid-cols-2">
-                        <label class="block">
-                            <span class="mb-2 block text-sm font-bold text-slate-700">學習階段</span>
-                            <select id="stageSelect" class="input-field w-full rounded-2xl bg-white/90 px-4 py-3">
-                                <option value="國小">國小</option>
-                                <option value="國中" selected>國中</option>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">
+                                <span data-i18n="label_stage">學習階段</span> <span class="text-red-500">*</span>
+                            </label>
+                            <select id="stage" class="w-full p-3 rounded-xl bg-white/70 input-field" onchange="updateGrades()">
+                                <option value="" disabled selected data-i18n="opt_select">請選擇學習階段</option>
+                                <option value="國小" data-i18n="opt_elem">國小</option>
+                                <option value="國中" data-i18n="opt_junior">國中</option>
                             </select>
-                        </label>
-                        <label class="block">
-                            <span class="mb-2 block text-sm font-bold text-slate-700">目標年級</span>
-                            <select id="gradeSelect" class="input-field w-full rounded-2xl bg-white/90 px-4 py-3"></select>
-                        </label>
-                    </div>
-
-                    <div class="mt-5 rounded-3xl border border-emerald-100 bg-emerald-50/80 p-4">
-                        <div class="flex items-center justify-between gap-4">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <div class="text-sm font-bold text-emerald-800">目前詞庫狀態</div>
-                                <div id="datasetMeta" class="mt-1 text-sm leading-6 text-emerald-700">正在準備詞彙資料…</div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2" data-i18n="label_grade">目標年級</label>
+                                <select id="grades" class="w-full p-3 rounded-xl bg-white/70 input-field">
+                                    <option value="" selected data-i18n="opt_any">不限</option>
+                                </select>
                             </div>
-                            <div class="rounded-2xl bg-white px-4 py-3 text-right shadow-sm">
-                                <div class="text-xs font-medium tracking-[0.18em] text-slate-500">VOCAB</div>
-                                <div id="vocabCount" class="text-2xl font-black text-slate-900">--</div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2" data-i18n="label_semester">目標學期</label>
+                                <select id="semester" class="w-full p-3 rounded-xl bg-white/70 input-field">
+                                    <option value="" selected data-i18n="opt_any">不限</option>
+                                    <option value="上" data-i18n="opt_sem1">上學期</option>
+                                    <option value="下" data-i18n="opt_sem2">下學期</option>
+                                </select>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="mt-6 flex flex-col gap-3 sm:flex-row">
-                        <button id="analyzeBtn" type="button" onclick="runSegmentation()" class="inline-flex flex-1 items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-600 px-5 py-4 text-lg font-black text-white transition hover:shadow-lg hover:shadow-green-500/25 active:scale-[0.99]">
-                            <i class="fa-solid fa-magnifying-glass-chart"></i>
-                            詞彙表斷詞
-                        </button>
-                        <button id="aiBtn" type="button" onclick="requestAiRevision()" disabled class="inline-flex flex-1 items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-lg font-black text-slate-400 transition disabled:cursor-not-allowed">
-                            <i class="fa-solid fa-robot"></i>
-                            AI 命題修正建議
-                        </button>
-                    </div>
-
-                    <p class="mt-4 text-sm leading-6 text-slate-500">
-                        AI 按鍵不會自動執行，只有在你完成斷詞後、明確按下時才會嘗試送出 AI 修正請求；若 AI 後端暫時不可用，系統會改提供可直接貼給 AI 的修正提示詞。
-                    </p>
-                </div>
-
-                <section class="glass-panel rounded-[2rem] p-6 md:p-8">
-                    <div class="mb-4 flex items-center justify-between gap-4">
                         <div>
-                            <div class="text-sm font-black tracking-[0.22em] text-slate-500">INPUT</div>
-                            <h2 class="text-2xl font-black text-slate-900">請貼上試題或題組文字</h2>
+                            <label class="block text-sm font-bold text-slate-700 mb-2" data-i18n="label_version">教科書版本</label>
+                            <select id="version" class="w-full p-3 rounded-xl bg-white/70 input-field">
+                                <option value="" selected data-i18n="opt_any">不限</option>
+                                <option value="南一">南一</option>
+                                <option value="康軒">康軒</option>
+                                <option value="翰林">翰林</option>
+                            </select>
                         </div>
-                        <button type="button" onclick="loadExample()" class="inline-flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-bold text-green-700 transition hover:bg-green-100">
-                            <i class="fa-solid fa-wand-magic-sparkles"></i>
-                            載入範例
-                        </button>
-                    </div>
-
-                    <textarea id="questionInput" class="input-field min-h-[22rem] w-full rounded-[1.75rem] bg-white/90 px-5 py-5 text-[1rem] leading-8 text-slate-800" placeholder="例如：下列哪一項最能說明植物的葉子與環境之間的關係？&#10;&#10;(A) 葉子越大，植物一定長得越高。&#10;(B) 葉子的外形可能和降雨、陽光等生長環境有關。&#10;(C) 每一種植物的葉子形狀都完全相同。&#10;(D) 葉子的顏色與植物是否需要水分無關。"></textarea>
-
-                    <div class="mt-4 grid gap-3 md:grid-cols-2">
-                        <div class="rounded-3xl border border-slate-200 bg-white/75 p-4">
-                            <div class="text-sm font-bold text-slate-700">斷詞規則</div>
-                            <div class="mt-2 text-sm leading-6 text-slate-600">
-                                以 `Sheet1!J:J` 抽出的 CKIP 詞彙表進行最長詞優先比對，命中詞彙會保留詞性。
-                            </div>
-                        </div>
-                        <div class="rounded-3xl border border-slate-200 bg-white/75 p-4">
-                            <div class="text-sm font-bold text-slate-700">AI 修正時機</div>
-                            <div class="mt-2 text-sm leading-6 text-slate-600">
-                                適合用在未命中片段較多、題幹句型拗口，或你想要更貼近教材語彙時。
+                        <div class="pt-2">
+                            <label class="block text-sm font-bold text-slate-700 mb-3" data-i18n="label_pos">檢測詞性 (多選)</label>
+                            <div class="flex flex-wrap gap-2">
+                                <label class="bg-white/70 px-3 py-2 rounded-xl border border-green-100 flex items-center hover:bg-green-50 cursor-pointer transition shadow-sm text-sm"><input type="checkbox" name="pos" value="N" checked class="mr-2 accent-green-600 w-4 h-4"><span data-i18n="pos_n">名詞 (Na/Nb/Nc/Nf)</span></label>
+                                <label class="bg-white/70 px-3 py-2 rounded-xl border border-green-100 flex items-center hover:bg-green-50 cursor-pointer transition shadow-sm text-sm"><input type="checkbox" name="pos" value="V" checked class="mr-2 accent-green-600 w-4 h-4"><span data-i18n="pos_v">動詞</span></label>
+                                <label class="bg-white/70 px-3 py-2 rounded-xl border border-green-100 flex items-center hover:bg-green-50 cursor-pointer transition shadow-sm text-sm"><input type="checkbox" name="pos" value="A" class="mr-2 accent-green-600 w-4 h-4"><span data-i18n="pos_a">形容詞</span></label>
+                                <label class="bg-white/70 px-3 py-2 rounded-xl border border-green-100 flex items-center hover:bg-green-50 cursor-pointer transition shadow-sm text-sm"><input type="checkbox" name="pos" value="D" class="mr-2 accent-green-600 w-4 h-4"><span data-i18n="pos_d">副詞</span></label>
+                                <label class="bg-white/70 px-3 py-2 rounded-xl border border-green-100 flex items-center hover:bg-green-50 cursor-pointer transition shadow-sm text-sm"><input type="checkbox" name="pos" value="C" class="mr-2 accent-green-600 w-4 h-4"><span data-i18n="pos_c">連接詞</span></label>
+                                <label class="bg-white/70 px-3 py-2 rounded-xl border border-green-100 flex items-center hover:bg-green-50 cursor-pointer transition shadow-sm text-sm"><input type="checkbox" name="pos" value="O" class="mr-2 accent-green-600 w-4 h-4"><span data-i18n="pos_o">其他</span></label>
                             </div>
                         </div>
                     </div>
-                </section>
-            </div>
-        </section>
-
-        <section id="resultsSection" class="hidden space-y-8">
-            <div class="grid gap-4 md:grid-cols-4">
-                <div class="glass-panel rounded-3xl p-5">
-                    <div class="text-sm font-medium text-slate-500">詞彙片段數</div>
-                    <div id="summaryTokenCount" class="mt-2 text-4xl font-black text-slate-900">0</div>
                 </div>
-                <div class="glass-panel rounded-3xl p-5">
-                    <div class="text-sm font-medium text-slate-500">詞庫命中</div>
-                    <div id="summaryMatchedCount" class="mt-2 text-4xl font-black text-green-600">0</div>
-                </div>
-                <div class="glass-panel rounded-3xl p-5">
-                    <div class="text-sm font-medium text-slate-500">命中率</div>
-                    <div id="summaryCoverage" class="mt-2 text-4xl font-black text-emerald-600">0%</div>
-                </div>
-                <div class="glass-panel rounded-3xl p-5">
-                    <div class="text-sm font-medium text-slate-500">待 AI 檢查片段</div>
-                    <div id="summaryUnmatchedCount" class="mt-2 text-4xl font-black text-amber-600">0</div>
-                </div>
+                
+                <button id="runBtn" onclick="runAnalysis()" class="w-full bg-gradient-to-r from-green-600 to-teal-600 text-white py-4 rounded-2xl hover:shadow-lg hover:shadow-green-500/30 transition-all font-bold text-xl tracking-wide transform active:scale-[0.98] flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-magnifying-glass-chart"></i> <span data-i18n="btn_start">開始 AI 檢測</span>
+                </button>
             </div>
 
-            <div class="grid gap-8 xl:grid-cols-[1.2fr_0.8fr]">
-                <section class="glass-panel rounded-[2rem] p-6 md:p-8">
-                    <div class="mb-5 flex items-center justify-between gap-4">
-                        <div>
-                            <div class="text-sm font-black tracking-[0.22em] text-slate-500">SEGMENTATION</div>
-                            <h3 class="text-2xl font-black text-slate-900">試題斷詞結果</h3>
-                        </div>
-                        <div class="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600">
-                            綠色命中詞庫，橘色建議再檢查
+            <div class="lg:col-span-8 space-y-8">
+                <div class="glass-panel p-6 rounded-3xl relative">
+                    <div class="flex justify-between items-center mb-4">
+                        <label class="block font-bold text-slate-700 text-xl">
+                            <i class="fa-regular fa-file-lines mr-2 text-green-600"></i> <span data-i18n="label_text_input">試題文本</span>
+                        </label>
+                        <div class="flex gap-2">
+                            <button onclick="loadExample()" class="text-sm bg-green-50 text-green-700 px-4 py-2 rounded-xl hover:bg-green-100 transition font-medium border border-green-200 flex items-center">
+                                <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> <span data-i18n="btn_example">載入範例</span>
+                            </button>
+                            <button onclick="document.getElementById('text').value=''" class="text-sm bg-slate-50 text-slate-500 px-4 py-2 rounded-xl hover:bg-red-50 hover:text-red-500 transition border border-slate-200" title="清空">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
                         </div>
                     </div>
-                    <div id="tokenStream" class="min-h-[10rem] rounded-[1.75rem] border border-slate-200 bg-white/85 p-5 leading-8"></div>
-                </section>
+                    <textarea id="text" class="w-full h-64 p-5 rounded-2xl bg-white/70 text-slate-700 text-base leading-relaxed resize-none input-field scrollbar-thin font-mono" placeholder="請在此貼上包含題幹與選項的完整試題內容..." data-i18n-placeholder="placeholder_text"></textarea>
+                </div>
 
-                <section class="glass-panel rounded-[2rem] p-6 md:p-8">
-                    <div class="text-sm font-black tracking-[0.22em] text-slate-500">INSIGHT</div>
-                    <h3 class="mb-4 text-2xl font-black text-slate-900">檢核摘要</h3>
-                    <div id="analysisNarrative" class="space-y-3 text-base leading-8 text-slate-700"></div>
-                </section>
+                <div id="result-area" class="hidden space-y-8 animate-fade-in-up">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="glass-panel p-5 rounded-2xl text-center border-b-4 border-green-500 tooltip-container group">
+                            <div class="text-sm text-slate-500 mb-2 font-medium flex items-center justify-center gap-2">
+                                <span data-i18n="kpi_score">適切性評分</span>
+                                <i class="fa-regular fa-circle-question text-slate-400 group-hover:text-green-600 transition-colors"></i>
+                            </div>
+                            <div class="text-4xl font-black text-green-600" id="res-score">--</div>
+                            <div class="tooltip-content">
+                                <div class="font-bold text-green-400 mb-1 border-b border-slate-600 pb-1">計算公式</div>
+                                <div class="mb-2">100 - Σ (學期差 × 2)</div>
+                                <div class="font-bold text-green-400 mb-1 border-b border-slate-600 pb-1">本次算式</div>
+                                <div id="res-score-detail" class="text-slate-300">請先進行分析...</div>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel p-5 rounded-2xl text-center">
+                            <div class="text-sm text-slate-500 mb-2 font-medium" data-i18n="kpi_total">分析詞彙數</div>
+                            <div class="text-3xl font-bold text-slate-700" id="res-total">0</div>
+                        </div>
+                        <div class="glass-panel p-5 rounded-2xl text-center">
+                            <div class="text-sm text-slate-500 mb-2 font-medium" data-i18n="kpi_safe">符合目標年級</div>
+                            <div class="text-3xl font-bold text-green-600" id="res-safe">0</div>
+                        </div>
+                        <div class="glass-panel p-5 rounded-2xl text-center border-b-4 border-red-400">
+                            <div class="text-sm text-slate-500 mb-2 font-medium" data-i18n="kpi_risk">超前/未見</div>
+                            <div class="text-3xl font-bold text-red-500" id="res-risk">0</div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-3xl overflow-hidden">
+                        <h3 class="font-bold text-slate-700 text-xl mb-5 flex items-center justify-between">
+                            <span><i class="fa-solid fa-table-list mr-2 text-green-600"></i> <span data-i18n="table_title">詞彙年級分佈分析</span></span>
+                        </h3>
+                        <div class="overflow-x-auto max-h-[500px] scrollbar-thin rounded-xl border border-green-100">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="sticky top-0 bg-green-50/90 backdrop-blur z-10">
+                                    <tr class="text-slate-600 text-sm font-bold border-b border-green-200">
+                                        <th class="pb-4 pt-4 pl-4" data-i18n="th_term">詞彙</th>
+                                        <th class="pb-4 pt-4" data-i18n="th_pos">詞性</th>
+                                        <th class="pb-4 pt-4" data-i18n="th_first">資料庫首次出現</th>
+                                        <th class="pb-4 pt-4 text-center" data-i18n="th_diff">學期差</th>
+                                        <th class="pb-4 pt-4 text-center" data-i18n="th_status">判定</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="result-table-body" class="text-slate-700 text-sm font-medium bg-white/50 divide-y divide-green-50">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-8 rounded-3xl border-l-8 border-green-600 bg-white/80">
+                        <h3 class="font-bold text-green-800 text-2xl mb-6 flex items-center">
+                            <i class="fa-solid fa-robot fa-bounce mr-3 text-green-600" style="--fa-animation-duration: 3s;"></i> <span data-i18n="ai_feedback_title">AI 深度命題回饋</span>
+                        </h3>
+                        <div id="ai-feedback-loader" class="hidden flex items-center text-green-700">
+                            <div class="loader mr-3"></div> <span data-i18n="status_analyzing">正在生成深度分析報告，請稍候...</span>
+                        </div>
+                        <div id="ai-feedback-content" class="text-slate-700 leading-relaxed space-y-6 text-base"></div>
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            <button id="manual-ai-btn" onclick="generateAiPrompt()" disabled class="text-sm bg-green-50 text-green-700 px-4 py-2 rounded-xl border border-green-200 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                                需要 AI 命題修正時按我
+                            </button>
+                            <button id="copy-ai-btn" onclick="copyAiPrompt()" class="hidden text-sm bg-slate-800 text-white px-4 py-2 rounded-xl border border-slate-700 transition">
+                                複製提示詞
+                            </button>
+                        </div>
+                        <textarea id="manual-ai-prompt" class="hidden mt-3 w-full p-4 rounded-xl bg-slate-900 text-slate-100 text-sm leading-relaxed" rows="8" readonly></textarea>
+                    </div>
+                </div>
             </div>
-
-            <div class="grid gap-8 lg:grid-cols-2">
-                <section class="glass-panel rounded-[2rem] p-6 md:p-8">
-                    <div class="mb-4 flex items-center justify-between">
-                        <div>
-                            <div class="text-sm font-black tracking-[0.22em] text-slate-500">MATCHED VOCAB</div>
-                            <h3 class="text-2xl font-black text-slate-900">命中詞彙</h3>
-                        </div>
-                        <span id="matchedUniqueCount" class="rounded-full bg-green-50 px-4 py-2 text-sm font-bold text-green-700">0 個</span>
-                    </div>
-                    <div class="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white/85">
-                        <table class="min-w-full text-left text-sm">
-                            <thead class="bg-slate-50 text-slate-600">
-                                <tr>
-                                    <th class="px-4 py-3 font-bold">詞彙</th>
-                                    <th class="px-4 py-3 font-bold">詞性</th>
-                                    <th class="px-4 py-3 font-bold text-right">命中次數</th>
-                                </tr>
-                            </thead>
-                            <tbody id="matchedTableBody" class="divide-y divide-slate-100"></tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <section class="glass-panel rounded-[2rem] p-6 md:p-8">
-                    <div class="mb-4 flex items-center justify-between">
-                        <div>
-                            <div class="text-sm font-black tracking-[0.22em] text-slate-500">REVIEW TARGET</div>
-                            <h3 class="text-2xl font-black text-slate-900">建議再檢查片段</h3>
-                        </div>
-                        <span id="unmatchedUniqueCount" class="rounded-full bg-amber-50 px-4 py-2 text-sm font-bold text-amber-700">0 個</span>
-                    </div>
-                    <div id="unmatchedList" class="min-h-[10rem] rounded-[1.5rem] border border-slate-200 bg-white/85 p-5"></div>
-                </section>
-            </div>
-
-            <section class="glass-panel rounded-[2rem] p-6 md:p-8">
-                <div class="mb-5 flex items-center justify-between gap-4">
-                    <div>
-                        <div class="text-sm font-black tracking-[0.22em] text-slate-500">AI REVISION</div>
-                        <h3 class="text-2xl font-black text-slate-900">AI 命題修正建議</h3>
-                    </div>
-                    <div id="aiStatus" class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600">
-                        尚未執行
-                    </div>
-                </div>
-
-                <div id="aiLoader" class="hidden items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-4 text-emerald-700">
-                    <div class="loader"></div>
-                    <span>正在請求 AI 命題修正建議…</span>
-                </div>
-
-                <div id="aiContent" class="rounded-[1.75rem] border border-slate-200 bg-white/85 p-5 text-base leading-8 text-slate-700">
-                    請先完成一次詞彙表斷詞；若你想請 AI 幫忙調整題幹，再按上方「AI 命題修正建議」。
-                </div>
-
-                <div id="aiPromptBox" class="mt-4 hidden rounded-[1.5rem] border border-dashed border-amber-300 bg-amber-50 p-5">
-                    <div class="mb-3 flex items-center justify-between gap-4">
-                        <div class="text-sm font-bold text-amber-900">AI 後端不可用時，可直接使用下面提示詞</div>
-                        <button type="button" onclick="copyAiPrompt()" class="inline-flex items-center gap-2 rounded-full bg-amber-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-amber-700">
-                            <i class="fa-regular fa-copy"></i>
-                            複製提示詞
-                        </button>
-                    </div>
-                    <textarea id="aiPromptText" readonly class="input-field min-h-[14rem] w-full rounded-2xl bg-white px-4 py-4 text-sm leading-7 text-slate-800"></textarea>
-                </div>
-            </section>
-        </section>
+        </div>
     </main>
 
-    <div id="toast" class="pointer-events-none fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 translate-y-10 items-center gap-3 rounded-full border border-slate-700 bg-slate-900/95 px-6 py-3 text-white opacity-0 shadow-2xl transition-all duration-300">
-        <i id="toastIcon" class="fa-solid fa-circle-info text-blue-400"></i>
-        <span id="toastMessage">提示訊息</span>
+    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-slate-800/90 backdrop-blur text-white px-6 py-3 rounded-full shadow-xl transition-all duration-300 opacity-0 translate-y-10 z-50 flex items-center gap-3 pointer-events-none border border-slate-700">
+        <i id="toast-icon" class="fa-solid fa-circle-info text-yellow-400"></i>
+        <span id="toast-msg">提示訊息</span>
     </div>
 
     <script>
+        const translations = {
+            "zh-TW": {
+                "back_btn": "返回教學中心", "page_title": "中小學自然科命題用詞 AI 檢核", "page_subtitle": "結合大數據資料庫與生成式 AI，精準診斷命題適切性",
+                "settings_title": "參數設定", "label_stage": "學習階段", "opt_select": "請選擇", "opt_elem": "國小", "opt_junior": "國中",
+                "label_grade": "目標年級", "opt_any": "不限", "label_semester": "目標學期", "opt_sem1": "上學期", "opt_sem2": "下學期",
+                "label_version": "教科書版本", "label_pos": "檢測詞性 (多選)", 
+                "pos_n": "名詞 (Na/Nb/Nc/Nf)", "pos_v": "動詞", "pos_a": "形容詞", "pos_d": "副詞", "pos_c": "連接詞", "pos_o": "其他",
+                "btn_start": "開始 AI 檢測", "label_text_input": "試題文本", "btn_example": "載入範例", "placeholder_text": "請在此貼上包含題幹與選項的完整試題內容...",
+                "kpi_score": "適切性評分", "kpi_total": "分析詞彙數", "kpi_safe": "符合目標年級", "kpi_risk": "超前/未見",
+                "table_title": "詞彙年級分佈分析", "th_term": "詞彙", "th_pos": "詞性", "th_first": "資料庫首次出現", "th_diff": "學期差", "th_status": "判定",
+                "ai_feedback_title": "AI 深度命題回饋", "status_analyzing": "正在進行 AI 分析與資料比對...",
+                "msg_select_stage": "請先選擇學習階段！", "msg_input_text": "請輸入試題文本！", "msg_analysis_done": "分析完成！", "msg_analysis_fail": "分析失敗：",
+                "grade_3": "三年級", "grade_4": "四年級", "grade_5": "五年級", "grade_6": "六年級", "grade_7": "七年級", "grade_8": "八年級", "grade_9": "九年級"
+            },
+            "en": {
+                "back_btn": "Back to Hub", "page_title": "Science Exam Vocabulary Checker", "page_subtitle": "AI-powered analysis for vocabulary suitability.",
+                "settings_title": "Settings", "label_stage": "Stage", "opt_select": "Select...", "opt_elem": "Elementary", "opt_junior": "Junior High",
+                "label_grade": "Target Grade", "opt_any": "Any", "label_semester": "Semester", "opt_sem1": "1st Sem", "opt_sem2": "2nd Sem",
+                "label_version": "Textbook Edition", "label_pos": "Part of Speech", 
+                "pos_n": "Noun (Na/Nb/Nc/Nf)", "pos_v": "Verb", "pos_a": "Adj", "pos_d": "Adv", "pos_c": "Conj", "pos_o": "Other",
+                "btn_start": "Analyze", "label_text_input": "Exam Text", "btn_example": "Load Example", "placeholder_text": "Paste text here...",
+                "kpi_score": "Suitability", "kpi_total": "Total Terms", "kpi_safe": "Safe", "kpi_risk": "Risk",
+                "table_title": "Vocabulary Analysis", "th_term": "Term", "th_pos": "POS", "th_first": "First Seen", "th_diff": "Sem Gap", "th_status": "Status",
+                "ai_feedback_title": "AI Feedback", "status_analyzing": "Analyzing...",
+                "msg_select_stage": "Select stage first!", "msg_input_text": "Input text!", "msg_analysis_done": "Done!", "msg_analysis_fail": "Failed: ",
+                "grade_3": "G3", "grade_4": "G4", "grade_5": "G5", "grade_6": "G6", "grade_7": "G7", "grade_8": "G8", "grade_9": "G9"
+            },
+            "ja": {
+                "back_btn": "戻る", "page_title": "科学試験用語AIチェッカー", "page_subtitle": "ビッグデータとAIを活用した試験問題の適切性診断",
+                "settings_title": "設定", "label_stage": "学習段階", "opt_select": "選択...", "opt_elem": "小学校", "opt_junior": "中学校",
+                "label_grade": "目標学年", "opt_any": "指定なし", "label_semester": "学期", "opt_sem1": "前期", "opt_sem2": "後期",
+                "label_version": "教科書版", "label_pos": "品詞 (複数選択)", 
+                "pos_n": "名詞 (Na/Nb/Nc/Nf)", "pos_v": "動詞", "pos_a": "形容詞", "pos_d": "副詞", "pos_c": "接続詞", "pos_o": "その他",
+                "btn_start": "分析開始", "label_text_input": "問題文", "btn_example": "例文をロード", "placeholder_text": "ここに貼り付けてください...",
+                "kpi_score": "適合スコア", "kpi_total": "分析単語数", "kpi_safe": "学年適合", "kpi_risk": "未習リスク",
+                "table_title": "単語分布分析", "th_term": "単語", "th_pos": "品詞", "th_first": "初出", "th_diff": "学期差", "th_status": "判定",
+                "ai_feedback_title": "AI フィードバック", "status_analyzing": "分析中...",
+                "msg_select_stage": "学習段階を選択してください！", "msg_input_text": "テキストを入力してください！", "msg_analysis_done": "完了！", "msg_analysis_fail": "失敗：",
+                "grade_3": "小3", "grade_4": "小4", "grade_5": "小5", "grade_6": "小6", "grade_7": "中1", "grade_8": "中2", "grade_9": "中3"
+            },
+            "zh-CN": {
+                "back_btn": "返回教学中心", "page_title": "中小学自然科命题用词 AI 检核", "page_subtitle": "结合大数据与生成式 AI，精准诊断命题适切性",
+                "settings_title": "参数设置", "label_stage": "学习阶段", "opt_select": "请选择", "opt_elem": "国小", "opt_junior": "国中",
+                "label_grade": "目标年级", "opt_any": "不限", "label_semester": "目标学期", "opt_sem1": "上学期", "opt_sem2": "下学期",
+                "label_version": "教科书版本", "label_pos": "检测词性", 
+                "pos_n": "名词 (Na/Nb/Nc/Nf)", "pos_v": "动词", "pos_a": "形容词", "pos_d": "副词", "pos_c": "连接词", "pos_o": "其他",
+                "btn_start": "开始检测", "label_text_input": "试题文本", "btn_example": "载入范例", "placeholder_text": "请在此粘贴试题内容...",
+                "kpi_score": "适切性评分", "kpi_total": "分析词汇数", "kpi_safe": "符合目标年级", "kpi_risk": "超前/未见",
+                "table_title": "词汇年级分布分析", "th_term": "词汇", "th_pos": "词性", "th_first": "数据库首次出现", "th_diff": "学期差", "th_status": "判定",
+                "ai_feedback_title": "AI 深度命题反馈", "status_analyzing": "正在进行 AI 分析与资料比对...",
+                "msg_select_stage": "请先选择学习阶段！", "msg_input_text": "请输入试题文本！", "msg_analysis_done": "分析完成！", "msg_analysis_fail": "分析失败：",
+                "grade_3": "三年级", "grade_4": "四年级", "grade_5": "五年级", "grade_6": "六年级", "grade_7": "七年级", "grade_8": "八年级", "grade_9": "九年级"
+            }
+        };
+
+        let currentLang = 'zh-TW';
         const SHEET_GVIZ_URL = "https://docs.google.com/spreadsheets/d/1cEfMEy3bvDa1tET3xmh7ShGeJy8KLUMa_JuULGBD-mk/gviz/tq?tqx=out:json&sheet=Sheet1&range=J:J";
-        const VOCAB_CACHE_KEY = "teacher-item-vocab-dataset-v2";
-        const AI_REVIEW_URL = window.AISchool?.getGasUrl?.("teacherItemVocabulary") || "";
+        const VOCAB_CACHE_KEY = "teacher_item_vocab_j_column_cache_v1";
+        let vocabModel = null;
+        let lastAnalysisContext = null;
+        let lastAiPrompt = "";
 
-        let vocabDataset = null;
-        let lastAnalysis = null;
-
-        document.addEventListener("DOMContentLoaded", () => {
-            populateGrades();
-            document.getElementById("stageSelect").addEventListener("change", populateGrades);
-            loadDataset();
+        document.addEventListener('DOMContentLoaded', () => { updateGrades(); });
+        document.addEventListener('DOMContentLoaded', async () => {
+            setAiPanelIdle();
+            await initializeLexicon();
         });
 
-        function populateGrades() {
-            const stage = document.getElementById("stageSelect").value;
-            const gradeSelect = document.getElementById("gradeSelect");
-            const currentValue = gradeSelect.value;
-            const options = stage === "國小" ? ["三年級", "四年級", "五年級", "六年級"] : ["七年級", "八年級", "九年級"];
-
-            gradeSelect.innerHTML = options.map((option) => {
-                const selected = option === currentValue ? " selected" : "";
-                return `<option value="${option}"${selected}>${option}</option>`;
-            }).join("");
-
-            if (!gradeSelect.value) {
-                gradeSelect.value = options[0];
-            }
+        function changeLanguage() {
+            currentLang = document.getElementById("language-selector").value;
+            const t = translations[currentLang] || translations["zh-TW"];
+            document.querySelectorAll("[data-i18n]").forEach(el => {
+                const key = el.getAttribute("data-i18n");
+                if (t[key]) el.innerText = t[key];
+            });
+            document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+                const key = el.getAttribute("data-i18n-placeholder");
+                if (t[key]) el.placeholder = t[key];
+            });
+            updateGrades(true);
         }
 
-        function readCachedDataset() {
-            try {
-                const raw = localStorage.getItem(VOCAB_CACHE_KEY);
-                if (!raw) return null;
-                const parsed = JSON.parse(raw);
-                return parsed?.payload || null;
-            } catch (error) {
-                console.warn("讀取詞庫快取失敗", error);
-                return null;
+        function updateGrades(isLangChange = false) {
+            const stage = document.getElementById('stage').value;
+            const gradeSelect = document.getElementById('grades');
+            const t = translations[currentLang] || translations["zh-TW"];
+            const currentVal = gradeSelect.value;
+
+            gradeSelect.innerHTML = `<option value="" selected>${t.opt_any}</option>`;
+            
+            if (stage === '國小' || stage === 'opt_elem') {
+                const grades = [{v:'三年級',l:t.grade_3},{v:'四年級',l:t.grade_4},{v:'五年級',l:t.grade_5},{v:'六年級',l:t.grade_6}];
+                grades.forEach(g => { gradeSelect.add(new Option(g.l, g.v)); });
+                gradeSelect.disabled = false;
+            } else if (stage === '國中' || stage === 'opt_junior') {
+                const grades = [{v:'七年級',l:t.grade_7},{v:'八年級',l:t.grade_8},{v:'九年級',l:t.grade_9}];
+                grades.forEach(g => { gradeSelect.add(new Option(g.l, g.v)); });
+                gradeSelect.disabled = false;
+            } else {
+                gradeSelect.disabled = true;
             }
+            if(isLangChange && currentVal) gradeSelect.value = currentVal;
         }
 
-        function saveCachedDataset(payload) {
-            try {
-                localStorage.setItem(VOCAB_CACHE_KEY, JSON.stringify({
-                    savedAt: new Date().toISOString(),
-                    payload
-                }));
-            } catch (error) {
-                console.warn("寫入詞庫快取失敗", error);
-            }
+        function loadExample() {
+            document.getElementById('stage').value = "國中";
+            updateGrades();
+            document.getElementById('grades').value = "七年級";
+            document.getElementById('semester').value = "上";
+            document.getElementById('version').value = "";
+            document.getElementById('text').value = 
+`1. 使用複式顯微鏡觀察玻片標本時，如果想得到適當的光線，應調節下列哪些部位？
+(A) 目鏡、物鏡
+(B) 反光鏡、光圈
+(C) 粗調節輪、細調節輪
+(D) 載玻片、蓋玻片`;
+            showToast("範例已載入，請按「開始 AI 檢測」", "success");
         }
 
-        async function loadDataset() {
-            const bundled = window.TEACHER_ITEM_VOCAB_DATA || null;
-            const cached = readCachedDataset();
-
-            if (bundled) {
-                applyDataset(bundled, "內建備援");
+        async function initializeLexicon() {
+            const fromBundle = window.TEACHER_ITEM_VOCAB_DATA;
+            if (fromBundle?.terms?.length) {
+                vocabModel = buildVocabModel(fromBundle.terms);
             }
 
-            if (cached && (!bundled || (cached.source?.termCount || 0) >= (bundled.source?.termCount || 0))) {
-                applyDataset(cached, "本機快取");
-            }
-
-            if (!bundled && !cached) {
-                updateDatasetStatus("找不到可用詞庫", "border-red-200 bg-red-50 text-red-700");
+            const cached = readCachedTerms();
+            if (cached?.length && (!vocabModel || cached.length > vocabModel.totalTerms)) {
+                vocabModel = buildVocabModel(cached);
             }
 
             try {
-                const remote = await fetchRemoteDataset();
-                if (remote) {
-                    applyDataset(remote, "Google Sheet 即時同步");
-                    saveCachedDataset(remote);
-                    showToast("已同步最新詞庫", "success");
+                const terms = await fetchTermsFromSheet();
+                if (terms.length) {
+                    vocabModel = buildVocabModel(terms);
+                    cacheTerms(terms);
+                    showToast(`詞彙表已同步 (${terms.length} 詞)`, "success");
                 }
             } catch (error) {
-                console.warn("遠端詞庫同步失敗", error);
-                if (!vocabDataset) {
-                    updateDatasetStatus("詞庫載入失敗", "border-red-200 bg-red-50 text-red-700");
+                console.warn("fetchTermsFromSheet failed", error);
+                if (vocabModel) {
+                    showToast(`詞彙表同步失敗，改用快取 (${vocabModel.totalTerms} 詞)`, "warning");
+                } else {
+                    showToast("詞彙表載入失敗，請檢查 Sheet 權限。", "error");
                 }
             }
         }
 
-        function applyDataset(payload, sourceLabel) {
-            vocabDataset = normalizeDataset(payload, sourceLabel);
-            renderDatasetMeta();
-        }
+        async function fetchTermsFromSheet() {
+            const resp = await fetch(SHEET_GVIZ_URL, { cache: "no-store" });
+            if (!resp.ok) throw new Error(`Sheet 讀取失敗 (${resp.status})`);
+            const text = await resp.text();
+            const match = text.match(/setResponse\(([\s\S]+)\);?\s*$/);
+            if (!match) throw new Error("Sheet 回應格式錯誤");
 
-        function normalizeDataset(payload, sourceLabel) {
-            const terms = [];
-            const byFirstChar = new Map();
-            let maxLength = 1;
-
-            for (const item of payload?.terms || []) {
-                const term = String(item?.[0] || "").trim();
-                const pos = String(item?.[1] || "UNK").trim() || "UNK";
-                if (!term) continue;
-
-                const entry = { term, pos };
-                terms.push(entry);
-                maxLength = Math.max(maxLength, term.length);
-
-                const key = term[0];
-                if (!byFirstChar.has(key)) {
-                    byFirstChar.set(key, []);
-                }
-                byFirstChar.get(key).push(entry);
-            }
-
-            for (const entries of byFirstChar.values()) {
-                entries.sort((a, b) => b.term.length - a.term.length || a.term.localeCompare(b.term, "zh-Hant"));
-            }
-
-            return {
-                generatedAt: payload?.generatedAt || "",
-                source: payload?.source || {},
-                terms,
-                byFirstChar,
-                maxLength,
-                sourceLabel
-            };
-        }
-
-        function renderDatasetMeta() {
-            if (!vocabDataset) return;
-
-            document.getElementById("vocabCount").textContent = vocabDataset.terms.length.toLocaleString("zh-TW");
-
-            const sourceParts = [
-                `來源：${vocabDataset.sourceLabel}`,
-                `詞數：${(vocabDataset.source?.termCount || vocabDataset.terms.length).toLocaleString("zh-TW")}`
-            ];
-
-            if (vocabDataset.source?.rowCount) {
-                sourceParts.push(`原始列數：${vocabDataset.source.rowCount.toLocaleString("zh-TW")}`);
-            }
-
-            if (vocabDataset.generatedAt) {
-                sourceParts.push(`更新：${new Date(vocabDataset.generatedAt).toLocaleString("zh-TW")}`);
-            }
-
-            document.getElementById("datasetMeta").textContent = sourceParts.join(" ｜ ");
-            updateDatasetStatus(`${vocabDataset.sourceLabel} · ${vocabDataset.terms.length.toLocaleString("zh-TW")} 詞`, "border-emerald-200 bg-emerald-50 text-emerald-700");
-        }
-
-        function updateDatasetStatus(label, className) {
-            const badge = document.getElementById("datasetStatusBadge");
-            badge.className = `rounded-full border px-4 py-2 text-sm font-medium ${className}`;
-            badge.textContent = label;
-        }
-
-        async function fetchRemoteDataset() {
-            const response = await fetch(SHEET_GVIZ_URL, { cache: "no-store" });
-            if (!response.ok) {
-                throw new Error(`Google Sheet 讀取失敗 (${response.status})`);
-            }
-
-            const raw = await response.text();
-            const match = raw.match(/setResponse\(([\s\S]+)\);?$/);
-            if (!match) {
-                throw new Error("無法解析 Google Sheet 回應");
-            }
-
-            const json = JSON.parse(match[1]);
-            const rows = (((json || {}).table || {}).rows || [])
+            const payload = JSON.parse(match[1]);
+            const rows = (((payload || {}).table || {}).rows || [])
                 .map((row) => row?.c?.[0]?.v || "")
                 .filter(Boolean);
 
-            return buildDatasetFromCkipRows(rows);
-        }
-
-        function buildDatasetFromCkipRows(rows) {
             const regex = /([^()\s\u3000]+)\(([A-Za-z0-9_]+)\)/g;
-            const counters = new Map();
+            const termStats = new Map();
 
             for (const rowText of rows) {
                 regex.lastIndex = 0;
-                let match;
-
-                while ((match = regex.exec(rowText)) !== null) {
-                    const term = String(match[1] || "").trim();
-                    const pos = String(match[2] || "").trim();
-
+                let m;
+                while ((m = regex.exec(rowText)) !== null) {
+                    const term = (m[1] || "").trim();
+                    const pos = (m[2] || "").trim();
                     if (!term || !pos || pos.includes("CATEGORY")) continue;
-                    if (isPurePunctuation(term)) continue;
+                    if (/^[\p{P}\p{S}]+$/u.test(term)) continue;
 
-                    if (!counters.has(term)) {
-                        counters.set(term, new Map());
-                    }
-
-                    const posCounter = counters.get(term);
+                    if (!termStats.has(term)) termStats.set(term, new Map());
+                    const posCounter = termStats.get(term);
                     posCounter.set(pos, (posCounter.get(pos) || 0) + 1);
                 }
             }
 
-            const terms = Array.from(counters.entries())
-                .map(([term, posCounter]) => {
-                    const sorted = Array.from(posCounter.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
-                    return [term, sorted[0][0]];
-                })
-                .sort((a, b) => b[0].length - a[0].length || a[0].localeCompare(b[0], "zh-Hant"));
-
-            return {
-                generatedAt: new Date().toISOString(),
-                source: {
-                    spreadsheetId: "1cEfMEy3bvDa1tET3xmh7ShGeJy8KLUMa_JuULGBD-mk",
-                    sheetName: "Sheet1",
-                    column: "J",
-                    rowCount: rows.length,
-                    termCount: terms.length
-                },
-                terms
-            };
+            return Array.from(termStats.entries()).map(([term, posMap]) => {
+                const ranked = Array.from(posMap.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+                return [term, ranked[0][0]];
+            });
         }
 
-        function isPurePunctuation(value) {
-            return /^[\p{P}\p{S}]+$/u.test(value);
-        }
-
-        function runSegmentation() {
-            if (!vocabDataset) {
-                showToast("詞庫尚未載入完成，請稍候再試。", "warning");
-                return;
+        function readCachedTerms() {
+            try {
+                const raw = localStorage.getItem(VOCAB_CACHE_KEY);
+                if (!raw) return null;
+                const parsed = JSON.parse(raw);
+                return Array.isArray(parsed?.terms) ? parsed.terms : null;
+            } catch {
+                return null;
             }
-
-            const text = document.getElementById("questionInput").value.trim();
-            if (!text) {
-                showToast("請先輸入試題文字。", "warning");
-                return;
-            }
-
-            const tokens = segmentText(text);
-            const analysis = summarizeTokens(tokens);
-
-            lastAnalysis = {
-                text,
-                stage: document.getElementById("stageSelect").value,
-                grade: document.getElementById("gradeSelect").value,
-                tokens,
-                ...analysis
-            };
-
-            renderAnalysis(lastAnalysis);
-            document.getElementById("resultsSection").classList.remove("hidden");
-            document.getElementById("resultsSection").scrollIntoView({ behavior: "smooth", block: "start" });
-
-            const aiBtn = document.getElementById("aiBtn");
-            aiBtn.disabled = false;
-            aiBtn.className = "inline-flex flex-1 items-center justify-center gap-3 rounded-2xl border border-emerald-200 bg-white px-5 py-4 text-lg font-black text-emerald-700 transition hover:bg-emerald-50";
-
-            resetAiPanel();
-            showToast("詞彙表斷詞完成。", "success");
         }
 
-        function segmentText(text) {
-            const tokens = [];
-            let index = 0;
-
-            while (index < text.length) {
-                const char = text[index];
-
-                if (char === "\r") {
-                    index += 1;
-                    continue;
-                }
-
-                if (char === "\n") {
-                    tokens.push({ type: "newline", value: "\n" });
-                    index += 1;
-                    continue;
-                }
-
-                if (/\s/u.test(char)) {
-                    index += 1;
-                    continue;
-                }
-
-                if (isPunctuationChar(char)) {
-                    tokens.push({ type: "punct", value: char });
-                    index += 1;
-                    continue;
-                }
-
-                const match = findLongestMatch(text, index);
-                if (match) {
-                    tokens.push({
-                        type: "matched",
-                        value: match.term,
-                        pos: match.pos
-                    });
-                    index += match.term.length;
-                    continue;
-                }
-
-                if (/[A-Za-z0-9_./%+-]/.test(char)) {
-                    const end = consumeAsciiRun(text, index);
-                    tokens.push({
-                        type: "unmatched",
-                        value: text.slice(index, end)
-                    });
-                    index = end;
-                    continue;
-                }
-
-                const end = consumeUnknownRun(text, index);
-                tokens.push({
-                    type: "unmatched",
-                    value: text.slice(index, end)
-                });
-                index = end;
+        function cacheTerms(terms) {
+            try {
+                localStorage.setItem(VOCAB_CACHE_KEY, JSON.stringify({
+                    savedAt: new Date().toISOString(),
+                    terms
+                }));
+            } catch {
+                // ignore storage failure
             }
-
-            return tokens;
         }
 
-        function findLongestMatch(text, startIndex) {
-            const entries = vocabDataset?.byFirstChar?.get(text[startIndex]) || [];
+        function buildVocabModel(terms) {
+            const grouped = new Map();
+            for (const item of terms) {
+                const term = (item?.[0] || "").trim();
+                const pos = (item?.[1] || "UNK").trim() || "UNK";
+                if (!term) continue;
+                const key = term[0];
+                if (!grouped.has(key)) grouped.set(key, []);
+                grouped.get(key).push({ term, pos });
+            }
+            for (const list of grouped.values()) {
+                list.sort((a, b) => b.term.length - a.term.length || a.term.localeCompare(b.term, "zh-Hant"));
+            }
+            let totalTerms = 0;
+            for (const list of grouped.values()) totalTerms += list.length;
+            return { grouped, totalTerms };
+        }
+
+        function mapPosGroup(pos) {
+            if (/^N/.test(pos)) return "N";
+            if (/^C/.test(pos)) return "C";
+            if (/^D/.test(pos)) return "D";
+            if (/^(VH|VA|VL|VHC|A)/.test(pos)) return "A";
+            if (/^V/.test(pos)) return "V";
+            return "O";
+        }
+
+        function findLongestHit(text, start, selectedGroups) {
+            if (!vocabModel) return null;
+            const entries = vocabModel.grouped.get(text[start]) || [];
             for (const entry of entries) {
-                if (text.startsWith(entry.term, startIndex)) {
-                    return entry;
-                }
+                if (!text.startsWith(entry.term, start)) continue;
+                const group = mapPosGroup(entry.pos);
+                if (selectedGroups.has(group)) return entry;
             }
             return null;
         }
 
-        function consumeAsciiRun(text, startIndex) {
-            let index = startIndex + 1;
-            while (index < text.length && /[A-Za-z0-9_./%+-]/.test(text[index])) {
-                index += 1;
-            }
-            return index;
+        function isSplitChar(ch) {
+            return /[\s\r\n，。、；：！？,.!?()（）「」『』【】《》〈〉]/u.test(ch);
         }
 
-        function consumeUnknownRun(text, startIndex) {
-            let index = startIndex + 1;
-            while (index < text.length) {
-                const char = text[index];
-                if (char === "\r" || char === "\n" || /\s/u.test(char) || isPunctuationChar(char)) {
-                    break;
+        function segmentWithLexicon(text, selectedGroups) {
+            const tokens = [];
+            let i = 0;
+
+            while (i < text.length) {
+                const ch = text[i];
+                if (isSplitChar(ch)) {
+                    i += 1;
+                    continue;
                 }
-                if (findLongestMatch(text, index)) {
-                    break;
+
+                const hit = findLongestHit(text, i, selectedGroups);
+                if (hit) {
+                    tokens.push({ type: "matched", value: hit.term, pos: hit.pos });
+                    i += hit.term.length;
+                    continue;
                 }
-                index += 1;
+
+                let j = i + 1;
+                while (j < text.length) {
+                    if (isSplitChar(text[j])) break;
+                    if (findLongestHit(text, j, selectedGroups)) break;
+                    j += 1;
+                }
+                tokens.push({ type: "unmatched", value: text.slice(i, j) });
+                i = j;
             }
-            return index;
+            return tokens;
         }
 
-        function isPunctuationChar(char) {
-            return /[，。、；：！？,.!?;:"'()[\]{}<>《》〈〉「」『』【】]/u.test(char);
+        function summarizeUnmatched(unmatchedTokens) {
+            const count = new Map();
+            for (const token of unmatchedTokens) {
+                const value = token.trim();
+                if (!value) continue;
+                count.set(value, (count.get(value) || 0) + 1);
+            }
+            return Array.from(count.entries())
+                .map(([value, c]) => ({ value, count: c }))
+                .sort((a, b) => b.count - a.count || b.value.length - a.value.length || a.value.localeCompare(b.value, "zh-Hant"));
         }
 
-        function summarizeTokens(tokens) {
-            const lexicalTokens = tokens.filter((token) => token.type === "matched" || token.type === "unmatched");
-            const matched = tokens.filter((token) => token.type === "matched");
-            const unmatched = tokens.filter((token) => token.type === "unmatched");
+        function analyzeByLexicon(text, posFilter) {
+            const selectedGroups = new Set(posFilter && posFilter.length ? posFilter : ["N", "V", "A", "D", "C", "O"]);
+            const tokens = segmentWithLexicon(text, selectedGroups);
 
             const matchedMap = new Map();
-            for (const token of matched) {
-                const key = token.value;
-                if (!matchedMap.has(key)) {
-                    matchedMap.set(key, { term: token.value, pos: token.pos, count: 0 });
+            const unmatched = [];
+
+            for (const token of tokens) {
+                if (token.type === "matched") {
+                    const key = `${token.value}||${token.pos}`;
+                    matchedMap.set(key, (matchedMap.get(key) || 0) + 1);
+                } else if (token.type === "unmatched") {
+                    unmatched.push(token.value);
                 }
-                matchedMap.get(key).count += 1;
             }
 
-            const unmatchedMap = new Map();
-            for (const token of unmatched) {
-                const key = token.value;
-                unmatchedMap.set(key, (unmatchedMap.get(key) || 0) + 1);
+            const table = [];
+            for (const [key, count] of matchedMap.entries()) {
+                const [term, pos] = key.split("||");
+                table.push({
+                    term,
+                    pos,
+                    first: `詞彙表命中 (${count}次)`,
+                    diff: 0,
+                    state: "fit"
+                });
             }
 
-            const matchedTerms = Array.from(matchedMap.values())
-                .sort((a, b) => b.count - a.count || b.term.length - a.term.length || a.term.localeCompare(b.term, "zh-Hant"));
+            const unmatchedSummary = summarizeUnmatched(unmatched);
+            for (const item of unmatchedSummary) {
+                table.push({
+                    term: item.value,
+                    pos: "UNK",
+                    first: `詞彙表未命中 (${item.count}次)`,
+                    diff: -100,
+                    state: "risk"
+                });
+            }
 
-            const unmatchedTerms = Array.from(unmatchedMap.entries())
-                .map(([value, count]) => ({ value, count }))
-                .sort((a, b) => b.count - a.count || b.value.length - a.value.length || a.value.localeCompare(b.value, "zh-Hant"));
+            table.sort((a, b) => {
+                const ar = a.state === "risk" ? 1 : 0;
+                const br = b.state === "risk" ? 1 : 0;
+                return ar - br || a.term.localeCompare(b.term, "zh-Hant");
+            });
 
-            const coverage = lexicalTokens.length ? (matched.length / lexicalTokens.length) * 100 : 0;
+            const total = table.length;
+            const safe = table.filter((x) => x.state !== "risk").length;
+            const risk = total - safe;
+            const score = total ? Math.round((safe / total) * 100) : 100;
+            const checkList = unmatchedSummary.slice(0, 10).map((x) => `${x.value}（${x.count}次）`);
 
             return {
-                lexicalTokenCount: lexicalTokens.length,
-                matchedCount: matched.length,
-                unmatchedCount: unmatched.length,
-                coverage,
-                matchedTerms,
-                unmatchedTerms
-            };
-        }
-
-        function renderAnalysis(analysis) {
-            document.getElementById("summaryTokenCount").textContent = analysis.lexicalTokenCount.toLocaleString("zh-TW");
-            document.getElementById("summaryMatchedCount").textContent = analysis.matchedCount.toLocaleString("zh-TW");
-            document.getElementById("summaryCoverage").textContent = `${analysis.coverage.toFixed(1)}%`;
-            document.getElementById("summaryUnmatchedCount").textContent = analysis.unmatchedCount.toLocaleString("zh-TW");
-
-            document.getElementById("matchedUniqueCount").textContent = `${analysis.matchedTerms.length.toLocaleString("zh-TW")} 個`;
-            document.getElementById("unmatchedUniqueCount").textContent = `${analysis.unmatchedTerms.length.toLocaleString("zh-TW")} 個`;
-
-            renderTokenStream(analysis.tokens);
-            renderNarrative(analysis);
-            renderMatchedTable(analysis.matchedTerms);
-            renderUnmatchedList(analysis.unmatchedTerms);
-        }
-
-        function renderTokenStream(tokens) {
-            const container = document.getElementById("tokenStream");
-            const html = tokens.map((token) => {
-                if (token.type === "newline") {
-                    return '<div class="h-3"></div>';
-                }
-
-                if (token.type === "matched") {
-                    return `<span class="token-chip token-chip--matched" title="詞性：${escapeHtml(token.pos)}"><strong>${escapeHtml(token.value)}</strong><span class="text-xs opacity-80">${escapeHtml(token.pos)}</span></span>`;
-                }
-
-                if (token.type === "unmatched") {
-                    return `<span class="token-chip token-chip--unmatched" title="未命中詞庫片段">${escapeHtml(token.value)}</span>`;
-                }
-
-                return `<span class="token-chip token-chip--punct">${escapeHtml(token.value)}</span>`;
-            }).join("");
-
-            container.innerHTML = html || '<div class="text-slate-400">沒有可顯示的斷詞結果。</div>';
-        }
-
-        function renderNarrative(analysis) {
-            const messages = [];
-            messages.push(`<p>這次共切出 <strong>${analysis.lexicalTokenCount}</strong> 個詞彙片段，其中 <strong class="text-green-700">${analysis.matchedCount}</strong> 個命中 ` + "Sheet1!J:J" + ` 詞庫，覆蓋率約 <strong>${analysis.coverage.toFixed(1)}%</strong>。</p>`);
-
-            if (analysis.unmatchedTerms.length === 0) {
-                messages.push("<p>目前試題用語和詞庫貼合度高，若還想調整語氣或命題表述，再手動按 AI 修正即可。</p>");
-            } else {
-                const preview = analysis.unmatchedTerms.slice(0, 6).map((item) => `「${escapeHtml(item.value)}」`).join("、");
-                messages.push(`<p>建議優先檢查這些未命中片段：${preview}${analysis.unmatchedTerms.length > 6 ? " 等" : ""}。</p>`);
-            }
-
-            document.getElementById("analysisNarrative").innerHTML = messages.join("");
-        }
-
-        function renderMatchedTable(matchedTerms) {
-            const tbody = document.getElementById("matchedTableBody");
-            if (!matchedTerms.length) {
-                tbody.innerHTML = '<tr><td colspan="3" class="px-4 py-8 text-center text-slate-400">這次沒有命中詞庫詞彙。</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = matchedTerms.slice(0, 120).map((item) => {
-                return `
-                    <tr class="hover:bg-slate-50">
-                        <td class="px-4 py-3 font-bold text-slate-800">${escapeHtml(item.term)}</td>
-                        <td class="px-4 py-3 text-slate-500">${escapeHtml(item.pos)}</td>
-                        <td class="px-4 py-3 text-right font-bold text-green-700">${item.count}</td>
-                    </tr>
-                `;
-            }).join("");
-        }
-
-        function renderUnmatchedList(unmatchedTerms) {
-            const container = document.getElementById("unmatchedList");
-            if (!unmatchedTerms.length) {
-                container.innerHTML = '<div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm font-medium leading-7 text-emerald-800">這次沒有未命中片段，代表題幹用詞大多能在詞庫中找到對應。</div>';
-                return;
-            }
-
-            container.innerHTML = unmatchedTerms.map((item) => {
-                return `
-                    <div class="mb-3 flex items-center justify-between rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 last:mb-0">
-                        <div class="pr-4 text-sm font-bold text-amber-900">${escapeHtml(item.value)}</div>
-                        <div class="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-bold text-amber-700">出現 ${item.count} 次</div>
+                summary: {
+                    score,
+                    scoreFormula: `${safe}/${total || 1} × 100`,
+                    total,
+                    safe,
+                    risk
+                },
+                table,
+                aiFeedback: `
+                    <div class="space-y-3">
+                        <p><strong>詞彙表檢測已完成。</strong> 已改為使用 Sheet1 的 J 欄詞彙表斷詞，不使用 API token 自動斷詞。</p>
+                        <p>建議優先檢查片段：${checkList.length ? checkList.join("、") : "無"}</p>
+                        <p class="text-slate-500">需要 AI 協助命題修正時，請按下方按鍵手動觸發提示詞。</p>
                     </div>
-                `;
-            }).join("");
+                `
+            };
         }
 
-        async function requestAiRevision() {
-            if (!lastAnalysis) {
-                showToast("請先完成詞彙表斷詞。", "warning");
-                return;
-            }
+        async function runAnalysis() {
+            const stage = document.getElementById('stage').value;
+            const text = document.getElementById('text').value.trim();
+            const t = translations[currentLang] || translations["zh-TW"];
 
-            const prompt = buildAiPrompt(lastAnalysis);
-            const payload = {
-                action: "review",
-                payload: {
-                    stage: lastAnalysis.stage,
-                    grade: lastAnalysis.grade,
-                    text: lastAnalysis.text,
-                    matchedTerms: lastAnalysis.matchedTerms.slice(0, 120),
-                    unmatchedTerms: lastAnalysis.unmatchedTerms.slice(0, 40),
-                    segmentation: lastAnalysis.tokens
-                        .filter((token) => token.type === "matched" || token.type === "unmatched")
-                        .map((token) => token.type === "matched" ? `${token.value}(${token.pos})` : `[${token.value}]`)
-                }
-            };
+            if (!stage) { showToast(t.msg_select_stage, "warning"); return; }
+            if (!text) { showToast(t.msg_input_text, "warning"); return; }
 
-            showAiLoading(true);
-            hideAiPromptBox();
-            setAiStatus("執行中", "border-emerald-200 bg-emerald-50 text-emerald-700");
+            const btn = document.getElementById('runBtn');
+            const originalBtnContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<div class="loader mr-3"></div> ${t.status_analyzing}`;
+
+            document.getElementById('result-area').classList.remove('hidden');
+            document.getElementById('ai-feedback-content').innerHTML = "";
+            document.getElementById('ai-feedback-loader').classList.remove('hidden');
+            document.getElementById('result-table-body').innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-500 italic">${t.status_analyzing}</td></tr>`;
+            document.getElementById('result-area').scrollIntoView({ behavior: 'smooth' });
 
             try {
-                if (!AI_REVIEW_URL) {
-                    throw new Error("目前沒有設定 AI 後端 URL");
-                }
-
-                const response = await fetch(AI_REVIEW_URL, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) {
-                    throw new Error(`AI 後端回應失敗 (${response.status})`);
-                }
-
-                const json = await response.json();
-                const aiText = extractAiText(json);
-
-                if (!aiText) {
-                    throw new Error("AI 後端沒有回傳可用內容");
-                }
-
-                document.getElementById("aiContent").innerHTML = formatAiText(aiText);
-                setAiStatus("已取得 AI 建議", "border-emerald-200 bg-emerald-50 text-emerald-700");
-                showToast("已取得 AI 命題修正建議。", "success");
+                if (!vocabModel) throw new Error("詞彙表尚未完成載入");
+                const posFilter = Array.from(document.querySelectorAll('input[name="pos"]:checked')).map(cb => cb.value);
+                const localResult = analyzeByLexicon(text, posFilter);
+                renderResults(localResult);
+                lastAnalysisContext = {
+                    text,
+                    stage,
+                    grade: document.getElementById('grades').value || "",
+                    semester: document.getElementById('semester').value || "",
+                    version: document.getElementById('version').value || "",
+                    result: localResult
+                };
+                document.getElementById('manual-ai-btn').disabled = false;
+                showToast(t.msg_analysis_done, "success");
             } catch (error) {
-                console.warn("AI 修正請求失敗", error);
-                document.getElementById("aiContent").innerHTML = `
-                    <div class="space-y-3">
-                        <p class="font-bold text-amber-800">AI 後端目前沒有成功回應，系統已改為提供可直接貼給 AI 的修正提示詞。</p>
-                        <p class="text-slate-600">原因：${escapeHtml(error.message)}</p>
-                    </div>
-                `;
-                document.getElementById("aiPromptText").value = prompt;
-                document.getElementById("aiPromptBox").classList.remove("hidden");
-                setAiStatus("改用提示詞備援", "border-amber-200 bg-amber-50 text-amber-700");
-                showToast("AI 後端不可用，已提供備援提示詞。", "warning");
+                showToast(t.msg_analysis_fail + error.message, "error");
+                document.getElementById('ai-feedback-content').innerHTML = `<p class="text-red-500">分析失敗：${escapeHtml(error.message)}</p>`;
+                document.getElementById('manual-ai-btn').disabled = true;
             } finally {
-                showAiLoading(false);
+                btn.disabled = false;
+                btn.innerHTML = originalBtnContent;
+                document.getElementById('ai-feedback-loader').classList.add('hidden');
             }
         }
 
-        function buildAiPrompt(analysis) {
-            const matchedText = analysis.matchedTerms.slice(0, 40)
-                .map((item) => `${item.term}(${item.pos}) x${item.count}`)
-                .join("、");
+        function renderResults(data) {
+            document.getElementById('res-score').innerText = data.summary.score;
+            document.getElementById('res-score-detail').innerText = data.summary.scoreFormula || "無扣分資料";
+            document.getElementById('res-total').innerText = data.summary.total;
+            document.getElementById('res-safe').innerText = data.summary.safe;
+            document.getElementById('res-risk').innerText = data.summary.risk;
+            document.getElementById('ai-feedback-content').innerHTML = data.aiFeedback;
+            document.getElementById('copy-ai-btn').classList.add('hidden');
+            document.getElementById('manual-ai-prompt').classList.add('hidden');
+            document.getElementById('manual-ai-prompt').value = "";
 
-            const unmatchedText = analysis.unmatchedTerms.length
-                ? analysis.unmatchedTerms.slice(0, 20).map((item) => `${item.value} x${item.count}`).join("、")
-                : "無";
+            const tbody = document.getElementById('result-table-body');
+            if (data.table.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-slate-500">沒有符合篩選條件的詞彙。</td></tr>';
+                return;
+            }
 
-            const segmentationText = analysis.tokens
-                .filter((token) => token.type === "matched" || token.type === "unmatched")
-                .map((token) => token.type === "matched" ? `${token.value}(${token.pos})` : `[${token.value}]`)
-                .join(" / ");
+            tbody.innerHTML = data.table.map((item, index) => {
+                let badgeClass = "bg-slate-400";
+                let statusText = "未知";
+                let diffText = "N/A";
 
-            return [
-                "你是自然科命題修稿助理，請根據下列資訊協助修正試題用語。",
-                "",
-                `目標階段：${analysis.stage}`,
-                `目標年級：${analysis.grade}`,
+                if (item.diff > -99) {
+                    diffText = (item.diff > 0 ? "+" : "") + item.diff;
+                    if (item.state === "fit") {
+                        badgeClass = "bg-safe-light";
+                        statusText = "符合";
+                    }
+                } else {
+                    badgeClass = "bg-danger";
+                    statusText = "未見";
+                    diffText = "-";
+                }
+
+                const rowClass = index % 2 === 0 ? 'bg-white/50' : 'bg-green-50/30';
+                return `
+                <tr class="${rowClass} hover:bg-green-100/50 transition duration-150">
+                    <td class="py-3 pl-4 font-bold text-slate-700">${escapeHtml(item.term)}</td>
+                    <td class="py-3 font-mono text-sm text-slate-500">${escapeHtml(item.pos)}</td>
+                    <td class="py-3 text-slate-600 text-sm">${escapeHtml(item.first)}</td>
+                    <td class="py-3 font-mono font-bold text-center text-slate-700" title="相差學期數">${escapeHtml(diffText)}</td>
+                    <td class="py-3 text-center">
+                        <span class="${badgeClass} text-white text-xs px-3 py-1 rounded-full shadow-sm font-bold inline-block min-w-[60px]">
+                            ${statusText}
+                        </span>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function generateAiPrompt() {
+            if (!lastAnalysisContext) {
+                showToast("請先完成一次詞彙表檢測。", "warning");
+                return;
+            }
+            const unmatched = lastAnalysisContext.result.table
+                .filter((x) => x.state === "risk")
+                .map((x) => x.term)
+                .slice(0, 20);
+
+            lastAiPrompt = [
+                "你是自然科命題修稿助理，請根據以下資料提出修正版本：",
+                `學習階段：${lastAnalysisContext.stage}`,
+                `目標年級：${lastAnalysisContext.grade || "未指定"}`,
+                `目標學期：${lastAnalysisContext.semester || "未指定"}`,
+                `教科書版本：${lastAnalysisContext.version || "未指定"}`,
                 "",
                 "原始試題：",
-                analysis.text,
+                lastAnalysisContext.text,
                 "",
-                "詞彙表斷詞結果：",
-                segmentationText,
+                `詞彙表未命中片段：${unmatched.length ? unmatched.join("、") : "無"}`,
                 "",
-                "已命中詞庫的詞彙：",
-                matchedText || "無",
-                "",
-                "未命中詞庫、建議優先檢查的片段：",
-                unmatchedText,
-                "",
-                "請用以下格式回答：",
-                "1. 是否建議修正（是／否）",
-                "2. 修正理由（聚焦教材語彙、語句清晰度、命題精準度）",
-                "3. 修正後題目",
-                "4. 如果不需修正，請說明保留理由"
+                "請輸出：",
+                "1) 是否建議修正",
+                "2) 修正理由",
+                "3) 修正後完整題目"
             ].join("\n");
+
+            const textarea = document.getElementById('manual-ai-prompt');
+            textarea.value = lastAiPrompt;
+            textarea.classList.remove('hidden');
+            document.getElementById('copy-ai-btn').classList.remove('hidden');
+            showToast("已產生 AI 修稿提示詞。", "success");
         }
 
-        function extractAiText(payload) {
-            const candidates = [
-                payload?.data?.aiFeedback,
-                payload?.data?.feedback,
-                payload?.data?.message,
-                payload?.aiFeedback,
-                payload?.feedback,
-                payload?.message,
-                payload?.result?.aiFeedback,
-                payload?.result?.feedback
-            ];
-
-            for (const item of candidates) {
-                if (typeof item === "string" && item.trim()) {
-                    return item.trim();
-                }
-            }
-
-            if (payload?.data && typeof payload.data === "object") {
-                return JSON.stringify(payload.data, null, 2);
-            }
-
-            if (payload && typeof payload === "object") {
-                return JSON.stringify(payload, null, 2);
-            }
-
-            return "";
+        function copyAiPrompt() {
+            if (!lastAiPrompt) return;
+            const textarea = document.getElementById('manual-ai-prompt');
+            textarea.select();
+            document.execCommand("copy");
+            showToast("提示詞已複製。", "success");
         }
 
-        function formatAiText(text) {
-            return `
-                <div class="space-y-4">
-                    <div class="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-4">
-                        <div class="mb-2 text-sm font-bold tracking-[0.18em] text-emerald-700">AI FEEDBACK</div>
-                        <div class="whitespace-pre-wrap leading-8 text-slate-700">${escapeHtml(text)}</div>
-                    </div>
-                </div>
+        function setAiPanelIdle() {
+            document.getElementById('ai-feedback-content').innerHTML = `
+                <p class="text-slate-600">本頁已改為詞彙表斷詞（Sheet1 J欄），保持原有版面。</p>
+                <p class="text-slate-500">先按「開始 AI 檢測」完成比對，再手動觸發 AI 命題修正按鍵。</p>
             `;
+            document.getElementById('manual-ai-btn').disabled = true;
+            document.getElementById('copy-ai-btn').classList.add('hidden');
+            document.getElementById('manual-ai-prompt').classList.add('hidden');
+            document.getElementById('manual-ai-prompt').value = "";
         }
 
-        function resetAiPanel() {
-            document.getElementById("aiContent").textContent = "斷詞完成後，如果你覺得題幹還需要潤飾或想檢查是否更貼近教材語彙，再按「AI 命題修正建議」。";
-            setAiStatus("尚未執行", "border-slate-200 bg-white text-slate-600");
-            hideAiPromptBox();
-        }
-
-        function hideAiPromptBox() {
-            document.getElementById("aiPromptBox").classList.add("hidden");
-            document.getElementById("aiPromptText").value = "";
-        }
-
-        function showAiLoading(visible) {
-            document.getElementById("aiLoader").classList.toggle("hidden", !visible);
-            document.getElementById("aiLoader").classList.toggle("flex", visible);
-        }
-
-        function setAiStatus(label, className) {
-            const badge = document.getElementById("aiStatus");
-            badge.className = `rounded-full border px-4 py-2 text-sm font-medium ${className}`;
-            badge.textContent = label;
-        }
-
-        async function copyAiPrompt() {
-            const textarea = document.getElementById("aiPromptText");
-            if (!textarea.value) return;
-
-            try {
-                await navigator.clipboard.writeText(textarea.value);
-                showToast("提示詞已複製。", "success");
-            } catch (error) {
-                textarea.select();
-                document.execCommand("copy");
-                showToast("提示詞已複製。", "success");
-            }
-        }
-
-        function loadExample() {
-            document.getElementById("stageSelect").value = "國中";
-            populateGrades();
-            document.getElementById("gradeSelect").value = "七年級";
-            document.getElementById("questionInput").value = [
-                "下列哪一項最能說明植物的葉子與環境之間的關係？",
-                "",
-                "(A) 葉子越大，植物一定長得越高。",
-                "(B) 葉子的外形可能和降雨、陽光等生長環境有關。",
-                "(C) 每一種植物的葉子形狀都完全相同。",
-                "(D) 葉子的顏色與植物是否需要水分無關。"
-            ].join("\n");
-            showToast("已載入範例題目。", "success");
-        }
-
-        function escapeHtml(value) {
-            return String(value)
+        function escapeHtml(str) {
+            return String(str)
                 .replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
                 .replace(/>/g, "&gt;")
@@ -1020,32 +795,85 @@
                 .replace(/'/g, "&#39;");
         }
 
-        function showToast(message, type = "info") {
-            const toast = document.getElementById("toast");
-            const icon = document.getElementById("toastIcon");
-            const messageEl = document.getElementById("toastMessage");
+        function showToast(msg, type = "info") {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            const msgEl = document.getElementById('toast-msg');
 
-            messageEl.textContent = message;
-            icon.className = "fa-solid";
+            msgEl.innerText = msg;
+            toast.className = toast.className.replace(/bg-\w+-800\/90/, '').replace(/border-\w+-700/, '');
+            icon.className = icon.className.replace(/text-\w+-400/, '');
 
             if (type === "success") {
-                icon.classList.add("fa-circle-check", "text-emerald-400");
+                toast.classList.add('bg-green-800/90', 'border-green-700');
+                icon.classList.add('fa-circle-check', 'text-green-400');
             } else if (type === "warning") {
-                icon.classList.add("fa-triangle-exclamation", "text-amber-400");
+                toast.classList.add('bg-yellow-800/90', 'border-yellow-700');
+                icon.classList.add('fa-triangle-exclamation', 'text-yellow-400');
             } else if (type === "error") {
-                icon.classList.add("fa-circle-xmark", "text-red-400");
+                toast.classList.add('bg-red-800/90', 'border-red-700');
+                icon.classList.add('fa-circle-xmark', 'text-red-400');
             } else {
-                icon.classList.add("fa-circle-info", "text-blue-400");
+                toast.classList.add('bg-slate-800/90', 'border-slate-700');
+                icon.classList.add('fa-circle-info', 'text-blue-400');
+            }
+            
+            toast.classList.remove('opacity-0', 'translate-y-10');
+            setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-10'); }, 3000);
+        }
+
+        // Canvas Background
+        window.addEventListener('load', function() {
+            const canvas = document.getElementById('network-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let width, height, orbits = [], centerX, centerY;
+
+            function resize() { 
+                width = window.innerWidth; 
+                height = window.innerHeight; 
+                canvas.width = width; 
+                canvas.height = height; 
+                centerX = width / 2; 
+                centerY = height / 2; 
+                initOrbits(); 
             }
 
-            toast.classList.remove("opacity-0", "translate-y-10");
-            toast.classList.add("opacity-100", "translate-y-0");
-            clearTimeout(showToast._timer);
-            showToast._timer = setTimeout(() => {
-                toast.classList.add("opacity-0", "translate-y-10");
-                toast.classList.remove("opacity-100", "translate-y-0");
-            }, 3200);
-        }
+            class Orbit { 
+                constructor(rx, ry, a, c, s) { 
+                    this.rx = rx; this.ry = ry; this.a = a; this.c = c; this.s = s; this.r = 0; this.ea = Math.random() * Math.PI * 2; 
+                } 
+                update() { this.r += this.s; this.ea += 0.002; } 
+                draw() { 
+                    ctx.save(); ctx.translate(centerX, centerY); ctx.rotate(this.a); 
+                    ctx.beginPath(); ctx.ellipse(0, 0, this.rx, this.ry, this.r, 0, Math.PI * 2); 
+                    ctx.strokeStyle = this.c; ctx.lineWidth = 1; ctx.stroke(); 
+                    ctx.beginPath(); ctx.arc(this.rx * Math.cos(this.ea), this.ry * Math.sin(this.ea), 3, 0, Math.PI * 2); 
+                    ctx.fillStyle = this.c; ctx.fill(); ctx.restore(); 
+                } 
+            }
+
+            function initOrbits() { 
+                orbits = []; 
+                const br = width < height ? width * 0.25 : height * 0.3; 
+                orbits.push(new Orbit(br, br * 0.4, Math.PI / 4, 'rgba(34,197,94,0.3)', 0.001)); 
+                orbits.push(new Orbit(br, br * 0.4, -Math.PI / 4, 'rgba(16,185,129,0.3)', -0.001)); 
+                orbits.push(new Orbit(br * 1.2, br * 1.2, 0, 'rgba(6,95,70,0.1)', 0.0005)); 
+            }
+
+            function animate() { 
+                ctx.clearRect(0, 0, width, height); 
+                orbits.forEach(o => { o.update(); o.draw() }); 
+                ctx.beginPath(); ctx.arc(centerX, centerY, 5, 0, Math.PI * 2); 
+                ctx.fillStyle = 'rgba(34,197,94,0.8)'; ctx.shadowBlur = 15; ctx.shadowColor = '#22c55e'; ctx.fill(); 
+                requestAnimationFrame(animate); 
+            }
+
+            window.addEventListener('resize', resize); 
+            resize(); 
+            animate();
+        });
     </script>
 </body>
 </html>
+
