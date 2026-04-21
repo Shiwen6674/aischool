@@ -341,7 +341,7 @@
         const SCIENCE_SHEET_NAME = "Bilingual terms";
         const SCIENCE_SHEET_RANGE = "A:A";
         const GVIZ_BASE = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
-        const VOCAB_CACHE_KEY = "teacher_item_vocab_sheet_jlnpr_bilingual_v4";
+        const VOCAB_CACHE_KEY = "teacher_item_vocab_sheet_jlnpr_bilingual_v5";
         const SCIENCE_FALLBACK_POS = "Na";
         const BUILT_IN_SCIENCE_TERMS = [
             "複式顯微鏡", "目鏡", "物鏡", "反光鏡", "光圈",
@@ -505,6 +505,88 @@
             return Array.from(candidates);
         }
 
+        function rewriteTermPosPairs(pairs) {
+            const input = (pairs || []).map(([term, pos]) => [normalizeTerm(term), normalizePos(pos)]);
+            const rewritten = [];
+
+            for (let i = 0; i < input.length; i += 1) {
+                let [term, pos] = input[i];
+                const next = input[i + 1];
+
+                if (term === "長得" && pos === "VC") {
+                    rewritten.push(["長", "VC"], ["得", "DE"]);
+                    continue;
+                }
+
+                if (term === "到" && pos === "P" && next && next[0] === "手香") {
+                    rewritten.push(["到手香", "Na"]);
+                    i += 1;
+                    continue;
+                }
+
+                if (term === "一" && (pos === "Q" || pos === "M" || pos === "Neu") && next && next[0] === "起" && /^D/.test(next[1])) {
+                    rewritten.push(["一起", "D"]);
+                    i += 1;
+                    continue;
+                }
+
+                if (term === "有" && pos === "V_2" && next && next[0] === "關" && /^D/.test(next[1])) {
+                    rewritten.push(["有關", "VJ"]);
+                    i += 1;
+                    continue;
+                }
+
+                if (term === "觀察" && pos === "VC" && next && next[0] === "到" && next[1] === "P") {
+                    rewritten.push(["觀察到", "VC"]);
+                    i += 1;
+                    continue;
+                }
+
+                if (["摸摸", "聞聞", "說說"].includes(term) && /^V/.test(pos) && next && next[0] === "看" && /^V/.test(next[1])) {
+                    rewritten.push([`${term}看`, "VC"]);
+                    i += 1;
+                    continue;
+                }
+
+                if (term === "片" && pos === "Na") pos = "Nf";
+                if (term === "棵" && (pos === "M" || pos === "Q")) pos = "Nf";
+                if (term === "條" && (pos === "M" || pos === "Q")) pos = "Nf";
+                if (term === "一" && (pos === "M" || pos === "Q")) pos = "Neu";
+                if (term === "種" && pos === "Na") pos = "Nf";
+                if (term === "怎樣" && pos === "Na") pos = "Neqa";
+                if (term === "這些" && pos === "Nep") pos = "Neqa";
+                if (term === "哪些" && pos === "Nep") pos = "Neqa";
+
+                rewritten.push([term, pos]);
+            }
+
+            const normalized = [];
+            for (let i = 0; i < rewritten.length; i += 1) {
+                const a = rewritten[i];
+                const b = rewritten[i + 1];
+                const c = rewritten[i + 2];
+                const d = rewritten[i + 3];
+                const e = rewritten[i + 4];
+
+                if (
+                    a && b && c && d && e &&
+                    a[0] === "一" && a[1] === "Neu" &&
+                    b[0] === "一" && b[1] === "Neu" &&
+                    c[0] === "一" && c[1] === "Neu" &&
+                    d[0] === "一" && d[1] === "Neu" &&
+                    e[0] === "條" && e[1] === "Nf"
+                ) {
+                    normalized.push(["一", "Neu"], ["條", "Nf"], ["一", "Neu"], ["條", "Nf"]);
+                    i += 4;
+                    continue;
+                }
+
+                normalized.push(a);
+            }
+
+            return normalized;
+        }
+
         function extractTermPosPairs(rawText, fallbackPos = "O") {
             const text = String(rawText || "");
             const pairs = [];
@@ -531,7 +613,7 @@
                 }
             }
 
-            return pairs;
+            return rewriteTermPosPairs(pairs);
         }
 
         function mergePosStats(termStats, term, pos) {
