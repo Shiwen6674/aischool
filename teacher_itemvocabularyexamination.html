@@ -346,6 +346,12 @@
             "複式顯微鏡", "目鏡", "物鏡", "反光鏡", "光圈",
             "粗調節輪", "細調節輪", "載玻片", "蓋玻片", "玻片標本"
         ];
+        const BUILT_IN_BOUNDARY_TERMS = [
+            { term: "如果", pos: "Cbb" },
+            { term: "下列", pos: "Nd" },
+            { term: "適當", pos: "VH" },
+            { term: "的", pos: "DE" }
+        ];
         let vocabModel = null;
         let lastAnalysisContext = null;
         let lastAiPrompt = "";
@@ -565,6 +571,11 @@
                 pos: SCIENCE_FALLBACK_POS,
                 priority: 10
             }));
+            seedEntries.push(...BUILT_IN_BOUNDARY_TERMS.map((item) => ({
+                term: item.term,
+                pos: item.pos,
+                priority: 9
+            })));
 
             const fromBundle = window.TEACHER_ITEM_VOCAB_DATA;
             if (fromBundle && fromBundle.terms && fromBundle.terms.length) {
@@ -674,11 +685,12 @@
             return "O";
         }
 
-        function findLongestHit(text, start, selectedGroups) {
+        function findLongestHit(text, start, selectedGroups = null) {
             if (!vocabModel) return null;
             const entries = vocabModel.grouped.get(text[start]) || [];
             for (const entry of entries) {
                 if (!text.startsWith(entry.term, start)) continue;
+                if (!selectedGroups) return entry;
                 const group = mapPosGroup(entry.pos);
                 if (selectedGroups.has(group)) return entry;
             }
@@ -689,7 +701,7 @@
             return /[\s\r\n\t，。、；：、！？,.!?()（）「」『』【】《》〈〉<>"'`~\-+*/=|\\]/u.test(ch);
         }
 
-        function segmentWithLexicon(text, selectedGroups) {
+        function segmentWithLexicon(text) {
             const tokens = [];
             let i = 0;
 
@@ -700,7 +712,7 @@
                     continue;
                 }
 
-                const hit = findLongestHit(text, i, selectedGroups);
+                const hit = findLongestHit(text, i, null);
                 if (hit) {
                     tokens.push({ type: "matched", value: hit.term, pos: hit.pos });
                     i += hit.term.length;
@@ -710,7 +722,7 @@
                 let j = i + 1;
                 while (j < text.length) {
                     if (isSplitChar(text[j])) break;
-                    if (findLongestHit(text, j, selectedGroups)) break;
+                    if (findLongestHit(text, j, null)) break;
                     j += 1;
                 }
                 tokens.push({ type: "unmatched", value: text.slice(i, j) });
@@ -733,13 +745,16 @@
 
         function analyzeByLexicon(text, posFilter) {
             const selectedGroups = new Set(posFilter && posFilter.length ? posFilter : ["N", "V", "A", "D", "C", "O"]);
-            const tokens = segmentWithLexicon(text, selectedGroups);
+            const tokens = segmentWithLexicon(text);
 
             const matchedMap = new Map();
             const unmatched = [];
 
             for (const token of tokens) {
                 if (token.type === "matched") {
+                    if (!selectedGroups.has(mapPosGroup(token.pos))) {
+                        continue;
+                    }
                     const key = `${token.value}||${token.pos}`;
                     matchedMap.set(key, (matchedMap.get(key) || 0) + 1);
                 } else if (token.type === "unmatched") {
