@@ -353,6 +353,7 @@
             { term: "的", pos: "DE" }
         ];
         let vocabModel = null;
+        let termTimelineModel = new Map();
         let lastAnalysisContext = null;
         let lastAiPrompt = "";
 
@@ -460,27 +461,6 @@
             if (!normalized) return [];
 
             const candidates = new Set();
-            const split = normalized.split(/[\s,，、;；|｜]+/);
-            for (const part of split) {
-                const cleaned = normalizeTerm(part.replace(/[()（）\[\]{}]/g, ""));
-                if (isUsableTerm(cleaned)) candidates.add(cleaned);
-                const noSpace = cleaned.replace(/\s+/g, "");
-                if (noSpace !== cleaned && isUsableTerm(noSpace)) candidates.add(noSpace);
-            }
-
-            const cjkChunks = normalized.match(/[\u3400-\u9fff]{2,}/g) || [];
-            for (const c of cjkChunks) {
-                if (isUsableTerm(c)) candidates.add(c);
-            }
-
-            return Array.from(candidates);
-        }
-
-        function extractFallbackTerms(rawText) {
-            const normalized = normalizeTerm(rawText);
-            if (!normalized) return [];
-
-            const candidates = new Set();
             const split = normalized.split(/[\s,\uFF0C\u3001;\uFF1B|]+/);
             for (const part of split) {
                 const cleaned = normalizeTerm(part.replace(/[()\uFF08\uFF09\[\]{}]/g, ""));
@@ -533,22 +513,81 @@
             });
         }
 
-        async function fetchTermsFromSheetColumns() {
-            const columnRows = await Promise.all(
-                PRIMARY_SHEET_COLUMNS.map((rangeA1) => fetchColumnValues(PRIMARY_SHEET_NAME, rangeA1))
-            );
+        function normalizeSemester(raw) {
+            const text = String(raw || "").trim();
+            return text.includes("下") ? "下" : "上";
+        }
 
+        function toSemesterIndex(grade, semester) {
+            const g = Number(grade);
+            if (!Number.isFinite(g)) return Number.POSITIVE_INFINITY;
+            return g * 2 + (normalizeSemester(semester) === "下" ? 1 : 0);
+        }
+
+        async function fetchSheetRowsWithMeta() {
+            const url = buildGvizUrl(PRIMARY_SHEET_NAME, "A:R");
+            const resp = await fetch(url, { cache: "no-store" });
+            if (!resp.ok) throw new Error(`Sheet 讀取失敗 (${resp.status})`);
+
+            const text = await resp.text();
+            const payload = parseGvizPayload(text);
+            const rows = (((payload || {}).table || {}).rows || []);
+
+            return rows.map((row) => {
+                const cells = (row && row.c) || [];
+                const getCell = (idx) => (idx < cells.length && cells[idx] ? cells[idx].v : "");
+                const stage = String(getCell(0) || "").trim();
+                const publisher = String(getCell(2) || "").trim();
+                const grade = Number(getCell(3));
+                const semester = normalizeSemester(getCell(4));
+                const ckipTexts = [9, 11, 13, 15, 17]
+                    .map((idx) => String(getCell(idx) || "").trim())
+                    .filter(Boolean);
+
+                return { stage, publisher, grade, semester, ckipTexts };
+            }).filter((row) => row.stage && Number.isFinite(row.grade) && row.ckipTexts.length);
+        }
+
+        async function fetchSheetVocabularyAndTimeline() {
+            const rows = await fetchSheetRowsWithMeta();
             const termStats = new Map();
-            for (const rows of columnRows) {
-                for (const rowText of rows) {
+            const timelineDraft = new Map();
+
+            for (const row of rows) {
+                const rowIndex = toSemesterIndex(row.grade, row.semester);
+                for (const rowText of row.ckipTexts) {
                     const pairs = extractTermPosPairs(rowText, "O");
                     for (const [term, pos] of pairs) {
                         mergePosStats(termStats, term, pos);
+
+                        if (!timelineDraft.has(term)) timelineDraft.set(term, new Map());
+                        const perTerm = timelineDraft.get(term);
+                        const key = `${row.stage}|${row.publisher}|${row.grade}|${row.semester}`;
+                        const existing = perTerm.get(key);
+                        if (!existing || rowIndex < existing.index) {
+                            perTerm.set(key, {
+                                stage: row.stage,
+                                publisher: row.publisher,
+                                grade: row.grade,
+                                semester: row.semester,
+                                index: rowIndex
+                            });
+                        }
                     }
                 }
             }
 
-            return posStatsToEntries(termStats, 4);
+            const timeline = new Map();
+            for (const [term, perTerm] of timelineDraft.entries()) {
+                const list = Array.from(perTerm.values())
+                    .sort((a, b) => a.index - b.index || a.publisher.localeCompare(b.publisher, "zh-Hant"));
+                timeline.set(term, list);
+            }
+
+            return {
+                entries: posStatsToEntries(termStats, 4),
+                timeline
+            };
         }
 
         async function fetchScienceTerms() {
@@ -583,24 +622,58 @@
             }
 
             const cached = readCachedEntries();
-            if (cached && cached.length) {
-                seedEntries.push(...cached.map((x) => ({ ...x, priority: Math.max(2, x.priority || 2) })));
+            if (cached && cached.entries && cached.entries.length) {
+                seedEntries.push(...cached.entries.map((x) => ({ ...x, priority: Math.max(2, x.priority || 2) })));
+            }
+            if (cached && cached.timeline && cached.timeline.size) {
+                termTimelineModel = cached.timeline;
             }
 
             vocabModel = buildVocabModel(seedEntries);
 
             try {
-                const [sheetEntries, scienceEntries] = await Promise.all([
-                    fetchTermsFromSheetColumns(),
+                const [sheetData, scienceEntries] = await Promise.all([
+                    fetchSheetVocabularyAndTimeline(),
                     fetchScienceTerms()
                 ]);
 
+                const sheetEntries = sheetData.entries;
+                termTimelineModel = sheetData.timeline;
                 const liveEntries = [...seedEntries, ...sheetEntries, ...scienceEntries];
                 vocabModel = buildVocabModel(liveEntries);
-                cacheEntries([...sheetEntries, ...scienceEntries]);
+                cacheEntries([...sheetEntries, ...scienceEntries], termTimelineModel);
             } catch (error) {
                 console.warn("initializeLexicon fallback to local/cache", error);
             }
+        }
+
+        function cacheTimelineToObject(timeline) {
+            const obj = {};
+            if (!timeline || !(timeline instanceof Map)) return obj;
+            for (const [term, list] of timeline.entries()) {
+                obj[term] = Array.isArray(list) ? list : [];
+            }
+            return obj;
+        }
+
+        function objectToCacheTimeline(obj) {
+            const timeline = new Map();
+            if (!obj || typeof obj !== "object") return timeline;
+            for (const [term, list] of Object.entries(obj)) {
+                if (!Array.isArray(list)) continue;
+                timeline.set(term, list
+                    .map((x) => ({
+                        stage: String(x.stage || "").trim(),
+                        publisher: String(x.publisher || "").trim(),
+                        grade: Number(x.grade),
+                        semester: normalizeSemester(x.semester),
+                        index: Number(x.index)
+                    }))
+                    .filter((x) => x.stage && Number.isFinite(x.grade) && Number.isFinite(x.index))
+                    .sort((a, b) => a.index - b.index || a.publisher.localeCompare(b.publisher, "zh-Hant"))
+                );
+            }
+            return timeline;
         }
 
         function readCachedEntries() {
@@ -609,19 +682,22 @@
                 if (!raw) return null;
                 const parsed = JSON.parse(raw);
                 if (!parsed || !Array.isArray(parsed.entries)) return null;
-                return parsed.entries
+                const entries = parsed.entries
                     .filter((x) => x && typeof x.term === "string")
                     .map((x) => ({ term: x.term, pos: normalizePos(x.pos), priority: Number(x.priority || 2) }));
+                const timeline = objectToCacheTimeline(parsed.timeline);
+                return { entries, timeline };
             } catch (e) {
                 return null;
             }
         }
 
-        function cacheEntries(entries) {
+        function cacheEntries(entries, timeline) {
             try {
                 localStorage.setItem(VOCAB_CACHE_KEY, JSON.stringify({
                     savedAt: new Date().toISOString(),
-                    entries
+                    entries,
+                    timeline: cacheTimelineToObject(timeline)
                 }));
             } catch (e) {
                 // ignore storage failure
@@ -743,7 +819,68 @@
                 .sort((a, b) => b.count - a.count || b.value.length - a.value.length || a.value.localeCompare(b.value, "zh-Hant"));
         }
 
-        function analyzeByLexicon(text, posFilter) {
+        function parseGradeNumber(gradeText) {
+            const text = String(gradeText || "").trim();
+            if (!text) return NaN;
+            const direct = Number(text);
+            if (Number.isFinite(direct)) return direct;
+
+            const arabic = text.match(/\d+/);
+            if (arabic) return Number(arabic[0]);
+
+            const zhMap = {
+                "三年級": 3, "四年級": 4, "五年級": 5, "六年級": 6,
+                "七年級": 7, "八年級": 8, "九年級": 9
+            };
+            return Number(zhMap[text] || NaN);
+        }
+
+        function getTargetSemesterIndex(context) {
+            const gradeNum = parseGradeNumber(context.grade);
+            if (!Number.isFinite(gradeNum)) return Number.POSITIVE_INFINITY;
+            const sem = context.semester ? normalizeSemester(context.semester) : "下";
+            return toSemesterIndex(gradeNum, sem);
+        }
+
+        function formatOccurrence(occ) {
+            const publisher = occ.publisher || "版本未標示";
+            return `${publisher} ${occ.grade}年級${occ.semester}`;
+        }
+
+        function resolveTermTiming(term, context) {
+            const occurrences = termTimelineModel.get(term) || [];
+            const filtered = occurrences.filter((occ) => {
+                if (context.stage && occ.stage !== context.stage) return false;
+                if (context.version && occ.publisher !== context.version) return false;
+                return true;
+            });
+
+            if (!filtered.length) return null;
+            return filtered.reduce((best, occ) => (occ.index < best.index ? occ : best), filtered[0]);
+        }
+
+        function evaluateTermState(term, context) {
+            const firstOcc = resolveTermTiming(term, context);
+            if (!firstOcc) {
+                return { first: "資料庫未見", diff: -100, state: "missing" };
+            }
+
+            const targetIndex = getTargetSemesterIndex(context);
+            if (!Number.isFinite(targetIndex)) {
+                return { first: formatOccurrence(firstOcc), diff: 0, state: "fit" };
+            }
+
+            const diff = targetIndex - firstOcc.index;
+            if (diff >= 0) {
+                return { first: formatOccurrence(firstOcc), diff, state: "fit" };
+            }
+            if (diff === -1) {
+                return { first: formatOccurrence(firstOcc), diff, state: "next_sem" };
+            }
+            return { first: formatOccurrence(firstOcc), diff, state: "risk" };
+        }
+
+        function analyzeByLexicon(text, posFilter, context) {
             const selectedGroups = new Set(posFilter && posFilter.length ? posFilter : ["N", "V", "A", "D", "C", "O"]);
             const tokens = segmentWithLexicon(text);
 
@@ -765,12 +902,13 @@
             const table = [];
             for (const [key, count] of matchedMap.entries()) {
                 const [term, pos] = key.split("||");
+                const evalState = evaluateTermState(term, context);
                 table.push({
                     term,
                     pos: normalizePos(pos),
-                    first: `詞彙命中 (${count}次)`,
-                    diff: 0,
-                    state: "fit"
+                    first: `${evalState.first}（${count}次）`,
+                    diff: evalState.diff,
+                    state: evalState.state
                 });
             }
 
@@ -781,7 +919,7 @@
                     pos: "O",
                     first: `待確認詞彙 (${item.count}次)`,
                     diff: -100,
-                    state: "risk"
+                    state: "missing"
                 });
             }
 
@@ -792,7 +930,7 @@
             });
 
             const total = table.length;
-            const safe = table.filter((x) => x.state !== "risk").length;
+            const safe = table.filter((x) => x.state === "fit").length;
             const risk = total - safe;
             const score = total ? Math.round((safe / total) * 100) : 100;
             const checkList = unmatchedSummary.slice(0, 10).map((x) => `${x.value}（${x.count}次）`);
@@ -838,14 +976,20 @@
             try {
                 if (!vocabModel) throw new Error("分析資料尚未就緒，請稍後再試");
                 const posFilter = Array.from(document.querySelectorAll('input[name="pos"]:checked')).map(cb => cb.value);
-                const localResult = analyzeByLexicon(text, posFilter);
+                const context = {
+                    stage,
+                    grade: document.getElementById('grades').value || "",
+                    semester: document.getElementById('semester').value || "",
+                    version: document.getElementById('version').value || ""
+                };
+                const localResult = analyzeByLexicon(text, posFilter, context);
                 renderResults(localResult);
                 lastAnalysisContext = {
                     text,
                     stage,
-                    grade: document.getElementById('grades').value || "",
-                    semester: document.getElementById('semester').value || "",
-                    version: document.getElementById('version').value || "",
+                    grade: context.grade,
+                    semester: context.semester,
+                    version: context.version,
                     result: localResult
                 };
                 document.getElementById('manual-ai-btn').disabled = false;
@@ -888,10 +1032,16 @@
                     if (item.state === "fit") {
                         badgeClass = "bg-safe-light";
                         statusText = "符合";
+                    } else if (item.state === "next_sem") {
+                        badgeClass = "bg-warn";
+                        statusText = "下學期";
+                    } else if (item.state === "risk") {
+                        badgeClass = "bg-danger";
+                        statusText = "超前";
                     }
                 } else {
                     badgeClass = "bg-danger";
-                    statusText = "未見";
+                    statusText = item.state === "missing" ? "未見" : "待確認";
                     diffText = "-";
                 }
 
@@ -917,7 +1067,7 @@
                 return;
             }
             const unmatched = lastAnalysisContext.result.table
-                .filter((x) => x.state === "risk")
+                .filter((x) => x.state === "risk" || x.state === "missing")
                 .map((x) => x.term)
                 .slice(0, 20);
 
