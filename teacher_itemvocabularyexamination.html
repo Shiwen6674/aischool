@@ -208,7 +208,7 @@
                             <div class="text-4xl font-black text-green-600" id="res-score">--</div>
                             <div class="tooltip-content">
                                 <div class="font-bold text-green-400 mb-1 border-b border-slate-600 pb-1">計算公式</div>
-                                <div class="mb-2">符合詞彙數 / 分析詞彙數 × 100</div>
+                                <div class="mb-2">100 - Σ (學期差 × 2)</div>
                                 <div class="font-bold text-green-400 mb-1 border-b border-slate-600 pb-1">本次算式</div>
                                 <div id="res-score-detail" class="text-slate-300">請先進行分析...</div>
                             </div>
@@ -1011,7 +1011,7 @@
 
         function renderResults(data) {
             document.getElementById('res-score').innerText = data.summary.score;
-            document.getElementById('res-score-detail').innerText = data.summary.scoreFormula || "請先進行分析...";
+            document.getElementById('res-score-detail').innerText = data.summary.scoreFormula || "無扣分資料";
             document.getElementById('res-total').innerText = data.summary.total;
             document.getElementById('res-safe').innerText = data.summary.safe;
             document.getElementById('res-risk').innerText = data.summary.risk;
