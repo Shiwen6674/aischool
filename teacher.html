@@ -6,6 +6,9 @@
     <title>Teaching Hub | Science Learning Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800;900&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
     
     <script>
         tailwind.config = {
@@ -22,7 +25,7 @@
                     },
                     fontFamily: {
                         serif: ['ui-serif', 'Georgia', 'Cambria', "Times New Roman", 'Times', 'serif'],
-                        sans: ['ui-sans-serif', 'system-ui', '-apple-system', "Segoe UI", 'Roboto', "Helvetica Neue", 'Arial', 'sans-serif'],
+                        sans: ['Noto Sans TC', 'Outfit', 'ui-sans-serif', 'system-ui', '-apple-system', "Segoe UI", 'Roboto', "Helvetica Neue", 'Arial', 'sans-serif'],
                     },
                     animation: {
                         "spin-slow": "spin 10s linear infinite",
@@ -47,26 +50,90 @@
         .fade-in { animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .hidden-section { display: none !important; }
+
+        :root {
+            --teacher-ink: #064e3b;
+            --teacher-mid: #059669;
+            --teacher-soft: #22c55e;
+            --teacher-glow: rgba(16, 185, 129, 0.22);
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: -8;
+            background:
+                radial-gradient(42rem 28rem at 12% -5%, rgba(34, 197, 94, 0.18), transparent 72%),
+                radial-gradient(32rem 24rem at 88% 8%, rgba(16, 185, 129, 0.16), transparent 72%);
+        }
         
         .glass-panel {
-            background: rgba(255, 255, 255, 0.75);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 8px 32px 0 rgba(31, 135, 38, 0.1);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.72));
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.65);
+            box-shadow:
+                0 18px 40px -24px rgba(5, 150, 105, 0.45),
+                0 1px 0 rgba(255, 255, 255, 0.72) inset;
         }
 
         .glass-card {
-            background: rgba(255, 255, 255, 0.65);
+            background: rgba(255, 255, 255, 0.72);
             backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.72);
+            box-shadow: 0 10px 24px -20px rgba(2, 132, 74, 0.42);
+            transition: border-color 0.24s ease, box-shadow 0.24s ease, background 0.24s ease;
         }
         .glass-card:hover {
             background: rgba(255, 255, 255, 0.9);
-            transform: translateY(-8px);
-            box-shadow: 0 15px 50px -10px rgba(34, 197, 94, 0.3);
-            border-color: rgba(34, 197, 94, 0.4);
+            border-color: rgba(16, 185, 129, 0.28);
+            box-shadow: 0 14px 30px -22px rgba(5, 150, 105, 0.45);
+        }
+
+        .feature-card {
+            position: relative;
+            isolation: isolate;
+            border: 1px solid rgba(16, 185, 129, 0.14);
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.72));
+            box-shadow:
+                0 24px 45px -30px rgba(16, 185, 129, 0.36),
+                0 1px 0 rgba(255, 255, 255, 0.8) inset;
+            transition: transform 0.32s ease, box-shadow 0.32s ease, border-color 0.32s ease;
+        }
+        .feature-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background:
+                radial-gradient(32rem 12rem at 0% 0%, rgba(167, 243, 208, 0.26), transparent 56%),
+                linear-gradient(145deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.14));
+            z-index: -1;
+        }
+        .feature-card::after {
+            content: "";
+            position: absolute;
+            left: 1.25rem;
+            right: 1.25rem;
+            top: 1rem;
+            height: 4px;
+            border-radius: 999px;
+            opacity: 0.5;
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.58), rgba(16, 185, 129, 0.1));
+            transition: opacity 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(5, 150, 105, 0.34);
+            box-shadow:
+                0 34px 56px -30px rgba(5, 150, 105, 0.52),
+                0 1px 0 rgba(255, 255, 255, 0.88) inset;
+        }
+        .feature-card:hover::after {
+            opacity: 0.95;
         }
 
         .title-3d {
@@ -74,11 +141,44 @@
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
+            font-family: "Outfit", "Noto Sans TC", sans-serif;
+            letter-spacing: -0.02em;
             filter: drop-shadow(2px 2px 0px rgba(34, 197, 94, 0.3)) 
                     drop-shadow(4px 4px 0px rgba(6, 78, 59, 0.2));
         }
         
-        select, button, input, textarea { font-size: 1rem !important; }
+        nav.glass-panel {
+            border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+            box-shadow:
+                0 16px 36px -30px rgba(2, 132, 74, 0.45),
+                0 1px 0 rgba(255, 255, 255, 0.68) inset;
+        }
+
+        #dashboard-view > .text-center {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.48), rgba(255, 255, 255, 0.22));
+            border: 1px solid rgba(167, 243, 208, 0.45);
+            border-radius: 2.25rem;
+            padding: 2.25rem 1.5rem;
+            box-shadow: 0 20px 36px -34px rgba(16, 185, 129, 0.5);
+        }
+
+        #tool-container .glass-panel {
+            border-radius: 2rem;
+            border-color: rgba(16, 185, 129, 0.14);
+        }
+
+        select, button, input, textarea {
+            font-size: 1rem !important;
+            transition: all 0.2s ease;
+        }
+        textarea, input, select {
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+        }
+        textarea:focus, input:focus, select:focus {
+            box-shadow:
+                0 0 0 3px rgba(34, 197, 94, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
         
         #canvas-container {
             position: fixed;
@@ -92,6 +192,16 @@
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
+        }
+
+        @media (max-width: 768px) {
+            #dashboard-view > .text-center {
+                padding: 1.6rem 1.1rem;
+                border-radius: 1.5rem;
+            }
+            .feature-card:hover {
+                transform: translateY(-4px);
+            }
         }
     </style>
     <script src="./assets/js/aischool-shared.js"></script>
@@ -145,7 +255,7 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-10 px-4 mb-12">
                     <!-- 卡片 1：命題用語檢核 (外層卡片直接跳轉) -->
-                    <div onclick="window.location.href='teacher_itemvocabularyexamination.html'" class="glass-card p-10 rounded-[2.5rem] cursor-pointer group relative overflow-hidden flex flex-col items-center text-center">
+                    <div onclick="window.location.href='teacher_itemvocabularyexamination.html'" class="glass-card feature-card p-10 rounded-[2.5rem] cursor-pointer group relative overflow-hidden flex flex-col items-center text-center">
                         <div class="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-green-400/10 rounded-full blur-3xl group-hover:bg-green-400/20 transition"></div>
                         <div class="w-28 h-28 bg-gradient-to-br from-green-50 to-white rounded-3xl flex items-center justify-center mb-8 shadow-lg shadow-green-100 group-hover:scale-110 transition duration-300 border border-green-100 group-hover:border-green-200">
                             <i class="fa-solid fa-check-double text-6xl text-green-600"></i>
@@ -155,7 +265,7 @@
                     </div>
 
                     <!-- 卡片 2 -->
-                    <div onclick="openTool('lesson-plan')" class="glass-card p-10 rounded-[2.5rem] cursor-pointer group relative overflow-hidden flex flex-col items-center text-center">
+                    <div onclick="openTool('lesson-plan')" class="glass-card feature-card p-10 rounded-[2.5rem] cursor-pointer group relative overflow-hidden flex flex-col items-center text-center">
                         <div class="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-emerald-400/10 rounded-full blur-3xl group-hover:bg-emerald-400/20 transition"></div>
                         <div class="w-28 h-28 bg-gradient-to-br from-emerald-50 to-white rounded-3xl flex items-center justify-center mb-8 shadow-lg shadow-emerald-100 group-hover:scale-110 transition duration-300 border border-emerald-100 group-hover:border-emerald-200">
                             <i class="fa-solid fa-book-open text-6xl text-emerald-600"></i>
@@ -165,7 +275,7 @@
                     </div>
 
                     <!-- 卡片 3 -->
-                    <div onclick="openTool('diagnosis')" class="glass-card p-10 rounded-[2.5rem] cursor-pointer group relative overflow-hidden flex flex-col items-center text-center">
+                    <div onclick="openTool('diagnosis')" class="glass-card feature-card p-10 rounded-[2.5rem] cursor-pointer group relative overflow-hidden flex flex-col items-center text-center">
                         <div class="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-teal-400/10 rounded-full blur-3xl group-hover:bg-teal-400/20 transition"></div>
                         <div class="w-28 h-28 bg-gradient-to-br from-teal-50 to-white rounded-3xl flex items-center justify-center mb-8 shadow-lg shadow-teal-100 group-hover:scale-110 transition duration-300 border border-teal-100 group-hover:border-teal-200">
                             <i class="fa-solid fa-stethoscope text-6xl text-teal-600"></i>
