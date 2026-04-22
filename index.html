@@ -211,14 +211,6 @@ select:-webkit-autofill {
                 <p class="text-xl md:text-2xl text-slate-400 max-w-3xl mx-auto leading-relaxed" data-i18n="select_role">
                     透過人工智慧賦能，選擇您的身份，開啟個人化的適性學習之旅。
                 </p>
-                <div class="mt-6 flex items-center justify-center gap-2 text-base md:text-lg text-slate-300">
-                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full counter-chip">
-                        <i class="fa-solid fa-users text-xs"></i>
-                    </span>
-                    <span data-i18n="registered_users_label">真實註冊人數</span>
-                    <span class="registered-users-count font-heading font-bold text-blue-300 tracking-widest">001036</span>
-                    <span data-i18n="registered_users_unit">人</span>
-                </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -315,14 +307,6 @@ select:-webkit-autofill {
                     <div>
                         <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_email">Email</label>
                         <input type="text" id="login-email" required data-i18n-placeholder="ph_login_email" class="input-ai w-full px-5 py-3 rounded-xl outline-none" placeholder="name@example.com 或 admin">
-                        <div class="mt-3 text-sm md:text-base text-slate-400 flex items-center gap-2">
-                            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-900/40 border border-blue-500/30 text-blue-300">
-                                <i class="fa-solid fa-users text-[10px]"></i>
-                            </span>
-                            <span data-i18n="registered_users_label">真實註冊人數</span>
-                            <span class="registered-users-count font-heading font-bold text-blue-300 tracking-widest">001036</span>
-                            <span data-i18n="registered_users_unit">人</span>
-                        </div>
                     </div>
                     <div>
                         <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_password">密碼</label>
@@ -528,6 +512,14 @@ select:-webkit-autofill {
             <p>&copy; 2024 AI School. All rights reserved.</p>
             <p class="font-medium text-slate-400">Institute of Science Education, NDHU, Taiwan</p>
             <p><a href="mailto:shiwen@gms.ndhu.edu.tw" class="text-blue-400 hover:text-blue-300 transition flex justify-center items-center gap-2"><i class="fa-regular fa-envelope"></i> shiwen@gms.ndhu.edu.tw</a></p>
+            <p class="flex justify-center items-center gap-2 text-slate-300 text-base">
+                <span class="inline-flex items-center justify-center w-5 h-5 rounded-full counter-chip">
+                    <i class="fa-solid fa-users text-[10px]"></i>
+                </span>
+                <span data-i18n="registered_users_label">註冊人數</span>
+                <span class="registered-users-count font-heading font-bold text-blue-300 tracking-widest">001036</span>
+                <span data-i18n="registered_users_unit">人</span>
+            </p>
         </div>
     </footer>
 
@@ -699,7 +691,7 @@ function connect() {
                 "label_unit": "服務單位", "label_research_title": "職稱", "label_field": "研究領域",
                 "forgot_password": "忘記密碼？", "forgot_password_title": "重設密碼", "forgot_password_desc": "請輸入您註冊時的 Email，系統將發送驗證信給您。",
                 "btn_send_verify": "發送驗證信", "back_to_login": "返回登入",
-                "registered_users_label": "真實註冊人數",
+                "registered_users_label": "註冊人數",
                 "registered_users_unit": "人",
                 "universal_title": "萬用帳號快速入口",
                 "universal_desc": "同一組帳號可直接進入各角色頁面，無需重新登入。",
@@ -810,7 +802,7 @@ function connect() {
                 "label_unit": "服务单位", "label_research_title": "职称", "label_field": "研究领域",
                 "forgot_password": "忘记密码？", "forgot_password_title": "重置密码", "forgot_password_desc": "请输入您注册时的 Email，系统将发送验证信给您。",
                 "btn_send_verify": "发送验证信", "back_to_login": "返回登录",
-                "registered_users_label": "真实注册人数",
+                "registered_users_label": "注册人数",
                 "registered_users_unit": "人",
                 "universal_title": "万能账号快速入口",
                 "universal_desc": "同一组账号可直接进入各角色页面，无需重新登录。",
