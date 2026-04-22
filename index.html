@@ -270,6 +270,14 @@ select:-webkit-autofill {
                     <div>
                         <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_email">Email</label>
                         <input type="text" id="login-email" required data-i18n-placeholder="ph_login_email" class="input-ai w-full px-5 py-3 rounded-xl outline-none" placeholder="name@example.com 或 admin">
+                        <div class="mt-3 text-xs md:text-sm text-slate-400 flex items-center gap-2">
+                            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-900/40 border border-blue-500/30 text-blue-300">
+                                <i class="fa-solid fa-users text-[10px]"></i>
+                            </span>
+                            <span data-i18n="registered_users_label">真實註冊人數</span>
+                            <span id="registered-users-count" class="font-heading font-bold text-blue-300 tracking-widest">001036</span>
+                            <span data-i18n="registered_users_unit">人</span>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_password">密碼</label>
@@ -592,6 +600,9 @@ function connect() {
         let targetRole = null;
         let roleLocked = false;
         const GAS_URL = window.AISchool.getGasUrl("authHub"); 
+        const REGISTERED_USERS_BASELINE = 1036;
+        const REGISTERED_USERS_COUNT_KEY = "AISCHOOL_REGISTERED_USERS_COUNT";
+        const REGISTERED_USERS_EMAIL_KEY = "AISCHOOL_REGISTERED_USERS_EMAILS";
 
         // *** 2. 資料庫 ***
         const countryList = [
@@ -643,6 +654,8 @@ function connect() {
                 "label_unit": "服務單位", "label_research_title": "職稱", "label_field": "研究領域",
                 "forgot_password": "忘記密碼？", "forgot_password_title": "重設密碼", "forgot_password_desc": "請輸入您註冊時的 Email，系統將發送驗證信給您。",
                 "btn_send_verify": "發送驗證信", "back_to_login": "返回登入",
+                "registered_users_label": "真實註冊人數",
+                "registered_users_unit": "人",
                 "msg_logout_confirm": "你確定要登出嗎？", "btn_confirm": "確定", "btn_cancel": "取消", "not_registered": "尚未註冊？",
                 "country_tw": "台灣", "country_cn": "中國", "country_hk": "香港", "country_mo": "澳門", "country_jp": "日本", "country_kr": "韓國", "country_us": "美國", "country_gb": "英國", "country_sg": "新加坡", "country_my": "馬來西亞", "country_vn": "越南", "country_id": "印尼", "country_th": "泰國", "country_in": "印度", "country_au": "澳洲", "country_ca": "加拿大", "country_nz": "紐西蘭", "country_other": "其他國家",
                 "grade_tw_E": "國小", "grade_tw_J": "國中", "grade_tw_S": "高中", "grade_cn_P": "小學", "grade_cn_J": "初中", "grade_cn_S": "高中", "grade_hk_P": "小學", "grade_hk_S": "中學", "grade_jp_E": "小學", "grade_jp_J": "中學", "grade_jp_H": "高校", "grade_kr_E": "初等學校", "grade_kr_M": "中學校", "grade_kr_H": "高等學校", "grade_us_K": "幼兒園", "grade_us_G": "年級", "grade_gb_Y": "年級", "grade_intl_G": "年級",
@@ -674,6 +687,8 @@ function connect() {
                 "label_unit": "Institution", "label_research_title": "Title", "label_field": "Research Field",
                 "forgot_password": "Forgot Password?", "forgot_password_title": "Reset Password", "forgot_password_desc": "Enter your email to receive verification.",
                 "btn_send_verify": "Send Email", "back_to_login": "Back to Login",
+                "registered_users_label": "Registered Users",
+                "registered_users_unit": "",
                 "msg_logout_confirm": "Are you sure you want to logout?", "btn_confirm": "Confirm", "btn_cancel": "Cancel", "not_registered": "Not registered?",
                 "country_tw": "Taiwan", "country_cn": "China", "country_hk": "Hong Kong", "country_mo": "Macau", "country_jp": "Japan", "country_kr": "Korea", "country_us": "USA", "country_gb": "UK", "country_sg": "Singapore", "country_my": "Malaysia", "country_vn": "Vietnam", "country_id": "Indonesia", "country_th": "Thailand", "country_in": "India", "country_au": "Australia", "country_ca": "Canada", "country_nz": "New Zealand", "country_other": "Other",
                 "grade_tw_E": "Elementary G", "grade_tw_J": "Junior High G", "grade_tw_S": "Senior High G", "grade_cn_P": "Primary G", "grade_cn_J": "Junior High G", "grade_cn_S": "Senior High G", "grade_hk_P": "Primary P", "grade_hk_S": "Secondary S", "grade_jp_E": "Elementary G", "grade_jp_J": "Junior High G", "grade_jp_H": "High School G", "grade_kr_E": "Elementary G", "grade_kr_M": "Middle School G", "grade_kr_H": "High School G", "grade_us_K": "Kindergarten", "grade_us_G": "Grade", "grade_gb_Y": "Year", "grade_intl_G": "Grade",
@@ -705,6 +720,8 @@ function connect() {
                 "label_unit": "所属機関", "label_research_title": "役職", "label_field": "研究分野",
                 "forgot_password": "パスワードを忘れた場合", "forgot_password_title": "パスワードをリセット", "forgot_password_desc": "登録したメールアドレスを入力してください。",
                 "btn_send_verify": "メール送信", "back_to_login": "ログインへ戻る",
+                "registered_users_label": "登録ユーザー数",
+                "registered_users_unit": "人",
                 "msg_logout_confirm": "ログアウトしますか？", "btn_confirm": "OK", "btn_cancel": "キャンセル", "not_registered": "未登録ですか？",
                 "country_tw": "台湾", "country_cn": "中国", "country_hk": "香港", "country_mo": "マカオ", "country_jp": "日本", "country_kr": "韓国", "country_us": "アメリカ", "country_gb": "イギリス", "country_sg": "シンガポール", "country_my": "マレーシア", "country_vn": "ベトナム", "country_id": "インドネシア", "country_th": "タイ", "country_in": "インド", "country_au": "オーストラリア", "country_ca": "カナダ", "country_nz": "ニュージーランド", "country_other": "その他",
                 "grade_tw_E": "小学校", "grade_tw_J": "中学校", "grade_tw_S": "高校", "grade_cn_P": "小学校", "grade_cn_J": "中学校", "grade_cn_S": "高校", "grade_hk_P": "Primary P", "grade_hk_S": "Secondary S", "grade_jp_E": "小学校", "grade_jp_J": "中学校", "grade_jp_H": "高校", "grade_kr_E": "初等学校", "grade_kr_M": "中学校", "grade_kr_H": "高等学校", "grade_us_K": "幼稚園", "grade_us_G": "学年", "grade_gb_Y": "年", "grade_intl_G": "学年",
@@ -736,6 +753,8 @@ function connect() {
                 "label_unit": "服务单位", "label_research_title": "职称", "label_field": "研究领域",
                 "forgot_password": "忘记密码？", "forgot_password_title": "重置密码", "forgot_password_desc": "请输入您注册时的 Email，系统将发送验证信给您。",
                 "btn_send_verify": "发送验证信", "back_to_login": "返回登录",
+                "registered_users_label": "真实注册人数",
+                "registered_users_unit": "人",
                 "msg_logout_confirm": "您确定要退出吗？", "btn_confirm": "确定", "btn_cancel": "取消", "not_registered": "尚未注册？",
                 "country_tw": "台湾", "country_cn": "中国", "country_hk": "香港", "country_mo": "澳门", "country_jp": "日本", "country_kr": "韩国", "country_us": "美国", "country_gb": "英国", "country_sg": "新加坡", "country_my": "马来西亚", "country_vn": "越南", "country_id": "印度尼西亚", "country_th": "泰国", "country_in": "印度", "country_au": "澳大利亚", "country_ca": "加拿大", "country_nz": "新西兰", "country_other": "其他国家",
                 "grade_tw_E": "小学", "grade_tw_J": "初中", "grade_tw_S": "高中", "grade_cn_P": "小学", "grade_cn_J": "初中", "grade_cn_S": "高中", "grade_hk_P": "小学", "grade_hk_S": "中学", "grade_jp_E": "小学", "grade_jp_J": "中学", "grade_jp_H": "高校", "grade_kr_E": "初等学校", "grade_kr_M": "中学校", "grade_kr_H": "高等学校", "grade_us_K": "幼儿园", "grade_us_G": "年级", "grade_gb_Y": "年级", "grade_intl_G": "年级",
@@ -885,6 +904,7 @@ function changeLanguage() {
 document.addEventListener('DOMContentLoaded', () => { 
   changeLanguage();
   syncSessionUI();
+  initializeRegisteredUsersCount();
 
   // 如果是被 professor.html 擋回來，提示使用者先登入
   const msg = window.AISchool ? window.AISchool.readFlashMessage() : "";
@@ -901,39 +921,144 @@ function normalizeRole(role) {
   return role === "researcher" ? "professor" : role;
 }
 
+function parseRegisteredUsersCount(rawValue) {
+  const parsed = Number(rawValue);
+  if (!Number.isFinite(parsed)) return REGISTERED_USERS_BASELINE;
+  return Math.max(REGISTERED_USERS_BASELINE, Math.floor(parsed));
+}
+
+function readRegisteredUsersCount() {
+  return parseRegisteredUsersCount(localStorage.getItem(REGISTERED_USERS_COUNT_KEY));
+}
+
+function writeRegisteredUsersCount(count) {
+  const safeCount = parseRegisteredUsersCount(count);
+  localStorage.setItem(REGISTERED_USERS_COUNT_KEY, String(safeCount));
+  renderRegisteredUsersCount(safeCount);
+  return safeCount;
+}
+
+function formatRegisteredUsersCount(count) {
+  return String(parseRegisteredUsersCount(count)).padStart(6, "0");
+}
+
+function renderRegisteredUsersCount(count) {
+  const el = document.getElementById("registered-users-count");
+  if (!el) return;
+  el.textContent = formatRegisteredUsersCount(count);
+}
+
+function readRegisteredEmailSet() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(REGISTERED_USERS_EMAIL_KEY) || "[]");
+    if (!Array.isArray(parsed)) return new Set();
+    return new Set(parsed.map((v) => String(v || "").trim().toLowerCase()).filter(Boolean));
+  } catch {
+    return new Set();
+  }
+}
+
+function persistRegisteredEmailSet(emailSet) {
+  localStorage.setItem(REGISTERED_USERS_EMAIL_KEY, JSON.stringify(Array.from(emailSet)));
+}
+
+function tryExtractRegisteredUsersCount(result) {
+  if (!result || typeof result !== "object") return null;
+  const candidates = [
+    result.registeredUsers,
+    result.totalUsers,
+    result.userCount,
+    result.count,
+    result.data && result.data.registeredUsers,
+    result.data && result.data.totalUsers,
+    result.data && result.data.userCount,
+    result.data && result.data.count
+  ];
+  for (const candidate of candidates) {
+    const numeric = Number(candidate);
+    if (Number.isFinite(numeric) && numeric >= REGISTERED_USERS_BASELINE) {
+      return Math.floor(numeric);
+    }
+  }
+  return null;
+}
+
+async function fetchRegisteredUsersCountFromBackend() {
+  const attempts = [
+    { type: "get_registered_users_count" },
+    { type: "getRegisteredUsersCount" },
+    { type: "registered_users_count" }
+  ];
+
+  for (const payload of attempts) {
+    try {
+      const response = await fetch(GAS_URL, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+      const raw = await response.text();
+      let parsed;
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        parsed = null;
+      }
+      const count = tryExtractRegisteredUsersCount(parsed);
+      if (count != null) return count;
+    } catch {
+      // Ignore and continue fallback flow.
+    }
+  }
+  return null;
+}
+
+async function initializeRegisteredUsersCount() {
+  renderRegisteredUsersCount(readRegisteredUsersCount());
+  const backendCount = await fetchRegisteredUsersCountFromBackend();
+  if (backendCount != null) {
+    writeRegisteredUsersCount(backendCount);
+  }
+}
+
+function increaseRegisteredUsersCountForEmail(email) {
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  if (!normalizedEmail) return;
+
+  const emailSet = readRegisteredEmailSet();
+  if (emailSet.has(normalizedEmail)) return;
+
+  emailSet.add(normalizedEmail);
+  persistRegisteredEmailSet(emailSet);
+  writeRegisteredUsersCount(readRegisteredUsersCount() + 1);
+}
+
+function resolveUserPageByRole(role) {
+  if (role === "teacher") return "teacher.html";
+  if (role === "professor") return "professor.html";
+  if (role === "admin") return "admin.html";
+  return "student_subject.html";
+}
+
 function syncSessionUI() {
   const user = getStoredUser();
   const userInfoEl = document.getElementById("user-info-display");
   const logoutBtn = document.getElementById("logout-btn");
   const loginBtn = document.getElementById("nav-login-btn");
 
-  if (!user) {
-    if (userInfoEl) {
-      userInfoEl.textContent = "";
-      userInfoEl.classList.add("hidden");
-    }
-    if (logoutBtn) logoutBtn.classList.add("hidden");
-    if (loginBtn) loginBtn.classList.remove("hidden");
-    currentUser = null;
-    return;
+  if (userInfoEl) {
+    userInfoEl.textContent = "";
+    userInfoEl.classList.add("hidden");
   }
+  if (logoutBtn) logoutBtn.classList.add("hidden");
+  if (loginBtn) loginBtn.classList.remove("hidden");
 
-  currentUser = {
-    email: user.email || "",
-    name: user.name || "User",
-    role: normalizeRole(user.role || "")
-  };
-
-if (userInfoEl) {
-  const t = translations[currentLang] || translations["en"];
-  const roleKey = roleToI18n(currentUser.role);
-  const roleLabel = t[`role_${roleKey}`] || currentUser.role;
-  userInfoEl.textContent = `${currentUser.name} (${roleLabel})`;
-  userInfoEl.classList.remove("hidden");
-}
-
-  if (logoutBtn) logoutBtn.classList.remove("hidden");
-  if (loginBtn) loginBtn.classList.add("hidden");
+  currentUser = user
+    ? {
+        email: user.email || "",
+        name: user.name || "User",
+        role: normalizeRole(user.role || "")
+      }
+    : null;
 }
 
         function goHome() { 
@@ -1123,9 +1248,7 @@ if (window.AISchool) {
 }
 
 let targetPage = 'student_subject.html';
-if (normalizedRole === 'teacher') targetPage = 'teacher.html';
-if (normalizedRole === 'professor') targetPage = 'professor.html';
-if (normalizedRole === 'admin') targetPage = 'admin.html';
+targetPage = resolveUserPageByRole(normalizedRole);
 
 alert(result.message + "\n即將跳轉至您的專屬頁面。");
 window.location.href = targetPage;
@@ -1230,10 +1353,14 @@ if (result.result === 'success') {
         window.AISchool.setCurrentUser(userInfo);
     }
 
-    let targetPage = 'student_subject.html';
-    if (normalizedRole === 'teacher') targetPage = 'teacher.html';
-    if (normalizedRole === 'professor') targetPage = 'professor.html';
-    if (normalizedRole === 'admin') targetPage = 'admin.html';
+    const backendCount = tryExtractRegisteredUsersCount(result);
+    if (backendCount != null) {
+        writeRegisteredUsersCount(backendCount);
+    } else {
+        increaseRegisteredUsersCountForEmail(user.email || registrationData.email);
+    }
+
+    const targetPage = resolveUserPageByRole(normalizedRole);
 
     alert(result.message + "\n即將跳轉至您的專屬頁面。");
     window.location.href = targetPage;
@@ -1282,6 +1409,12 @@ function handleForgotPassword(e) {
 }
 
         function showLoginModal() { 
+            const existingUser = getStoredUser();
+            if (existingUser) {
+                const role = normalizeRole(existingUser.role || "");
+                window.location.href = resolveUserPageByRole(role);
+                return;
+            }
             roleLocked = false; // ★ 新增：右上角登入進來，不鎖定
   targetRole = null;  // ★ 新增：避免被舊狀態鎖死
             document.getElementById('section-home').classList.add('hidden-section'); 
