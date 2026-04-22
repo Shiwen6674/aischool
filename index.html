@@ -57,6 +57,8 @@
             background-color: #020617; /* 深色背景 */
             color: #e2e8f0;
             overflow-x: hidden;
+            font-size: 1.06rem;
+            line-height: 1.6;
         }
 
         /* 玻璃擬態 (Glassmorphism) */
@@ -124,6 +126,12 @@ select:-webkit-autofill {
         .fade-in { animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
+        .counter-chip {
+            background: rgba(30, 64, 175, 0.22);
+            border: 1px solid rgba(96, 165, 250, 0.35);
+            color: #bfdbfe;
+        }
+
         /* 卡片光暈特效 */
         .card-glow:hover::before {
             opacity: 1;
@@ -171,15 +179,15 @@ select:-webkit-autofill {
                 <span class="text-2xl font-heading font-bold text-white tracking-wide group-hover:text-blue-300 transition-colors" data-i18n="site_title_nav">AI School</span>
             </div>
             <div class="flex items-center space-x-6">
-                <select id="language-selector" onchange="changeLanguage()" class="bg-slate-800/80 border border-slate-600 text-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none cursor-pointer transition text-sm hover:bg-slate-700">
+                <select id="language-selector" onchange="changeLanguage()" class="bg-slate-800/80 border border-slate-600 text-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none cursor-pointer transition text-base hover:bg-slate-700">
                     <option value="zh-TW">繁體中文</option>
                     <option value="en">English</option>
                     <option value="ja">日本語</option>
                     <option value="zh-CN">简体中文</option>
                 </select>
-                <div id="user-info-display" class="hidden font-medium text-blue-300 bg-blue-900/30 border border-blue-500/30 px-4 py-1.5 rounded-full text-sm"></div>
-                <button id="logout-btn" onclick="logout()" class="hidden text-red-400 hover:text-red-300 font-medium text-sm transition" data-i18n="logout">登出</button>
-                <button id="nav-login-btn" onclick="showLoginModal()" class="relative overflow-hidden group bg-blue-600 text-white px-6 py-2 rounded-full font-bold shadow-[0_0_15px_rgba(37,99,235,0.5)] transition hover:shadow-[0_0_25px_rgba(37,99,235,0.7)]" data-i18n="btn_login">
+                <div id="user-info-display" class="hidden font-medium text-blue-300 bg-blue-900/30 border border-blue-500/30 px-4 py-1.5 rounded-full text-base"></div>
+                <button id="logout-btn" onclick="logout()" class="hidden text-red-400 hover:text-red-300 font-medium text-base transition" data-i18n="logout">登出</button>
+                <button id="nav-login-btn" onclick="showLoginModal()" class="relative overflow-hidden group bg-blue-600 text-white px-6 py-2 rounded-full font-bold text-base shadow-[0_0_15px_rgba(37,99,235,0.5)] transition hover:shadow-[0_0_25px_rgba(37,99,235,0.7)]" data-i18n="btn_login">
                     <span class="relative z-10">登入</span>
                     <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition duration-300"></div>
                 </button>
@@ -194,15 +202,23 @@ select:-webkit-autofill {
                 <div class="inline-block mb-4 px-4 py-1 rounded-full bg-blue-900/30 border border-blue-500/30 text-blue-300 text-sm font-semibold tracking-wider uppercase animate-float">
                     Next Generation Education
                 </div>
-                <h2 class="text-2xl md:text-3xl font-light text-slate-400 mb-2" data-i18n="welcome_prefix">歡迎來到</h2>
+                <h2 class="text-3xl md:text-4xl font-light text-slate-400 mb-2" data-i18n="welcome_prefix">歡迎來到</h2>
                 
-                <h1 class="font-heading text-6xl md:text-8xl font-black tracking-tight mb-8 text-white drop-shadow-2xl">
+                <h1 class="font-heading text-7xl md:text-8xl font-black tracking-tight mb-8 text-white drop-shadow-2xl">
                     <span class="text-gradient" data-i18n="site_title_hero">AI School</span>
                 </h1>
                 
-                <p class="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed" data-i18n="select_role">
+                <p class="text-xl md:text-2xl text-slate-400 max-w-3xl mx-auto leading-relaxed" data-i18n="select_role">
                     透過人工智慧賦能，選擇您的身份，開啟個人化的適性學習之旅。
                 </p>
+                <div class="mt-6 flex items-center justify-center gap-2 text-base md:text-lg text-slate-300">
+                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full counter-chip">
+                        <i class="fa-solid fa-users text-xs"></i>
+                    </span>
+                    <span data-i18n="registered_users_label">真實註冊人數</span>
+                    <span class="registered-users-count font-heading font-bold text-blue-300 tracking-widest">001036</span>
+                    <span data-i18n="registered_users_unit">人</span>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -213,7 +229,7 @@ select:-webkit-autofill {
                     </div>
                     <div class="p-8 text-center relative z-10">
                         <h2 class="text-3xl font-heading font-bold text-white mb-3 group-hover:text-cyan-300 transition" data-i18n="role_student">我是學生</h2>
-                        <p class="text-slate-400 text-sm leading-relaxed" data-i18n="desc_student">AI輔助學習、適性測驗分析及個人化診斷回饋。</p>
+                        <p class="text-slate-400 text-base leading-relaxed" data-i18n="desc_student">AI輔助學習、適性測驗分析及個人化診斷回饋。</p>
                         <div class="mt-6 w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center mx-auto text-cyan-400 group-hover:bg-cyan-500 group-hover:text-white transition-all duration-300">
                             <i class="fa-solid fa-arrow-right"></i>
                         </div>
@@ -227,7 +243,7 @@ select:-webkit-autofill {
                     </div>
                     <div class="p-8 text-center relative z-10">
                         <h2 class="text-3xl font-heading font-bold text-white mb-3 group-hover:text-emerald-300 transition" data-i18n="role_teacher">我是教師</h2>
-                        <p class="text-slate-400 text-sm leading-relaxed" data-i18n="desc_teacher">AI 備課助手、自動化命題與班級學習數據分析。</p>
+                        <p class="text-slate-400 text-base leading-relaxed" data-i18n="desc_teacher">AI 備課助手、自動化命題與班級學習數據分析。</p>
                         <div class="mt-6 w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300">
                             <i class="fa-solid fa-arrow-right"></i>
                         </div>
@@ -241,11 +257,40 @@ select:-webkit-autofill {
                     </div>
                     <div class="p-8 text-center relative z-10">
                         <h2 class="text-3xl font-heading font-bold text-white mb-3 group-hover:text-violet-300 transition" data-i18n="role_researcher">我是教授</h2>
-                        <p class="text-slate-400 text-sm leading-relaxed" data-i18n="desc_researcher">大數據語料探勘、學術論文協作及高階語言分析。</p>
+                        <p class="text-slate-400 text-base leading-relaxed" data-i18n="desc_researcher">大數據語料探勘、學術論文協作及高階語言分析。</p>
                         <div class="mt-6 w-10 h-10 rounded-full bg-violet-500/20 flex items-center justify-center mx-auto text-violet-400 group-hover:bg-violet-500 group-hover:text-white transition-all duration-300">
                             <i class="fa-solid fa-arrow-right"></i>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-universal" class="hidden-section fade-in max-w-5xl mx-auto w-full mt-8">
+            <div class="glass-panel p-8 md:p-12 rounded-3xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl -z-10"></div>
+                <div class="absolute bottom-0 left-0 w-64 h-64 bg-emerald-600/10 rounded-full blur-3xl -z-10"></div>
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl md:text-4xl font-heading font-black text-white mb-3" data-i18n="universal_title">萬用帳號快速入口</h2>
+                    <p class="text-slate-400 text-lg" data-i18n="universal_desc">同一組帳號可直接進入各角色頁面，無需重新登入。</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <button onclick="window.location.href='student_subject.html'" class="glass-panel rounded-2xl p-5 text-left hover:border-cyan-400/50 transition">
+                        <div class="text-cyan-300 text-xl font-bold mb-1"><i class="fa-solid fa-graduation-cap mr-2"></i><span data-i18n="role_student">學生</span></div>
+                        <div class="text-slate-400 text-sm" data-i18n="universal_enter">進入頁面</div>
+                    </button>
+                    <button onclick="window.location.href='teacher.html'" class="glass-panel rounded-2xl p-5 text-left hover:border-emerald-400/50 transition">
+                        <div class="text-emerald-300 text-xl font-bold mb-1"><i class="fa-solid fa-chalkboard-user mr-2"></i><span data-i18n="role_teacher">教師</span></div>
+                        <div class="text-slate-400 text-sm" data-i18n="universal_enter">進入頁面</div>
+                    </button>
+                    <button onclick="window.location.href='professor.html'" class="glass-panel rounded-2xl p-5 text-left hover:border-violet-400/50 transition">
+                        <div class="text-violet-300 text-xl font-bold mb-1"><i class="fa-solid fa-user-tie mr-2"></i><span data-i18n="role_researcher">教授</span></div>
+                        <div class="text-slate-400 text-sm" data-i18n="universal_enter">進入頁面</div>
+                    </button>
+                    <button onclick="goHome()" class="glass-panel rounded-2xl p-5 text-left hover:border-blue-400/50 transition">
+                        <div class="text-blue-300 text-xl font-bold mb-1"><i class="fa-solid fa-house mr-2"></i><span data-i18n="universal_home">回首頁</span></div>
+                        <div class="text-slate-400 text-sm" data-i18n="universal_enter">進入頁面</div>
+                    </button>
                 </div>
             </div>
         </div>
@@ -270,12 +315,12 @@ select:-webkit-autofill {
                     <div>
                         <label class="block text-slate-300 text-sm font-semibold mb-2" data-i18n="label_email">Email</label>
                         <input type="text" id="login-email" required data-i18n-placeholder="ph_login_email" class="input-ai w-full px-5 py-3 rounded-xl outline-none" placeholder="name@example.com 或 admin">
-                        <div class="mt-3 text-xs md:text-sm text-slate-400 flex items-center gap-2">
+                        <div class="mt-3 text-sm md:text-base text-slate-400 flex items-center gap-2">
                             <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-900/40 border border-blue-500/30 text-blue-300">
                                 <i class="fa-solid fa-users text-[10px]"></i>
                             </span>
                             <span data-i18n="registered_users_label">真實註冊人數</span>
-                            <span id="registered-users-count" class="font-heading font-bold text-blue-300 tracking-widest">001036</span>
+                            <span class="registered-users-count font-heading font-bold text-blue-300 tracking-widest">001036</span>
                             <span data-i18n="registered_users_unit">人</span>
                         </div>
                     </div>
@@ -656,6 +701,10 @@ function connect() {
                 "btn_send_verify": "發送驗證信", "back_to_login": "返回登入",
                 "registered_users_label": "真實註冊人數",
                 "registered_users_unit": "人",
+                "universal_title": "萬用帳號快速入口",
+                "universal_desc": "同一組帳號可直接進入各角色頁面，無需重新登入。",
+                "universal_enter": "進入頁面",
+                "universal_home": "回首頁",
                 "msg_logout_confirm": "你確定要登出嗎？", "btn_confirm": "確定", "btn_cancel": "取消", "not_registered": "尚未註冊？",
                 "country_tw": "台灣", "country_cn": "中國", "country_hk": "香港", "country_mo": "澳門", "country_jp": "日本", "country_kr": "韓國", "country_us": "美國", "country_gb": "英國", "country_sg": "新加坡", "country_my": "馬來西亞", "country_vn": "越南", "country_id": "印尼", "country_th": "泰國", "country_in": "印度", "country_au": "澳洲", "country_ca": "加拿大", "country_nz": "紐西蘭", "country_other": "其他國家",
                 "grade_tw_E": "國小", "grade_tw_J": "國中", "grade_tw_S": "高中", "grade_cn_P": "小學", "grade_cn_J": "初中", "grade_cn_S": "高中", "grade_hk_P": "小學", "grade_hk_S": "中學", "grade_jp_E": "小學", "grade_jp_J": "中學", "grade_jp_H": "高校", "grade_kr_E": "初等學校", "grade_kr_M": "中學校", "grade_kr_H": "高等學校", "grade_us_K": "幼兒園", "grade_us_G": "年級", "grade_gb_Y": "年級", "grade_intl_G": "年級",
@@ -689,6 +738,10 @@ function connect() {
                 "btn_send_verify": "Send Email", "back_to_login": "Back to Login",
                 "registered_users_label": "Registered Users",
                 "registered_users_unit": "",
+                "universal_title": "Universal Account Portal",
+                "universal_desc": "Use one account to open each role page without re-login.",
+                "universal_enter": "Open Page",
+                "universal_home": "Back Home",
                 "msg_logout_confirm": "Are you sure you want to logout?", "btn_confirm": "Confirm", "btn_cancel": "Cancel", "not_registered": "Not registered?",
                 "country_tw": "Taiwan", "country_cn": "China", "country_hk": "Hong Kong", "country_mo": "Macau", "country_jp": "Japan", "country_kr": "Korea", "country_us": "USA", "country_gb": "UK", "country_sg": "Singapore", "country_my": "Malaysia", "country_vn": "Vietnam", "country_id": "Indonesia", "country_th": "Thailand", "country_in": "India", "country_au": "Australia", "country_ca": "Canada", "country_nz": "New Zealand", "country_other": "Other",
                 "grade_tw_E": "Elementary G", "grade_tw_J": "Junior High G", "grade_tw_S": "Senior High G", "grade_cn_P": "Primary G", "grade_cn_J": "Junior High G", "grade_cn_S": "Senior High G", "grade_hk_P": "Primary P", "grade_hk_S": "Secondary S", "grade_jp_E": "Elementary G", "grade_jp_J": "Junior High G", "grade_jp_H": "High School G", "grade_kr_E": "Elementary G", "grade_kr_M": "Middle School G", "grade_kr_H": "High School G", "grade_us_K": "Kindergarten", "grade_us_G": "Grade", "grade_gb_Y": "Year", "grade_intl_G": "Grade",
@@ -722,6 +775,10 @@ function connect() {
                 "btn_send_verify": "メール送信", "back_to_login": "ログインへ戻る",
                 "registered_users_label": "登録ユーザー数",
                 "registered_users_unit": "人",
+                "universal_title": "共通アカウント入口",
+                "universal_desc": "1つのアカウントで各ロールページへ直接移動できます。",
+                "universal_enter": "ページへ移動",
+                "universal_home": "ホームへ戻る",
                 "msg_logout_confirm": "ログアウトしますか？", "btn_confirm": "OK", "btn_cancel": "キャンセル", "not_registered": "未登録ですか？",
                 "country_tw": "台湾", "country_cn": "中国", "country_hk": "香港", "country_mo": "マカオ", "country_jp": "日本", "country_kr": "韓国", "country_us": "アメリカ", "country_gb": "イギリス", "country_sg": "シンガポール", "country_my": "マレーシア", "country_vn": "ベトナム", "country_id": "インドネシア", "country_th": "タイ", "country_in": "インド", "country_au": "オーストラリア", "country_ca": "カナダ", "country_nz": "ニュージーランド", "country_other": "その他",
                 "grade_tw_E": "小学校", "grade_tw_J": "中学校", "grade_tw_S": "高校", "grade_cn_P": "小学校", "grade_cn_J": "中学校", "grade_cn_S": "高校", "grade_hk_P": "Primary P", "grade_hk_S": "Secondary S", "grade_jp_E": "小学校", "grade_jp_J": "中学校", "grade_jp_H": "高校", "grade_kr_E": "初等学校", "grade_kr_M": "中学校", "grade_kr_H": "高等学校", "grade_us_K": "幼稚園", "grade_us_G": "学年", "grade_gb_Y": "年", "grade_intl_G": "学年",
@@ -755,6 +812,10 @@ function connect() {
                 "btn_send_verify": "发送验证信", "back_to_login": "返回登录",
                 "registered_users_label": "真实注册人数",
                 "registered_users_unit": "人",
+                "universal_title": "万能账号快速入口",
+                "universal_desc": "同一组账号可直接进入各角色页面，无需重新登录。",
+                "universal_enter": "进入页面",
+                "universal_home": "回首页",
                 "msg_logout_confirm": "您确定要退出吗？", "btn_confirm": "确定", "btn_cancel": "取消", "not_registered": "尚未注册？",
                 "country_tw": "台湾", "country_cn": "中国", "country_hk": "香港", "country_mo": "澳门", "country_jp": "日本", "country_kr": "韩国", "country_us": "美国", "country_gb": "英国", "country_sg": "新加坡", "country_my": "马来西亚", "country_vn": "越南", "country_id": "印度尼西亚", "country_th": "泰国", "country_in": "印度", "country_au": "澳大利亚", "country_ca": "加拿大", "country_nz": "新西兰", "country_other": "其他国家",
                 "grade_tw_E": "小学", "grade_tw_J": "初中", "grade_tw_S": "高中", "grade_cn_P": "小学", "grade_cn_J": "初中", "grade_cn_S": "高中", "grade_hk_P": "小学", "grade_hk_S": "中学", "grade_jp_E": "小学", "grade_jp_J": "中学", "grade_jp_H": "高校", "grade_kr_E": "初等学校", "grade_kr_M": "中学校", "grade_kr_H": "高等学校", "grade_us_K": "幼儿园", "grade_us_G": "年级", "grade_gb_Y": "年级", "grade_intl_G": "年级",
@@ -906,6 +967,16 @@ document.addEventListener('DOMContentLoaded', () => {
   syncSessionUI();
   initializeRegisteredUsersCount();
 
+  const user = getStoredUser();
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get("portal") === "all") {
+    if (user && normalizeRole(user.role || "") === "admin") {
+      showUniversalPortal();
+    } else {
+      showLoginModal();
+    }
+  }
+
   // 如果是被 professor.html 擋回來，提示使用者先登入
   const msg = window.AISchool ? window.AISchool.readFlashMessage() : "";
   if (msg) {
@@ -943,9 +1014,10 @@ function formatRegisteredUsersCount(count) {
 }
 
 function renderRegisteredUsersCount(count) {
-  const el = document.getElementById("registered-users-count");
-  if (!el) return;
-  el.textContent = formatRegisteredUsersCount(count);
+  const formatted = formatRegisteredUsersCount(count);
+  document.querySelectorAll(".registered-users-count").forEach((el) => {
+    el.textContent = formatted;
+  });
 }
 
 function readRegisteredEmailSet() {
@@ -1035,8 +1107,14 @@ function increaseRegisteredUsersCountForEmail(email) {
 function resolveUserPageByRole(role) {
   if (role === "teacher") return "teacher.html";
   if (role === "professor") return "professor.html";
-  if (role === "admin") return "admin.html";
+  if (role === "admin") return "index.html?portal=all";
   return "student_subject.html";
+}
+
+function showUniversalPortal() {
+  document.getElementById("section-home").classList.add("hidden-section");
+  document.getElementById("section-auth").classList.add("hidden-section");
+  document.getElementById("section-universal").classList.remove("hidden-section");
 }
 
 function syncSessionUI() {
@@ -1066,7 +1144,12 @@ function syncSessionUI() {
   targetRole = null;  // ★ 新增
             document.getElementById('section-home').classList.remove('hidden-section'); 
             document.getElementById('section-auth').classList.add('hidden-section'); 
+            document.getElementById('section-universal').classList.add('hidden-section');
             document.getElementById('section-home').classList.add('fade-in'); 
+            if (window.location.search.includes("portal=all")) {
+                const cleanUrl = window.location.pathname + window.location.hash;
+                window.history.replaceState({}, "", cleanUrl);
+            }
         }
         
 function preSelectRole(role) {
@@ -1074,6 +1157,7 @@ function preSelectRole(role) {
  
   targetRole = role;
   document.getElementById("section-home").classList.add("hidden-section");
+  document.getElementById("section-universal").classList.add("hidden-section");
   document.getElementById("section-auth").classList.remove("hidden-section");
 
   switchAuthMode("login");
@@ -1412,11 +1496,16 @@ function handleForgotPassword(e) {
             const existingUser = getStoredUser();
             if (existingUser) {
                 const role = normalizeRole(existingUser.role || "");
-                window.location.href = resolveUserPageByRole(role);
+                if (role === "admin") {
+                    showUniversalPortal();
+                } else {
+                    window.location.href = resolveUserPageByRole(role);
+                }
                 return;
             }
             roleLocked = false; // ★ 新增：右上角登入進來，不鎖定
   targetRole = null;  // ★ 新增：避免被舊狀態鎖死
+            document.getElementById('section-universal').classList.add('hidden-section');
             document.getElementById('section-home').classList.add('hidden-section'); 
             document.getElementById('section-auth').classList.remove('hidden-section'); 
             switchAuthMode('login'); 
