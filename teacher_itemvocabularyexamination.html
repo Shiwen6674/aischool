@@ -1225,7 +1225,7 @@
             throw lastError || new Error("AI 修題服務暫時不可用");
         }
 
-        async function generateAiPrompt() {
+        function generateAiPrompt() {
             if (!lastAnalysisContext) {
                 showToast("請先完成一次詞彙檢測。", "warning");
                 return;
@@ -1258,24 +1258,13 @@
             textarea.classList.remove('hidden');
             document.getElementById('copy-ai-btn').classList.remove('hidden');
 
-            const loader = document.getElementById('ai-feedback-loader');
-            loader.classList.remove('hidden');
-
-            try {
-                const aiHtml = await requestAiRevision(lastAiPrompt);
-                document.getElementById('ai-feedback-content').innerHTML = aiHtml;
-                showToast("AI 修題建議已產生。", "success");
-            } catch (error) {
-                showToast(`AI 修題服務暫時不可用：${error.message}`, "error");
-                document.getElementById('ai-feedback-content').innerHTML = `
-                    <div class="space-y-2 text-slate-600">
-                        <p>目前無法連線至 AI 修題服務，已保留提示詞供手動使用。</p>
-                        <p class="text-slate-500 text-sm">可按「複製提示詞」貼到 Gemini / 其他 AI 工具。</p>
-                    </div>
-                `;
-            } finally {
-                loader.classList.add('hidden');
-            }
+            document.getElementById('ai-feedback-content').innerHTML = `
+                <div class="space-y-2 text-slate-600">
+                    <p>已產生可複製的命題修正提示詞。</p>
+                    <p class="text-slate-500 text-sm">可按「複製提示詞」貼到 Gemini / 其他 AI 工具。</p>
+                </div>
+            `;
+            showToast("已產生 AI 修稿提示詞。", "success");
         }
 
         function copyAiPrompt() {
@@ -1289,7 +1278,7 @@
         function setAiPanelIdle() {
             document.getElementById('ai-feedback-content').innerHTML = `
                 <p class="text-slate-600">先完成詞彙檢測，再決定是否需要修題建議。</p>
-                <p class="text-slate-500">分析完成後按下按鈕，系統會嘗試連線 AI 產生修題建議。</p>
+                <p class="text-slate-500">分析完成後按下按鈕，系統會產生可複製的 AI 修題提示詞。</p>
             `;
             document.getElementById('manual-ai-btn').disabled = true;
             document.getElementById('copy-ai-btn').classList.add('hidden');
