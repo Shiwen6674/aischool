@@ -1,0 +1,122 @@
+module.exports = {
+  darkMode: "class",
+  content: ["./*.html", "./assets/js/**/*.js"],
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ["Inter", "Noto Sans TC", "ui-sans-serif", "system-ui", "sans-serif"],
+        heading: ["Outfit", "Inter", "Noto Sans TC", "sans-serif"],
+        tech: ["Orbitron", "sans-serif"],
+        mono: ["JetBrains Mono", "ui-monospace", "Menlo", "Monaco", "Consolas", "monospace"],
+      },
+      colors: {
+        primary: { DEFAULT: "#3b82f6", glow: "#60a5fa" },
+        ai: {
+          bg: "#020617",
+          dark: "#0f172a",
+          panel: "rgba(15, 23, 42, 0.60)",
+          card: "rgba(30, 41, 59, 0.7)",
+          border: "rgba(148, 163, 184, 0.1)",
+        },
+        glass: {
+          100: "rgba(255, 255, 255, 0.1)",
+          200: "rgba(255, 255, 255, 0.2)",
+          700: "rgba(255, 255, 255, 0.7)",
+          900: "rgba(255, 255, 255, 0.9)",
+        },
+        neon: {
+          blue: "#3b82f6",
+          cyan: "#06b6d4",
+          purple: "#8b5cf6",
+          green: "#10b981",
+          orange: "#f97316",
+          pink: "#ec4899",
+        },
+        student: {
+          bg: "#0B1121",
+          card: "#1E293B",
+          light: "#22d3ee",
+          DEFAULT: "#06b6d4",
+          glow: "rgba(34, 211, 238, 0.5)",
+        },
+        teacher: {
+          light: "#34d399",
+          DEFAULT: "#10b981",
+          dark: "#15803d",
+          glow: "rgba(52, 211, 153, 0.5)",
+        },
+        researcher: {
+          50: "#faf5ff",
+          light: "#a78bfa",
+          DEFAULT: "#a855f7",
+          dark: "#7e22ce",
+          glow: "rgba(167, 139, 250, 0.5)",
+        },
+        professor: {
+          light: "#a78bfa",
+          DEFAULT: "#8b5cf6",
+          deep: "#6d28d9",
+          glow: "rgba(167, 139, 250, 0.55)",
+        },
+        research: {
+          50: "#f5f3ff",
+          100: "#ede9fe",
+          200: "#ddd6fe",
+          500: "#8b5cf6",
+          600: "#7c3aed",
+          700: "#6d28d9",
+          800: "#5b21b6",
+          900: "#4c1d95",
+        },
+        brand: {
+          50: "#faf5ff",
+          100: "#f3e8ff",
+          200: "#e9d5ff",
+          300: "#d8b4fe",
+          400: "#c084fc",
+          500: "#a855f7",
+          600: "#9333ea",
+          700: "#7e22ce",
+          800: "#6b21a8",
+          900: "#581c87",
+        },
+        space: {
+          bg: "#050b14",
+          card: "#0f172a",
+          line: "rgba(148, 163, 184, 0.18)",
+        },
+      },
+      animation: {
+        "spin-slow": "spin 15s linear infinite",
+        float: "float 6s ease-in-out infinite",
+        "pulse-glow": "pulseGlow 3s infinite",
+        "fade-in": "fadeIn .6s cubic-bezier(0.16, 1, 0.3, 1)",
+        "fade-in-up": "fadeInUp 0.6s ease-out forwards",
+        "pulse-slow": "pulse 3s infinite",
+        "gradient-x": "gradient-x 15s ease infinite",
+      },
+      keyframes: {
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        pulseGlow: {
+          "0%, 100%": { boxShadow: "0 0 15px rgba(59, 130, 246, 0.2)" },
+          "50%": { boxShadow: "0 0 30px rgba(59, 130, 246, 0.6)" },
+        },
+        fadeIn: {
+          "0%": { opacity: "0", transform: "translateY(12px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        fadeInUp: {
+          "0%": { opacity: "0", transform: "translateY(20px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "gradient-x": {
+          "0%, 100%": { "background-position": "0% 50%" },
+          "50%": { "background-position": "100% 50%" },
+        },
+      },
+    },
+  },
+};
