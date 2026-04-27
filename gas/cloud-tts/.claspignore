@@ -1,0 +1,3 @@
+# Keep local clasp metadata out of pushes.
+.clasp.json
+desktop.ini
