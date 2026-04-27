@@ -9,7 +9,17 @@
   <script src="./assets/js/aischool-shared.js"></script>
   <script src="./assets/js/learning-analytics.js"></script>
   <script>
-    window.AISchool.requireRole(["student", "teacher", "professor", "admin"], "請先登入，再查看學習分析。", "index.html");
+    const __adminDashboardUser = window.AISchool.requireRole(["student", "teacher", "professor", "admin"], "請先登入，再查看學習分析。", "index.html");
+    function __isAdminDashboardUser(user) {
+      const email = String((user && (user.email || user.Email)) || "").trim().toLowerCase();
+      const account = String((user && (user.account || user.Account || user.id || user.ID)) || "").trim().toLowerCase();
+      const role = String((user && (user.role || user.Role)) || "").trim().toLowerCase();
+      return role === "admin" || account === "admin" || email === "admin@gmail.com" || email.startsWith("admin@");
+    }
+    if (__adminDashboardUser && !__isAdminDashboardUser(__adminDashboardUser)) {
+      window.AISchool.setFlashMessage("此頁只開放 admin 查看學習分析。");
+      window.location.replace("index.html?portal=all");
+    }
   </script>
   <style>
     body {
@@ -405,7 +415,7 @@
       els.rows.innerHTML = "<tr><td colspan='6' class='text-center text-slate-400 py-10'>讀取中...</td></tr>";
       try {
         if (!window.AISchoolLearning.hasEndpoint()) {
-          setStatus("error", "尚未設定 <code>learningAnalytics</code> Apps Script URL。請部署 <code>gas/learning-analytics/Code.js</code> 後，把 Web App URL 填入 AI School 設定。");
+          setStatus("error", "尚未設定 <code>learningAnalytics</code> Apps Script URL。請部署含 learning analytics API 的 Auth Hub Web App，並把 URL 填入 AI School 設定。");
           els.rows.innerHTML = "<tr><td colspan='6' class='text-center text-slate-400 py-10'>等待後端設定。</td></tr>";
           return;
         }
@@ -417,7 +427,7 @@
         render(data);
         setStatus("ok", `已讀取 ${data.totalEvents || 0} 筆學習事件。`);
       } catch (error) {
-        setStatus("error", `${error.message}<br><span class="text-slate-300">請確認：1. 已部署 Apps Script；2. 你的帳號在 student/teacher/professor 任一表的 admin 欄位為 TRUE；3. 若設定 ADMIN_SHARED_SECRET，這裡已填入正確 token。</span>`);
+        setStatus("error", `${error.message}<br><span class="text-slate-300">請確認：1. Auth Hub Apps Script 已部署到新版；2. Web App 存取權是「任何人」；3. 你的帳號在 Users_student / Users_teacher / Users_professor 任一表的 admin 欄位為 TRUE 或 role 為 admin；4. 若設定 ADMIN_SHARED_SECRET，這裡已填入正確 token。</span>`);
         els.rows.innerHTML = "<tr><td colspan='6' class='text-center text-slate-400 py-10'>讀取失敗。</td></tr>";
       }
     }

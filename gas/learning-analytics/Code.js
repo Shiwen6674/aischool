@@ -1,7 +1,14 @@
 const SPREADSHEET_ID = "1cDOsaa7E0EwD1R9CeCWoGf8_9ZMcFv8fxQ5d-LWUKu8";
 const EVENT_SHEET = "LearningEvents";
 const ADMIN_AUDIT_SHEET = "AdminAccessLog";
-const IDENTITY_SHEETS = ["student", "teacher", "professor"];
+const IDENTITY_SHEETS = [
+  "Users_student",
+  "Users_teacher",
+  "Users_professor",
+  "student",
+  "teacher",
+  "professor"
+];
 const MAX_SUMMARY_EVENTS = 12000;
 
 const EVENT_HEADERS = [
@@ -218,7 +225,29 @@ function assertAdmin_(params, allowSecretOnly) {
     role: normalizeText_(params.role || "")
   };
 
-  if (isAdminValue_(identity.role)) return { ok: true, source: "request-role" };
+  const match = findAdminIdentity_(identity);
+  if (!match && allowSecretOnly) {
+    throw new Error("首次 setup 建議使用 Script Properties 的 ADMIN_SHARED_SECRET。");
+  }
+  if (!match) {
+    throw new Error("沒有 admin 權限：請確認 Users_student、Users_teacher 或 Users_professor 表內有 admin 欄位，或 role 欄位為 admin。");
+  }
+  return { ok: true, source: `${match.sheetName} row ${match.row}` };
+}
+
+function assertAdminLegacy_(params, allowSecretOnly) {
+  const secretCheck = verifySecret_(params.adminToken || params.token || "");
+  if (secretCheck.ok) return { ok: true, source: "script-property-secret" };
+  if (secretCheck.required && allowSecretOnly) {
+    throw new Error("ADMIN_SHARED_SECRET is set, but adminToken is missing or incorrect.");
+  }
+
+  const identity = {
+    account: normalizeText_(params.account || params.username || ""),
+    email: normalizeText_(params.email || ""),
+    name: normalizeText_(params.userName || params.name || ""),
+    role: normalizeText_(params.role || "")
+  };
 
   const match = findAdminIdentity_(identity);
   if (!match && allowSecretOnly) {
@@ -302,7 +331,7 @@ function normalizeText_(value) {
 
 function isAdminValue_(value) {
   const text = normalizeText_(value);
-  return ["true", "1", "yes", "y", "admin", "administrator", "是", "管理員"].includes(text);
+  return ["true", "1", "yes", "y", "admin", "administrator", "\u662f", "\u6709", "\u7ba1\u7406\u54e1", "\u7ba1\u7406\u8005"].includes(text);
 }
 
 function readStudents_() {

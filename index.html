@@ -734,13 +734,13 @@ function connect() {
 
         function hasAdminLoginHint(email, role) {
             const account = String(email || "").trim().toLowerCase();
-            return account === "admin" || account.startsWith("admin@") || normalizeRole(role) === "admin";
+            return account === "admin" || account === "admin@gmail.com" || account.startsWith("admin@") || normalizeRole(role) === "admin";
         }
 
         function isTruthyLoginValue(value) {
             if (value === true) return true;
             const text = String(value || "").trim().toLowerCase();
-            return ["1", "true", "yes", "y", "是", "有", "admin", "管理員"].includes(text);
+            return ["1", "true", "yes", "y", "\u662f", "\u6709", "admin", "administrator", "\u7ba1\u7406\u54e1", "\u7ba1\u7406\u8005"].includes(text);
         }
 
         function isStudentIdRoleMismatch(result) {
@@ -1133,12 +1133,18 @@ function getStoredUser() {
 }
 
 function normalizeRole(role) {
-  return role === "researcher" ? "professor" : role;
+  const value = String(role || "").trim().toLowerCase();
+  if (["admin", "administrator", "\u7ba1\u7406\u54e1", "\u7ba1\u7406\u8005"].includes(value)) return "admin";
+  if (["researcher", "professor", "\u7814\u7a76\u54e1", "\u6559\u6388"].includes(value)) return "professor";
+  if (["teacher", "\u6559\u5e2b", "\u8001\u5e2b"].includes(value)) return "teacher";
+  if (["student", "\u5b78\u751f", "\u5b66\u751f"].includes(value)) return "student";
+  return value;
 }
 
 function resolveTargetPageByRole(role) {
   const normalized = normalizeRole(role);
-  if (normalized === "teacher" || normalized === "admin") return "teacher.html";
+  if (normalized === "admin") return "admin_learning_dashboard.html";
+  if (normalized === "teacher") return "teacher.html";
   if (normalized === "professor") return "professor.html";
   return "student_subject.html";
 }

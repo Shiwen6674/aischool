@@ -26,6 +26,13 @@
     return {};
   }
 
+  function isAdminLoginHint(user) {
+    const email = safeString(user.email || user.mail).trim().toLowerCase();
+    const account = safeString(user.account || user.username || user.id).trim().toLowerCase();
+    const role = safeString(user.role || "").trim().toLowerCase();
+    return role === "admin" || account === "admin" || email === "admin@gmail.com" || email.startsWith("admin@");
+  }
+
   function getEndpoint() {
     try {
       if (window.AISchool && typeof window.AISchool.getGasUrl === "function") {
@@ -185,6 +192,7 @@
 
       const endpoint = getEndpoint();
       const user = getCurrentUser();
+      const adminRole = isAdminLoginHint(user) ? "admin" : safeString(user.role || "");
       const callbackName = `__aischoolLearningJsonp_${Date.now()}_${jsonpSeq++}`;
       const query = new URLSearchParams(Object.assign({}, params || {}, {
         action,
@@ -192,7 +200,7 @@
         account: safeString(user.account || user.username || user.id),
         email: safeString(user.email || user.mail),
         userName: safeString(user.name || user.userName),
-        role: safeString(user.role || ""),
+        role: adminRole,
         adminToken: getAdminToken()
       }));
       const sep = endpoint.includes("?") ? "&" : "?";
@@ -223,7 +231,7 @@
       script.onerror = () => {
         if (completed) return;
         cleanup();
-        reject(new Error("無法載入 Apps Script 回應，請確認部署 URL 可公開執行。"));
+        reject(new Error("無法載入 learningAnalytics Apps Script 回應：請確認 Auth Hub Web App 已重新部署到含 learning analytics API 的版本，且存取權為「任何人」。"));
       };
 
       script.src = `${endpoint}${sep}${query.toString()}`;

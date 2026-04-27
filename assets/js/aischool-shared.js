@@ -23,7 +23,7 @@
     studentAdaptiveTesting: "https://script.google.com/macros/s/AKfycbxvAOgRDBE6T-2R37UeTzo0RSQukgGOlEYyBrTw8zUSOlIKNIzLdJXozjNx4Hn6brc2/exec",
     studentUnitCoreIdea: "https://script.google.com/macros/s/AKfycbynf2DkhZ6V9lCLH3MH-Ud7DjTMPDKAu2DJm3OC22lTYaPJe5TiA8GRfyG0lihLUZxa/exec",
     studentBilingualTracking: "https://script.google.com/macros/s/AKfycbwXvqOFGVuay1_jZ7dau5VkNqSqGppQ3ffIizlcyB4R0XwvQU7Km5JFuYR4wfFG2OMxHA/exec",
-    learningAnalytics: "https://script.google.com/macros/s/AKfycbwa509Hdkh8d55bRs8x4GVHySPjGr4zkT4JulZNcoGwpJzPFcxhdQ__dm9ztTlQZMsn9g/exec"
+    learningAnalytics: "https://script.google.com/macros/s/AKfycbzcDKkz8Tilzb3qbx0_fDR7QoG4-c2JCtsa4p9V8_1gBjZaEMlvQHd72OD0kZq_jW8H/exec"
   };
   const GAS_ENDPOINT_FALLBACKS = {
     teacherCatReview: "studentAdaptiveTesting"
@@ -86,7 +86,12 @@
   }
 
   function normalizeRole(role) {
-    return role === "researcher" ? "professor" : String(role || "").trim();
+    const value = String(role || "").trim().toLowerCase();
+    if (["admin", "administrator", "\u7ba1\u7406\u54e1", "\u7ba1\u7406\u8005"].includes(value)) return "admin";
+    if (["researcher", "professor", "\u7814\u7a76\u54e1", "\u6559\u6388"].includes(value)) return "professor";
+    if (["teacher", "\u6559\u5e2b", "\u8001\u5e2b"].includes(value)) return "teacher";
+    if (["student", "\u5b78\u751f", "\u5b66\u751f"].includes(value)) return "student";
+    return value;
   }
 
   function normalizeUser(user) {
@@ -110,14 +115,8 @@
   }
 
   function getCurrentUser() {
-    const sessionUser = normalizeUser(safeParse(sessionStorage.getItem(SESSION_USER_KEY)));
-    if (sessionUser) return sessionUser;
-
-    for (const key of LEGACY_USER_STORAGE_KEYS) {
-      const localUser = normalizeUser(safeParse(localStorage.getItem(key)));
-      if (localUser) return localUser;
-    }
-    return null;
+    // 僅從 sessionStorage 讀取，關閉瀏覽器即自動登出
+    return normalizeUser(safeParse(sessionStorage.getItem(SESSION_USER_KEY)));
   }
 
   function setCurrentUser(user) {
@@ -126,10 +125,9 @@
       clearCurrentUser();
       return;
     }
+    // 僅寫入 sessionStorage，不寫 localStorage，確保關閉瀏覽器後自動登出
     sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(normalized));
-    localStorage.setItem(SESSION_USER_KEY, JSON.stringify(normalized));
     sessionStorage.setItem("isLoggedIn", "true");
-    localStorage.setItem("isLoggedIn", "true");
   }
 
   function clearCurrentUser() {
