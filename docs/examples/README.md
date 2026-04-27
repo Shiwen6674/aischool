@@ -10,4 +10,5 @@
 - `04-run-smoke-test.md`
 - `05-pages-preflight.md`
 - `06-cloud-tts.md`
+- `cloud-tts-openai-proxy.gs`
 - `07-align-spreadsheet-config.md`

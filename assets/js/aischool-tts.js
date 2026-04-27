@@ -1,4 +1,7 @@
 (function() {
+  const MAX_AUDIO_CACHE_ITEMS = 24;
+  const CLOUD_FAILURE_COOLDOWN_MS = 30000;
+
   function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
   }
@@ -11,6 +14,10 @@
     return /Android/i.test(navigator.userAgent || "");
   }
 
+  function isMobileDevice() {
+    return isIOSDevice() || isAndroidDevice();
+  }
+
   function isMostlyEnglish(text) {
     const raw = String(text || "");
     const latin = (raw.match(/[A-Za-z]/g) || []).length;
@@ -20,9 +27,37 @@
     return latin > cjk * 2;
   }
 
+  function decodeHtmlEntities(text) {
+    const raw = String(text || "");
+    if (!/[&<>\u00A0]/.test(raw) || typeof document === "undefined") {
+      return raw.replace(/\u00A0/g, " ");
+    }
+
+    const textarea = document.createElement("textarea");
+    textarea.innerHTML = raw;
+    return textarea.value.replace(/\u00A0/g, " ");
+  }
+
+  function normalizeSpeechText(text) {
+    const decoded = decodeHtmlEntities(text)
+      .replace(/<[^>]*>/g, " ")
+      .replace(/[ \t\r\n]+/g, " ")
+      .replace(/\s+([,.;:!?])/g, "$1")
+      .trim();
+
+    if (!decoded) return "";
+
+    return decoded
+      .replace(/([\u4E00-\u9FFF])([A-Za-z0-9])/g, "$1 $2")
+      .replace(/([A-Za-z0-9])([\u4E00-\u9FFF])/g, "$1 $2")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+  }
+
   function splitTextForSpeak(text, isEng, maxChunkLength) {
-    const regex = isEng ? /([.?!;]+)/ : /([。！？；]+)/;
-    const segments = String(text || "")
+    const sourceText = normalizeSpeechText(text);
+    const regex = isEng ? /([.?!;]+\s*)/ : /([\u3002\uff01\uff1f\uff1b!?;]+\s*)/;
+    const segments = sourceText
       .split(regex)
       .reduce((acc, curr, index) => {
         if (index % 2 === 0) {
@@ -46,7 +81,7 @@
         continue;
       }
 
-      const parts = trimmed.split(isEng ? /([,:])/ : /([，、：])/).filter(Boolean);
+      const parts = trimmed.split(isEng ? /([,:]\s*)/ : /([\uff0c\u3001\uff1a,:\uff1b;]\s*)/).filter(Boolean);
       let buffer = "";
       for (const part of parts) {
         const candidate = `${buffer}${part}`.trim();
@@ -63,7 +98,29 @@
       }
     }
 
-    return chunks.length ? chunks : [String(text || "")];
+    if (!chunks.length) return sourceText ? [sourceText] : [];
+
+    if (!isEng) {
+      const hardLimit = Math.max(18, Math.floor(limit * 1.25));
+      return chunks.flatMap((chunk) => {
+        if (chunk.length <= hardLimit) return [chunk];
+        const next = [];
+        let buffer = "";
+
+        Array.from(chunk).forEach((char) => {
+          buffer += char;
+          if (buffer.length >= hardLimit) {
+            next.push(buffer.trim());
+            buffer = "";
+          }
+        });
+
+        if (buffer.trim()) next.push(buffer.trim());
+        return next;
+      });
+    }
+
+    return chunks;
   }
 
   function getSpeechPlatform() {
@@ -166,13 +223,15 @@
 
       if (voice.default) score += 300;
       if (voice.localService) score += platform === "ios" ? 3200 : 800;
+      if (platform === "android" && !voice.localService) score += isEng ? 900 : 2200;
 
-      if (/enhanced|premium|natural|neural|studio|wavenet|online|cloud|high quality/.test(descriptor)) score += 6500;
-      if (/compact|espeak|ekho|festival|robot|legacy/.test(descriptor)) score -= 14000;
+      if (/enhanced|premium|natural|neural|studio|wavenet|online|cloud|high quality|siri voice/.test(descriptor)) score += 6500;
+      if (/compact|espeak|ekho|festival|robot|legacy|novelty/.test(descriptor)) score -= 14000;
       if (/siri/.test(descriptor)) score += isEng ? 1200 : 5200;
       if (/google/.test(descriptor)) score += platform === "android" ? 3200 : 1400;
       if (/microsoft/.test(descriptor) && platform === "desktop") score += 2200;
       if (/apple/.test(descriptor) && platform !== "android") score += 1800;
+      if (!isEng && /zh-tw|cmn-hant-tw|taiwan|mandarin.*taiwan|國語|中文/.test(`${lang} ${descriptor}`)) score += 1800;
 
       score += scoreProfileMatch(descriptor, profilePatterns);
 
@@ -226,8 +285,8 @@
           male: { rate: 0.96, pitch: 0.9 }
         },
         zh: {
-          female: { rate: 0.86, pitch: 0.98 },
-          male: { rate: 0.84, pitch: 0.86 }
+          female: { rate: 0.8, pitch: 0.98 },
+          male: { rate: 0.78, pitch: 0.86 }
         }
       },
       android: {
@@ -236,8 +295,8 @@
           male: { rate: 0.98, pitch: 0.92 }
         },
         zh: {
-          female: { rate: 0.93, pitch: 0.99 },
-          male: { rate: 0.9, pitch: 0.86 }
+          female: { rate: 0.84, pitch: 0.98 },
+          male: { rate: 0.82, pitch: 0.86 }
         }
       },
       desktop: {
@@ -246,8 +305,8 @@
           male: { rate: 0.98, pitch: 0.93 }
         },
         zh: {
-          female: { rate: 0.94, pitch: 0.99 },
-          male: { rate: 0.9, pitch: 0.87 }
+          female: { rate: 0.9, pitch: 0.99 },
+          male: { rate: 0.86, pitch: 0.87 }
         }
       }
     };
@@ -261,7 +320,7 @@
 
     if (!isEng) {
       if (/mei-jia|meijia|siri|hsiaochen|hsiaoyu|hanhan|yating|xiaoxiao/.test(descriptor)) {
-        rate += 0.03;
+        rate += platform === "desktop" ? 0.02 : 0.01;
         pitch += gender === "male" ? 0.02 : 0.01;
       }
       if (/yu-shu|yushu|li-mu|limu|yunxi|yunjian|yunyang|zhiwei|kangkang/.test(descriptor)) {
@@ -269,7 +328,7 @@
         pitch -= 0.02;
       }
       if (/google/.test(descriptor) && platform === "android") {
-        rate += 0.02;
+        rate -= 0.01;
       }
     } else {
       if (/samantha|ava|victoria|allison|serena|karen|moira|jenny|aria|emma/.test(descriptor)) {
@@ -289,7 +348,7 @@
     }
 
     return {
-      rate: clamp(rate, isEng ? 0.84 : 0.76, isEng ? 1.12 : 1.02),
+      rate: clamp(rate, isEng ? 0.84 : 0.68, isEng ? 1.12 : 0.98),
       pitch: clamp(pitch, gender === "male" ? 0.8 : 0.9, gender === "male" ? 0.98 : 1.06)
     };
   }
@@ -302,7 +361,10 @@
       platform,
       family,
       gender,
-      profileId: `${platform}-${family}-${gender}`
+      profileId: `${platform}-${family}-${gender}`,
+      locale: request?.lang || (family === "en" ? "en-US" : "zh-TW"),
+      style: family === "zh" ? "taiwan-mandarin-natural" : "clear-educational",
+      timbre: gender === "male" ? "warm-male" : "warm-female"
     };
   }
 
@@ -350,6 +412,8 @@
     let activeMode = "idle";
     let paused = false;
     let runId = 0;
+    let cloudUnavailableUntil = 0;
+    let cloudFailureCount = 0;
 
     function notifyModeChange(mode) {
       if (activeMode === mode) return;
@@ -372,6 +436,20 @@
       return Boolean(info && info.url && info.isConfigured);
     }
 
+    function rememberAudioAsset(cacheKey, asset) {
+      audioCache.set(cacheKey, asset);
+
+      while (audioCache.size > MAX_AUDIO_CACHE_ITEMS) {
+        const oldestKey = audioCache.keys().next().value;
+        const oldestAsset = audioCache.get(oldestKey);
+        audioCache.delete(oldestKey);
+        if (oldestAsset?.src && objectUrls.has(oldestAsset.src)) {
+          URL.revokeObjectURL(oldestAsset.src);
+          objectUrls.delete(oldestAsset.src);
+        }
+      }
+    }
+
     async function getCloudAudioSource(text, request) {
       const endpointInfo = getCloudEndpointInfo(request.endpointKey);
       if (!endpointInfo.url || !endpointInfo.isConfigured) return null;
@@ -381,27 +459,52 @@
         return audioCache.get(cacheKey);
       }
 
-      const response = await fetch(endpointInfo.url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json"
-        },
-        body: JSON.stringify({
-          action: "tts",
-          text,
-          lang: request.lang,
-          gender: request.gender,
-          rate: request.rate,
-          format: "mp3",
-          languageFamily: request.isEng ? "en" : "zh",
-          voiceProfile: buildCloudVoiceProfile(request),
-          deviceClass: getSpeechPlatform(),
-          preferredEngine: "cloud-first",
-          preferredQuality: "high"
-        }),
-        redirect: "follow"
-      });
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), isMobileDevice() ? 18000 : 15000);
+      let response;
+      try {
+        response = await fetch(endpointInfo.url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json, audio/mpeg, audio/wav, audio/ogg"
+          },
+          body: JSON.stringify({
+            action: "tts",
+            text,
+            lang: request.lang,
+            gender: request.gender,
+            rate: request.rate,
+            format: "mp3",
+            languageFamily: request.isEng ? "en" : "zh",
+            voiceProfile: buildCloudVoiceProfile(request),
+            deviceClass: getSpeechPlatform(),
+            preferredEngine: "cloud-first",
+            preferredQuality: "natural",
+            speakingStyle: request.isEng ? "clear-educational" : "taiwan-mandarin-natural",
+            textType: "plain"
+          }),
+          redirect: "follow",
+          signal: controller.signal
+        });
+      } finally {
+        window.clearTimeout(timeout);
+      }
+
+      const contentType = String(response.headers.get("content-type") || "").toLowerCase();
+      if (contentType.startsWith("audio/") || contentType.includes("application/octet-stream")) {
+        if (!response.ok) throw new Error(`TTS HTTP ${response.status}`);
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        objectUrls.add(url);
+        const asset = {
+          kind: "url",
+          src: url,
+          mimeType: contentType.startsWith("audio/") ? contentType : (blob.type || "audio/mpeg")
+        };
+        rememberAudioAsset(cacheKey, asset);
+        return asset;
+      }
 
       const json = await response.json();
       if (!response.ok || json?.ok === false) {
@@ -426,7 +529,7 @@
         };
       }
 
-      audioCache.set(cacheKey, asset);
+      rememberAudioAsset(cacheKey, asset);
       return asset;
     }
 
@@ -492,6 +595,8 @@
       stopAudioElement();
       notifyModeChange("cloud");
       paused = false;
+      cloudFailureCount = 0;
+      cloudUnavailableUntil = 0;
       audio.src = asset.src;
 
       return new Promise((resolve, reject) => {
@@ -521,13 +626,18 @@
     }
 
     function playBrowser(text, request, expectedRunId) {
-      if (!synth) return Promise.resolve(false);
+      if (!synth) {
+        notifyModeChange("idle");
+        if (typeof request.onComplete === "function") request.onComplete();
+        return Promise.resolve(false);
+      }
 
       const voices = synth.getVoices();
       const selectedVoice = pickBestVoice(voices, request.isEng, request.gender);
-      const mobile = isIOSDevice() || isAndroidDevice();
-      const maxChunkLength = request.isEng ? (mobile ? 180 : 260) : (mobile ? 42 : 70);
-      const chunks = text.length > maxChunkLength ? splitTextForSpeak(text, request.isEng, maxChunkLength) : [text];
+      const mobile = isMobileDevice();
+      const maxChunkLength = request.isEng ? (mobile ? 165 : 260) : (mobile ? 34 : 64);
+      const chunks = splitTextForSpeak(text, request.isEng, maxChunkLength);
+      const chunkGapMs = request.isEng ? (mobile ? 55 : 20) : (mobile ? 95 : 45);
 
       notifyModeChange("browser");
       paused = false;
@@ -557,13 +667,13 @@
           utterance.rate = tuning.rate;
           utterance.pitch = tuning.pitch;
 
-          utterance.onend = speakNextChunk;
-          utterance.onerror = speakNextChunk;
+          utterance.onend = () => window.setTimeout(speakNextChunk, chunkGapMs);
+          utterance.onerror = () => window.setTimeout(speakNextChunk, chunkGapMs);
           synth.speak(utterance);
         }
 
         synth.cancel();
-        speakNextChunk();
+        window.setTimeout(speakNextChunk, mobile ? 80 : 10);
       });
     }
 
@@ -576,7 +686,7 @@
         ...optionsOverride
       };
 
-      const cleanText = String(text || "").replace(/<[^>]*>/g, "").replace(/\u00A0/g, " ").trim();
+      const cleanText = normalizeSpeechText(text);
       if (!cleanText) {
         if (typeof request.onComplete === "function") request.onComplete();
         return false;
@@ -588,12 +698,17 @@
       if (synth) synth.cancel();
 
       request.isEng = typeof request.isEng === "boolean" ? request.isEng : isMostlyEnglish(cleanText);
-      request.lang = request.lang || (request.isEng ? "en-US" : "zh-TW");
+      request.lang =
+        request.lang ||
+        (typeof config.languageResolver === "function" ? config.languageResolver(cleanText, request) : "") ||
+        (request.isEng ? "en-US" : "zh-TW");
 
-      if (request.preferCloud && isCloudConfigured(request.endpointKey)) {
+      if (request.preferCloud && isCloudConfigured(request.endpointKey) && Date.now() >= cloudUnavailableUntil) {
         try {
           return await playCloud(cleanText, request, expectedRunId);
         } catch {
+          cloudFailureCount += 1;
+          cloudUnavailableUntil = Date.now() + Math.min(CLOUD_FAILURE_COOLDOWN_MS * cloudFailureCount, 120000);
           if (typeof config.onCloudFallback === "function") {
             config.onCloudFallback();
           }
@@ -626,10 +741,13 @@
     createPlayer,
     helpers: {
       buildCloudVoiceProfile,
+      getSpeechPlatform,
       getSpeechTuning,
       isAndroidDevice,
       isIOSDevice,
+      isMobileDevice,
       isMostlyEnglish,
+      normalizeSpeechText,
       pickBestVoice,
       splitTextForSpeak
     }

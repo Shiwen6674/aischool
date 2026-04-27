@@ -9,6 +9,7 @@
 1. 不可以把 API key 放進前端
 2. 要優先改共用 runtime，而不是只在單頁硬寫
 3. 雲端端點要能支援 audioUrl 或 base64 音訊
+   - 也可以直接回傳 audio/mpeg、audio/wav 或 audio/ogg
 4. 手機中文語音失敗時要自動退回裝置語音
 5. 文件要補上前後端契約
 ```

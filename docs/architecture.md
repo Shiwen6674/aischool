@@ -263,4 +263,6 @@ AI School 現在有一份集中式 spreadsheet config，位於 `assets/js/aischo
 - `assets/js/aischool-tts.js` 目前支援兩種回應：
   - `{"ok": true, "audioUrl": "..."}`
   - `{"ok": true, "audioContent": "<base64>", "mimeType": "audio/mpeg"}`
+- 也支援代理端點直接回傳 `audio/mpeg`、`audio/wav` 或 `audio/ogg`，方便串接高自然度 TTS 服務。
+- 前端送出的 JSON 會包含 `voiceProfile`、`preferredQuality: "natural"` 與 `speakingStyle`，後端可用這些欄位映射到實際供應商語音。
 - 若 `cloudTts` 未配置或失敗，頁面會回退到瀏覽器內建語音。

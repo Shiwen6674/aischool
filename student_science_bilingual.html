@@ -548,10 +548,11 @@ let ttsPlayer = null;
                 ttsPlayer = window.AISchoolTTS.createPlayer({
                     endpointKey: 'cloudTts',
                     preferCloud: true,
+                    languageResolver: (text) => resolveSpeechLanguage(text),
                     getGender: () => currentVoice,
                     getRate: () => getUiRate(),
                     onModeChange: (mode) => updateTtsStatus(mode),
-                    onCloudFallback: () => updateTtsStatus('browser')
+                    onCloudFallback: () => updateTtsStatus('browser-fallback')
                 });
             }
             updateTtsStatus();
@@ -952,20 +953,42 @@ function updateTtsStatus(modeOverride) {
 
     const mode = modeOverride || ttsPlayer?.getMode?.() || 'idle';
     const cloudReady = Boolean(ttsPlayer?.isCloudConfigured?.('cloudTts'));
+    const mobile = Boolean(window.AISchoolTTS?.helpers?.isMobileDevice?.());
 
     if (mode === 'cloud') {
-        status.textContent = 'Voice Cloud';
+        status.textContent = 'AI Voice';
+        status.title = '目前使用雲端 AI 語音朗讀';
         status.className = 'mt-1 text-[9px] font-bold uppercase tracking-wide text-emerald-400';
         return;
     }
 
+    if (mode === 'browser-fallback') {
+        status.textContent = 'Device Fallback';
+        status.title = '雲端語音暫時不可用，已改用裝置內建語音';
+        status.className = 'mt-1 text-[9px] font-bold uppercase tracking-wide text-amber-300';
+        return;
+    }
+
+    if (mode === 'browser') {
+        status.textContent = cloudReady ? 'Device Fallback' : (mobile ? 'Device Mobile' : 'Voice Device');
+        status.title = cloudReady
+            ? '雲端語音暫時不可用，已改用裝置內建語音'
+            : '目前使用裝置內建語音';
+        status.className = cloudReady
+            ? 'mt-1 text-[9px] font-bold uppercase tracking-wide text-amber-300'
+            : 'mt-1 text-[9px] font-bold uppercase tracking-wide text-slate-400';
+        return;
+    }
+
     if (cloudReady) {
-        status.textContent = 'Cloud Ready';
+        status.textContent = 'AI Ready';
+        status.title = '雲端 AI 語音已就緒';
         status.className = 'mt-1 text-[9px] font-bold uppercase tracking-wide text-cyan-400';
         return;
     }
 
-    status.textContent = 'Voice Device';
+    status.textContent = mobile ? 'Device Mobile' : 'Voice Device';
+    status.title = '目前使用裝置內建語音；若要接近 ChatGPT 語音品質，需設定 cloudTts 後端';
     status.className = 'mt-1 text-[9px] font-bold uppercase tracking-wide text-slate-400';
 }
 
@@ -1316,6 +1339,16 @@ suppressModeTracking = false;
             return latin > cjk * 2;
         }
 
+        function normalizeSpeechText(txt) {
+            const helper = window.AISchoolTTS?.helpers?.normalizeSpeechText;
+            if (typeof helper === 'function') return helper(txt);
+            return (txt || "").toString().replace(/<[^>]*>/g, " ").replace(/\u00A0/g, " ").replace(/\s+/g, " ").trim();
+        }
+
+        function resolveSpeechLanguage(txt) {
+            return isMostlyEnglish(txt) ? 'en-US' : 'zh-TW';
+        }
+
         function pickBestVoice(isEng, gender) {
             const helper = window.AISchoolTTS?.helpers?.pickBestVoice;
             if (typeof helper === 'function' && window.speechSynthesis) {
@@ -1346,7 +1379,7 @@ suppressModeTracking = false;
             if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
             synth.cancel();
 
-            const cleanTxt = (txt || "").toString().replace(/<[^>]*>/g, "").replace(/\u00A0/g, " ").trim();
+            const cleanTxt = normalizeSpeechText(txt);
             if (!cleanTxt) {
                 if (onComplete) { setTimeout(() => { if (isSpeaking) onComplete(); }, 10); } 
                 else { isSpeaking = false; if (btn) btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>'; }
@@ -1356,7 +1389,7 @@ suppressModeTracking = false;
             const ios = isIOSDevice();
             const android = isAndroidDevice();
             const isEng = isMostlyEnglish(cleanTxt);
-            const lang = isEng ? "en-US" : "zh-TW"; 
+            const lang = resolveSpeechLanguage(cleanTxt);
             const mobileSpeech = ios || android;
             const maxChunkLength = isEng ? (mobileSpeech ? 180 : 260) : (mobileSpeech ? 42 : 70);
             const chunks = cleanTxt.length > maxChunkLength ? splitTextForSpeak(cleanTxt, isEng, maxChunkLength) : [cleanTxt];
@@ -1396,8 +1429,12 @@ suppressModeTracking = false;
         }
 
         function splitTextForSpeak(text, isEng, maxChunkLength) {
-            const regex = isEng ? /([.?!;]+)/ : /([。！？；]+)/;
-            const segments = text.split(regex).reduce((acc, curr, i) => {
+            const helper = window.AISchoolTTS?.helpers?.splitTextForSpeak;
+            if (typeof helper === 'function') return helper(text, isEng, maxChunkLength);
+
+            const sourceText = normalizeSpeechText(text);
+            const regex = isEng ? /([.?!;]+\s*)/ : /([\u3002\uff01\uff1f\uff1b!?;]+\s*)/;
+            const segments = sourceText.split(regex).reduce((acc, curr, i) => {
                 if (i % 2 === 0) acc.push(curr);
                 else acc[acc.length - 1] += curr;
                 return acc;
@@ -1415,7 +1452,7 @@ suppressModeTracking = false;
                     continue;
                 }
 
-                const parts = trimmed.split(isEng ? /([,:])/ : /([，、：])/).filter(Boolean);
+                const parts = trimmed.split(isEng ? /([,:]\s*)/ : /([\uff0c\u3001\uff1a,:\uff1b;]\s*)/).filter(Boolean);
                 let buffer = "";
                 for (const part of parts) {
                     const candidate = `${buffer}${part}`.trim();
@@ -1432,7 +1469,7 @@ suppressModeTracking = false;
                 }
             }
 
-            return chunks.length ? chunks : [text];
+            return chunks.length ? chunks : (sourceText ? [sourceText] : []);
         }
 
 function toggleSpeechLegacy() {
@@ -1473,7 +1510,7 @@ function speakText(txt, onComplete) {
     const btn = document.getElementById('btn-play');
     if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
 
-    const cleanTxt = (txt || "").toString().replace(/<[^>]*>/g, "").replace(/\u00A0/g, " ").trim();
+    const cleanTxt = normalizeSpeechText(txt);
     if (!cleanTxt) {
         if (onComplete) { setTimeout(() => { if (isSpeaking) onComplete(); }, 10); }
         else { isSpeaking = false; if (btn) btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>'; }
@@ -1491,8 +1528,11 @@ function speakText(txt, onComplete) {
     };
 
     if (ttsPlayer?.speak) {
+        const isEng = isMostlyEnglish(cleanTxt);
         ttsPlayer.speak(cleanTxt, {
             gender: currentVoice,
+            isEng,
+            lang: resolveSpeechLanguage(cleanTxt),
             rate: getUiRate(),
             onComplete: finishPlayback
         }).catch(() => {
@@ -1503,12 +1543,10 @@ function speakText(txt, onComplete) {
     }
 
     if (synth) {
-        const latin = (cleanTxt.match(/[A-Za-z]/g) || []).length;
-        const cjk = (cleanTxt.match(/[\u4E00-\u9FFF]/g) || []).length;
-        const isEng = latin > cjk * 2;
+        const isEng = isMostlyEnglish(cleanTxt);
         const utterance = new SpeechSynthesisUtterance(cleanTxt);
         const voice = pickBestVoice(isEng, currentVoice);
-        utterance.lang = voice?.lang || (isEng ? 'en-US' : 'zh-TW');
+        utterance.lang = voice?.lang || resolveSpeechLanguage(cleanTxt);
         if (voice) utterance.voice = voice;
         const tuning = getSpeechTuning(isEng, voice, getUiRate());
         utterance.rate = tuning.rate;
