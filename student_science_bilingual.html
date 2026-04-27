@@ -203,6 +203,49 @@
             line-height: 1.4;
             cursor: pointer;
         }
+        .caption-block {
+            margin: 1.1rem 0 2rem;
+            padding: 0.85rem 1rem;
+            border-radius: 0.75rem;
+            background: rgba(15, 23, 42, 0.34);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            border-left: 4px solid rgba(56, 189, 248, 0.78);
+            display: grid;
+            grid-template-columns: 1.5rem minmax(0, 1fr);
+            column-gap: 0.75rem;
+            row-gap: 0.25rem;
+            align-items: start;
+            transition: all 0.3s ease;
+        }
+        .caption-block.table-caption {
+            border-left-color: rgba(251, 191, 36, 0.78);
+        }
+        .caption-icon {
+            color: #38bdf8;
+            line-height: 1.7;
+            font-size: 0.92rem;
+            opacity: 0.9;
+            text-align: center;
+            padding-top: 0.15rem;
+        }
+        .table-caption .caption-icon {
+            color: #fbbf24;
+        }
+        .caption-block .zh-text {
+            font-size: 1rem;
+            line-height: 1.75;
+            color: #cbd5e1;
+            letter-spacing: 0.03em;
+            text-align: left;
+            font-weight: 500;
+        }
+        .caption-block .en-text {
+            grid-column: 2;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #86efac;
+            font-weight: 500;
+        }
 
         /* 下拉選單樣式 (保持原樣) */
         .student-select-wrapper {
@@ -819,6 +862,49 @@ if (mobileBox) {
           return out;
         }
 
+        function normalizeContentLine(line) {
+          return norm(line).replace(/\s+/g, " ");
+        }
+
+        function isFigureCaptionLine(line) {
+          const text = normalizeContentLine(line);
+          if (!text) return false;
+          const marker = "(?:圖說|圖片|照片|插圖|示意圖|圖)";
+          const index = "(?:[0-9０-９一二三四五六七八九十甲乙丙丁戊己庚辛壬癸A-ZＡ-Ｚ]+(?:[-－~～][0-9０-９一二三四五六七八九十A-ZＡ-Ｚ]+)?)";
+          return new RegExp(`^【?\\s*${marker}(?:\\s*${index})?\\s*(?:】|[：:、.．\\-–—)]|\\s|$)`).test(text);
+        }
+
+        function isTableCaptionLine(line) {
+          const text = normalizeContentLine(line);
+          if (!text) return false;
+          const marker = "(?:表說|觀察紀錄表|觀察記錄表|資料表|紀錄表|記錄表|表格|表)";
+          const index = "(?:[0-9０-９一二三四五六七八九十甲乙丙丁戊己庚辛壬癸A-ZＡ-Ｚ]+(?:[-－~～][0-9０-９一二三四五六七八九十A-ZＡ-Ｚ]+)?)";
+          return new RegExp(`^【?\\s*${marker}(?:\\s*${index})?\\s*(?:】|[：:、.．\\-–—)]|\\s|$)`).test(text);
+        }
+
+        function isLoosePanelLabel(line) {
+          const text = normalizeContentLine(line);
+          return /^(?:[A-DＡ-Ｄ]|[甲乙丙丁戊己庚辛壬癸])\s*[：:、.．\-–—]/.test(text);
+        }
+
+        function isExplicitSectionHeading(line) {
+          const text = normalizeContentLine(line);
+          if (!text || isFigureCaptionLine(text) || isTableCaptionLine(text) || isLoosePanelLabel(text)) return false;
+          const shortHeadingLike = text.length <= 36 && !/[。！？.!?]$/.test(text);
+          if (/^【(?!\s*(?:圖|圖片|照片|插圖|示意圖|表|表格|資料表|紀錄表|記錄表))[^】]{2,28}】/.test(text)) return true;
+          if (/^(?:活動|探究活動|實驗活動|小活動|延伸活動|閱讀活動|想一想|做做看|觀察活動)\s*[0-9０-９一二三四五六七八九十A-DＡ-Ｄ甲乙丙丁]?\s*[：:、.．\-–—]?\s*\S{2,}/.test(text)) return true;
+          if (shortHeadingLike && /^第\s*(?:[0-9０-９]+|[一二三四五六七八九十]{1,3})\s*(?:節|章|單元)\s*\S{2,}/.test(text)) return true;
+          if (shortHeadingLike && /^(?:[一二三四五六七八九十]{1,3}|[0-9０-９]+)\s*[、.．]\s*\S{2,}/.test(text)) return true;
+          return false;
+        }
+
+        function classifyContentLine(line) {
+          if (isFigureCaptionLine(line)) return "figure-caption";
+          if (isTableCaptionLine(line)) return "table-caption";
+          if (isExplicitSectionHeading(line)) return "section";
+          return "paragraph";
+        }
+
         function processData(data) {
             rawData = data.slice(1);
             processedUnits = rawData.map((row, i) => {
@@ -1182,7 +1268,7 @@ function stopAudioOnly() {
             }
 
             // 2. 移動索引
-            const blocks = document.querySelectorAll('.content-block, .section-header');
+            const blocks = getReadingBlocks();
             if (currentBlockIndex > 0) {
                 currentBlockIndex--;
             }
@@ -1211,7 +1297,7 @@ function stopAudioOnly() {
             }
 
             // 2. 移動索引
-            const blocks = document.querySelectorAll('.content-block, .section-header');
+            const blocks = getReadingBlocks();
             if (currentBlockIndex < blocks.length - 1) {
                 currentBlockIndex++;
             }
@@ -1232,6 +1318,10 @@ function stopAudioOnly() {
             if(!block) return;
             block.classList.add('reading-active');
             block.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function getReadingBlocks() {
+            return document.querySelectorAll('.reading-block');
         }
 function checkUnitCompletion() {
     if (!currentUnitData) return;
@@ -1256,7 +1346,7 @@ function checkUnitCompletion() {
             // 更新播放按鈕狀態
             document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-pause"></i>';
 
-            const blocks = document.querySelectorAll('.content-block, .section-header');
+            const blocks = getReadingBlocks();
             if (currentBlockIndex >= blocks.length) { resetAudio(); return; }
 
             // 高亮當前區塊
@@ -1347,9 +1437,9 @@ function checkUnitCompletion() {
                 let line = lines[i].trim();
                 if(!line) continue;
                 const rawLine = line; 
+                const blockRole = classifyContentLine(line);
 
-                // 標題或活動區塊
-                if((line.length<40 && !/[。！？.!?]$/.test(line)) || line.includes("活動")) {
+                if(blockRole === "section") {
                     const anchorId = `sec-${i}`;
                     const navItem = document.createElement('div');
                     navItem.className='nav-item';
@@ -1360,7 +1450,7 @@ function checkUnitCompletion() {
                     const displayHtml = escapeHtml(line);
 
                     contentDiv.innerHTML += `
-                        <h2 id="${anchorId}" class="section-header">
+                        <h2 id="${anchorId}" class="section-header reading-block" data-block-role="section">
                             <div class="flex flex-col w-full">
                                 <span class="zh-text section-title-text" onclick="speakText(this.getAttribute('data-speak'))" data-speak="${escapeHtml(rawLine)}">${displayHtml}</span>
                                 <span class="en-text hidden mt-1 font-bold" 
@@ -1368,11 +1458,23 @@ function checkUnitCompletion() {
                                       onclick="speakText(this.innerText)"></span>
                             </div>
                         </h2>`;
+                } else if(blockRole === "figure-caption" || blockRole === "table-caption") {
+                    const processed = processXRayWithCKIP(line, activeVocabMap, unitCkipSet, unitMergeSet);
+                    const icon = blockRole === "table-caption" ? "fa-table" : "fa-image";
+
+                    contentDiv.innerHTML += `
+                        <div class="caption-block ${blockRole} reading-block" data-block-role="${blockRole}">
+                            <i class="caption-icon fa-solid ${icon}" aria-hidden="true"></i>
+                            <p class="zh-text" onclick="speakText(this.getAttribute('data-speak'))" data-speak="${escapeHtml(rawLine)}">${processed}</p>
+                            <p class="en-text hidden"
+                               onclick="speakText(this.innerText)"
+                               data-source="${encodeURIComponent(line)}"></p>
+                        </div>`;
                 } else {
                     const processed = processXRayWithCKIP(line, activeVocabMap, unitCkipSet, unitMergeSet);
 
                     contentDiv.innerHTML += `
-                        <div class="content-block">
+                        <div class="content-block reading-block" data-block-role="paragraph">
                             <p class="zh-text" onclick="speakText(this.getAttribute('data-speak'))" data-speak="${escapeHtml(rawLine)}">${processed}</p>
                             <p class="en-text hidden"
                                onclick="speakText(this.innerText)"
@@ -1661,7 +1763,7 @@ function toggleSpeechLegacy() {
         synth.onvoiceschanged();
     }
 
-    const blocks = document.querySelectorAll('.content-block, .section-header');
+    const blocks = getReadingBlocks();
     if (currentBlockIndex >= blocks.length) currentBlockIndex = 0;
     setTimeout(() => { if (isSpeaking) playSequence(); }, 10);
 }
@@ -1768,7 +1870,7 @@ function toggleSpeech() {
         synth.onvoiceschanged();
     }
 
-    const blocks = document.querySelectorAll('.content-block, .section-header');
+    const blocks = getReadingBlocks();
     if (currentBlockIndex >= blocks.length) currentBlockIndex = 0;
     setTimeout(() => { if (isSpeaking) playSequence(); }, 10);
 }
