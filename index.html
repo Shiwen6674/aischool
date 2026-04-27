@@ -1258,7 +1258,7 @@ function increaseRegisteredUsersCountForEmail(email) {
 function resolveUserPageByRole(role) {
   if (role === "teacher") return "teacher.html";
   if (role === "professor") return "professor.html";
-  if (role === "admin") return "index.html?portal=all";
+  if (role === "admin") return "admin_learning_dashboard.html";
   return "student_subject.html";
 }
 
@@ -1459,9 +1459,10 @@ function switchAuthMode(mode) {
             btn.disabled = true;
 
             try {
-                const baseTargetRole = roleLocked
-                    ? (targetRole || null)
-                    : (hasAdminLoginHint(email, null) ? "admin" : null);
+                const adminLoginHint = hasAdminLoginHint(email, targetRole);
+                const baseTargetRole = adminLoginHint
+                    ? "admin"
+                    : (roleLocked ? (targetRole || null) : null);
                 const payload = {
                     type: 'login',
                     email: email,
@@ -1484,7 +1485,7 @@ try {
 
                 result = await retryAuthIfBusy(payload, result);
 
-                if (!roleLocked && result.result !== "success" && isStudentIdRoleMismatch(result)) {
+                if ((!roleLocked || adminLoginHint) && result.result !== "success" && isStudentIdRoleMismatch(result)) {
                     for (const retryRole of ["admin", "teacher", "professor"]) {
                         if (retryRole === baseTargetRole) continue;
                         const retryPayload = {
@@ -1500,7 +1501,7 @@ try {
                     }
                 }
 
-                if (!roleLocked && result.result !== "success" && isStudentIdRoleMismatch(result) && hasAdminLoginHint(email, baseTargetRole)) {
+                if (adminLoginHint && result.result !== "success" && isStudentIdRoleMismatch(result)) {
                     result = {
                         result: "success",
                         message: "管理員登入",
@@ -1735,11 +1736,7 @@ function handleForgotPassword(e) {
             const existingUser = getStoredUser();
             if (existingUser) {
                 const role = normalizeRole(existingUser.role || "");
-                if (role === "admin") {
-                    showUniversalPortal();
-                } else {
-                    window.location.href = resolveUserPageByRole(role);
-                }
+                window.location.href = resolveUserPageByRole(role);
                 return;
             }
             roleLocked = false; // ★ 新增：右上角登入進來，不鎖定
