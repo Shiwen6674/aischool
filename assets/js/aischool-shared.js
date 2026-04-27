@@ -299,6 +299,107 @@
     return getSpreadsheetConfig();
   }
 
+  function installUiPolish() {
+    if (typeof document === "undefined" || document.getElementById("aischool-ui-polish")) return;
+
+    const style = document.createElement("style");
+    style.id = "aischool-ui-polish";
+    style.textContent = `
+      :root {
+        --ais-ui-accent: #38bdf8;
+        --ais-ui-accent-strong: #22c55e;
+        --ais-ui-surface: rgba(15, 23, 42, 0.74);
+        --ais-ui-surface-hover: rgba(30, 41, 59, 0.88);
+        --ais-ui-border: rgba(148, 163, 184, 0.26);
+        --ais-ui-border-hover: rgba(56, 189, 248, 0.54);
+        --ais-ui-text: #e2e8f0;
+      }
+
+      select:not([multiple]),
+      .input-ai:is(select),
+      .filter-select:is(select),
+      .vl-select:is(select) {
+        appearance: none;
+        -webkit-appearance: none;
+        min-height: 2.65rem;
+        padding-right: 2.75rem !important;
+        color: var(--ais-ui-text);
+        border-color: var(--ais-ui-border) !important;
+        background-color: var(--ais-ui-surface) !important;
+        background-image:
+          linear-gradient(45deg, transparent 50%, currentColor 50%),
+          linear-gradient(135deg, currentColor 50%, transparent 50%),
+          linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(15, 23, 42, 0.12));
+        background-position:
+          calc(100% - 1.15rem) 52%,
+          calc(100% - 0.82rem) 52%,
+          0 0;
+        background-size: 0.36rem 0.36rem, 0.36rem 0.36rem, 100% 100%;
+        background-repeat: no-repeat;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 12px 28px rgba(2, 6, 23, 0.12);
+        transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease, transform 160ms ease;
+      }
+
+      select:not([multiple]):hover,
+      .input-ai:is(select):hover,
+      .filter-select:is(select):hover,
+      .vl-select:is(select):hover {
+        border-color: var(--ais-ui-border-hover) !important;
+        background-color: var(--ais-ui-surface-hover) !important;
+      }
+
+      select:not([multiple]):disabled {
+        opacity: 0.54;
+        cursor: not-allowed;
+        filter: saturate(0.72);
+      }
+
+      select:not([multiple]) option {
+        background: #0f172a;
+        color: #f8fafc;
+      }
+
+      button,
+      [role="button"],
+      select,
+      input,
+      textarea,
+      a {
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      button:focus-visible,
+      [role="button"]:focus-visible,
+      select:focus-visible,
+      input:focus-visible,
+      textarea:focus-visible,
+      a:focus-visible {
+        outline: 3px solid rgba(56, 189, 248, 0.45);
+        outline-offset: 3px;
+      }
+
+      button:disabled,
+      [aria-disabled="true"] {
+        opacity: 0.48;
+        cursor: not-allowed !important;
+        transform: none !important;
+        box-shadow: none !important;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  installUiPolish();
+
   window.AISchoolConfig = {
     gas: GAS_ENDPOINTS,
     spreadsheets: SPREADSHEET_CONFIG

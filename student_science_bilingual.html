@@ -478,51 +478,220 @@
             }
         }
 
-        /* 下拉選單樣式 (保持原樣) */
+        /* Custom learning filters */
         .student-select-wrapper {
-            position: relative; display: flex; align-items: center;
-            background-color: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 99px; 
-            padding: 0 14px; 
-            height: 40px;    
+            position: relative;
+            display: flex;
+            align-items: center;
+            min-width: max-content;
+            height: 42px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background:
+                linear-gradient(135deg, rgba(255, 255, 255, 0.09), rgba(15, 23, 42, 0.66)),
+                rgba(15, 23, 42, 0.74);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 14px 32px rgba(2, 6, 23, 0.16);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            min-width: max-content; 
+            overflow: visible;
         }
         .student-select-wrapper:hover {
-            background-color: rgba(255, 255, 255, 0.15);
             transform: translateY(-1px);
-            border-color: #4ade80;
+            border-color: rgba(74, 222, 128, 0.58);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 18px 38px rgba(2, 6, 23, 0.24);
+        }
+        .student-select-wrapper.is-disabled {
+            opacity: 0.56;
+            transform: none;
+            box-shadow: none;
         }
         .student-select-icon { 
             color: #4ade80; 
             font-size: 0.875rem; 
-            margin-right: 8px; 
+            margin-left: 14px;
+            margin-right: 8px;
             pointer-events: none; 
         }
         .student-select {
-            appearance: none; -webkit-appearance: none;
-            background: transparent; border: none;
-            color: #fff; 
-            font-size: 0.875rem; 
-            font-weight: 600;    
-            padding: 0 24px 0 0; 
-            width: 100%; height: 100%;
-            cursor: pointer; outline: none;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right center; background-repeat: no-repeat; background-size: 0.85em 0.85em; 
+            appearance: none;
+            -webkit-appearance: none;
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
         }
-        .student-select option { background-color: #1E293B; color: #fff; padding: 10px; }
+        .student-select-face {
+            width: 100%;
+            min-width: 0;
+            height: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 0 13px 0 0;
+            border: 0;
+            background: transparent;
+            color: #f8fafc;
+            cursor: pointer;
+            font-size: 0.86rem;
+            font-weight: 800;
+            letter-spacing: 0;
+            text-align: left;
+        }
+        .student-select-face:disabled {
+            cursor: not-allowed;
+        }
+        .student-select-value {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .student-select-caret {
+            color: #94a3b8;
+            font-size: 0.72rem;
+            transition: transform 180ms ease, color 180ms ease;
+            flex: 0 0 auto;
+        }
+        .student-select-wrapper.is-open .student-select-caret {
+            color: #4ade80;
+            transform: rotate(180deg);
+        }
+        .student-select-menu {
+            position: fixed;
+            z-index: 80;
+            max-height: min(22rem, calc(100vh - 2rem));
+            overflow: auto;
+            padding: 0.45rem;
+            border-radius: 1.05rem;
+            border: 1px solid rgba(148, 163, 184, 0.28);
+            background:
+                linear-gradient(180deg, rgba(30, 41, 59, 0.98), rgba(15, 23, 42, 0.98)),
+                #0f172a;
+            box-shadow: 0 24px 70px rgba(2, 6, 23, 0.56);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-6px) scale(0.98);
+            transform-origin: top center;
+            transition: opacity 150ms ease, transform 150ms ease;
+        }
+        .student-select-menu.is-open {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
+        .student-select-option {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            min-height: 2.55rem;
+            padding: 0.62rem 0.8rem;
+            border: 0;
+            border-radius: 0.72rem;
+            background: transparent;
+            color: #cbd5e1;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-align: left;
+        }
+        .student-select-option:hover,
+        .student-select-option:focus-visible {
+            color: #f8fafc;
+            background: rgba(74, 222, 128, 0.12);
+            outline: none;
+        }
+        .student-select-option.is-selected {
+            color: #4ade80;
+            background: rgba(74, 222, 128, 0.18);
+        }
+        .student-select-option.is-selected::before {
+            content: "\f00c";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            font-size: 0.72rem;
+        }
+        .student-select-option:not(.is-selected)::before {
+            content: "";
+            width: 0.72rem;
+            flex: 0 0 auto;
+        }
 
-        /* 底部播放器 */
+        /* Bottom player */
         .player-dock {
-            background: rgba(15, 23, 42, 0.95); /* 加深一點防止透底太多 */
+            background:
+                linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(15, 23, 42, 0.3)),
+                rgba(15, 23, 42, 0.94);
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 2rem;
-            padding: 0.75rem 1.5rem;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            border-radius: 999px;
+            padding: 0.8rem 1.35rem;
+            box-shadow: 0 18px 52px rgba(0, 0, 0, 0.48);
+        }
+        .player-control-btn,
+        .voice-toggle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            transition: transform 150ms ease, color 150ms ease, background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+        }
+        .player-control-btn {
+            width: 2.5rem;
+            height: 2.5rem;
+            color: #94a3b8;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid transparent;
+        }
+        .player-control-btn:hover:not(:disabled) {
+            color: #f8fafc;
+            background: rgba(255, 255, 255, 0.09);
+            transform: translateY(-1px);
+        }
+        .player-control-btn:disabled {
+            color: #64748b;
+            background: rgba(15, 23, 42, 0.18);
+        }
+        .play-toggle {
+            width: 3.45rem;
+            height: 3.45rem;
+            color: #020617;
+            background: #f8fafc;
+            box-shadow: 0 0 24px rgba(255, 255, 255, 0.26), 0 12px 30px rgba(2, 6, 23, 0.25);
+        }
+        .play-toggle:hover:not(:disabled) {
+            transform: translateY(-1px) scale(1.03);
+        }
+        .voice-toggle {
+            width: 2.2rem;
+            height: 2.2rem;
+            color: #94a3b8;
+            background: transparent;
+        }
+        .voice-toggle:hover {
+            color: #f8fafc;
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .voice-toggle.is-active,
+        .player-control-btn.is-active {
+            color: #ffffff;
+            background: linear-gradient(135deg, #22c55e, #10b981);
+            box-shadow: 0 10px 22px rgba(34, 197, 94, 0.24);
+        }
+        .player-stop-btn {
+            border-color: rgba(148, 163, 184, 0.32);
+        }
+        .player-stop-btn:hover:not(:disabled) {
+            color: #fb7185;
+            border-color: rgba(251, 113, 133, 0.58);
+            background: rgba(251, 113, 133, 0.1);
+        }
+        #play-rate {
+            accent-color: #22c55e;
         }
 
         #reading-container { padding-bottom: 180px !important; }
@@ -629,9 +798,9 @@
                 </div>
                 
                 <div class="flex bg-black/30 rounded-full p-1 border border-white/10">
-                    <button onclick="setMode('en')" class="px-4 py-1.5 text-xs font-bold rounded-full text-slate-400 hover:text-white transition" id="btn-en">EN</button>
-                    <button onclick="setMode('dual')" class="px-4 py-1.5 text-xs font-bold rounded-full bg-green-500 text-white shadow-lg" id="btn-dual">雙語</button>
-                    <button onclick="setMode('zh')" class="px-4 py-1.5 text-xs font-bold rounded-full text-slate-400 hover:text-white transition" id="btn-zh">中文</button>
+                    <button onclick="setMode('en')" class="px-4 py-1.5 text-xs font-bold rounded-full text-slate-400 hover:text-white transition" id="btn-en" type="button" aria-pressed="false">EN</button>
+                    <button onclick="setMode('dual')" class="px-4 py-1.5 text-xs font-bold rounded-full bg-green-500 text-white shadow-lg" id="btn-dual" type="button" aria-pressed="true">雙語</button>
+                    <button onclick="setMode('zh')" class="px-4 py-1.5 text-xs font-bold rounded-full text-slate-400 hover:text-white transition" id="btn-zh" type="button" aria-pressed="false">中文</button>
                 </div>
             </div>
 
@@ -703,27 +872,27 @@
             <div class="flex items-center gap-2 md:gap-4 justify-center flex-grow">
                 
                 <div class="flex bg-white/5 rounded-full p-1 md:p-0.5 gap-1 mr-1">
-                    <button onclick="setVoice('male')" id="btn-male" class="w-9 h-9 md:w-7 md:h-7 rounded-full flex items-center justify-center transition text-slate-400 hover:text-white"><i class="fa-solid fa-person text-lg md:text-sm"></i></button>
-                    <button onclick="setVoice('female')" id="btn-female" class="w-9 h-9 md:w-7 md:h-7 rounded-full flex items-center justify-center transition bg-green-500 text-white shadow-lg"><i class="fa-solid fa-person-dress text-lg md:text-sm"></i></button>
+                    <button onclick="setVoice('male')" id="btn-male" class="voice-toggle" type="button" aria-label="中文男聲" title="中文男聲"><i class="fa-solid fa-person text-lg md:text-sm"></i></button>
+                    <button onclick="setVoice('female')" id="btn-female" class="voice-toggle is-active" type="button" aria-label="中文女聲" title="中文女聲"><i class="fa-solid fa-person-dress text-lg md:text-sm"></i></button>
                 </div>
 
-                <button onclick="playPrev()" class="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition">
+                <button onclick="playPrev()" class="player-control-btn" id="btn-prev" type="button" aria-label="上一段" title="上一段">
                     <i class="fa-solid fa-backward-step text-lg md:text-sm"></i>
                 </button>
 
-                <button onclick="toggleSpeech()" class="w-14 h-14 md:w-10 md:h-10 flex items-center justify-center rounded-full bg-white text-black hover:scale-105 active:scale-95 transition shadow-[0_0_15px_rgba(255,255,255,0.2)]" id="btn-play">
+                <button onclick="toggleSpeech()" class="player-control-btn play-toggle" id="btn-play" type="button" aria-label="播放朗讀" title="播放朗讀">
                     <i class="fa-solid fa-play text-2xl md:text-lg ml-1"></i>
                 </button>
 
-                <button onclick="playNext()" class="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition">
+                <button onclick="playNext()" class="player-control-btn" id="btn-next" type="button" aria-label="下一段" title="下一段">
                     <i class="fa-solid fa-forward-step text-lg md:text-sm"></i>
                 </button>
 
-                <button onclick="toggleLoop()" id="btn-loop" class="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition">
+                <button onclick="toggleLoop()" id="btn-loop" class="player-control-btn" type="button" aria-label="單句重複" aria-pressed="false" title="單句重複">
                     <i class="fa-solid fa-repeat text-lg md:text-sm"></i>
                 </button>
 
-                <button onclick="resetAudio()" class="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center rounded-full border border-slate-600 text-slate-400 hover:border-red-500 hover:text-red-500 transition ml-1">
+                <button onclick="resetAudio()" class="player-control-btn player-stop-btn ml-1" id="btn-stop" type="button" aria-label="停止朗讀" title="停止朗讀">
                     <i class="fa-solid fa-stop text-sm md:text-xs"></i>
                 </button>
             </div>
@@ -831,7 +1000,165 @@ const BILINGUAL_TRACKING_SCHEMA_VERSION = "2026-04-reading-check-v1";
             }
         };
 
+        const enhancedSelects = new Map();
+
+        function getSelectPlaceholder(select) {
+            const first = select?.options?.[0];
+            return first ? first.textContent.trim() : '請選擇';
+        }
+
+        function getSelectedOption(select) {
+            if (!select) return null;
+            return select.options[select.selectedIndex] || select.options[0] || null;
+        }
+
+        function closeEnhancedSelects(exceptSelect) {
+            enhancedSelects.forEach((state, select) => {
+                if (select === exceptSelect) return;
+                state.wrapper.classList.remove('is-open');
+                state.face.setAttribute('aria-expanded', 'false');
+                state.menu.classList.remove('is-open');
+            });
+        }
+
+        function positionEnhancedSelectMenu(select) {
+            const state = enhancedSelects.get(select);
+            if (!state) return;
+
+            const rect = state.wrapper.getBoundingClientRect();
+            const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 320;
+            const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 480;
+            const width = Math.min(Math.max(rect.width, 224), viewportWidth - 24);
+            const left = Math.min(Math.max(12, rect.left), viewportWidth - width - 12);
+            const below = rect.bottom + 8;
+            const menuHeight = Math.min(state.menu.scrollHeight || 320, viewportHeight - 24);
+            const top = below + menuHeight > viewportHeight
+                ? Math.max(12, rect.top - menuHeight - 8)
+                : below;
+
+            state.menu.style.width = `${width}px`;
+            state.menu.style.left = `${left}px`;
+            state.menu.style.top = `${top}px`;
+        }
+
+        function refreshEnhancedSelect(select) {
+            const state = enhancedSelects.get(select);
+            if (!state) return;
+
+            const selected = getSelectedOption(select);
+            state.value.textContent = selected ? selected.textContent.trim() : getSelectPlaceholder(select);
+            state.face.disabled = select.disabled;
+            state.face.setAttribute('aria-disabled', String(select.disabled));
+            state.wrapper.classList.toggle('is-disabled', select.disabled);
+
+            state.menu.innerHTML = '';
+            Array.from(select.options).forEach((option) => {
+                if (option.disabled && !option.value) return;
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'student-select-option';
+                item.textContent = option.textContent.trim();
+                item.dataset.value = option.value;
+                item.setAttribute('role', 'option');
+                item.setAttribute('aria-selected', String(option.selected));
+                if (option.selected) item.classList.add('is-selected');
+                item.addEventListener('click', () => {
+                    select.value = option.value;
+                    select.dispatchEvent(new Event('change', { bubbles: true }));
+                    closeEnhancedSelects();
+                    refreshEnhancedSelect(select);
+                });
+                state.menu.appendChild(item);
+            });
+
+            if (state.wrapper.classList.contains('is-open')) {
+                positionEnhancedSelectMenu(select);
+            }
+        }
+
+        function syncEnhancedSelects() {
+            enhancedSelects.forEach((_, select) => refreshEnhancedSelect(select));
+        }
+
+        function enhanceStudentSelects() {
+            document.querySelectorAll('.student-select-wrapper select.student-select').forEach((select) => {
+                if (enhancedSelects.has(select)) {
+                    refreshEnhancedSelect(select);
+                    return;
+                }
+
+                const wrapper = select.closest('.student-select-wrapper');
+                if (!wrapper) return;
+
+                const face = document.createElement('button');
+                face.type = 'button';
+                face.className = 'student-select-face';
+                face.dataset.selectId = select.id;
+                face.setAttribute('aria-haspopup', 'listbox');
+                face.setAttribute('aria-expanded', 'false');
+                face.innerHTML = '<span class="student-select-value"></span><i class="fa-solid fa-chevron-down student-select-caret" aria-hidden="true"></i>';
+
+                const menu = document.createElement('div');
+                menu.className = 'student-select-menu';
+                menu.dataset.selectId = select.id;
+                menu.setAttribute('role', 'listbox');
+
+                wrapper.appendChild(face);
+                document.body.appendChild(menu);
+                select.tabIndex = -1;
+                select.setAttribute('aria-hidden', 'true');
+
+                const state = {
+                    wrapper,
+                    face,
+                    menu,
+                    value: face.querySelector('.student-select-value'),
+                    observer: null
+                };
+                enhancedSelects.set(select, state);
+
+                face.addEventListener('click', () => {
+                    if (select.disabled) return;
+                    const opening = !wrapper.classList.contains('is-open');
+                    closeEnhancedSelects(select);
+                    wrapper.classList.toggle('is-open', opening);
+                    face.setAttribute('aria-expanded', String(opening));
+                    menu.classList.toggle('is-open', opening);
+                    if (opening) {
+                        refreshEnhancedSelect(select);
+                        positionEnhancedSelectMenu(select);
+                    }
+                });
+
+                face.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape') {
+                        closeEnhancedSelects();
+                        face.focus();
+                    }
+                    if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        face.click();
+                        menu.querySelector('.student-select-option.is-selected, .student-select-option')?.focus();
+                    }
+                });
+
+                select.addEventListener('change', () => refreshEnhancedSelect(select));
+                state.observer = new MutationObserver(() => refreshEnhancedSelect(select));
+                state.observer.observe(select, { childList: true, subtree: true, attributes: true, attributeFilter: ['disabled'] });
+                refreshEnhancedSelect(select);
+            });
+        }
+
+        document.addEventListener('click', (event) => {
+            const target = event.target;
+            const inside = [...enhancedSelects.values()].some((state) => state.wrapper.contains(target) || state.menu.contains(target));
+            if (!inside) closeEnhancedSelects();
+        });
+        window.addEventListener('resize', syncEnhancedSelects);
+        window.addEventListener('scroll', syncEnhancedSelects, true);
+
         document.addEventListener('DOMContentLoaded', () => {
+            enhanceStudentSelects();
             initLanguage();
             fetchData();
             if (TARGET_URL_SOURCE === 'legacy-fallback' && NEEDS_PRIMARY_CSV_PUBLICATION) {
@@ -850,9 +1177,10 @@ const BILINGUAL_TRACKING_SCHEMA_VERSION = "2026-04-reading-check-v1";
             }
             updateTtsStatus();
             if(synth) synth.onvoiceschanged = () => { synth.getVoices(); updateTtsStatus(); };
-            suppressVoiceTracking = true;
+suppressVoiceTracking = true;
 setVoice('female');
 suppressVoiceTracking = false;
+updatePlaybackControls();
 
 
             document.addEventListener('touchstart', () => {
@@ -872,12 +1200,14 @@ if (readingContainer) {
             const sel = document.getElementById('sel-lang');
             if(sel) sel.value = currentLang;
             applyLanguage(currentLang);
+            syncEnhancedSelects();
         }
 
 function changeLanguage(lang) {
     currentLang = lang;
     localStorage.setItem('appLang', lang);
     applyLanguage(lang);
+    syncEnhancedSelects();
     trackEvent('language_changed', { value: lang });
 
     const ids = ['stage', 'grade', 'version', 'semester', 'unit'];
@@ -897,6 +1227,7 @@ if (selectedUnitId) {
     const unit = processedUnits.find(i => String(i.id) === String(selectedUnitId));
     if (unit) {
         renderArticle(unit);
+        syncEnhancedSelects();
         return;
     }
 }
@@ -920,6 +1251,7 @@ const mobileBox = document.getElementById('vocab-container-mobile');
 if (mobileBox) {
     mobileBox.innerHTML = `<div class="text-center py-10 opacity-30 text-sm text-white">${vocabEmpty}</div>`;
 }
+syncEnhancedSelects();
 }
 
 
@@ -1215,7 +1547,10 @@ if (mobileBox) {
             initFilters();
         }
 
-        function initFilters() { populateSelect('sel-stage', [...new Set(processedUnits.map(u=>u.stage).filter(Boolean))], 'stage'); }
+        function initFilters() {
+            populateSelect('sel-stage', [...new Set(processedUnits.map(u=>u.stage).filter(Boolean))], 'stage');
+            syncEnhancedSelects();
+        }
 
 function filterUnits(lvl) {
             const ids=['stage','grade','version','semester','unit'];
@@ -1245,7 +1580,9 @@ function filterUnits(lvl) {
                 sels[4].innerHTML=`<option value="" disabled selected data-i18n="unit">${label}</option>`;
                 filtered.forEach(u=>sels[4].add(new Option(u.title,u.id)));
                 sels[4].disabled=false;
+                refreshEnhancedSelect(sels[4]);
             }
+            syncEnhancedSelects();
         }
 
         function populateSelect(id,items,i18nKey){
@@ -1254,6 +1591,7 @@ function filterUnits(lvl) {
             s.innerHTML=`<option value="" disabled selected>${label}</option>`;
             items.forEach(i=>s.add(new Option(i,i)));
             s.disabled=false;
+            refreshEnhancedSelect(s);
         }
         function resetSelects(els){
             els.forEach(e=>{
@@ -1261,6 +1599,7 @@ function filterUnits(lvl) {
                 const label = i18n[currentLang][key] || i18n['zh-TW'][key] || '...';
                 e.innerHTML=`<option value="" disabled selected>${label}</option>`;
                 e.disabled=true;
+                refreshEnhancedSelect(e);
             });
         }
 
@@ -1493,6 +1832,47 @@ function getUiRate() {
     return parseFloat(document.getElementById('play-rate')?.value || "1.0");
 }
 
+function setPlaybackButtonIcon(playing) {
+    const btn = document.getElementById('btn-play');
+    if (!btn) return;
+    btn.innerHTML = playing
+        ? '<i class="fa-solid fa-pause text-2xl md:text-lg"></i>'
+        : '<i class="fa-solid fa-play text-2xl md:text-lg ml-1"></i>';
+    btn.setAttribute('aria-label', playing ? '暫停朗讀' : '播放朗讀');
+    btn.title = playing ? '暫停朗讀' : '播放朗讀';
+}
+
+function updateVoiceButtons() {
+    const male = document.getElementById('btn-male');
+    const female = document.getElementById('btn-female');
+    if (male) {
+        male.classList.toggle('is-active', currentVoice === 'male');
+        male.setAttribute('aria-pressed', String(currentVoice === 'male'));
+    }
+    if (female) {
+        female.classList.toggle('is-active', currentVoice === 'female');
+        female.setAttribute('aria-pressed', String(currentVoice === 'female'));
+    }
+}
+
+function updatePlaybackControls() {
+    const blocks = getReadingBlocks();
+    const hasBlocks = blocks.length > 0;
+    const prev = document.getElementById('btn-prev');
+    const next = document.getElementById('btn-next');
+    const play = document.getElementById('btn-play');
+    const stop = document.getElementById('btn-stop');
+
+    if (play) play.disabled = !hasBlocks;
+    if (stop) stop.disabled = !hasBlocks;
+    if (prev) prev.disabled = !hasBlocks || currentBlockIndex <= 0;
+    if (next) next.disabled = !hasBlocks || currentBlockIndex >= blocks.length - 1;
+}
+
+function showNoReadableUnitToast() {
+    showToast('請先選擇學習單元');
+}
+
 function updateTtsStatus(modeOverride) {
     const status = document.getElementById('tts-status');
     if (!status) return;
@@ -1548,8 +1928,8 @@ function stopAudioOnly() {
         synth.cancel();
     }
     updateTtsStatus('idle');
-    const btn = document.getElementById('btn-play');
-    if (btn) btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>';
+    setPlaybackButtonIcon(false);
+    updatePlaybackControls();
 }
 
 
@@ -1558,6 +1938,7 @@ function stopAudioOnly() {
             stopAudioOnly();
             currentBlockIndex = 0;
             clearHighlights();
+            updatePlaybackControls();
         }
         
         function stopSpeech() { resetAudio(); }
@@ -1565,6 +1946,19 @@ function stopAudioOnly() {
         // [核心修正] 上一句
        function playPrev() {
            trackEvent('audio_prev');
+            const blocks = getReadingBlocks();
+            if (!blocks.length) {
+                showNoReadableUnitToast();
+                updatePlaybackControls();
+                return;
+            }
+            if (currentBlockIndex <= 0) {
+                currentBlockIndex = 0;
+                highlightBlock(blocks[currentBlockIndex]);
+                showToast('已在第一段');
+                updatePlaybackControls();
+                return;
+            }
             // 1. 強制切斷所有發音與自動連結
             isSpeaking = false; 
             if (ttsPlayer?.cancel) {
@@ -1574,7 +1968,6 @@ function stopAudioOnly() {
             }
 
             // 2. 移動索引
-            const blocks = getReadingBlocks();
             if (currentBlockIndex > 0) {
                 currentBlockIndex--;
             }
@@ -1586,7 +1979,8 @@ function stopAudioOnly() {
             // 4. 重新啟動播放 (延遲 100ms 確保舊訊號完全清除)
             setTimeout(() => {
                 isSpeaking = true;
-                document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-pause"></i>';
+                setPlaybackButtonIcon(true);
+                updatePlaybackControls();
                 playSequence();
             }, 100);
         }
@@ -1594,6 +1988,19 @@ function stopAudioOnly() {
         // [核心修正] 下一句 (絕對穩定版)
         function playNext() {
             trackEvent('audio_next');
+            const blocks = getReadingBlocks();
+            if (!blocks.length) {
+                showNoReadableUnitToast();
+                updatePlaybackControls();
+                return;
+            }
+            if (currentBlockIndex >= blocks.length - 1) {
+                currentBlockIndex = blocks.length - 1;
+                highlightBlock(blocks[currentBlockIndex]);
+                showToast('已在最後一段');
+                updatePlaybackControls();
+                return;
+            }
             // 1. 強制切斷所有發音與自動連結
             isSpeaking = false; 
             if (ttsPlayer?.cancel) {
@@ -1603,7 +2010,6 @@ function stopAudioOnly() {
             }
 
             // 2. 移動索引
-            const blocks = getReadingBlocks();
             if (currentBlockIndex < blocks.length - 1) {
                 currentBlockIndex++;
             }
@@ -1615,7 +2021,8 @@ function stopAudioOnly() {
             // 4. 重新啟動播放 (延遲 100ms 確保舊訊號完全清除)
             setTimeout(() => {
                 isSpeaking = true;
-                document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-pause"></i>';
+                setPlaybackButtonIcon(true);
+                updatePlaybackControls();
                 playSequence();
             }, 100);
         }
@@ -1659,6 +2066,7 @@ function resetReadingAssistUi() {
     if (blockCount) blockCount.textContent = '0 段';
     if (estimate) estimate.textContent = '約 1 分鐘';
     if (checkStatus) checkStatus.textContent = '小檢核 0 題';
+    updatePlaybackControls();
 }
 
 function updateReadingDashboard(lines = []) {
@@ -2000,10 +2408,11 @@ function checkUnitCompletion() {
             if (!isSpeaking) return;
 
             // 更新播放按鈕狀態
-            document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-pause"></i>';
+            setPlaybackButtonIcon(true);
 
             const blocks = getReadingBlocks();
             if (currentBlockIndex >= blocks.length) { resetAudio(); return; }
+            updatePlaybackControls();
 
             // 高亮當前區塊
             clearHighlights();
@@ -2147,6 +2556,7 @@ suppressModeTracking = false;
             quickCheckStarted = false;
             renderQuickChecks();
             updateReadingDashboard(lines);
+            updatePlaybackControls();
             setTimeout(updateReadingProgressFromScroll, 0);
 
         }
@@ -2303,14 +2713,13 @@ suppressModeTracking = false;
             isSpeaking = true;
             if (synth.paused) synth.resume();
             
-            const btn = document.getElementById('btn-play');
-            if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+            setPlaybackButtonIcon(true);
             synth.cancel();
 
             const cleanTxt = normalizeSpeechText(txt);
             if (!cleanTxt) {
                 if (onComplete) { setTimeout(() => { if (isSpeaking) onComplete(); }, 10); } 
-                else { isSpeaking = false; if (btn) btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>'; }
+                else { isSpeaking = false; setPlaybackButtonIcon(false); updatePlaybackControls(); }
                 return;
             }
 
@@ -2328,7 +2737,7 @@ suppressModeTracking = false;
                 if (!isSpeaking) return;
                 if (idx >= chunks.length) {
                     if (onComplete) { onComplete(); } 
-                    else { isSpeaking = false; if (btn) btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>'; }
+                    else { isSpeaking = false; setPlaybackButtonIcon(false); updatePlaybackControls(); }
                     return;
                 }
                 const part = chunks[idx++];
@@ -2401,32 +2810,39 @@ suppressModeTracking = false;
         }
 
 function toggleSpeechLegacy() {
-    const btn = document.getElementById('btn-play');
     if (!synth) return;
+    const blocks = getReadingBlocks();
+    if (!blocks.length) {
+        showNoReadableUnitToast();
+        updatePlaybackControls();
+        return;
+    }
 
     if (isSpeaking && !synth.paused) {
         trackEvent('audio_pause');
         synth.pause();
-        if (btn) btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>';
+        setPlaybackButtonIcon(false);
+        updatePlaybackControls();
         return;
     }
 
     if (synth.paused) {
         trackEvent('audio_play');
         synth.resume();
-        if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        setPlaybackButtonIcon(true);
+        updatePlaybackControls();
         return;
     }
 
     trackEvent('audio_play');
     isSpeaking = true;
-    if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+    setPlaybackButtonIcon(true);
+    updatePlaybackControls();
 
     if (synth.getVoices().length === 0 && synth.onvoiceschanged) {
         synth.onvoiceschanged();
     }
 
-    const blocks = getReadingBlocks();
     if (currentBlockIndex >= blocks.length) currentBlockIndex = 0;
     setTimeout(() => { if (isSpeaking) playSequence(); }, 10);
 }
@@ -2435,13 +2851,13 @@ function speakText(txt, onComplete) {
     if (!ttsPlayer && !synth) return;
     isSpeaking = true;
 
-    const btn = document.getElementById('btn-play');
-    if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+    setPlaybackButtonIcon(true);
+    updatePlaybackControls();
 
     const cleanTxt = normalizeSpeechText(txt);
     if (!cleanTxt) {
         if (onComplete) { setTimeout(() => { if (isSpeaking) onComplete(); }, 10); }
-        else { isSpeaking = false; if (btn) btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>'; }
+        else { isSpeaking = false; setPlaybackButtonIcon(false); updatePlaybackControls(); }
         return;
     }
 
@@ -2451,7 +2867,8 @@ function speakText(txt, onComplete) {
             onComplete();
         } else {
             isSpeaking = false;
-            if (btn) btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>';
+            setPlaybackButtonIcon(false);
+            updatePlaybackControls();
         }
     };
 
@@ -2492,20 +2909,28 @@ function speakText(txt, onComplete) {
 function toggleSpeech() {
     const btn = document.getElementById('btn-play');
     if (!ttsPlayer && !synth) return;
+    const blocks = getReadingBlocks();
+    if (!blocks.length) {
+        showNoReadableUnitToast();
+        updatePlaybackControls();
+        return;
+    }
 
     if (isSpeaking && ttsPlayer?.pause && !ttsPlayer.isPaused()) {
         trackEvent('audio_pause');
         ttsPlayer.pause();
-        if (btn) btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>';
+        setPlaybackButtonIcon(false);
         updateTtsStatus();
+        updatePlaybackControls();
         return;
     }
 
     if (ttsPlayer?.resume && ttsPlayer.isPaused()) {
         trackEvent('audio_play');
         ttsPlayer.resume();
-        if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        setPlaybackButtonIcon(true);
         updateTtsStatus();
+        updatePlaybackControls();
         return;
     }
 
@@ -2513,27 +2938,29 @@ function toggleSpeech() {
         if (isSpeaking && !synth.paused) {
             trackEvent('audio_pause');
             synth.pause();
-            if (btn) btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>';
+            setPlaybackButtonIcon(false);
+            updatePlaybackControls();
             return;
         }
 
         if (synth.paused) {
             trackEvent('audio_play');
             synth.resume();
-            if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+            setPlaybackButtonIcon(true);
+            updatePlaybackControls();
             return;
         }
     }
 
     trackEvent('audio_play');
     isSpeaking = true;
-    if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+    setPlaybackButtonIcon(true);
+    updatePlaybackControls();
 
     if (synth && synth.getVoices().length === 0 && synth.onvoiceschanged) {
         synth.onvoiceschanged();
     }
 
-    const blocks = getReadingBlocks();
     if (currentBlockIndex >= blocks.length) currentBlockIndex = 0;
     setTimeout(() => { if (isSpeaking) playSequence(); }, 10);
 }
@@ -2544,13 +2971,13 @@ function toggleSpeech() {
             trackEvent('loop_toggled', { value: !isLooping ? 'on' : 'off' });
             isLooping = !isLooping;
             const btn = document.getElementById('btn-loop');
+            if (btn) {
+                btn.classList.toggle('is-active', isLooping);
+                btn.setAttribute('aria-pressed', String(isLooping));
+            }
             if(isLooping) {
-                btn.classList.remove('text-slate-400');
-                btn.classList.add('text-green-400', 'bg-white/10'); 
                 showToast("開啟單句重覆");
             } else {
-                btn.classList.add('text-slate-400');
-                btn.classList.remove('text-green-400', 'bg-white/10');
                 showToast("關閉單句重覆");
             }
         }
@@ -2564,17 +2991,10 @@ function setVoice(g) {
         trackEvent('voice_changed', { value: g });
     }
     currentVoice = g;
-
-            document.getElementById('btn-male').className = g==='male'
-  ? 'w-9 h-9 md:w-7 md:h-7 rounded-full flex items-center justify-center transition bg-green-500 text-white shadow-lg'
-  : 'w-9 h-9 md:w-7 md:h-7 rounded-full flex items-center justify-center transition text-slate-400 hover:text-white';
-
-document.getElementById('btn-female').className = g==='female'
-  ? 'w-9 h-9 md:w-7 md:h-7 rounded-full flex items-center justify-center transition bg-green-500 text-white shadow-lg'
-  : 'w-9 h-9 md:w-7 md:h-7 rounded-full flex items-center justify-center transition text-slate-400 hover:text-white';
-            updateTtsStatus();
-            stopAudioOnly();
-        }
+    updateVoiceButtons();
+    updateTtsStatus();
+    stopAudioOnly();
+}
 
 function setMode(m) {
     currentMode = m;
@@ -2583,7 +3003,14 @@ function setMode(m) {
     }
 
 
-            ['en','dual','zh'].forEach(x=>document.getElementById(`btn-${x}`).className=x===m?"px-4 py-1.5 text-xs font-bold rounded-full bg-green-500 text-white shadow-lg":"px-4 py-1.5 text-xs font-bold rounded-full text-slate-400 hover:text-white transition");
+            ['en','dual','zh'].forEach(x => {
+                const modeBtn = document.getElementById(`btn-${x}`);
+                if (!modeBtn) return;
+                modeBtn.className = x === m
+                    ? "px-4 py-1.5 text-xs font-bold rounded-full bg-green-500 text-white shadow-lg"
+                    : "px-4 py-1.5 text-xs font-bold rounded-full text-slate-400 hover:text-white transition";
+                modeBtn.setAttribute('aria-pressed', String(x === m));
+            });
             if(m!=='zh') translateVisibleBlocks();
             const en=document.querySelectorAll('.en-text'), zh=document.querySelectorAll('.zh-text');
             if(m==='en'){en.forEach(e=>e.classList.remove('hidden'));zh.forEach(z=>z.classList.add('hidden'));}
