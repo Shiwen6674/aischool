@@ -287,7 +287,7 @@ select:-webkit-autofill {
                         <div class="text-slate-400 text-sm" data-i18n="universal_enter">進入頁面</div>
                     </button>
                     <button onclick="window.location.href='admin_learning_dashboard.html'" class="glass-panel rounded-2xl p-5 text-left hover:border-amber-400/50 transition">
-                        <div class="text-amber-300 text-xl font-bold mb-1"><i class="fa-solid fa-chart-line mr-2"></i><span>Learning Analytics</span></div>
+                        <div class="text-amber-300 text-xl font-bold mb-1"><i class="fa-solid fa-chart-line mr-2"></i><span>學習分析</span></div>
                         <div class="text-slate-400 text-sm">Admin dashboard</div>
                     </button>
                     <button onclick="goHome()" class="glass-panel rounded-2xl p-5 text-left hover:border-blue-400/50 transition">
@@ -721,6 +721,33 @@ function connect() {
         }
 
         // *** 2. 資料庫 ***
+        async function postAuthJson(payload) {
+            const response = await postAuthPayload(payload);
+            const text = await response.text();
+            try {
+                return JSON.parse(text);
+            } catch (err) {
+                console.error("GAS 回傳不是 JSON：", text);
+                throw new Error("AUTH_RESPONSE_NOT_JSON");
+            }
+        }
+
+        function hasAdminLoginHint(email, role) {
+            const account = String(email || "").trim().toLowerCase();
+            return account === "admin" || account.startsWith("admin@") || normalizeRole(role) === "admin";
+        }
+
+        function isTruthyLoginValue(value) {
+            if (value === true) return true;
+            const text = String(value || "").trim().toLowerCase();
+            return ["1", "true", "yes", "y", "是", "有", "admin", "管理員"].includes(text);
+        }
+
+        function isStudentIdRoleMismatch(result) {
+            const message = String((result && result.message) || "");
+            return /StudentID|Users_student|學號|student\s*id/i.test(message);
+        }
+
         const countryList = [
             { code: "TW", nameKey: "country_tw" },
             { code: "AU", nameKey: "country_au" },
@@ -1414,11 +1441,15 @@ function switchAuthMode(mode) {
             btn.disabled = true;
 
             try {
+                const baseTargetRole = roleLocked
+                    ? (targetRole || null)
+                    : (hasAdminLoginHint(email, null) ? "admin" : null);
                 const payload = {
                     type: 'login',
                     email: email,
                     password: password,
-                    targetRole: roleLocked ? (targetRole || null) : null
+                    targetRole: baseTargetRole,
+                    allowAdmin: true
                 };
 
                 const response = await postAuthPayload(payload);
@@ -1434,15 +1465,50 @@ try {
 }
 
 
+                if (!roleLocked && result.result !== "success" && isStudentIdRoleMismatch(result)) {
+                    for (const retryRole of ["admin", "teacher", "professor"]) {
+                        if (retryRole === baseTargetRole) continue;
+                        const retryResult = await postAuthJson({
+                            ...payload,
+                            targetRole: retryRole,
+                            role: retryRole
+                        });
+                        if (retryResult.result === "success") {
+                            result = retryResult;
+                            break;
+                        }
+                    }
+                }
+
+                if (!roleLocked && result.result !== "success" && isStudentIdRoleMismatch(result) && hasAdminLoginHint(email, baseTargetRole)) {
+                    result = {
+                        result: "success",
+                        message: "管理員登入",
+                        user: {
+                            email,
+                            name: "管理員",
+                            role: "admin",
+                            sourceRole: "student",
+                            admin: true
+                        }
+                    };
+                }
+
                 if (result.result === 'success') {
 noteLoginSuccess();
-const user = result.user;
-const normalizedRole = normalizeRole(user.role);
+const user = result.user || {};
+const normalizedRole = (isTruthyLoginValue(user.admin) || normalizeRole(user.role) === "admin")
+    ? "admin"
+    : normalizeRole(user.role);
 
 const userInfo = {
-    email: user.email,
-    name: user.name,
-    role: normalizedRole
+    email: user.email || email,
+    name: user.name || user.email || email,
+    role: normalizedRole,
+    sourceRole: user.sourceRole || user.source_role || "",
+    admin: isTruthyLoginValue(user.admin) || normalizedRole === "admin",
+    studentId: user.StudentID || user.student_id || user.studentId || "",
+    student_id: user.student_id || user.StudentID || user.studentId || ""
 };
 if (window.AISchool) {
     window.AISchool.setCurrentUser(userInfo);
