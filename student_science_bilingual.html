@@ -7,6 +7,7 @@
     
 <script src="./assets/js/aischool-shared.js"></script>
 <script src="./assets/js/aischool-tts.js"></script>
+<script src="./assets/js/learning-analytics.js"></script>
 <script>
     window.AISchool.requireRole(["student"], "請先登入學生帳號，再使用科學雙語閱讀。", "index.html");
 </script>
@@ -3074,7 +3075,6 @@ function getQuickCheckStats() {
 }
 
 function trackEvent(eventName, extra = {}) {
-    if (!TRACKING_URL) return;
     const { studentId, studentName } = getStudentInfo();
     const unitName = currentUnitData?.title || currentUnitTitleZh || '';
     const versionValue = document.getElementById('sel-version')?.value || '';
@@ -3118,6 +3118,19 @@ function trackEvent(eventName, extra = {}) {
         score_percent: extra.score_percent ?? quickStats.scorePercent,
         extra_json: JSON.stringify(extra || {})
     };
+
+    if (window.AISchoolLearning) {
+        window.AISchoolLearning.track('bilingual_reading', eventName, {
+            ...payload,
+            unit: unitName,
+            publisher: versionValue,
+            progress_percent: payload.reading_progress,
+            score: payload.check_total ? Math.round((payload.check_correct / payload.check_total) * 100) : '',
+            ...extra
+        });
+    }
+
+    if (!TRACKING_URL) return;
 
     fetch(TRACKING_URL, {
         method: 'POST',

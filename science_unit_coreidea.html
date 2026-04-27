@@ -960,6 +960,7 @@ mermaid.initialize({
         }
     </style>
     <script src="./assets/js/aischool-shared.js"></script>
+    <script src="./assets/js/learning-analytics.js"></script>
     <script>
         window.AISchool.requireRole(["student"], "請先登入學生帳號，再使用單元重點精熟。", "index.html");
     </script>
@@ -1286,6 +1287,15 @@ function getActiveStudentUser() {
         duration: duration || "",
         page: "science_unit_coreidea"
     };
+
+    if (window.AISchoolLearning) {
+        window.AISchoolLearning.track("unit_mastery", eventName, {
+            ...payload,
+            unit: payload.unitName,
+            score: value,
+            duration
+        });
+    }
 
     fetch(GAS_API_URL, {
         method: "POST",
@@ -4610,6 +4620,19 @@ if (quizState.currentIndex === 0 && !quizState.answers[0]) {
             isCorrect: isCorrect,
             correct: isCorrect
         };
+        if (window.AISchoolLearning) {
+            window.AISchoolLearning.track("unit_mastery", "quiz_answered", {
+                unit: filters.unitName || "",
+                stage: filters.stage || "",
+                publisher: filters.publisher || "",
+                grade: filters.grade || "",
+                semester: filters.semester || "",
+                item_id: quizState.currentIndex + 1,
+                response: selectedIndex,
+                correct: isCorrect,
+                concept_tag: q.concept || q.conceptName || q.topic || String(quizState.currentIndex + 1)
+            });
+        }
 
         if (isCorrect) {
             const btn = buttons[selectedIndex];
@@ -4703,6 +4726,19 @@ logEvent("quiz_finish", `答對 ${correctCount} / ${totalQ}`, score);
             const s = conceptStats[c];
             return Math.round((s.correct / s.total) * 100);
         });
+        if (window.AISchoolLearning) {
+            window.AISchoolLearning.track("unit_mastery", "quiz_completed", {
+                unit: filters.unitName || "",
+                stage: filters.stage || "",
+                publisher: filters.publisher || "",
+                grade: filters.grade || "",
+                semester: filters.semester || "",
+                score,
+                correct: correctCount,
+                total: totalQ,
+                concept_tag: concepts.join(", ")
+            });
+        }
 
         detailEl.innerText = "AI 分析中…";
 

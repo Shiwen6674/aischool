@@ -22,7 +22,8 @@
     cloudTts: "",
     studentAdaptiveTesting: "https://script.google.com/macros/s/AKfycbxvAOgRDBE6T-2R37UeTzo0RSQukgGOlEYyBrTw8zUSOlIKNIzLdJXozjNx4Hn6brc2/exec",
     studentUnitCoreIdea: "https://script.google.com/macros/s/AKfycbynf2DkhZ6V9lCLH3MH-Ud7DjTMPDKAu2DJm3OC22lTYaPJe5TiA8GRfyG0lihLUZxa/exec",
-    studentBilingualTracking: "https://script.google.com/macros/s/AKfycbwXvqOFGVuay1_jZ7dau5VkNqSqGppQ3ffIizlcyB4R0XwvQU7Km5JFuYR4wfFG2OMxHA/exec"
+    studentBilingualTracking: "https://script.google.com/macros/s/AKfycbwXvqOFGVuay1_jZ7dau5VkNqSqGppQ3ffIizlcyB4R0XwvQU7Km5JFuYR4wfFG2OMxHA/exec",
+    learningAnalytics: "https://script.google.com/macros/s/AKfycbwa509Hdkh8d55bRs8x4GVHySPjGr4zkT4JulZNcoGwpJzPFcxhdQ__dm9ztTlQZMsn9g/exec"
   };
   const GAS_ENDPOINT_FALLBACKS = {
     teacherCatReview: "studentAdaptiveTesting"

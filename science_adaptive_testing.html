@@ -322,6 +322,7 @@ rp { display: none !important; }
     
   </style>
   <script src="./assets/js/aischool-shared.js"></script>
+  <script src="./assets/js/learning-analytics.js"></script>
   <script>
     window.AISchool.requireRole(["student"], "請先登入學生帳號，再使用 AI 適性診斷。", "index.html");
   </script>
@@ -1096,6 +1097,20 @@ function _parseCSV(text){
    ========================================= */
 let isZhuyinActive = false;
 
+function trackAdaptiveEvent(eventName, details = {}) {
+    if (!window.AISchoolLearning) return;
+    window.AISchoolLearning.track("adaptive_test", eventName, {
+        stage: document.getElementById("selStage")?.value || "",
+        publisher: document.getElementById("selPublisher")?.value || "",
+        grade: document.getElementById("selGrade")?.value || "",
+        semester: document.getElementById("selSemester")?.value || "",
+        unit: document.getElementById("selUnit")?.value || "",
+        test_id: CAT.test_id || "",
+        student_id: CAT.student_id || "",
+        ...details
+    });
+}
+
 // 1. 啟動測驗 (整合了您的 API 邏輯 + 注音判斷)
 async function startTest() {
     const uVal = document.getElementById("selUnit").value;
@@ -1177,6 +1192,7 @@ async function startTest() {
         CAT.student_id = sid;
         CAT.n = n;
         CAT.step = 0;
+        trackAdaptiveEvent("test_started", { score: "", duration: "", item_id: "", max_items: n });
 
         document.getElementById("secConfig").classList.add("hidden");
         document.getElementById("secQuiz").classList.remove("hidden");
@@ -1844,6 +1860,11 @@ function getOptionTextFromWrongItem(w, key){
         btnElem.classList.add("selected");
         document.getElementById("btnSubmit").disabled = false;
         document.getElementById("hint").innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i> 已選擇 ${key}`;
+        trackAdaptiveEvent("option_selected", {
+          item_id: CAT.current?.item_id || "",
+          response: key,
+          progress_percent: CAT.n ? Math.round((CAT.step / CAT.n) * 100) : 0
+        });
     }
 
    async function submitAnswer() {
@@ -1876,6 +1897,12 @@ function getOptionTextFromWrongItem(w, key){
     // 已完成第幾題（答完才 +1）
     CAT.step++;
     UI.setProgress(CAT.step, CAT.n);
+    trackAdaptiveEvent("item_answered", {
+      item_id: CAT.current?.item_id || "",
+      response: CAT.selected,
+      correct: json.correct ?? json.data?.correct ?? json.result?.correct ?? "",
+      progress_percent: CAT.n ? Math.round((CAT.step / CAT.n) * 100) : 0
+    });
 
     const btnNext = document.getElementById("btnNext");
 
@@ -2000,6 +2027,14 @@ if (Array.isArray(wrongItemsRaw)) {
 
 console.log("wrongItemsRaw =", wrongItemsRaw);
 console.log("wrongItems =", wrongItems);
+    trackAdaptiveEvent("test_completed", {
+      score: score100,
+      correct,
+      total,
+      progress_percent: 100,
+      concept_tag: wrongItems.map((item) => item.concept_tag || item.concept || item.knowledge_node || "").filter(Boolean).join(", "),
+      wrong_count: wrongItems.length
+    });
 
 
 
@@ -2482,6 +2517,7 @@ function toggleZhuyinMode() {
     document.addEventListener("DOMContentLoaded", () => {
         const user = __loadCurrentUser();
         document.getElementById("user-info").textContent = user.name || "訪客";
+      trackAdaptiveEvent("page_view", { page: "science_adaptive_testing" });
       initQuestionCountStepper();
         document.getElementById("btnStart").addEventListener("click", startTest);
         document.getElementById("btnSubmit").addEventListener("click", submitAnswer);

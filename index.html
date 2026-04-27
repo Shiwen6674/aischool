@@ -273,7 +273,7 @@ select:-webkit-autofill {
                     <h2 class="text-3xl md:text-4xl font-heading font-black text-white mb-3" data-i18n="universal_title">萬用帳號快速入口</h2>
                     <p class="text-slate-400 text-lg" data-i18n="universal_desc">同一組帳號可直接進入各角色頁面，無需重新登入。</p>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                     <button onclick="window.location.href='student_subject.html'" class="glass-panel rounded-2xl p-5 text-left hover:border-cyan-400/50 transition">
                         <div class="text-cyan-300 text-xl font-bold mb-1"><i class="fa-solid fa-graduation-cap mr-2"></i><span data-i18n="role_student">學生</span></div>
                         <div class="text-slate-400 text-sm" data-i18n="universal_enter">進入頁面</div>
@@ -285,6 +285,10 @@ select:-webkit-autofill {
                     <button onclick="window.location.href='professor.html'" class="glass-panel rounded-2xl p-5 text-left hover:border-violet-400/50 transition">
                         <div class="text-violet-300 text-xl font-bold mb-1"><i class="fa-solid fa-user-tie mr-2"></i><span data-i18n="role_researcher">教授</span></div>
                         <div class="text-slate-400 text-sm" data-i18n="universal_enter">進入頁面</div>
+                    </button>
+                    <button onclick="window.location.href='admin_learning_dashboard.html'" class="glass-panel rounded-2xl p-5 text-left hover:border-amber-400/50 transition">
+                        <div class="text-amber-300 text-xl font-bold mb-1"><i class="fa-solid fa-chart-line mr-2"></i><span>Learning Analytics</span></div>
+                        <div class="text-slate-400 text-sm">Admin dashboard</div>
                     </button>
                     <button onclick="goHome()" class="glass-panel rounded-2xl p-5 text-left hover:border-blue-400/50 transition">
                         <div class="text-blue-300 text-xl font-bold mb-1"><i class="fa-solid fa-house mr-2"></i><span data-i18n="universal_home">回首頁</span></div>

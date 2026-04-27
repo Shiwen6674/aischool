@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI School 學習分析儀表板</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="./assets/js/aischool-shared.js"></script>
+  <script src="./assets/js/learning-analytics.js"></script>
+  <script>
+    window.AISchool.requireRole(["student", "teacher", "professor", "admin"], "請先登入，再查看學習分析。", "index.html");
+  </script>
+  <style>
+    body {
+      background:
+        radial-gradient(circle at 8% 12%, rgba(45, 212, 191, 0.13), transparent 28rem),
+        radial-gradient(circle at 92% 0%, rgba(96, 165, 250, 0.14), transparent 26rem),
+        #0f172a;
+      color: #e5edf7;
+      font-family: Inter, "Noto Sans TC", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .glass {
+      background: rgba(15, 23, 42, 0.72);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      box-shadow: 0 24px 60px rgba(2, 6, 23, 0.32);
+      backdrop-filter: blur(18px);
+    }
+
+    .field {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      color: #f8fafc;
+      border-radius: 14px;
+      min-height: 44px;
+      padding: 0 14px;
+      outline: none;
+    }
+
+    .field:focus {
+      border-color: rgba(45, 212, 191, 0.72);
+      box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.15);
+    }
+
+    .metric {
+      min-height: 118px;
+    }
+
+    .bar-track {
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(30, 41, 59, 0.95);
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #34d399, #38bdf8);
+    }
+
+    .table-wrap {
+      overflow: auto;
+      max-height: 580px;
+    }
+
+    table {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 100%;
+      min-width: 980px;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: rgba(15, 23, 42, 0.96);
+      color: #93c5fd;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-align: left;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    td {
+      padding: 16px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+      color: #dbeafe;
+      vertical-align: top;
+    }
+
+    tr:hover td {
+      background: rgba(30, 41, 59, 0.42);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      background: rgba(45, 212, 191, 0.12);
+      color: #7dd3fc;
+      border: 1px solid rgba(45, 212, 191, 0.2);
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+  <main class="mx-auto max-w-7xl px-5 py-6 md:px-8 md:py-10">
+    <section class="glass rounded-[28px] p-5 md:p-7 mb-6">
+      <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <a href="index.html?portal=all" class="inline-flex items-center gap-2 text-sm text-slate-300 hover:text-white mb-4">
+            <i class="fa-solid fa-arrow-left"></i>
+            返回 AI School
+          </a>
+          <h1 class="text-3xl md:text-4xl font-black tracking-tight text-white">學習分析儀表板</h1>
+          <p class="mt-2 max-w-2xl text-slate-300">只顯示已通過 admin 權限驗證的學生學習行為資料。資料來自科學雙語閱讀、單元重點精熟與 AI 適性測驗。</p>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <button id="setupBtn" class="rounded-2xl border border-slate-600/70 px-5 py-3 text-sm font-bold text-slate-100 hover:bg-slate-800">
+            <i class="fa-solid fa-screwdriver-wrench mr-2 text-cyan-300"></i>初始化後端
+          </button>
+          <button id="refreshBtn" class="rounded-2xl bg-emerald-400 px-5 py-3 text-sm font-black text-slate-950 hover:bg-emerald-300">
+            <i class="fa-solid fa-rotate mr-2"></i>重新整理
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid gap-4 lg:grid-cols-[1.15fr_0.85fr] mb-6">
+      <div class="glass rounded-[24px] p-5">
+        <div class="grid gap-3 md:grid-cols-4">
+          <label class="block">
+            <span class="text-xs font-bold text-slate-400">期間</span>
+            <select id="daysFilter" class="field mt-2 w-full">
+              <option value="7">最近 7 天</option>
+              <option value="30" selected>最近 30 天</option>
+              <option value="90">最近 90 天</option>
+              <option value="180">最近 180 天</option>
+            </select>
+          </label>
+          <label class="block">
+            <span class="text-xs font-bold text-slate-400">模組</span>
+            <select id="moduleFilter" class="field mt-2 w-full">
+              <option value="">全部模組</option>
+              <option value="bilingual_reading">科學雙語閱讀</option>
+              <option value="unit_mastery">單元重點精熟</option>
+              <option value="adaptive_test">AI 適性測驗</option>
+            </select>
+          </label>
+          <label class="block md:col-span-2">
+            <span class="text-xs font-bold text-slate-400">學生搜尋</span>
+            <input id="studentFilter" class="field mt-2 w-full" type="search" placeholder="輸入姓名、帳號或 email" />
+          </label>
+        </div>
+      </div>
+
+      <div class="glass rounded-[24px] p-5">
+        <label class="block">
+          <span class="text-xs font-bold text-slate-400">Admin token</span>
+          <div class="mt-2 flex gap-2">
+            <input id="adminToken" class="field flex-1" type="password" placeholder="若 Apps Script 有設定 ADMIN_SHARED_SECRET，填在這裡" />
+            <button id="saveTokenBtn" class="rounded-2xl bg-sky-400 px-4 text-sm font-black text-slate-950 hover:bg-sky-300">儲存</button>
+          </div>
+        </label>
+        <p class="mt-3 text-xs leading-5 text-slate-400">如果你在試算表中已把自己的帳號 admin 欄位設為 TRUE，token 可以留空；若後端有設定 secret，兩者任一通過即可。</p>
+      </div>
+    </section>
+
+    <section id="statusBox" class="hidden glass rounded-[22px] p-4 mb-6 text-sm"></section>
+
+    <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4 mb-6">
+      <article class="metric glass rounded-[24px] p-5">
+        <div class="text-sm font-bold text-slate-400">活躍學生</div>
+        <div id="metricStudents" class="mt-4 text-4xl font-black text-white">--</div>
+        <div class="mt-2 text-xs text-slate-400">有留下任一學習事件</div>
+      </article>
+      <article class="metric glass rounded-[24px] p-5">
+        <div class="text-sm font-bold text-slate-400">閱讀分鐘</div>
+        <div id="metricMinutes" class="mt-4 text-4xl font-black text-emerald-300">--</div>
+        <div class="mt-2 text-xs text-slate-400">依離頁與進度事件估算</div>
+      </article>
+      <article class="metric glass rounded-[24px] p-5">
+        <div class="text-sm font-bold text-slate-400">平均正答率</div>
+        <div id="metricAccuracy" class="mt-4 text-4xl font-black text-cyan-300">--</div>
+        <div class="mt-2 text-xs text-slate-400">小檢核、精熟小測與 CAT 作答</div>
+      </article>
+      <article class="metric glass rounded-[24px] p-5">
+        <div class="text-sm font-bold text-slate-400">事件總量</div>
+        <div id="metricEvents" class="mt-4 text-4xl font-black text-violet-300">--</div>
+        <div class="mt-2 text-xs text-slate-400">可用來判斷互動密度</div>
+      </article>
+    </section>
+
+    <section class="grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">
+      <div class="glass rounded-[24px] p-0 overflow-hidden">
+        <div class="flex items-center justify-between p-5 border-b border-slate-700/60">
+          <div>
+            <h2 class="text-xl font-black text-white">學生學習概況</h2>
+            <p class="text-sm text-slate-400 mt-1">點選學生列可查看各模組細節。</p>
+          </div>
+          <span id="generatedAt" class="text-xs text-slate-500"></span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>學生</th>
+                <th>最後活動</th>
+                <th>雙語閱讀</th>
+                <th>重點精熟</th>
+                <th>適性測驗</th>
+                <th>建議關注</th>
+              </tr>
+            </thead>
+            <tbody id="studentRows">
+              <tr><td colspan="6" class="text-center text-slate-400 py-10">讀取中...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <aside class="space-y-6">
+        <section class="glass rounded-[24px] p-5">
+          <h2 class="text-xl font-black text-white">高頻弱點概念</h2>
+          <div id="conceptBars" class="mt-5 space-y-4 text-sm text-slate-300"></div>
+        </section>
+        <section class="glass rounded-[24px] p-5">
+          <h2 class="text-xl font-black text-white">近期事件</h2>
+          <div id="timeline" class="mt-5 space-y-3 text-sm text-slate-300 max-h-[430px] overflow-auto pr-2"></div>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const MODULE_LABEL = {
+      bilingual_reading: "雙語閱讀",
+      unit_mastery: "重點精熟",
+      adaptive_test: "適性測驗",
+      unknown: "其他"
+    };
+
+    const els = {
+      status: document.getElementById("statusBox"),
+      rows: document.getElementById("studentRows"),
+      conceptBars: document.getElementById("conceptBars"),
+      timeline: document.getElementById("timeline"),
+      metricStudents: document.getElementById("metricStudents"),
+      metricMinutes: document.getElementById("metricMinutes"),
+      metricAccuracy: document.getElementById("metricAccuracy"),
+      metricEvents: document.getElementById("metricEvents"),
+      generatedAt: document.getElementById("generatedAt"),
+      days: document.getElementById("daysFilter"),
+      module: document.getElementById("moduleFilter"),
+      student: document.getElementById("studentFilter"),
+      adminToken: document.getElementById("adminToken")
+    };
+
+    function setStatus(type, message) {
+      els.status.classList.remove("hidden");
+      const colors = {
+        info: "text-cyan-100 border-cyan-400/30",
+        error: "text-rose-100 border-rose-400/30",
+        ok: "text-emerald-100 border-emerald-400/30"
+      };
+      els.status.className = `glass rounded-[22px] p-4 mb-6 text-sm border ${colors[type] || colors.info}`;
+      els.status.innerHTML = message;
+    }
+
+    function clearStatus() {
+      els.status.classList.add("hidden");
+      els.status.innerHTML = "";
+    }
+
+    function fmtDate(value) {
+      if (!value) return "尚無";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return String(value);
+      return date.toLocaleString("zh-TW", { hour12: false });
+    }
+
+    function pct(value) {
+      return value === "" || value === undefined || value === null ? "--" : `${value}%`;
+    }
+
+    function moduleCell(student, key) {
+      const m = student.modules && student.modules[key] ? student.modules[key] : null;
+      if (!m) return "<span class='text-slate-500'>尚無資料</span>";
+      const accuracy = m.accuracy === "" ? "未測" : `${m.accuracy}%`;
+      const score = m.lastScore === "" ? "" : ` · 分數 ${m.lastScore}`;
+      return `
+        <div class="space-y-2">
+          <span class="pill">${MODULE_LABEL[key] || key}</span>
+          <div class="text-sm text-slate-300">${m.events || 0} 事件 · ${m.sessionCount || 0} 次</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${Math.min(100, Number(m.maxProgress || m.averageScore || m.accuracy || 0))}%"></div></div>
+          <div class="text-xs text-slate-400">正答 ${accuracy}${score}</div>
+        </div>
+      `;
+    }
+
+    function concernText(student) {
+      const modules = student.modules || {};
+      const concerns = [];
+      Object.keys(modules).forEach((key) => {
+        const m = modules[key];
+        if (m.accuracy !== "" && Number(m.accuracy) < 70) concerns.push(`${MODULE_LABEL[key] || key} 正答率偏低`);
+        if (key === "bilingual_reading" && Number(m.maxProgress || 0) < 60) concerns.push("閱讀完成度偏低");
+      });
+      return concerns.length ? concerns.map((item) => `<div class="text-amber-200">${item}</div>`).join("") : "<span class='text-emerald-300'>暫無明顯風險</span>";
+    }
+
+    function renderMetrics(data) {
+      const students = data.students || [];
+      let minutes = 0;
+      let attempts = 0;
+      let correct = 0;
+      students.forEach((student) => {
+        Object.values(student.modules || {}).forEach((moduleData) => {
+          minutes += Number(moduleData.minutes || 0);
+          attempts += Number(moduleData.attempts || 0);
+          correct += Number(moduleData.correct || 0);
+        });
+      });
+      els.metricStudents.textContent = students.length;
+      els.metricMinutes.textContent = minutes;
+      els.metricAccuracy.textContent = attempts ? `${Math.round((correct / attempts) * 100)}%` : "--";
+      els.metricEvents.textContent = data.totalEvents || 0;
+      els.generatedAt.textContent = data.generatedAt ? `更新：${fmtDate(data.generatedAt)}` : "";
+    }
+
+    function renderStudents(data) {
+      const students = data.students || [];
+      if (!students.length) {
+        els.rows.innerHTML = "<tr><td colspan='6' class='text-center text-slate-400 py-10'>目前沒有符合條件的學習事件。</td></tr>";
+        return;
+      }
+      els.rows.innerHTML = students.map((student) => `
+        <tr>
+          <td>
+            <div class="font-black text-white">${student.student_name || student.account || student.email || "未命名學生"}</div>
+            <div class="text-xs text-slate-400 mt-1">${student.account || student.student_id || ""}</div>
+          </td>
+          <td class="text-sm text-slate-300">${fmtDate(student.lastSeen)}</td>
+          <td>${moduleCell(student, "bilingual_reading")}</td>
+          <td>${moduleCell(student, "unit_mastery")}</td>
+          <td>${moduleCell(student, "adaptive_test")}</td>
+          <td class="text-sm">${concernText(student)}</td>
+        </tr>
+      `).join("");
+    }
+
+    function renderConcepts(data) {
+      const concepts = data.weakConcepts || [];
+      if (!concepts.length) {
+        els.conceptBars.innerHTML = "<p class='text-slate-400'>目前尚無足夠錯題概念資料。</p>";
+        return;
+      }
+      const max = Math.max(...concepts.map((item) => Number(item.count || 0)), 1);
+      els.conceptBars.innerHTML = concepts.slice(0, 12).map((item) => `
+        <div>
+          <div class="flex justify-between gap-3 mb-2">
+            <span class="truncate">${item.name}</span>
+            <span class="font-black text-white">${item.count}</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill" style="width:${Math.max(8, Math.round((item.count / max) * 100))}%"></div></div>
+        </div>
+      `).join("");
+    }
+
+    function renderTimeline(data) {
+      const events = data.timeline || [];
+      if (!events.length) {
+        els.timeline.innerHTML = "<p class='text-slate-400'>目前沒有近期事件。</p>";
+        return;
+      }
+      els.timeline.innerHTML = events.slice(0, 60).map((event) => `
+        <div class="rounded-2xl border border-slate-700/70 bg-slate-900/50 p-3">
+          <div class="flex items-center justify-between gap-3">
+            <span class="pill">${MODULE_LABEL[event.module] || event.module || "其他"}</span>
+            <span class="text-xs text-slate-500">${fmtDate(event.time)}</span>
+          </div>
+          <div class="mt-2 font-bold text-white">${event.student || "未命名學生"}</div>
+          <div class="text-xs text-slate-400 mt-1">${event.event || ""}${event.unit ? ` · ${event.unit}` : ""}${event.score !== "" ? ` · ${event.score} 分` : ""}</div>
+        </div>
+      `).join("");
+    }
+
+    function render(data) {
+      renderMetrics(data);
+      renderStudents(data);
+      renderConcepts(data);
+      renderTimeline(data);
+    }
+
+    async function loadSummary() {
+      clearStatus();
+      els.rows.innerHTML = "<tr><td colspan='6' class='text-center text-slate-400 py-10'>讀取中...</td></tr>";
+      try {
+        if (!window.AISchoolLearning.hasEndpoint()) {
+          setStatus("error", "尚未設定 <code>learningAnalytics</code> Apps Script URL。請部署 <code>gas/learning-analytics/Code.js</code> 後，把 Web App URL 填入 AI School 設定。");
+          els.rows.innerHTML = "<tr><td colspan='6' class='text-center text-slate-400 py-10'>等待後端設定。</td></tr>";
+          return;
+        }
+        const data = await window.AISchoolLearning.adminQuery("summary", {
+          days: els.days.value,
+          module: els.module.value,
+          student: els.student.value.trim()
+        });
+        render(data);
+        setStatus("ok", `已讀取 ${data.totalEvents || 0} 筆學習事件。`);
+      } catch (error) {
+        setStatus("error", `${error.message}<br><span class="text-slate-300">請確認：1. 已部署 Apps Script；2. 你的帳號在 student/teacher/professor 任一表的 admin 欄位為 TRUE；3. 若設定 ADMIN_SHARED_SECRET，這裡已填入正確 token。</span>`);
+        els.rows.innerHTML = "<tr><td colspan='6' class='text-center text-slate-400 py-10'>讀取失敗。</td></tr>";
+      }
+    }
+
+    document.getElementById("refreshBtn").addEventListener("click", loadSummary);
+    document.getElementById("setupBtn").addEventListener("click", async () => {
+      try {
+        const data = await window.AISchoolLearning.adminQuery("setup", {});
+        setStatus("ok", data.message || "後端初始化完成。");
+        await loadSummary();
+      } catch (error) {
+        setStatus("error", error.message);
+      }
+    });
+    document.getElementById("saveTokenBtn").addEventListener("click", () => {
+      window.AISchoolLearning.setAdminToken(els.adminToken.value.trim());
+      setStatus("ok", "Admin token 已儲存在此瀏覽器。");
+      loadSummary();
+    });
+    [els.days, els.module].forEach((el) => el.addEventListener("change", loadSummary));
+    els.student.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") loadSummary();
+    });
+
+    els.adminToken.value = window.AISchoolLearning.getAdminToken();
+    window.AISchoolLearning.trackPageView("admin_dashboard", { page: "admin_learning_dashboard" });
+    loadSummary();
+  </script>
+</body>
+</html>
