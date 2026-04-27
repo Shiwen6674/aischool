@@ -679,6 +679,146 @@ if (mobileBox) {
           return map;
         }
 
+        const SCIENCE_EXACT_TRANSLATIONS = {
+          "功與能": "Work and Energy",
+          "力與運動": "Force and Motion",
+          "運動與力": "Motion and Force",
+          "力的作用": "Effects of Force",
+          "簡單機械": "Simple Machines",
+          "槓桿": "Levers",
+          "輪軸": "Wheel and Axle",
+          "滑輪": "Pulleys",
+          "斜面": "Inclined Planes",
+          "齒輪": "Gears",
+          "電與磁": "Electricity and Magnetism",
+          "電路": "Electric Circuits",
+          "電流": "Electric Current",
+          "電壓": "Voltage",
+          "電阻": "Electrical Resistance",
+          "磁鐵": "Magnets",
+          "磁力": "Magnetic Force",
+          "磁極": "Magnetic Poles",
+          "聲音": "Sound",
+          "光": "Light",
+          "光與影": "Light and Shadow",
+          "熱": "Heat",
+          "溫度與熱": "Temperature and Heat",
+          "水的三態": "The Three States of Water",
+          "水的凝結": "Condensation of Water",
+          "水的蒸發": "Evaporation of Water",
+          "水蒸氣": "Water Vapor",
+          "溫度影響物質的變化": "How Temperature Affects Changes in Matter",
+          "物質的變化": "Changes in Matter",
+          "水溶液": "Aqueous Solutions",
+          "酸與鹼": "Acids and Bases",
+          "空氣與水": "Air and Water",
+          "水與空氣": "Water and Air",
+          "植物的構造與功能": "Plant Structures and Functions",
+          "動物的構造與功能": "Animal Structures and Functions",
+          "生物與環境": "Living Things and the Environment",
+          "天氣與氣候": "Weather and Climate",
+          "地球的環境": "Earth's Environment",
+          "蔬菜的種植": "Growing Vegetables"
+        };
+
+        const SCIENCE_TERM_TRANSLATIONS = {
+          "功能": "function",
+          "功": "work",
+          "能": "energy",
+          "能量": "energy",
+          "作功": "work",
+          "動能": "kinetic energy",
+          "位能": "potential energy",
+          "力": "force",
+          "運動": "motion",
+          "速度": "speed",
+          "加速度": "acceleration",
+          "重量": "weight",
+          "質量": "mass",
+          "摩擦力": "friction",
+          "磁力": "magnetic force",
+          "磁極": "magnetic pole",
+          "電流": "electric current",
+          "電壓": "voltage",
+          "電阻": "electrical resistance",
+          "凝結": "condensation",
+          "蒸發": "evaporation",
+          "融化": "melting",
+          "凝固": "freezing",
+          "水蒸氣": "water vapor"
+        };
+
+        function normalizeScienceKey(value) {
+          return norm(value)
+            .replace(/[：:]\s*$/g, "")
+            .replace(/[\s　・·•\-–—_]+/g, "")
+            .replace(/[，,。.!！?？；;：:（）()「」『』《》〈〉\[\]【】]/g, "");
+        }
+
+        function toHalfWidthNumber(value) {
+          return String(value || "").replace(/[０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0));
+        }
+
+        function cnNumberToArabic(value) {
+          const raw = String(value || "").trim();
+          const direct = { "一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9, "十": 10 };
+          if (direct[raw]) return String(direct[raw]);
+          const m = raw.match(/^十([一二三四五六七八九])$/);
+          if (m) return String(10 + direct[m[1]]);
+          const m2 = raw.match(/^([一二三四五六七八九])十([一二三四五六七八九])?$/);
+          if (m2) return String(direct[m2[1]] * 10 + (m2[2] ? direct[m2[2]] : 0));
+          return raw;
+        }
+
+        function splitLeadingUnitNumber(value) {
+          const text = norm(value).replace(/\s+/g, " ");
+          const match = text.match(/^(?:第\s*)?([0-9０-９]+|[一二三四五六七八九十]{1,3})\s*(?:單元|章|節)?\s*[、.．\-–—]?\s*(.+)$/);
+          if (!match) return { number: "", body: text };
+          const rawNumber = toHalfWidthNumber(match[1]);
+          return {
+            number: /^[0-9]+$/.test(rawNumber) ? rawNumber : cnNumberToArabic(rawNumber),
+            body: (match[2] || "").trim()
+          };
+        }
+
+        function lookupScienceExactTranslation(value) {
+          const key = normalizeScienceKey(value);
+          return SCIENCE_EXACT_TRANSLATIONS[key] || "";
+        }
+
+        function getLocalScienceTranslation(value) {
+          const src = norm(value);
+          if (!src) return "";
+
+          const numbered = splitLeadingUnitNumber(src);
+          const exactBody = lookupScienceExactTranslation(numbered.body);
+          if (exactBody) return numbered.number ? `${numbered.number}. ${exactBody}` : exactBody;
+
+          const exact = lookupScienceExactTranslation(src);
+          if (exact) return exact;
+
+          return SCIENCE_TERM_TRANSLATIONS[normalizeScienceKey(src)] || "";
+        }
+
+        function polishScienceTranslation(source, translated) {
+          const local = getLocalScienceTranslation(source);
+          if (local) return local;
+
+          let out = (translated || "").toString().trim();
+          if (!out) return out;
+
+          if (normalizeScienceKey(source).includes("功與能")) {
+            out = out.replace(/\bfunctions?\s+and\s+functions?\b/gi, "Work and Energy");
+            out = out.replace(/\bfunction\s+and\s+function\b/gi, "Work and Energy");
+            out = out.replace(/\bwork\s+and\s+function\b/gi, "Work and Energy");
+            out = out.replace(/\bfunction\s+and\s+energy\b/gi, "Work and Energy");
+          }
+
+          out = out.replace(/\bwater vapour\b/gi, "water vapor");
+          out = out.replace(/\belectric resistance\b/gi, "electrical resistance");
+          return out;
+        }
+
         function processData(data) {
             rawData = data.slice(1);
             processedUnits = rawData.map((row, i) => {
@@ -813,11 +953,17 @@ function renderVocabSidebar() {
           const src = (text || "").toString().trim();
           if(!src) return "";
           const cacheKey = "__title__" + src;
+          const local = getLocalScienceTranslation(src);
+          if (local) {
+            translationCache[cacheKey] = local;
+            return local;
+          }
           if(translationCache[cacheKey]) return translationCache[cacheKey];
           try {
               const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURIComponent(src)}`);
               const json = await res.json();
               let out = ""; (json[0] || []).forEach(x => out += (x[0] || ""));
+              out = polishScienceTranslation(src, out);
               translationCache[cacheKey] = out;
               return out;
           } catch(e) { return src; }
@@ -861,6 +1007,13 @@ async function translateVisibleBlocks() {
         const src = decodeURIComponent(el.getAttribute('data-source') || "").replace(/　/g, '').trim();
         if (!src) continue;
 
+        const local = getLocalScienceTranslation(src);
+        if (local) {
+            translationCache[src] = local;
+            el.innerHTML = makeClickable(highlightEnglishVocabInText(local));
+            continue;
+        }
+
         if (translationCache[src]) {
             el.innerHTML = makeClickable(highlightEnglishVocabInText(translationCache[src]));
             continue;
@@ -871,6 +1024,7 @@ async function translateVisibleBlocks() {
             const json = await res.json();
             let txt = "";
             (json[0] || []).forEach(i => txt += (i[0] || ""));
+            txt = polishScienceTranslation(src, txt);
 
             if (txt.trim()) {
                 el.innerHTML = makeClickable(highlightEnglishVocabInText(txt));
@@ -1303,10 +1457,19 @@ suppressModeTracking = false;
 
         async function translateVocabItem(zh, el) {
           try {
+            const local = getLocalScienceTranslation(zh);
+            if (local) {
+              if(el) el.innerText = local;
+              activeVocabMap[zh] = local;
+              rehighlightEnglishBlocks();
+              return local;
+            }
+
             const q = encodeURIComponent(zh);
             const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${q}`);
             const json = await res.json();
-            const en = (json && json[0] && json[0][0] && json[0][0][0]) ? json[0][0][0] : "";
+            const rawEn = (json && json[0] && json[0][0] && json[0][0][0]) ? json[0][0][0] : "";
+            const en = polishScienceTranslation(zh, rawEn);
             if(el) el.innerText = en || "—";
             activeVocabMap[zh] = en || "";
             rehighlightEnglishBlocks();
