@@ -247,6 +247,237 @@
             font-weight: 500;
         }
 
+        .reader-shell {
+            max-width: min(72rem, 100%);
+        }
+
+        #article-title {
+            margin-bottom: 1.5rem;
+            letter-spacing: 0;
+        }
+        #article-title #title-zh {
+            font-size: clamp(2rem, 5vw, 3.4rem);
+            line-height: 1.18;
+        }
+        #article-title #title-en {
+            font-size: clamp(1.05rem, 2.4vw, 1.6rem);
+            line-height: 1.45;
+        }
+
+        .reading-dashboard {
+            margin: 0 auto 2rem;
+            max-width: 62rem;
+            padding: 1rem 1.1rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(15, 23, 42, 0.48);
+        }
+        .reading-progress-track {
+            height: 0.45rem;
+            overflow: hidden;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+        }
+        .reading-progress-fill {
+            width: 0%;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #22c55e, #38bdf8);
+            transition: width 0.25s ease;
+        }
+        .reading-stat {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: #cbd5e1;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+        .reading-stat i {
+            color: #4ade80;
+            font-size: 0.86rem;
+        }
+
+        #article-content {
+            max-width: 62rem;
+            margin: 0 auto;
+        }
+        .content-block {
+            max-width: 62rem;
+            border-radius: 1rem;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 2.35rem;
+        }
+        .content-block:hover {
+            background: rgba(15, 23, 42, 0.24);
+            border-color: rgba(148, 163, 184, 0.14);
+        }
+        .section-header {
+            max-width: 62rem;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .caption-block {
+            max-width: 58rem;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .quick-check-panel {
+            max-width: 62rem;
+            margin: 2.75rem auto 0;
+            padding: 1.25rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(74, 222, 128, 0.22);
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.66), rgba(15, 23, 42, 0.42));
+        }
+        .quick-check-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .quick-check-title {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            color: #f8fafc;
+            font-size: 1.05rem;
+            font-weight: 900;
+        }
+        .quick-check-title i {
+            color: #4ade80;
+        }
+        .quick-check-score {
+            color: #86efac;
+            font-size: 0.8rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .quick-check-list {
+            display: grid;
+            gap: 1rem;
+        }
+        .quick-check-item {
+            padding: 1rem;
+            border-radius: 0.9rem;
+            background: rgba(15, 23, 42, 0.52);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+        }
+        .quick-check-stem {
+            color: #e2e8f0;
+            line-height: 1.75;
+            font-weight: 700;
+            white-space: pre-wrap;
+        }
+        .quick-check-options {
+            display: grid;
+            gap: 0.65rem;
+            margin-top: 0.85rem;
+        }
+        .quick-check-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.65rem;
+            width: 100%;
+            min-height: 2.85rem;
+            padding: 0.72rem 0.85rem;
+            border-radius: 0.8rem;
+            color: #dbeafe;
+            text-align: left;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(30, 41, 59, 0.68);
+            transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+        }
+        .quick-check-option:hover:not(:disabled) {
+            transform: translateY(-1px);
+            border-color: rgba(74, 222, 128, 0.6);
+            background: rgba(30, 41, 59, 0.95);
+        }
+        .quick-check-option:disabled {
+            cursor: default;
+        }
+        .quick-check-letter {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 1.45rem;
+            height: 1.45rem;
+            border-radius: 999px;
+            color: #0f172a;
+            background: #86efac;
+            font-size: 0.72rem;
+            font-weight: 900;
+        }
+        .quick-check-option.is-correct {
+            border-color: rgba(74, 222, 128, 0.95);
+            background: rgba(22, 101, 52, 0.34);
+        }
+        .quick-check-option.is-wrong {
+            border-color: rgba(248, 113, 113, 0.8);
+            background: rgba(127, 29, 29, 0.28);
+        }
+        .quick-check-feedback {
+            margin-top: 0.75rem;
+            color: #cbd5e1;
+            font-size: 0.9rem;
+            line-height: 1.65;
+        }
+        .quick-check-empty {
+            color: #94a3b8;
+            text-align: center;
+            padding: 1rem 0;
+            font-weight: 700;
+        }
+
+        @media (max-width: 768px) {
+            .reader-shell {
+                max-width: 100%;
+            }
+            #article-title {
+                margin-bottom: 1rem;
+            }
+            .reading-dashboard,
+            #article-content,
+            .quick-check-panel {
+                max-width: 100%;
+            }
+            .reading-dashboard {
+                padding: 0.9rem;
+            }
+            .content-block {
+                padding: 1rem 0.9rem;
+                margin-bottom: 1.8rem;
+            }
+            .zh-text {
+                font-size: 1.12rem;
+                line-height: 1.85;
+                letter-spacing: 0.04em;
+                text-align: left;
+            }
+            .en-text {
+                font-size: 1rem;
+                line-height: 1.62;
+            }
+            .section-title-text {
+                font-size: 1.35rem;
+            }
+            .caption-block {
+                grid-template-columns: 1.25rem minmax(0, 1fr);
+                padding: 0.75rem;
+            }
+            .quick-check-header {
+                flex-direction: column;
+                gap: 0.4rem;
+            }
+            .quick-check-option {
+                min-height: 3rem;
+            }
+        }
+
         /* 下拉選單樣式 (保持原樣) */
         .student-select-wrapper {
             position: relative; display: flex; align-items: center;
@@ -405,11 +636,25 @@
             </div>
 
             <div class="flex-grow scroll-area overflow-y-auto p-6 md:p-12 relative" id="reading-container">
-                <article class="max-w-4xl mx-auto transition-opacity duration-500" id="article-body">
+                <article class="reader-shell mx-auto transition-opacity duration-500" id="article-body">
                    <h1 class="text-3xl md:text-4xl font-black text-white mb-10 text-center" id="article-title">
     <span class="text-slate-500 opacity-30 text-2xl" data-i18n="waiting_hint">等待探索...</span>
 </h1>
+                    <section id="reading-dashboard" class="reading-dashboard hidden" aria-label="閱讀進度">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-3">
+                            <div class="flex flex-wrap gap-3">
+                                <span class="reading-stat"><i class="fa-solid fa-align-left"></i><span id="reading-block-count">0 段</span></span>
+                                <span class="reading-stat"><i class="fa-regular fa-clock"></i><span id="reading-estimate">約 1 分鐘</span></span>
+                                <span class="reading-stat"><i class="fa-solid fa-list-check"></i><span id="reading-check-status">小檢核 0 題</span></span>
+                            </div>
+                            <span class="reading-stat"><i class="fa-solid fa-chart-line"></i><span id="reading-progress-label">0%</span></span>
+                        </div>
+                        <div class="reading-progress-track" aria-hidden="true">
+                            <div id="reading-progress-fill" class="reading-progress-fill"></div>
+                        </div>
+                    </section>
                     <div id="article-content" class="space-y-2"></div> 
+                    <section id="quick-check-panel" class="quick-check-panel hidden" aria-label="閱讀小檢核"></section>
                     <div id="mobile-vocab-panel" class="lg:hidden mt-8 glass-panel panel-right overflow-hidden">
     <div class="p-4 border-b border-white/10 bg-gradient-to-r from-yellow-500/10 to-transparent">
         <div class="flex items-center gap-2 mb-1">
@@ -512,9 +757,14 @@ let currentUnitData = null;
 let unitEnterTime = null;
 let completedUnits = new Set();
 let lastTrackedBlockKey = '';
+let readingProgressMilestone = 0;
+let currentQuickChecks = [];
+let quickCheckAnswers = {};
+let quickCheckStarted = false;
 let suppressModeTracking = false;
 let suppressVoiceTracking = false;
 let ttsPlayer = null;
+const BILINGUAL_TRACKING_SCHEMA_VERSION = "2026-04-reading-check-v1";
 
 
         
@@ -612,7 +862,7 @@ trackEvent('page_view');
 window.addEventListener('beforeunload', trackPageLeave);
 const readingContainer = document.getElementById('reading-container');
 if (readingContainer) {
-    readingContainer.addEventListener('scroll', checkUnitCompletion);
+    readingContainer.addEventListener('scroll', handleReadingScroll, { passive: true });
 }
 
             
@@ -658,6 +908,7 @@ const vocabEmpty = i18n[currentLang]['vocab_empty'] || '詞彙將顯示於此';
 document.getElementById('article-title').innerHTML =
     `<span class="text-slate-500 opacity-30 text-2xl">${waiting}</span>`;
 document.getElementById('article-content').innerHTML = '';
+resetReadingAssistUi();
 document.getElementById('nav-title').innerText = navGuide;
 document.getElementById('status-bar').innerText = 'READY';
 document.getElementById('unit-list').innerHTML =
@@ -788,7 +1039,53 @@ if (mobileBox) {
           "蒸發": "evaporation",
           "融化": "melting",
           "凝固": "freezing",
-          "水蒸氣": "water vapor"
+          "水蒸氣": "water vapor",
+          "水": "water",
+          "空氣": "air",
+          "陽光": "sunlight",
+          "溫度": "temperature",
+          "觀察": "observation",
+          "證據": "evidence",
+          "變化": "change",
+          "環境": "environment",
+          "位置": "location",
+          "植物": "plant",
+          "蔬菜": "vegetable",
+          "生長": "growth",
+          "土壤": "soil",
+          "根": "root",
+          "莖": "stem",
+          "葉": "leaf",
+          "葉片": "leaf",
+          "葉脈": "leaf vein",
+          "花": "flower",
+          "完全花": "complete flower",
+          "不完全花": "incomplete flower",
+          "花萼": "calyx",
+          "花瓣": "petal",
+          "雄蕊": "stamen",
+          "雌蕊": "pistil",
+          "果實": "fruit",
+          "種子": "seed",
+          "發芽": "germination",
+          "重疊": "overlapping",
+          "葉序": "leaf arrangement",
+          "互生": "alternate leaf arrangement",
+          "對生": "opposite leaf arrangement",
+          "輪生": "whorled leaf arrangement",
+          "磁鐵": "magnet",
+          "磁性": "magnetism",
+          "鐵": "iron",
+          "鐵製品": "iron object",
+          "金屬": "metal",
+          "指北針": "compass",
+          "動物": "animal",
+          "構造": "structure",
+          "感官": "sense organ",
+          "行為": "behavior",
+          "保護": "protection",
+          "繁殖": "reproduction",
+          "分類": "classification"
         };
 
         function normalizeScienceKey(value) {
@@ -976,8 +1273,12 @@ function loadSelectedUnit() {
 
 currentUnitData = u;
 unitEnterTime = Date.now();
+currentBlockIndex = 0;
+const readingContainer = document.getElementById('reading-container');
+if (readingContainer) readingContainer.scrollTop = 0;
 lastTrackedBlockKey = '';
 completedUnits.delete(u.id);
+resetReadingAssistUi();
 trackEvent('unit_selected', { detail: u.title });
 renderArticle(u);
 
@@ -1032,6 +1333,11 @@ function renderVocabSidebar() {
           const label = card ? card.querySelector('.en-term-label') : null;
           let en = (activeVocabMap[zh] || "").toString().trim();
           if(!en){ await translateVocabItem(zh, label); en = (activeVocabMap[zh] || "").toString().trim(); }
+          trackEvent('vocab_spoken', {
+            detail: zh,
+            value: en || zh,
+            language: 'en'
+          });
           speakText(en || zh);
         }
 
@@ -1323,6 +1629,356 @@ function stopAudioOnly() {
         function getReadingBlocks() {
             return document.querySelectorAll('.reading-block');
         }
+
+function handleReadingScroll() {
+    checkUnitCompletion();
+    updateReadingProgressFromScroll();
+}
+
+function resetReadingAssistUi() {
+    readingProgressMilestone = 0;
+    currentQuickChecks = [];
+    quickCheckAnswers = {};
+    quickCheckStarted = false;
+
+    const dashboard = document.getElementById('reading-dashboard');
+    const quickPanel = document.getElementById('quick-check-panel');
+    const fill = document.getElementById('reading-progress-fill');
+    const label = document.getElementById('reading-progress-label');
+    const blockCount = document.getElementById('reading-block-count');
+    const estimate = document.getElementById('reading-estimate');
+    const checkStatus = document.getElementById('reading-check-status');
+
+    if (dashboard) dashboard.classList.add('hidden');
+    if (quickPanel) {
+        quickPanel.classList.add('hidden');
+        quickPanel.innerHTML = '';
+    }
+    if (fill) fill.style.width = '0%';
+    if (label) label.textContent = '0%';
+    if (blockCount) blockCount.textContent = '0 段';
+    if (estimate) estimate.textContent = '約 1 分鐘';
+    if (checkStatus) checkStatus.textContent = '小檢核 0 題';
+}
+
+function updateReadingDashboard(lines = []) {
+    const dashboard = document.getElementById('reading-dashboard');
+    if (!dashboard || !currentUnitData) return;
+
+    const blocks = getReadingBlocks();
+    const chars = (lines.length ? lines.join('') : (currentUnitData.content || currentUnitData.ckip || '')).length;
+    const minutes = Math.max(1, Math.ceil(chars / 420));
+    const blockCount = document.getElementById('reading-block-count');
+    const estimate = document.getElementById('reading-estimate');
+    const checkStatus = document.getElementById('reading-check-status');
+
+    if (blockCount) blockCount.textContent = `${blocks.length} 段`;
+    if (estimate) estimate.textContent = `約 ${minutes} 分鐘`;
+    if (checkStatus) checkStatus.textContent = `小檢核 ${currentQuickChecks.length} 題`;
+    dashboard.classList.remove('hidden');
+    updateReadingProgressFromScroll();
+}
+
+function updateReadingProgressFromScroll() {
+    if (!currentUnitData) return;
+    const container = document.getElementById('reading-container');
+    if (!container) return;
+
+    const total = container.scrollHeight - container.clientHeight;
+    const percent = total <= 0 ? 100 : Math.max(0, Math.min(100, Math.round((container.scrollTop / total) * 100)));
+    const fill = document.getElementById('reading-progress-fill');
+    const label = document.getElementById('reading-progress-label');
+    if (fill) fill.style.width = `${percent}%`;
+    if (label) label.textContent = `${percent}%`;
+
+    const milestone = Math.floor(percent / 20) * 20;
+    if (milestone >= 20 && milestone > readingProgressMilestone) {
+        readingProgressMilestone = milestone;
+        trackEvent('reading_progress', {
+            detail: currentUnitData.title,
+            value: milestone,
+            progress_percent: milestone,
+            block_count: getReadingBlocks().length
+        });
+    }
+}
+
+function clipText(text, max = 42) {
+    const compact = norm(text).replace(/\s+/g, '');
+    if (compact.length <= max) return compact;
+    return compact.slice(0, max - 1) + '…';
+}
+
+function uniqueList(list) {
+    const seen = new Set();
+    return (list || []).map(x => norm(x)).filter(x => {
+        if (!x || seen.has(x)) return false;
+        seen.add(x);
+        return true;
+    });
+}
+
+function shuffleList(list) {
+    return (list || [])
+        .map(value => ({ value, order: Math.random() }))
+        .sort((a, b) => a.order - b.order)
+        .map(item => item.value);
+}
+
+function makeOptions(correct, candidates, fallback = []) {
+    const pool = uniqueList([...(candidates || []), ...fallback]).filter(x => x !== correct);
+    const options = uniqueList([correct, ...shuffleList(pool).slice(0, 3)]);
+    while (options.length < 4) {
+        const filler = `再觀察證據 ${options.length}`;
+        if (!options.includes(filler)) options.push(filler);
+    }
+    return shuffleList(options.slice(0, 4));
+}
+
+function getCheckVocabEntries() {
+    return Object.entries(activeVocabMap || {})
+        .map(([zh, en]) => {
+            const local = getLocalScienceTranslation(zh);
+            return {
+                zh: norm(zh),
+                en: norm(en || local)
+            };
+        })
+        .filter(item => item.zh && item.zh.length <= 8);
+}
+
+function buildConceptCheck(lines) {
+    const corpus = `${currentUnitData?.title || ''}\n${(lines || []).join('\n')}`;
+    if (/水蒸氣|凝結|小水滴|冰水|白色煙霧/.test(corpus)) {
+        return {
+            type: 'concept_condensation',
+            stem: '讀完這段內容後，若冰水杯外側出現小水滴，哪一個解釋最符合科學證據？',
+            correct: '空氣中的水蒸氣遇冷變成小水滴',
+            options: makeOptions('空氣中的水蒸氣遇冷變成小水滴', [
+                '杯子裡的水穿過杯壁流到外面',
+                '冰塊直接變成白色的水蒸氣',
+                '杯子表面自己製造新的水分'
+            ]),
+            feedback: '重點是「水蒸氣看不見」與「遇冷凝結」，小水滴通常來自空氣中的水蒸氣。'
+        };
+    }
+    if (/蒸發|水量變少|變乾/.test(corpus)) {
+        return {
+            type: 'concept_evaporation',
+            stem: '如果同樣一灘水在陽光下較快變乾，最合理的科學解釋是什麼？',
+            correct: '水吸收熱後較快變成看不見的水蒸氣',
+            options: makeOptions('水吸收熱後較快變成看不見的水蒸氣', [
+                '水的顏色變淡後就直接消失不見',
+                '陽光把水全部壓進地面深處',
+                '水只要變少就表示容器漏水'
+            ]),
+            feedback: '蒸發是液態水變成看不見的水蒸氣，溫度和空氣流動都可能影響速度。'
+        };
+    }
+    if (/磁|磁鐵|磁力/.test(corpus)) {
+        return {
+            type: 'concept_magnetism',
+            stem: '讀完磁鐵相關內容後，下列哪一項最適合當作判斷依據？',
+            correct: '觀察物品是否含鐵並記錄吸引情形',
+            options: makeOptions('觀察物品是否含鐵並記錄吸引情形', [
+                '只看物品顏色深不深來決定',
+                '只看物品重量重不重來決定',
+                '只要是金屬就一定會被吸住'
+            ]),
+            feedback: '磁鐵主要吸引鐵製品，不能只用顏色、重量或「是不是金屬」來判斷。'
+        };
+    }
+    if (/植物|蔬菜|生長|根|莖|葉/.test(corpus)) {
+        return {
+            type: 'concept_plant_growth',
+            stem: '若要追蹤植物或蔬菜的生長，哪一種做法最能支持可靠判斷？',
+            correct: '固定時間記錄高度、葉片狀態與照顧條件',
+            options: makeOptions('固定時間記錄高度、葉片狀態與照顧條件', [
+                '只在最後一天看哪一盆比較漂亮',
+                '每天隨意改變水量與擺放位置',
+                '只記錄花盆顏色不記錄植物變化'
+            ]),
+            feedback: '可靠的生長判斷需要連續記錄，也要知道水分、陽光、空間等條件。'
+        };
+    }
+    if (/動物|構造|行為|生存/.test(corpus)) {
+        return {
+            type: 'concept_animal_adaptation',
+            stem: '閱讀動物構造或行為時，哪一種想法最符合科學閱讀的重點？',
+            correct: '把構造、行為和生存環境連在一起解釋',
+            options: makeOptions('把構造、行為和生存環境連在一起解釋', [
+                '只看動物名字就能知道全部功能',
+                '只比較顏色漂亮不漂亮就足夠',
+                '所有動物都用完全相同方式生活'
+            ]),
+            feedback: '科學閱讀常要求把「特徵」和「功能、環境、證據」連起來。'
+        };
+    }
+    return {
+        type: 'concept_evidence',
+        stem: '讀完本段內容後，哪一種做法最符合科學閱讀中的證據判斷？',
+        correct: '依據觀察資料與條件變化來說明原因',
+        options: makeOptions('依據觀察資料與條件變化來說明原因', [
+            '只看一次現象就代表所有情況',
+            '先選喜歡的答案再尋找資料',
+            '只根據物品顏色來判斷原因'
+        ]),
+        feedback: '科學閱讀不是猜答案，而是把觀察到的資料、條件與概念連接起來。'
+    };
+}
+
+function buildQuickChecks(unit, lines) {
+    const paragraphLines = (lines || []).filter(line => classifyContentLine(line) === 'paragraph' && norm(line).length >= 12);
+    const vocabEntries = getCheckVocabEntries();
+    const vocabTerms = vocabEntries.map(item => item.zh);
+    const checks = [];
+
+    const conceptCheck = buildConceptCheck(lines);
+    if (conceptCheck) checks.push(conceptCheck);
+
+    const clozeSource = paragraphLines.find(line => vocabTerms.some(term => norm(line).includes(term)));
+    if (clozeSource) {
+        const term = vocabTerms.find(item => norm(clozeSource).includes(item));
+        if (term) {
+            checks.push({
+                type: 'text_cloze',
+                stem: `依據課文內容，空格最適合填入哪個科學詞？\n${clipText(clozeSource.replace(term, '（　）'), 74)}`,
+                correct: term,
+                options: makeOptions(term, vocabTerms, ['觀察', '證據', '變化', '溫度']),
+                feedback: `回到原句可看到「${term}」是這裡的關鍵詞。`
+            });
+        }
+    }
+
+    const bilingualPool = vocabEntries.filter(item => item.en && /[A-Za-z]/.test(item.en));
+    if (bilingualPool.length >= 3) {
+        const item = bilingualPool[0];
+        checks.push({
+            type: 'bilingual_vocab',
+            stem: `雙語詞彙檢核：「${item.en}」在本單元中最接近哪一個中文詞？`,
+            correct: item.zh,
+            options: makeOptions(item.zh, bilingualPool.map(x => x.zh), ['水蒸氣', '觀察', '證據', '溫度']),
+            feedback: `「${item.en}」在本頁對應的中文詞是「${item.zh}」。`
+        });
+    }
+
+    if (checks.length < 3 && paragraphLines.length >= 2) {
+        const correct = clipText(paragraphLines[0], 34);
+        checks.push({
+            type: 'evidence_sentence',
+            stem: '下列哪一句最適合當作回到課文查證的線索？',
+            correct,
+            options: makeOptions(correct, paragraphLines.slice(1, 6).map(line => clipText(line, 34)), [
+                '只要看標題就能知道全部答案',
+                '不需要任何資料也可以下結論',
+                '只要顏色相同原因就會相同'
+            ]),
+            feedback: '做閱讀檢核時，最好能回到課文中的句子找證據。'
+        });
+    }
+
+    return checks.slice(0, 3).map((check, index) => ({
+        ...check,
+        id: `${unit?.id ?? 'unit'}-${check.type}-${index}`,
+        correctIndex: check.options.indexOf(check.correct)
+    })).filter(check => check.correctIndex >= 0);
+}
+
+function renderQuickChecks() {
+    const panel = document.getElementById('quick-check-panel');
+    if (!panel) return;
+
+    if (!currentQuickChecks.length) {
+        panel.classList.add('hidden');
+        panel.innerHTML = '';
+        return;
+    }
+
+    const answered = Object.keys(quickCheckAnswers).length;
+    const correctCount = Object.values(quickCheckAnswers).filter(Boolean).length;
+    const total = currentQuickChecks.length;
+    const letters = ['A', 'B', 'C', 'D'];
+
+    const itemsHtml = currentQuickChecks.map((check, qIndex) => {
+        const hasAnswered = Object.prototype.hasOwnProperty.call(quickCheckAnswers, qIndex);
+        const selectedIndex = check.selectedIndex;
+        const optionsHtml = check.options.map((option, optIndex) => {
+            let stateClass = '';
+            if (hasAnswered && optIndex === check.correctIndex) stateClass = ' is-correct';
+            if (hasAnswered && optIndex === selectedIndex && optIndex !== check.correctIndex) stateClass = ' is-wrong';
+            return `
+                <button class="quick-check-option${stateClass}" ${hasAnswered ? 'disabled' : ''} onclick="answerQuickCheck(${qIndex}, ${optIndex})">
+                    <span class="quick-check-letter">${letters[optIndex] || ''}</span>
+                    <span>${escapeHtml(option)}</span>
+                </button>`;
+        }).join('');
+
+        const feedback = hasAnswered
+            ? `<div class="quick-check-feedback">${quickCheckAnswers[qIndex] ? '答對了。' : '再回文中找一次證據。'} ${escapeHtml(check.feedback || '')}</div>`
+            : '';
+
+        return `
+            <div class="quick-check-item">
+                <div class="quick-check-stem">${qIndex + 1}. ${escapeHtml(check.stem)}</div>
+                <div class="quick-check-options">${optionsHtml}</div>
+                ${feedback}
+            </div>`;
+    }).join('');
+
+    panel.innerHTML = `
+        <div class="quick-check-header">
+            <div>
+                <div class="quick-check-title"><i class="fa-solid fa-list-check"></i><span>閱讀小檢核</span></div>
+                <div class="text-sm text-slate-400 mt-1">完成閱讀後，快速確認你是否抓到關鍵概念與雙語詞彙。</div>
+            </div>
+            <div class="quick-check-score">${correctCount}/${total} 正確</div>
+        </div>
+        <div class="quick-check-list">${itemsHtml || '<div class="quick-check-empty">本單元暫無可產生的小檢核。</div>'}</div>
+    `;
+    panel.classList.remove('hidden');
+
+    const checkStatus = document.getElementById('reading-check-status');
+    if (checkStatus) checkStatus.textContent = `小檢核 ${answered}/${total}`;
+}
+
+function answerQuickCheck(qIndex, optionIndex) {
+    const check = currentQuickChecks[qIndex];
+    if (!check || Object.prototype.hasOwnProperty.call(quickCheckAnswers, qIndex)) return;
+
+    if (!quickCheckStarted) {
+        quickCheckStarted = true;
+        trackEvent('quick_check_started', {
+            detail: currentUnitData?.title || '',
+            value: currentQuickChecks.length,
+            check_total: currentQuickChecks.length
+        });
+    }
+
+    check.selectedIndex = optionIndex;
+    const isCorrect = optionIndex === check.correctIndex;
+    quickCheckAnswers[qIndex] = isCorrect;
+    trackEvent('quick_check_answered', {
+        detail: check.type,
+        value: isCorrect ? 'correct' : 'incorrect',
+        question_index: qIndex + 1,
+        selected_answer: check.options[optionIndex] || '',
+        correct_answer: check.correct || ''
+    });
+
+    const answered = Object.keys(quickCheckAnswers).length;
+    if (answered === currentQuickChecks.length) {
+        const correctCount = Object.values(quickCheckAnswers).filter(Boolean).length;
+        trackEvent('quick_check_completed', {
+            detail: currentUnitData?.title || '',
+            value: correctCount,
+            check_total: currentQuickChecks.length,
+            score_percent: Math.round((correctCount / currentQuickChecks.length) * 100)
+        });
+    }
+
+    renderQuickChecks();
+}
+
 function checkUnitCompletion() {
     if (!currentUnitData) return;
 
@@ -1409,6 +2065,7 @@ function checkUnitCompletion() {
 
 
         async function renderArticle(unit) {
+            resetReadingAssistUi();
             currentUnitTitleZh = unit.title;
             currentUnitTitleEn = "";
             document.getElementById('article-title').innerHTML = `
@@ -1485,6 +2142,12 @@ function checkUnitCompletion() {
             suppressModeTracking = true;
 setMode('dual');
 suppressModeTracking = false;
+            currentQuickChecks = buildQuickChecks(unit, lines);
+            quickCheckAnswers = {};
+            quickCheckStarted = false;
+            renderQuickChecks();
+            updateReadingDashboard(lines);
+            setTimeout(updateReadingProgressFromScroll, 0);
 
         }
         function getCkipTokenSet(ckipLine){
@@ -1951,30 +2614,89 @@ function getStudentInfo() {
     return { studentId, studentName };
 }
 
+function getTrackingSessionId() {
+    const key = 'aischool_bilingual_reading_session_id';
+    let id = sessionStorage.getItem(key);
+    if (!id) {
+        id = (window.crypto && crypto.randomUUID)
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        sessionStorage.setItem(key, id);
+    }
+    return id;
+}
+
+function getCurrentProgressPercent() {
+    const container = document.getElementById('reading-container');
+    if (!container || !currentUnitData) return '';
+    const total = container.scrollHeight - container.clientHeight;
+    if (total <= 0) return 100;
+    return Math.max(0, Math.min(100, Math.round((container.scrollTop / total) * 100)));
+}
+
+function getQuickCheckStats() {
+    const total = currentQuickChecks.length || 0;
+    const answered = Object.keys(quickCheckAnswers || {}).length;
+    const correct = Object.values(quickCheckAnswers || {}).filter(Boolean).length;
+    return {
+        total,
+        answered,
+        correct,
+        scorePercent: total ? Math.round((correct / total) * 100) : ''
+    };
+}
+
 function trackEvent(eventName, extra = {}) {
+    if (!TRACKING_URL) return;
     const { studentId, studentName } = getStudentInfo();
+    const unitName = currentUnitData?.title || currentUnitTitleZh || '';
+    const versionValue = document.getElementById('sel-version')?.value || '';
+    const quickStats = getQuickCheckStats();
 
     const payload = {
+        action: 'log_event',
+        schema_version: BILINGUAL_TRACKING_SCHEMA_VERSION,
+        client_time: new Date().toISOString(),
+        session_id: getTrackingSessionId(),
         student_id: studentId,
         student_name: studentName,
+        studentId: studentId,
+        studentName: studentName,
+        account: studentId,
+        userName: studentName,
         event: eventName,
         stage: document.getElementById('sel-stage')?.value || '',
         grade: document.getElementById('sel-grade')?.value || '',
-        version: document.getElementById('sel-version')?.value || '',
+        version: versionValue,
+        publisher: versionValue,
         semester: document.getElementById('sel-semester')?.value || '',
-        unit: currentUnitData?.title || currentUnitTitleZh || '',
+        unit: unitName,
+        unitName: unitName,
         mode: currentMode,
-        language: currentLang,
+        language: extra.language || currentLang,
         detail: extra.detail || '',
         value: extra.value || '',
         duration: extra.duration || '',
-        page: 'student_science_bilingual.html'
+        page: 'student_science_bilingual.html',
+        block_index: extra.block_index ?? '',
+        block_role: extra.block_role ?? '',
+        text_length: extra.text_length ?? '',
+        progress_percent: extra.progress_percent ?? getCurrentProgressPercent(),
+        check_total: extra.check_total ?? quickStats.total,
+        check_answered: extra.check_answered ?? quickStats.answered,
+        check_correct: extra.check_correct ?? quickStats.correct,
+        question_index: extra.question_index ?? '',
+        selected_answer: extra.selected_answer || '',
+        correct_answer: extra.correct_answer || '',
+        score_percent: extra.score_percent ?? quickStats.scorePercent,
+        extra_json: JSON.stringify(extra || {})
     };
 
     fetch(TRACKING_URL, {
         method: 'POST',
         mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        keepalive: true,
         body: JSON.stringify(payload)
     }).catch(() => {});
 }
@@ -2005,7 +2727,11 @@ function trackBlockPlayed(block, index) {
 
     trackEvent('block_played', {
         detail: shortPreview,
-        value: index
+        value: index,
+        block_index: index,
+        block_role: block.getAttribute('data-block-role') || '',
+        text_length: preview.length,
+        language_available: enText ? 'zh_en' : 'zh_only'
     });
 }
 
@@ -2013,9 +2739,15 @@ function trackUnitLeave() {
     if (!currentUnitData || !unitEnterTime) return;
 
     const duration = Math.round((Date.now() - unitEnterTime) / 1000);
+    const quickStats = getQuickCheckStats();
     trackEvent('unit_leave', {
         detail: currentUnitData.title,
-        duration: duration
+        duration: duration,
+        progress_percent: getCurrentProgressPercent(),
+        check_total: quickStats.total,
+        check_answered: quickStats.answered,
+        check_correct: quickStats.correct,
+        score_percent: quickStats.scorePercent
     });
 }
         
