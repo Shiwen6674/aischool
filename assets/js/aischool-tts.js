@@ -169,8 +169,8 @@
           male: [/daniel/, /alex/, /nathan/, /aaron/, /tom/, /fred/, /oliver/]
         },
         zh: {
-          female: [/mei-jia|meijia/, /ting-ting|tingting/, /sin-ji|sinji/, /hanhan/, /yating/, /xiaoxiao/, /hsiaochen|hsiaoyu/, /siri/],
-          male: [/yu-shu|yushu/, /li-mu|limu/, /yunxi/, /yunjian|yunyang/, /zhiwei/, /kangkang/]
+          female: [/mei-jia|meijia/, /ting-ting|tingting/, /sin-ji|sinji/, /hanhan/, /yating/, /xiaoxiao/, /hsiao-?chen|hsiao-?yu|xiaoyu/, /siri/],
+          male: [/yu-shu|yushu/, /yun-?jhe|yunjhe/, /li-mu|limu/, /yunxi/, /yunjian|yunyang/, /zhiwei/, /kangkang/]
         }
       },
       android: {
@@ -179,8 +179,8 @@
           male: [/google.*male.*en/, /google.*en-gb/, /daniel/, /alex/, /nathan/, /guy/, /david/, /ryan/]
         },
         zh: {
-          female: [/google.*zh/, /google.*mandarin/, /xiaoxiao/, /hanhan/, /yating/, /hsiaoyu|hsiaochen/, /huihui/],
-          male: [/yunxi/, /yunjian|yunyang/, /zhiwei/, /google.*male.*zh/, /google.*mandarin.*male/, /yu-shu|yushu/, /li-mu|limu/]
+          female: [/microsoft.*hsiao-?chen.*natural/, /microsoft.*online.*natural.*chinese.*taiwan/, /google.*zh/, /google.*mandarin/, /xiaoxiao/, /hanhan/, /yating/, /hsiao-?yu|hsiao-?chen|xiaoyu/, /huihui/],
+          male: [/microsoft.*yun-?jhe.*natural/, /yunxi/, /yunjian|yunyang/, /yun-?jhe|yunjhe/, /zhiwei/, /google.*male.*zh/, /google.*mandarin.*male/, /yu-shu|yushu/, /li-mu|limu/]
         }
       },
       desktop: {
@@ -189,14 +189,34 @@
           male: [/david/, /guy/, /mark/, /daniel/, /alex/, /nathan/, /aaron/, /tom/]
         },
         zh: {
-          female: [/mei-jia|meijia/, /hsiaochen|hsiaoyu/, /hanhan/, /yating/, /xiaoxiao/, /huihui/, /ting-ting|tingting/, /sin-ji|sinji/],
-          male: [/yu-shu|yushu/, /yunxi/, /yunjian|yunyang/, /zhiwei/, /kangkang/, /li-mu|limu/, /xiaoyi/]
+          female: [/microsoft.*hsiao-?chen.*natural/, /hsiao-?chen|hsiao-?yu|xiaoyu/, /mei-jia|meijia/, /hanhan/, /yating/, /xiaoxiao/, /huihui/, /ting-ting|tingting/, /sin-ji|sinji/],
+          male: [/microsoft.*yun-?jhe.*natural/, /yu-shu|yushu/, /yunxi/, /yunjian|yunyang/, /yun-?jhe|yunjhe/, /zhiwei/, /kangkang/, /li-mu|limu/, /xiaoyi/]
         }
       }
     };
 
     const familyKey = isEng ? "en" : "zh";
     return table[platform]?.[familyKey]?.[gender] || [];
+  }
+
+  function inferVoiceGender(voice) {
+    const { descriptor } = getVoiceDescriptor(voice);
+    if (!descriptor) return "";
+
+    if (/female|woman|girl|zira|samantha|ava|victoria|allison|serena|karen|moira|mei-jia|meijia|ting-ting|tingting|sin-ji|sinji|hanhan|yating|xiaoxiao|hsiao-?chen|hsiao-?yu|xiaoyu|jenny|aria|emma/.test(descriptor)) {
+      return "female";
+    }
+
+    if (/male|man|boy|daniel|alex|nathan|aaron|david|guy|mark|ryan|yu-shu|yushu|yun-?jhe|yunjhe|yunxi|yunjian|yunyang|zhiwei|kangkang|li-mu|limu/.test(descriptor)) {
+      return "male";
+    }
+
+    return "";
+  }
+
+  function hasNaturalVoiceHint(voice) {
+    const { descriptor } = getVoiceDescriptor(voice);
+    return /enhanced|premium|natural|neural|studio|wavenet|online|cloud|high quality|siri voice/.test(descriptor);
   }
 
   function scoreProfileMatch(descriptor, patterns) {
@@ -218,15 +238,17 @@
     function getScore(voice) {
       let score = 0;
       const { name, lang, descriptor } = getVoiceDescriptor(voice);
+      const inferredGender = inferVoiceGender(voice);
       score += getLanguageScore(lang, isEng);
       if (score < 0) return score;
 
       if (voice.default) score += 300;
-      if (voice.localService) score += platform === "ios" ? 3200 : 800;
+      if (voice.localService) score += platform === "ios" ? 650 : 800;
       if (platform === "android" && !voice.localService) score += isEng ? 900 : 2200;
 
-      if (/enhanced|premium|natural|neural|studio|wavenet|online|cloud|high quality|siri voice/.test(descriptor)) score += 6500;
-      if (/compact|espeak|ekho|festival|robot|legacy|novelty/.test(descriptor)) score -= 14000;
+      if (hasNaturalVoiceHint(voice)) score += 7600;
+      if (/microsoft.*online.*natural/.test(descriptor)) score += 5200;
+      if (/compact|espeak|ekho|festival|robot|legacy|novelty/.test(descriptor)) score -= 18000;
       if (/siri/.test(descriptor)) score += isEng ? 1200 : 5200;
       if (/google/.test(descriptor)) score += platform === "android" ? 3200 : 1400;
       if (/microsoft/.test(descriptor) && platform === "desktop") score += 2200;
@@ -236,18 +258,20 @@
       score += scoreProfileMatch(descriptor, profilePatterns);
 
       if (gender === "female") {
-        if (/female|woman|girl|zira|samantha|ava|victoria|allison|serena|karen|moira|mei-jia|meijia|ting-ting|tingting|sin-ji|sinji|hanhan|yating|xiaoxiao|hsiaochen|hsiaoyu|jenny|aria|emma/.test(descriptor)) {
+        if (inferredGender === "female") {
           score += 2600;
         }
-        if (/male|man|boy|daniel|alex|nathan|aaron|david|guy|mark|yu-shu|yushu|yunxi|yunjian|yunyang|zhiwei|kangkang|li-mu|limu/.test(descriptor)) {
+        if (inferredGender === "male") {
           score -= 5200;
         }
       } else {
-        if (/male|man|boy|daniel|alex|nathan|aaron|david|guy|mark|ryan|yu-shu|yushu|yunxi|yunjian|yunyang|zhiwei|kangkang|li-mu|limu/.test(descriptor)) {
+        if (inferredGender === "male") {
           score += 2600;
         }
-        if (/female|woman|girl|zira|samantha|ava|victoria|allison|serena|karen|moira|mei-jia|meijia|ting-ting|tingting|sin-ji|sinji|hanhan|yating|xiaoxiao|hsiaochen|hsiaoyu|jenny|aria|emma/.test(descriptor)) {
-          score -= 5200;
+        if (inferredGender === "female") {
+          // Do not crush a good Chinese female/neutral voice into a fake male voice.
+          // Prefer a real male voice when present, but keep the fallback natural.
+          score -= isEng ? 5200 : 2800;
         }
       }
 
@@ -278,41 +302,50 @@
   function getSpeechTuning(isEng, voice, gender, uiRate) {
     const platform = getSpeechPlatform();
     const descriptor = getVoiceDescriptor(voice).descriptor;
+    const inferredGender = inferVoiceGender(voice);
+    const requestedGender = gender === "male" ? "male" : "female";
+    const tuningGender = inferredGender || (requestedGender === "male" ? "neutral" : "female");
     const tuningProfiles = {
       ios: {
         en: {
           female: { rate: 0.95, pitch: 0.94 },
-          male: { rate: 0.96, pitch: 0.9 }
+          male: { rate: 0.96, pitch: 0.9 },
+          neutral: { rate: 0.95, pitch: 0.93 }
         },
         zh: {
-          female: { rate: 0.8, pitch: 0.98 },
-          male: { rate: 0.78, pitch: 0.86 }
+          female: { rate: 0.84, pitch: 0.99 },
+          male: { rate: 0.82, pitch: 0.9 },
+          neutral: { rate: 0.83, pitch: 0.95 }
         }
       },
       android: {
         en: {
           female: { rate: 0.97, pitch: 0.95 },
-          male: { rate: 0.98, pitch: 0.92 }
+          male: { rate: 0.98, pitch: 0.92 },
+          neutral: { rate: 0.97, pitch: 0.94 }
         },
         zh: {
-          female: { rate: 0.84, pitch: 0.98 },
-          male: { rate: 0.82, pitch: 0.86 }
+          female: { rate: 0.87, pitch: 0.99 },
+          male: { rate: 0.84, pitch: 0.9 },
+          neutral: { rate: 0.86, pitch: 0.95 }
         }
       },
       desktop: {
         en: {
           female: { rate: 0.98, pitch: 0.96 },
-          male: { rate: 0.98, pitch: 0.93 }
+          male: { rate: 0.98, pitch: 0.93 },
+          neutral: { rate: 0.98, pitch: 0.95 }
         },
         zh: {
-          female: { rate: 0.9, pitch: 0.99 },
-          male: { rate: 0.86, pitch: 0.87 }
+          female: { rate: 0.91, pitch: 1.0 },
+          male: { rate: 0.88, pitch: 0.91 },
+          neutral: { rate: 0.9, pitch: 0.96 }
         }
       }
     };
 
     const familyKey = isEng ? "en" : "zh";
-    const genderKey = gender === "male" ? "male" : "female";
+    const genderKey = tuningGender === "male" || tuningGender === "neutral" ? tuningGender : "female";
     const baseProfile = tuningProfiles[platform]?.[familyKey]?.[genderKey] || { rate: 1, pitch: 1 };
 
     let rate = uiRate * baseProfile.rate;
@@ -326,6 +359,10 @@
       if (/yu-shu|yushu|li-mu|limu|yunxi|yunjian|yunyang|zhiwei|kangkang/.test(descriptor)) {
         rate -= 0.01;
         pitch -= 0.02;
+      }
+      if (/microsoft.*online.*natural|neural/.test(descriptor)) {
+        rate += 0.01;
+        pitch += genderKey === "male" ? 0.01 : 0;
       }
       if (/google/.test(descriptor) && platform === "android") {
         rate -= 0.01;
@@ -349,14 +386,31 @@
 
     return {
       rate: clamp(rate, isEng ? 0.84 : 0.68, isEng ? 1.12 : 0.98),
-      pitch: clamp(pitch, gender === "male" ? 0.8 : 0.9, gender === "male" ? 0.98 : 1.06)
+      pitch: clamp(pitch, genderKey === "male" ? 0.84 : 0.9, genderKey === "male" ? 1.0 : 1.06)
     };
+  }
+
+  function getCloudVoiceId(family, gender) {
+    if (family === "zh") return gender === "male" ? "cedar" : "marin";
+    return gender === "male" ? "onyx" : "coral";
+  }
+
+  function getCloudAudioFormat() {
+    return isMobileDevice() ? "aac" : "mp3";
+  }
+
+  function getCloudSpeechSpeed(request) {
+    const base = Number(request?.rate || 1);
+    const family = request?.isEng ? "en" : "zh";
+    const naturalBase = family === "zh" ? base * 0.94 : base * 0.98;
+    return Number(clamp(naturalBase, 0.78, 1.12).toFixed(2));
   }
 
   function buildCloudVoiceProfile(request) {
     const platform = getSpeechPlatform();
     const family = request?.isEng ? "en" : "zh";
     const gender = request?.gender === "male" ? "male" : "female";
+    const openAiVoice = getCloudVoiceId(family, gender);
     return {
       platform,
       family,
@@ -364,7 +418,10 @@
       profileId: `${platform}-${family}-${gender}`,
       locale: request?.lang || (family === "en" ? "en-US" : "zh-TW"),
       style: family === "zh" ? "taiwan-mandarin-natural" : "clear-educational",
-      timbre: gender === "male" ? "warm-male" : "warm-female"
+      timbre: gender === "male" ? "warm-male" : "warm-female",
+      openAiVoice,
+      naturalness: "high",
+      avoid: ["robotic cadence", "syllable-by-syllable reading", "over-compressed mobile audio"]
     };
   }
 
@@ -454,7 +511,10 @@
       const endpointInfo = getCloudEndpointInfo(request.endpointKey);
       if (!endpointInfo.url || !endpointInfo.isConfigured) return null;
 
-      const cacheKey = JSON.stringify([endpointInfo.url, text, request.lang, request.gender, request.rate]);
+      const audioFormat = getCloudAudioFormat();
+      const speechSpeed = getCloudSpeechSpeed(request);
+      const voiceProfile = buildCloudVoiceProfile(request);
+      const cacheKey = JSON.stringify([endpointInfo.url, text, request.lang, request.gender, speechSpeed, audioFormat, voiceProfile.openAiVoice]);
       if (audioCache.has(cacheKey)) {
         return audioCache.get(cacheKey);
       }
@@ -467,7 +527,7 @@
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Accept: "application/json, audio/mpeg, audio/wav, audio/ogg"
+            Accept: "application/json, audio/mpeg, audio/aac, audio/mp4, audio/wav, audio/ogg"
           },
           body: JSON.stringify({
             action: "tts",
@@ -475,9 +535,10 @@
             lang: request.lang,
             gender: request.gender,
             rate: request.rate,
-            format: "mp3",
+            speed: speechSpeed,
+            format: audioFormat,
             languageFamily: request.isEng ? "en" : "zh",
-            voiceProfile: buildCloudVoiceProfile(request),
+            voiceProfile,
             deviceClass: getSpeechPlatform(),
             preferredEngine: "cloud-first",
             preferredQuality: "natural",
@@ -625,19 +686,51 @@
       });
     }
 
-    function playBrowser(text, request, expectedRunId) {
+    function waitForVoices(timeoutMs) {
+      if (!synth) return Promise.resolve([]);
+      const initialVoices = synth.getVoices();
+      if (initialVoices.length > 0) return Promise.resolve(initialVoices);
+
+      return new Promise((resolve) => {
+        let settled = false;
+        const finish = () => {
+          if (settled) return;
+          settled = true;
+          if (typeof synth.removeEventListener === "function") {
+            synth.removeEventListener("voiceschanged", finish);
+          }
+          resolve(synth.getVoices());
+        };
+
+        if (typeof synth.addEventListener === "function") {
+          synth.addEventListener("voiceschanged", finish, { once: true });
+        } else {
+          const previous = synth.onvoiceschanged;
+          synth.onvoiceschanged = function(event) {
+            if (typeof previous === "function") previous.call(this, event);
+            finish();
+          };
+        }
+
+        window.setTimeout(finish, timeoutMs);
+      });
+    }
+
+    async function playBrowser(text, request, expectedRunId) {
       if (!synth) {
         notifyModeChange("idle");
         if (typeof request.onComplete === "function") request.onComplete();
         return Promise.resolve(false);
       }
 
-      const voices = synth.getVoices();
+      const voices = await waitForVoices(isMobileDevice() ? 900 : 500);
+      if (expectedRunId !== runId) return false;
+
       const selectedVoice = pickBestVoice(voices, request.isEng, request.gender);
       const mobile = isMobileDevice();
-      const maxChunkLength = request.isEng ? (mobile ? 165 : 260) : (mobile ? 34 : 64);
+      const maxChunkLength = request.isEng ? (mobile ? 165 : 260) : (mobile ? 52 : 78);
       const chunks = splitTextForSpeak(text, request.isEng, maxChunkLength);
-      const chunkGapMs = request.isEng ? (mobile ? 55 : 20) : (mobile ? 95 : 45);
+      const chunkGapMs = request.isEng ? (mobile ? 55 : 20) : (mobile ? 70 : 35);
 
       notifyModeChange("browser");
       paused = false;
@@ -743,6 +836,10 @@
       buildCloudVoiceProfile,
       getSpeechPlatform,
       getSpeechTuning,
+      getCloudAudioFormat,
+      getCloudSpeechSpeed,
+      getCloudVoiceId,
+      inferVoiceGender,
       isAndroidDevice,
       isIOSDevice,
       isMobileDevice,

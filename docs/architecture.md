@@ -263,6 +263,7 @@ AI School 現在有一份集中式 spreadsheet config，位於 `assets/js/aischo
 - `assets/js/aischool-tts.js` 目前支援兩種回應：
   - `{"ok": true, "audioUrl": "..."}`
   - `{"ok": true, "audioContent": "<base64>", "mimeType": "audio/mpeg"}`
-- 也支援代理端點直接回傳 `audio/mpeg`、`audio/wav` 或 `audio/ogg`，方便串接高自然度 TTS 服務。
-- 前端送出的 JSON 會包含 `voiceProfile`、`preferredQuality: "natural"` 與 `speakingStyle`，後端可用這些欄位映射到實際供應商語音。
+- 也支援代理端點直接回傳 `audio/mpeg`、`audio/aac`、`audio/wav` 或 `audio/ogg`，方便串接高自然度 TTS 服務；手機端會優先要求 AAC。
+- 前端送出的 JSON 會包含 `voiceProfile`、`speed`、`format`、`preferredQuality: "natural"` 與 `speakingStyle`，後端可用這些欄位映射到實際供應商語音。
+- 中文男聲/女聲若要接近 ChatGPT 等級自然度，必須走 `cloudTts` 安全代理；瀏覽器內建 Web Speech 只能作為離線備援，且不應用降 pitch 的方式硬把女聲壓成男聲。
 - 若 `cloudTts` 未配置或失敗，頁面會回退到瀏覽器內建語音。

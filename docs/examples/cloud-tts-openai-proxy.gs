@@ -9,6 +9,10 @@
  *
  * The browser never receives the provider key. The response follows the
  * AISchoolTTS contract: { ok, audioContent, mimeType }.
+ *
+ * OpenAI TTS notes:
+ * - gpt-4o-mini-tts accepts natural-language instructions for speaking style.
+ * - AAC is a good mobile delivery format; MP3 remains the desktop default.
  */
 function doPost(e) {
   try {
@@ -29,8 +33,10 @@ function doPost(e) {
 
     var languageFamily = body.languageFamily === "en" ? "en" : "zh";
     var gender = body.gender === "male" ? "male" : "female";
-    var voice = pickOpenAiVoice(languageFamily, gender);
-    var instructions = buildVoiceInstructions(languageFamily, gender);
+    var format = normalizeAudioFormat(body.format, body.deviceClass);
+    var speed = clampNumber(Number(body.speed || body.rate || 1), 0.78, 1.12);
+    var voice = pickOpenAiVoice(languageFamily, gender, body.voiceProfile);
+    var instructions = buildVoiceInstructions(languageFamily, gender, speed);
 
     var openAiResponse = UrlFetchApp.fetch("https://api.openai.com/v1/audio/speech", {
       method: "post",
@@ -44,7 +50,8 @@ function doPost(e) {
         voice: voice,
         input: text.slice(0, 4000),
         instructions: instructions,
-        response_format: "mp3"
+        response_format: format,
+        speed: speed
       })
     });
 
@@ -61,34 +68,62 @@ function doPost(e) {
     return jsonResponse({
       ok: true,
       audioContent: Utilities.base64Encode(openAiResponse.getBlob().getBytes()),
-      mimeType: "audio/mpeg",
-      voice: voice
+      mimeType: mimeTypeForFormat(format),
+      voice: voice,
+      speed: speed
     });
   } catch (error) {
     return jsonResponse({ ok: false, error: String(error && error.message || error) });
   }
 }
 
-function pickOpenAiVoice(languageFamily, gender) {
+function pickOpenAiVoice(languageFamily, gender, voiceProfile) {
+  var hintedVoice = voiceProfile && voiceProfile.openAiVoice ? String(voiceProfile.openAiVoice) : "";
+  if (hintedVoice) return hintedVoice;
+
   if (languageFamily === "zh") return gender === "male" ? "cedar" : "marin";
   return gender === "male" ? "onyx" : "coral";
 }
 
-function buildVoiceInstructions(languageFamily, gender) {
+function buildVoiceInstructions(languageFamily, gender, speed) {
   if (languageFamily === "zh") {
     return [
-      "Speak natural Taiwan Mandarin for elementary science reading.",
-      "Use a warm, clear, teacher-like tone.",
-      "Keep pacing calm and avoid robotic syllable-by-syllable delivery.",
-      gender === "male" ? "Use a warm adult male timbre." : "Use a warm adult female timbre."
+      "Speak in natural Taiwan Mandarin for elementary science bilingual reading.",
+      "Use a warm, clear, teacher-like tone with natural phrasing.",
+      "Do not read one Chinese character at a time; group words into meaningful short phrases.",
+      "Use light pauses after commas and longer pauses after sentence endings.",
+      "Keep science terms accurate and easy for children to understand.",
+      "Avoid robotic cadence, metallic timbre, or over-dramatic broadcasting.",
+      "Target speaking speed is " + speed + "x, calm enough for listening practice.",
+      gender === "male" ? "Use a warm adult male timbre, not a pitch-shifted female voice." : "Use a warm adult female timbre, gentle and not shrill."
     ].join(" ");
   }
 
   return [
     "Speak clear educational English for bilingual science reading.",
     "Use natural phrasing, calm pacing, and friendly emphasis.",
+    "Avoid robotic cadence and overly flat intonation.",
+    "Target speaking speed is " + speed + "x.",
     gender === "male" ? "Use a warm adult male timbre." : "Use a warm adult female timbre."
   ].join(" ");
+}
+
+function normalizeAudioFormat(format, deviceClass) {
+  var raw = String(format || "").toLowerCase();
+  if (raw === "aac" || raw === "mp3" || raw === "wav" || raw === "opus") return raw;
+  return /ios|android/.test(String(deviceClass || "").toLowerCase()) ? "aac" : "mp3";
+}
+
+function mimeTypeForFormat(format) {
+  if (format === "aac") return "audio/aac";
+  if (format === "wav") return "audio/wav";
+  if (format === "opus") return "audio/ogg";
+  return "audio/mpeg";
+}
+
+function clampNumber(value, min, max) {
+  if (!isFinite(value)) return 1;
+  return Math.min(max, Math.max(min, value));
 }
 
 function jsonResponse(payload) {

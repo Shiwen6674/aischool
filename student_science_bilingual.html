@@ -987,9 +987,9 @@ function updateTtsStatus(modeOverride) {
         return;
     }
 
-    status.textContent = mobile ? 'Device Mobile' : 'Voice Device';
-    status.title = '目前使用裝置內建語音；若要接近 ChatGPT 語音品質，需設定 cloudTts 後端';
-    status.className = 'mt-1 text-[9px] font-bold uppercase tracking-wide text-slate-400';
+    status.textContent = 'AI Off';
+    status.title = '目前未設定 cloudTts，中文男聲/女聲只能使用裝置內建語音；要接近 ChatGPT 語音品質需啟用雲端 TTS。';
+    status.className = 'mt-1 text-[9px] font-bold uppercase tracking-wide text-amber-300';
 }
 
 
