@@ -748,6 +748,24 @@ function connect() {
             return /StudentID|Users_student|學號|student\s*id/i.test(message);
         }
 
+        function isTransientAuthBusy(result) {
+            const message = String((result && result.message) || "");
+            return result && result.result !== "success" && /系統忙碌|稍後再試|busy|try again/i.test(message);
+        }
+
+        function waitForAuthRetry(ms) {
+            return new Promise((resolve) => window.setTimeout(resolve, ms));
+        }
+
+        async function retryAuthIfBusy(payload, initialResult) {
+            let result = initialResult;
+            for (let attempt = 0; attempt < 2 && isTransientAuthBusy(result); attempt += 1) {
+                await waitForAuthRetry(700 + attempt * 900);
+                result = await postAuthJson(payload);
+            }
+            return result;
+        }
+
         const countryList = [
             { code: "TW", nameKey: "country_tw" },
             { code: "AU", nameKey: "country_au" },
@@ -1464,15 +1482,17 @@ try {
   return;
 }
 
+                result = await retryAuthIfBusy(payload, result);
 
                 if (!roleLocked && result.result !== "success" && isStudentIdRoleMismatch(result)) {
                     for (const retryRole of ["admin", "teacher", "professor"]) {
                         if (retryRole === baseTargetRole) continue;
-                        const retryResult = await postAuthJson({
+                        const retryPayload = {
                             ...payload,
                             targetRole: retryRole,
                             role: retryRole
-                        });
+                        };
+                        const retryResult = await retryAuthIfBusy(retryPayload, await postAuthJson(retryPayload));
                         if (retryResult.result === "success") {
                             result = retryResult;
                             break;
