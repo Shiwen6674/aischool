@@ -242,7 +242,7 @@
       script.onerror = () => {
         if (completed) return;
         cleanup();
-        reject(new Error("無法載入 learningAnalytics Apps Script 回應：請確認 Auth Hub Web App 已重新部署到含 learning analytics API 的版本，且存取權為「任何人」。"));
+        reject(new Error("無法載入 learningAnalytics Apps Script 回應：請確認此頁已載入新版設定、Apps Script URL 正確，且後端 Web App 存取權為「任何人」。"));
       };
 
       script.src = `${endpoint}${sep}${query.toString()}`;
