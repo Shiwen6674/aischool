@@ -44,6 +44,22 @@
     return "";
   }
 
+  function getEndpointInfo() {
+    try {
+      if (window.AISchool && typeof window.AISchool.getGasUrlInfo === "function") {
+        return window.AISchool.getGasUrlInfo("learningAnalytics");
+      }
+    } catch (err) {
+      console.warn("[AISchoolLearning] Unable to read learningAnalytics endpoint info.", err);
+    }
+    return {
+      key: "learningAnalytics",
+      url: getEndpoint(),
+      source: "unknown",
+      isConfigured: hasEndpoint()
+    };
+  }
+
   function hasEndpoint() {
     const endpoint = getEndpoint();
     if (!endpoint) return false;
@@ -254,6 +270,7 @@
     ADMIN_TOKEN_KEY,
     getSessionId,
     getEndpoint,
+    getEndpointInfo,
     hasEndpoint,
     track,
     trackBatch,

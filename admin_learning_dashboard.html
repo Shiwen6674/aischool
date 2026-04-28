@@ -3,11 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>AI School 學習分析儀表板</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <script src="./assets/js/aischool-shared.js?v=20260428-dashboard-2"></script>
-  <script src="./assets/js/learning-analytics.js?v=20260428-dashboard-2"></script>
+  <script src="./assets/js/aischool-shared.js?v=20260429-dashboard-3"></script>
+  <script>
+    (function repairLearningAnalyticsEndpoint() {
+      const canonicalEndpoint = "https://script.google.com/macros/s/AKfycbyQjTYw0bqUzw3VzQNQfSvPXRXpQjgEgJ_bKlaDFr_bsxMfKAJ1mFGqBSJnB0-nheQJ_g/exec";
+      try {
+        if (!window.AISchool || typeof window.AISchool.getGasUrlInfo !== "function") return;
+        const info = window.AISchool.getGasUrlInfo("learningAnalytics");
+        if (info && info.source === "override" && info.url && info.url !== canonicalEndpoint) {
+          window.AISchool.setGasOverride("learningAnalytics", "");
+          sessionStorage.setItem("AISCHOOL_ANALYTICS_ENDPOINT_REPAIRED", "true");
+        }
+      } catch (error) {
+        try {
+          localStorage.removeItem("AISCHOOL_GAS_OVERRIDES");
+          sessionStorage.setItem("AISCHOOL_ANALYTICS_ENDPOINT_REPAIRED", "true");
+        } catch (_) {}
+      }
+    })();
+  </script>
+  <script src="./assets/js/learning-analytics.js?v=20260429-dashboard-3"></script>
   <script>
     const __adminDashboardUser = window.AISchool.requireRole(["student", "teacher", "professor", "admin"], "請先登入，再查看學習分析。", "index.html");
     function __isAdminDashboardUser(user) {
@@ -290,6 +311,25 @@
       els.status.innerHTML = "";
     }
 
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function endpointDiagnostic() {
+      const info = window.AISchoolLearning && typeof window.AISchoolLearning.getEndpointInfo === "function"
+        ? window.AISchoolLearning.getEndpointInfo()
+        : { url: "", source: "unknown" };
+      const shortUrl = String(info.url || "")
+        .replace(/^https:\/\/script\.google\.com\/macros\/s\//, "script.google.com/.../")
+        .replace(/\/exec(?:\?.*)?$/, "/exec");
+      return `<br><span class="text-slate-400">learningAnalytics endpoint: <code>${escapeHtml(shortUrl || "not configured")}</code> (${escapeHtml(info.source || "unknown")})</span>`;
+    }
+
     function fmtDate(value) {
       if (!value) return "尚無";
       const date = new Date(value);
@@ -415,7 +455,7 @@
       els.rows.innerHTML = "<tr><td colspan='6' class='text-center text-slate-400 py-10'>讀取中...</td></tr>";
       try {
         if (!window.AISchoolLearning.hasEndpoint()) {
-          setStatus("error", "尚未設定 <code>learningAnalytics</code> Apps Script URL。請部署含 learning analytics API 的 Apps Script Web App，並把 URL 填入 AI School 設定。");
+          setStatus("error", `尚未設定 <code>learningAnalytics</code> Apps Script URL。請部署含 learning analytics API 的 Apps Script Web App，並把 URL 填入 AI School 設定。${endpointDiagnostic()}`);
           els.rows.innerHTML = "<tr><td colspan='6' class='text-center text-slate-400 py-10'>等待後端設定。</td></tr>";
           return;
         }
@@ -425,9 +465,11 @@
           student: els.student.value.trim()
         });
         render(data);
-        setStatus("ok", `已讀取 ${data.totalEvents || 0} 筆學習事件。`);
+        const repaired = sessionStorage.getItem("AISCHOOL_ANALYTICS_ENDPOINT_REPAIRED") === "true";
+        if (repaired) sessionStorage.removeItem("AISCHOOL_ANALYTICS_ENDPOINT_REPAIRED");
+        setStatus("ok", `${repaired ? "已自動修復瀏覽器內的舊 Apps Script 連線設定，" : ""}已讀取 ${data.totalEvents || 0} 筆學習事件。${endpointDiagnostic()}`);
       } catch (error) {
-        setStatus("error", `${error.message}<br><span class="text-slate-300">請確認：1. learningAnalytics Apps Script 已部署到新版；2. Web App 存取權是「任何人」；3. 部署者帳號可以開啟學習紀錄試算表；4. 你的帳號在 Users_student / Users_teacher / Users_professor 任一表的 admin 欄位為 TRUE 或 role 為 admin；5. 若設定 ADMIN_SHARED_SECRET，這裡已填入正確 token。</span>`);
+        setStatus("error", `${escapeHtml(error.message)}${endpointDiagnostic()}<br><span class="text-slate-300">請確認：1. learningAnalytics Apps Script 已部署到新版；2. Web App 存取權是「任何人」；3. 部署者帳號可以開啟學習紀錄試算表；4. 你的帳號在 Users_student / Users_teacher / Users_professor 任一表的 admin 欄位為 TRUE 或 role 為 admin；5. 若設定 ADMIN_SHARED_SECRET，這裡已填入正確 token。</span>`);
         els.rows.innerHTML = "<tr><td colspan='6' class='text-center text-slate-400 py-10'>讀取失敗。</td></tr>";
       }
     }
