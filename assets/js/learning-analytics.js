@@ -206,14 +206,25 @@
       const sep = endpoint.includes("?") ? "&" : "?";
       const script = document.createElement("script");
       let completed = false;
+      function onWindowError(event) {
+        if (completed) return;
+        const filename = event && event.filename ? String(event.filename) : "";
+        if (filename && filename.indexOf(endpoint) === 0) {
+          cleanup();
+          reject(new Error("learningAnalytics Apps Script 回傳的不是 JSONP，通常代表部署 URL 錯誤或後端沒有試算表存取權。"));
+        }
+      }
+
       const timer = window.setTimeout(() => {
         cleanup();
         reject(new Error("讀取 admin 資料逾時，請檢查 Apps Script 部署與權限。"));
       }, JSONP_TIMEOUT_MS);
+      window.addEventListener("error", onWindowError, true);
 
       function cleanup() {
         completed = true;
         window.clearTimeout(timer);
+        window.removeEventListener("error", onWindowError, true);
         try { delete window[callbackName]; } catch (err) { window[callbackName] = undefined; }
         if (script.parentNode) script.parentNode.removeChild(script);
       }

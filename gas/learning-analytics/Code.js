@@ -11,6 +11,12 @@ const IDENTITY_SHEETS = [
 ];
 const MAX_SUMMARY_EVENTS = 12000;
 
+function workbook_() {
+  const active = SpreadsheetApp.getActiveSpreadsheet();
+  if (active) return active;
+  return SpreadsheetApp.openById(SPREADSHEET_ID);
+}
+
 const EVENT_HEADERS = [
   "timestamp",
   "schema_version",
@@ -122,7 +128,7 @@ function parseBody_(e) {
 }
 
 function ss_() {
-  return SpreadsheetApp.openById(SPREADSHEET_ID);
+  return workbook_();
 }
 
 function getSheet_(name, headers) {

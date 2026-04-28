@@ -23,7 +23,7 @@
     studentAdaptiveTesting: "https://script.google.com/macros/s/AKfycbxvAOgRDBE6T-2R37UeTzo0RSQukgGOlEYyBrTw8zUSOlIKNIzLdJXozjNx4Hn6brc2/exec",
     studentUnitCoreIdea: "https://script.google.com/macros/s/AKfycbynf2DkhZ6V9lCLH3MH-Ud7DjTMPDKAu2DJm3OC22lTYaPJe5TiA8GRfyG0lihLUZxa/exec",
     studentBilingualTracking: "https://script.google.com/macros/s/AKfycbwXvqOFGVuay1_jZ7dau5VkNqSqGppQ3ffIizlcyB4R0XwvQU7Km5JFuYR4wfFG2OMxHA/exec",
-    learningAnalytics: "https://script.google.com/macros/s/AKfycbzcDKkz8Tilzb3qbx0_fDR7QoG4-c2JCtsa4p9V8_1gBjZaEMlvQHd72OD0kZq_jW8H/exec"
+    learningAnalytics: "https://script.google.com/macros/s/AKfycbyQjTYw0bqUzw3VzQNQfSvPXRXpQjgEgJ_bKlaDFr_bsxMfKAJ1mFGqBSJnB0-nheQJ_g/exec"
   };
   const GAS_ENDPOINT_FALLBACKS = {
     teacherCatReview: "studentAdaptiveTesting"
