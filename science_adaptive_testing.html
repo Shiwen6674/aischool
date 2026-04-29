@@ -1620,8 +1620,15 @@ function _parseCSV(text){
         return !/disabled|inactive|deleted|停用|刪除|删除/i.test(status);
     }
 
+    function isAllowedCatItemFormat(item) {
+        const format = normalizeMatchText(item?.item_format || item?.format || "");
+        if (!format) return false;
+        if (/圖示|图示|圖片|图片|影像|image|figure|diagram/.test(format)) return false;
+        return /文字|文本|text|表格|table/.test(format);
+    }
+
     function isUsableCatItem(item) {
-        return Boolean(item && itemKey(item) && item.stem && getCorrectKey(item) && hasUsableCatOptions(item) && isActiveCatItem(item));
+        return Boolean(item && itemKey(item) && item.stem && getCorrectKey(item) && hasUsableCatOptions(item) && isActiveCatItem(item) && isAllowedCatItemFormat(item));
     }
 
     function filterCatItemsForUnit(items, unit) {
