@@ -446,6 +446,18 @@ rp { display: none !important; }
 }
     
 /* 2026-04 readability pass: adaptive-test tables */
+.stem-prose {
+    margin-top: 0.55rem;
+    color: #f8fafc;
+    font-size: 1.125rem;
+    font-weight: 800;
+    line-height: 1.85;
+    letter-spacing: 0;
+}
+.stem-prose + .stimulus-table-wrap,
+.stimulus-table-wrap + .stem-prose {
+    margin-top: 1rem;
+}
 .stimulus-table-wrap {
     margin: 1rem 0 1.25rem;
     overflow-x: auto;
@@ -454,13 +466,20 @@ rp { display: none !important; }
     background: #fff8e7;
     box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
 }
+.stimulus-table-caption {
+    padding: 0.75rem 1rem 0;
+    color: #111827;
+    font-size: 0.98rem;
+    font-weight: 900;
+    line-height: 1.55;
+}
 .stimulus-table {
     width: 100%;
     border-collapse: collapse;
     color: #111827;
     background: #fff8e7;
-    font-size: 0.98rem;
-    line-height: 1.75;
+    font-size: 1rem;
+    line-height: 1.65;
 }
 .stimulus-table th,
 .stimulus-table td {
@@ -2369,36 +2388,7 @@ function renderQuestion(item) {
 
     document.getElementById("qWrap").classList.remove("hidden");
 
-    let displayStem = String((item && item.stem) ? item.stem : "");
-    let stimulusHtml = "";
-
-    // 1. 檢查並處理 [STIMULUS_JSON]
-    if (displayStem.includes("[STIMULUS_JSON]")) {
-        const parts = displayStem.split("[STIMULUS_JSON]");
-        const textPart = parts[0];
-        const jsonPart = parts[1];
-
-        try {
-            const stimData = JSON.parse(jsonPart);
-            stimulusHtml = renderStimulus(stimData);
-
-            if (textPart.includes("【題目】")) {
-                displayStem = textPart.split("【題目】")[1].trim();
-            } else {
-                displayStem = textPart.trim();
-            }
-        } catch (e) {
-            console.error("JSON Parse Error", e);
-            displayStem = textPart;
-        }
-    }
-
-    // ✅ 使用 processStem (如果你有定義) 或直接組合 HTML
-    // 這裡為了保險，直接用您原本的邏輯組合
-    const finalHtml = `
-        ${stimulusHtml}
-        <div class="mt-2 leading-relaxed text-lg">${displayStem.replace(/\n/g, "<br>")}</div>
-    `;
+    const finalHtml = renderStemContent(String((item && item.stem) ? item.stem : ""), item);
 
     document.getElementById("qStem").innerHTML = finalHtml;
 
@@ -2411,7 +2401,7 @@ function renderQuestion(item) {
         btn.onclick = () => selectOption(key, btn);
         btn.innerHTML = `
             <div class="opt-badge w-8 h-8 rounded-lg bg-white/10 text-slate-300 font-bold flex items-center justify-center shrink-0">${key}</div>
-            <div class="flex-1 text-slate-100 font-bold text-lg leading-relaxed">${getOptionTextFromWrongItem(item, key) || ""}</div>
+            <div class="flex-1 text-slate-100 font-bold text-lg leading-relaxed">${safeTextHtml(getOptionTextFromWrongItem(item, key) || "")}</div>
         `;
         optWrap.appendChild(btn);
     });
@@ -2432,60 +2422,253 @@ function renderQuestion(item) {
 }
 
 
-    // ★ 之前漏掉的函式補在這裡！
-    function renderStimulus(data) {
-        if (!data || data.kind !== "table" || !data.table) return "";
-        const cols = data.table.columns || [];
-        const rows = data.table.rows || [];
+function renderStimulus(data) {
+    if (!data || data.kind !== "table" || !data.table) return "";
+    return renderTableFromMatrix(data.table.columns || [], data.table.rows || []);
+}
 
-        let html = `
-            <div class="stimulus-table-wrap">
-                <table class="stimulus-table">
-                    <thead>
-                        <tr>
-                            ${cols.map(c => `<th scope="col">${safeTextHtml(c)}</th>`).join('')}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${rows.map((row, i) => `
-                            <tr>
-                                ${row.map(cell => `<td>${safeTextHtml(cell)}</td>`).join('')}
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            </div>
-        `;
-        return html;
-    }
-
-// ★ 新增這個函式，用來統一處理「題目文字 + 表格渲染」
 function processStem(rawStem) {
-    if (!rawStem) return "";
-    let displayStem = rawStem;
-    let stimulusHtml = "";
+    return renderStemContent(rawStem);
+}
 
-    if (displayStem.includes("[STIMULUS_JSON]")) {
-        const parts = displayStem.split("[STIMULUS_JSON]");
-        const textPart = parts[0];
-        const jsonPart = parts[1];
+function renderStemContent(rawStem) {
+    let source = String(rawStem || "").replace(/\r\n?/g, "\n").trim();
+    if (!source) return "";
 
+    const tableFragments = [];
+    const addTableFragment = (html) => {
+        const token = `@@STEM_TABLE_${tableFragments.length}@@`;
+        tableFragments.push(html);
+        return `\n${token}\n`;
+    };
+
+    if (source.includes("[STIMULUS_JSON]")) {
+        const markerIndex = source.indexOf("[STIMULUS_JSON]");
+        const textPart = source.slice(0, markerIndex).trim();
+        const jsonPart = source.slice(markerIndex + "[STIMULUS_JSON]".length).trim();
         try {
             const stimData = JSON.parse(jsonPart);
-            stimulusHtml = renderStimulus(stimData); // 呼叫你原本就有的 renderStimulus
-
-            if (textPart.includes("【題目】")) {
-                displayStem = textPart.split("【題目】")[1].trim();
-            } else {
-                displayStem = textPart.trim();
-            }
+            const stimulusHtml = renderStimulus(stimData);
+            const questionPart = textPart.includes("【題目】")
+                ? textPart.split("【題目】").pop().trim()
+                : textPart;
+            source = `${addTableFragment(stimulusHtml)}${questionPart}`;
         } catch (e) {
-            console.error("JSON Parse Error", e);
-            displayStem = textPart;
+            console.error("STIMULUS_JSON parse error", e);
+            source = textPart || source;
         }
     }
-    // 回傳組合後的 HTML
-    return `${stimulusHtml}<div class="mt-2 leading-relaxed text-base md:text-lg">${displayStem.replace(/\n/g, "<br>")}</div>`;
+
+    source = source.replace(/<table[\s\S]*?<\/table>/gi, (tableHtml) => addTableFragment(renderHtmlTable(tableHtml)));
+    source = replaceMarkdownTables(source, addTableFragment);
+
+    return source
+        .split(/(@@STEM_TABLE_\d+@@)/g)
+        .map(part => {
+            const tokenMatch = part.match(/^@@STEM_TABLE_(\d+)@@$/);
+            if (tokenMatch) return tableFragments[Number(tokenMatch[1])] || "";
+            return renderTextWithPlainTables(part);
+        })
+        .join("");
+}
+
+function renderHtmlTable(tableHtml) {
+    try {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(`<body>${tableHtml}</body>`, "text/html");
+        const table = doc.querySelector("table");
+        if (!table) return renderTextBlock(tableHtml);
+
+        const caption = (table.querySelector("caption")?.textContent || "").trim();
+        const trs = Array.from(table.querySelectorAll("tr"));
+        let columns = [];
+        const rows = [];
+        trs.forEach((tr, index) => {
+            const cells = Array.from(tr.children)
+                .filter(cell => /^(TH|TD)$/i.test(cell.tagName))
+                .map(cell => normalizeCellText(cell.textContent || ""));
+            if (!cells.length) return;
+            const hasHeaderCells = Array.from(tr.children).some(cell => /^TH$/i.test(cell.tagName));
+            if (index === 0 && hasHeaderCells) columns = cells;
+            else rows.push(cells);
+        });
+        return renderTableFromMatrix(columns, rows, caption);
+    } catch (e) {
+        console.warn("HTML table parse failed", e);
+        return renderTextBlock(tableHtml);
+    }
+}
+
+function replaceMarkdownTables(text, addTableFragment) {
+    const lines = String(text || "").split("\n");
+    const out = [];
+    for (let i = 0; i < lines.length; i++) {
+        const headerLine = lines[i];
+        const separatorLine = lines[i + 1] || "";
+        if (isMarkdownTableLine(headerLine) && isMarkdownSeparatorLine(separatorLine)) {
+            const columns = splitMarkdownTableRow(headerLine);
+            const rows = [];
+            i += 2;
+            while (i < lines.length && isMarkdownTableLine(lines[i])) {
+                rows.push(splitMarkdownTableRow(lines[i]));
+                i += 1;
+            }
+            i -= 1;
+            out.push(addTableFragment(renderTableFromMatrix(columns, rows)));
+            continue;
+        }
+        out.push(headerLine);
+    }
+    return out.join("\n");
+}
+
+function isMarkdownTableLine(line) {
+    return /\|/.test(line || "") && splitMarkdownTableRow(line).length >= 2;
+}
+
+function isMarkdownSeparatorLine(line) {
+    return /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(line || "");
+}
+
+function splitMarkdownTableRow(line) {
+    return String(line || "")
+        .trim()
+        .replace(/^\|/, "")
+        .replace(/\|$/, "")
+        .split("|")
+        .map(normalizeCellText)
+        .filter(Boolean);
+}
+
+function renderTextWithPlainTables(text) {
+    const plainText = stripNonTableHtml(String(text || ""))
+        .replace(/\u00a0/g, " ")
+        .replace(/\r\n?/g, "\n");
+    const lines = plainText.split("\n");
+    const chunks = [];
+    let prose = [];
+
+    const flushProse = () => {
+        const html = renderTextBlock(prose.join("\n"));
+        if (html) chunks.push(html);
+        prose = [];
+    };
+
+    for (let i = 0; i < lines.length; i++) {
+        const parsed = splitPlainTableRow(lines[i]);
+        if (parsed && parsed.length >= 2) {
+            const rows = [];
+            let j = i;
+            while (j < lines.length) {
+                const row = splitPlainTableRow(lines[j]);
+                if (!row || row.length < 2) break;
+                rows.push(row);
+                j += 1;
+            }
+            if (rows.length >= 2) {
+                flushProse();
+                chunks.push(renderTableFromMatrix(inferPlainTableColumns(rows), rows));
+                i = j - 1;
+                continue;
+            }
+        }
+        prose.push(lines[i]);
+    }
+    flushProse();
+    return chunks.join("");
+}
+
+function splitPlainTableRow(line) {
+    const raw = String(line ?? "").replace(/\u00a0/g, " ").trim();
+    const cleaned = normalizeCellText(raw);
+    if (!cleaned || cleaned.includes("@@STEM_TABLE_")) return null;
+    if (/^\|.*\|$/.test(cleaned)) return null;
+
+    const cells = raw
+        .split(/[\t\u3000]+| {2,}/)
+        .map(normalizeCellText)
+        .filter(Boolean);
+    if (cells.length >= 2) return cells;
+
+    const labeled = raw.match(/^([甲乙丙丁戊己庚辛壬癸A-D])[\s、.．:：-]+(.+)$/);
+    if (labeled) {
+        const restCells = labeled[2]
+            .split(/[\t\u3000]+| {2,}/)
+            .map(normalizeCellText)
+            .filter(Boolean);
+        if (restCells.length === 1) {
+            const knownPattern = restCells[0].match(/^(.+?)\s+(交互排列|成對生長|排成環狀|互生|對生|輪生|叢生)$/);
+            if (knownPattern) return [labeled[1], normalizeCellText(knownPattern[1]), normalizeCellText(knownPattern[2])];
+        }
+        if (restCells.length >= 1) return [labeled[1], ...restCells];
+    }
+    return null;
+}
+
+function inferPlainTableColumns(rows) {
+    const width = Math.max(...rows.map(row => row.length));
+    const firstColIsChoiceLabels = rows.every(row => /^[甲乙丙丁戊己庚辛壬癸A-D]$/.test(String(row[0] || "").trim()));
+    if (width === 3 && firstColIsChoiceLabels) return ["紀錄", "資料", "觀察結果"];
+    if (width === 2 && firstColIsChoiceLabels) return ["項目", "內容"];
+    const defaults = ["項目", "資料一", "資料二", "資料三", "資料四", "資料五"];
+    return Array.from({ length: width }, (_, index) => defaults[index] || `資料${index + 1}`);
+}
+
+function renderTableFromMatrix(columns = [], rows = [], caption = "") {
+    const normalizedRows = (rows || [])
+        .map(row => Array.isArray(row) ? row.map(normalizeCellText) : [normalizeCellText(row)])
+        .filter(row => row.some(Boolean));
+    const width = Math.max(columns.length || 0, ...normalizedRows.map(row => row.length), 0);
+    const normalizedColumns = (columns || []).map(normalizeCellText).filter(Boolean);
+    const finalColumns = normalizedColumns.length
+        ? padRow(normalizedColumns, width)
+        : Array.from({ length: width }, (_, index) => `資料${index + 1}`);
+    if (!width || !normalizedRows.length) return "";
+
+    return `
+        <div class="stimulus-table-wrap">
+            ${caption ? `<div class="stimulus-table-caption">${safeTextHtml(caption)}</div>` : ""}
+            <table class="stimulus-table">
+                <thead>
+                    <tr>${finalColumns.map(c => `<th scope="col">${safeTextHtml(c)}</th>`).join("")}</tr>
+                </thead>
+                <tbody>
+                    ${normalizedRows.map(row => `
+                        <tr>${padRow(row, width).map(cell => `<td>${safeTextHtml(cell)}</td>`).join("")}</tr>
+                    `).join("")}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+function padRow(row, width) {
+    const next = row.slice(0, width);
+    while (next.length < width) next.push("");
+    return next;
+}
+
+function normalizeCellText(value) {
+    return String(value ?? "")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function stripNonTableHtml(value) {
+    return String(value || "")
+        .replace(/<br\s*\/?>/gi, "\n")
+        .replace(/<\/(p|div|section|li|tr)>/gi, "\n")
+        .replace(/<[^>]+>/g, "");
+}
+
+function renderTextBlock(text) {
+    const clean = stripNonTableHtml(text)
+        .split("\n")
+        .map(line => line.trim())
+        .filter(Boolean)
+        .join("\n");
+    if (!clean) return "";
+    return `<div class="stem-prose">${safeTextHtml(clean).replace(/\n/g, "<br>")}</div>`;
 }
 
 
