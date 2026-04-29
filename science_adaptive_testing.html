@@ -931,7 +931,7 @@ body.zhuyin-mode .leading-relaxed {
        1) GLOBAL STATE
        =========================== */
     const Meta = { mode: "tree", tree: {}, unitIndex: {}, publishers: [], unitsByPublisher: {} };
-    const CAT = { started: false, test_id: "", student_id: "", current: null, next: null, selected: "", n: 15, step: 0, itemMap: {} };
+    const CAT = { started: false, test_id: "", student_id: "", current: null, next: null, selected: "", n: 15, step: 0, itemMap: {}, itemPool: [], administeredItemIds: [], theta: 0, thetaSe: null, lastCorrect: null };
     const ACTION = { GET_UNIT_OPTIONS: "getUnitOptions", START_CAT: "startCAT", SUBMIT_NEXT: "submitAndNext", FINISH_CAT: "finishCAT" };
     const META_ACTION_CANDIDATES = ["get_metadata", "getMetadata", "action_get_metadata"];
 
@@ -1429,6 +1429,241 @@ function trackAdaptiveEvent(eventName, details = {}) {
 }
 
 // 1. 啟動測驗 (整合了您的 API 邏輯 + 注音判斷)
+const IRT_CONFIG = {
+    model: "3PL",
+    minTheta: -3,
+    maxTheta: 3,
+    nextDelta: 0.45,
+    minThetaStep: 0.18,
+    maxThetaStep: 0.45,
+    defaultA: 1,
+    defaultB: 0,
+    defaultC: 0.2
+};
+
+function clampNumber(value, min, max) {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return min;
+    return Math.min(max, Math.max(min, n));
+}
+
+function finiteNumber(value, fallback = 0) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+}
+
+function firstDefined(...values) {
+    return values.find(v => v !== undefined && v !== null && v !== "");
+}
+
+function difficultyGuessToB(value) {
+    if (value === undefined || value === null || value === "") return IRT_CONFIG.defaultB;
+    const text = String(value);
+    const stars = (text.match(/★/g) || []).length;
+    if (stars) return clampNumber(stars - 3, -2, 2);
+    const n = Number(text.replace(/[^\d.-]/g, ""));
+    if (Number.isFinite(n)) {
+        if (n >= 1 && n <= 5) return clampNumber(n - 3, -2, 2);
+        return clampNumber(n, IRT_CONFIG.minTheta, IRT_CONFIG.maxTheta);
+    }
+    return IRT_CONFIG.defaultB;
+}
+
+function normalizeIrtParams(item = {}) {
+    const aRaw = firstDefined(item.IRT_a, item.irt_a, item.a, item.discrimination, item.discrimination_a);
+    const bRaw = firstDefined(item.IRT_b, item.irt_b, item.b, item.difficulty_b, item.theta_b, item.initial_difficulty_guess);
+    const cRaw = firstDefined(item.IRT_c, item.irt_c, item.c, item.guessing, item.guessing_c);
+    const bValue = bRaw === item.initial_difficulty_guess ? difficultyGuessToB(bRaw) : (bRaw ?? IRT_CONFIG.defaultB);
+    return {
+        a: clampNumber(aRaw ?? IRT_CONFIG.defaultA, 0.25, 3),
+        b: clampNumber(bValue, IRT_CONFIG.minTheta, IRT_CONFIG.maxTheta),
+        c: clampNumber(cRaw ?? IRT_CONFIG.defaultC, 0.01, 0.35)
+    };
+}
+
+function irtProbability(theta, item = {}) {
+    const p = normalizeIrtParams(item);
+    const expTerm = Math.exp(-p.a * (finiteNumber(theta, 0) - p.b));
+    const logistic = 1 / (1 + expTerm);
+    return clampNumber(p.c + (1 - p.c) * logistic, 0.001, 0.999);
+}
+
+function itemKey(item = {}) {
+    return String(firstDefined(item.item_id, item.id, item.itemId, item.itemID, item.question_id, "") || "").trim();
+}
+
+function normalizeAnswerKey(value) {
+    return String(value || "")
+        .trim()
+        .replace(/^option[_\s-]*/i, "")
+        .replace(/^選項\s*/i, "")
+        .slice(0, 1)
+        .toUpperCase();
+}
+
+function getCorrectKey(item = {}) {
+    return normalizeAnswerKey(firstDefined(
+        item.correct_key,
+        item.correctKey,
+        item.answer_key,
+        item.answerKey,
+        item.correct_answer,
+        item.correctAnswer,
+        item.correct_option,
+        item.correctOption,
+        item.key,
+        item.answer
+    ));
+}
+
+function normalizeCorrectness(value, item = CAT.current, selected = CAT.selected) {
+    if (typeof value === "boolean") return value;
+    if (value !== undefined && value !== null && value !== "") {
+        const text = String(value).trim().toLowerCase();
+        if (["true", "1", "yes", "y", "correct", "right", "對", "答對"].includes(text)) return true;
+        if (["false", "0", "no", "n", "incorrect", "wrong", "錯", "答錯"].includes(text)) return false;
+    }
+    const correctKey = getCorrectKey(item || {});
+    const responseKey = normalizeAnswerKey(selected);
+    if (correctKey && responseKey) return correctKey === responseKey;
+    return null;
+}
+
+function extractItemsFromCatResponse(json = {}) {
+    const pools = [
+        json.items,
+        json.item_pool,
+        json.candidates,
+        json.data?.items,
+        json.data?.item_pool,
+        json.data?.candidates,
+        json.result?.items,
+        json.result?.item_pool,
+        json.result?.candidates
+    ];
+    const singles = [
+        json.item,
+        json.next_item,
+        json.data?.item,
+        json.data?.next_item,
+        json.result?.item,
+        json.result?.next_item
+    ];
+    const out = [];
+    pools.forEach(pool => {
+        if (Array.isArray(pool)) pool.forEach(item => item && typeof item === "object" && out.push(item));
+    });
+    singles.forEach(item => {
+        if (item && typeof item === "object") out.push(item);
+    });
+    return out;
+}
+
+function registerCatItems(items = []) {
+    const seen = new Set(CAT.itemPool.map(itemKey).filter(Boolean));
+    items.forEach(item => {
+        if (!item || typeof item !== "object") return;
+        const key = itemKey(item);
+        if (key) CAT.itemMap[key] = { ...(CAT.itemMap[key] || {}), ...item };
+        if (key && seen.has(key)) {
+            const idx = CAT.itemPool.findIndex(x => itemKey(x) === key);
+            if (idx >= 0) CAT.itemPool[idx] = { ...CAT.itemPool[idx], ...item };
+            return;
+        }
+        if (key) seen.add(key);
+        CAT.itemPool.push(item);
+    });
+}
+
+function markItemAdministered(item = {}) {
+    const key = itemKey(item);
+    if (key && !CAT.administeredItemIds.includes(key)) CAT.administeredItemIds.push(key);
+    registerCatItems([item]);
+}
+
+function resolveApiTheta(json = {}) {
+    const value = firstDefined(
+        json.theta,
+        json.ability_theta,
+        json.student_theta,
+        json.data?.theta,
+        json.data?.ability_theta,
+        json.data?.student_theta,
+        json.result?.theta,
+        json.result?.ability_theta,
+        json.result?.student_theta
+    );
+    const n = Number(value);
+    return Number.isFinite(n) ? clampNumber(n, IRT_CONFIG.minTheta, IRT_CONFIG.maxTheta) : null;
+}
+
+function updateLocalTheta(item, correct) {
+    if (correct === null || correct === undefined) return CAT.theta;
+    const params = normalizeIrtParams(item || {});
+    const before = finiteNumber(CAT.theta, 0);
+    const p = irtProbability(before, item || {});
+    const u = correct ? 1 : 0;
+    const logistic = (p - params.c) / Math.max(0.001, 1 - params.c);
+    const dP = Math.max(0.001, (1 - params.c) * params.a * logistic * (1 - logistic));
+    const rawStep = ((u - p) * dP) / Math.max(0.12, p * (1 - p) + 0.12);
+    let step = clampNumber(rawStep, -IRT_CONFIG.maxThetaStep, IRT_CONFIG.maxThetaStep);
+    step = correct ? Math.max(IRT_CONFIG.minThetaStep, step) : Math.min(-IRT_CONFIG.minThetaStep, step);
+    CAT.theta = clampNumber(before + step, IRT_CONFIG.minTheta, IRT_CONFIG.maxTheta);
+    CAT.lastCorrect = !!correct;
+    return CAT.theta;
+}
+
+function chooseLocalNextItem(correct) {
+    const currentB = normalizeIrtParams(CAT.current || {}).b;
+    const targetB = clampNumber(currentB + (correct ? IRT_CONFIG.nextDelta : -IRT_CONFIG.nextDelta), IRT_CONFIG.minTheta, IRT_CONFIG.maxTheta);
+    const used = new Set(CAT.administeredItemIds);
+    const candidates = CAT.itemPool.filter(item => {
+        const key = itemKey(item);
+        return key && !used.has(key);
+    });
+    if (!candidates.length) return null;
+    candidates.sort((left, right) => {
+        const lb = normalizeIrtParams(left).b;
+        const rb = normalizeIrtParams(right).b;
+        const lDirectionPenalty = correct ? (lb <= currentB ? 0.55 : 0) : (lb >= currentB ? 0.55 : 0);
+        const rDirectionPenalty = correct ? (rb <= currentB ? 0.55 : 0) : (rb >= currentB ? 0.55 : 0);
+        return (Math.abs(lb - targetB) + lDirectionPenalty) - (Math.abs(rb - targetB) + rDirectionPenalty);
+    });
+    return candidates[0] || null;
+}
+
+function followsIrtDirection(item, correct) {
+    if (!item) return false;
+    const currentB = normalizeIrtParams(CAT.current || {}).b;
+    const nextB = normalizeIrtParams(item || {}).b;
+    return correct ? nextB > currentB : nextB < currentB;
+}
+
+function buildIrtPayload(extra = {}) {
+    return {
+        adaptive_strategy: "irt_3pl",
+        irt_model: IRT_CONFIG.model,
+        theta: finiteNumber(CAT.theta, 0),
+        ability_theta: finiteNumber(CAT.theta, 0),
+        theta_se: CAT.thetaSe,
+        answered_item_ids: CAT.administeredItemIds.slice(),
+        administered_item_ids: CAT.administeredItemIds.slice(),
+        irt_policy: {
+            model: IRT_CONFIG.model,
+            correct_next: "higher_difficulty",
+            incorrect_next: "lower_difficulty",
+            difficulty_field: "IRT_b",
+            item_parameter_fields: ["IRT_a", "IRT_b", "IRT_c"],
+            update_student_theta: true,
+            update_item_parameters: true,
+            next_delta: IRT_CONFIG.nextDelta,
+            min_theta: IRT_CONFIG.minTheta,
+            max_theta: IRT_CONFIG.maxTheta
+        },
+        ...extra
+    };
+}
+
 async function startTest() {
     const uVal = document.getElementById("selUnit").value;
     if(!uVal) { UI.toast("提示", "請先完成單元選擇", "warn"); return; }
@@ -1461,6 +1696,12 @@ async function startTest() {
 
     const sid = await ensureStudentId();
     const n = parseInt(document.getElementById("inpN").value, 10) || 15;
+    CAT.theta = 0;
+    CAT.thetaSe = null;
+    CAT.lastCorrect = null;
+    CAT.itemMap = {};
+    CAT.itemPool = [];
+    CAT.administeredItemIds = [];
 
     showLoading("GENERATING", "AI 正在生成素養試題...");
 
@@ -1481,19 +1722,22 @@ async function startTest() {
             student_id: sid,
             student: { student_id: sid },
             unit: getUnitPayload(),
-            settings: { max_items: n },
+            settings: { max_items: n, adaptive_strategy: "irt_3pl", irt_model: IRT_CONFIG.model },
             max_items: n,
             n: n,
             num_items: n,
             n_items: n,
             maxItems: n,
-            settings2: { n: n, num_items: n }, 
+            settings2: { n: n, num_items: n, adaptive_strategy: "irt_3pl", irt_model: IRT_CONFIG.model },
+            ...buildIrtPayload({ theta: 0, ability_theta: 0, theta_before: 0, answered_item_ids: [], administered_item_ids: [] }),
             
             // 4) Debug 模式
             debug: true
         };
 
         const json = await api(payload);
+        registerCatItems(extractItemsFromCatResponse(json));
+        CAT.theta = resolveApiTheta(json) ?? 0;
 
         // ✅ 兼容不同後端回傳欄位
         const firstItem =
@@ -1509,7 +1753,7 @@ async function startTest() {
         CAT.student_id = sid;
         CAT.n = n;
         CAT.step = 0;
-        trackAdaptiveEvent("test_started", { score: "", duration: "", item_id: "", max_items: n });
+        trackAdaptiveEvent("test_started", { score: "", duration: "", item_id: "", max_items: n, theta: CAT.theta, irt_model: IRT_CONFIG.model });
 
         document.getElementById("secConfig").classList.add("hidden");
         document.getElementById("secQuiz").classList.remove("hidden");
@@ -1542,7 +1786,7 @@ async function startTest() {
 // 2. 渲染題目 (整合了原本邏輯 + 自動套用注音)
 function renderQuestion(item) {
     CAT.current = item;
-    if(item && item.item_id) CAT.itemMap[item.item_id] = item; // ✅記住題目
+    markItemAdministered(item || {});
     CAT.selected = "";
 
     // ✅只保留一次 qNo 宣告
@@ -2178,7 +2422,7 @@ function getOptionTextFromWrongItem(w, key){
         document.getElementById("btnSubmit").disabled = false;
         document.getElementById("hint").innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i> 已選擇 ${key}`;
         trackAdaptiveEvent("option_selected", {
-          item_id: CAT.current?.item_id || "",
+          item_id: itemKey(CAT.current || {}),
           response: key,
           progress_percent: CAT.n ? Math.round((CAT.step / CAT.n) * 100) : 0
         });
@@ -2188,12 +2432,20 @@ function getOptionTextFromWrongItem(w, key){
   document.getElementById("btnSubmit").disabled = true;
 
   try {
+    const thetaBefore = finiteNumber(CAT.theta, 0);
+    const currentIrt = normalizeIrtParams(CAT.current || {});
+    const localCorrectGuess = normalizeCorrectness(undefined, CAT.current, CAT.selected);
     const json = await api({
       action: ACTION.SUBMIT_NEXT,
       test_id: CAT.test_id,
       student_id: CAT.student_id,
-      item_id: CAT.current.item_id,
+      item_id: itemKey(CAT.current || {}),
       response_option: CAT.selected,
+      response: CAT.selected,
+      correct_key_guess: getCorrectKey(CAT.current || {}),
+      response_correct_guess: localCorrectGuess,
+      theta_before: thetaBefore,
+      current_item_irt: currentIrt,
       max_items: CAT.n,
 
   // ★補齊常見鍵（避免後端回到 DEFAULT=8）
@@ -2201,23 +2453,40 @@ function getOptionTextFromWrongItem(w, key){
   num_items: CAT.n,
   n_items: CAT.n,
   maxItems: CAT.n,
-  settings: { max_items: CAT.n },
+  settings: { max_items: CAT.n, adaptive_strategy: "irt_3pl", irt_model: IRT_CONFIG.model },
+  ...buildIrtPayload({ theta: thetaBefore, ability_theta: thetaBefore, theta_before: thetaBefore, current_item_irt: currentIrt, response_correct_guess: localCorrectGuess }),
 
   // ★如果你的後端在 submitAndNext 才寫題庫/寫回應，建議也一併帶 sheet 名稱（保險）
   sheet_name: CONTENT_SHEET_NAME,
   item_bank_sheet: "CATItemBank",
   itembank_sheet: "CATItemBank",
   response_sheet: "CATresponse",
-  response_sheet_name: "CATresponse",
+      response_sheet_name: "CATresponse",
     });
+    registerCatItems(extractItemsFromCatResponse(json));
+    const apiCorrect = normalizeCorrectness(json.correct ?? json.is_correct ?? json.data?.correct ?? json.data?.is_correct ?? json.result?.correct ?? json.result?.is_correct, CAT.current, CAT.selected);
+    const effectiveCorrect = apiCorrect ?? localCorrectGuess ?? false;
+    const fallbackTheta = updateLocalTheta(CAT.current, effectiveCorrect);
+    const apiTheta = resolveApiTheta(json);
+    if (apiTheta !== null) {
+      CAT.theta = apiTheta;
+      CAT.lastCorrect = !!effectiveCorrect;
+    } else {
+      CAT.theta = fallbackTheta;
+    }
 
     // 已完成第幾題（答完才 +1）
     CAT.step++;
     UI.setProgress(CAT.step, CAT.n);
     trackAdaptiveEvent("item_answered", {
-      item_id: CAT.current?.item_id || "",
+      item_id: itemKey(CAT.current || {}),
       response: CAT.selected,
-      correct: json.correct ?? json.data?.correct ?? json.result?.correct ?? "",
+      correct: effectiveCorrect,
+      theta_before: thetaBefore,
+      theta_after: CAT.theta,
+      item_irt_a: currentIrt.a,
+      item_irt_b: currentIrt.b,
+      item_irt_c: currentIrt.c,
       progress_percent: CAT.n ? Math.round((CAT.step / CAT.n) * 100) : 0
     });
 
@@ -2240,15 +2509,19 @@ function getOptionTextFromWrongItem(w, key){
     }
 
     // 還沒答滿 CAT.n 題：正常前進到下一題
-    const nextItem =
+    let nextItem =
   json.item ||
   json.next_item ||
   (json.data && json.data.item) ||
   (Array.isArray(json.items) ? json.items[0] : null) ||
   (json.data && Array.isArray(json.data.items) ? json.data.items[0] : null);
 
+if (!nextItem || CAT.administeredItemIds.includes(itemKey(nextItem)) || !followsIrtDirection(nextItem, effectiveCorrect)) {
+  nextItem = chooseLocalNextItem(effectiveCorrect) || nextItem;
+}
+
 if (!nextItem) {
-  UI.toast("錯誤", "後端未回傳下一題，無法繼續作答（請檢查後端是否提前結束）。", "bad");
+  UI.toast("錯誤", "後端未回傳下一題，也沒有可用的 IRT 備援題池，無法繼續作答。", "bad");
   return;
 }
 
@@ -2280,6 +2553,10 @@ async function finishTest() {
       action: ACTION.FINISH_CAT,
       test_id: CAT.test_id,
       student_id: CAT.student_id,
+      theta: CAT.theta,
+      ability_theta: CAT.theta,
+      answered_item_ids: CAT.administeredItemIds.slice(),
+      administered_item_ids: CAT.administeredItemIds.slice(),
       ai_feedback: true
     });
 console.log("finishCAT 回傳資料 =", json);
