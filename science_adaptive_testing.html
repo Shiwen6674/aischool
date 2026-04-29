@@ -2380,6 +2380,8 @@ function renderQuestion(item) {
     CAT.current = item;
     markItemAdministered(item || {});
     CAT.selected = "";
+    CAT.answerLocked = false;
+    CAT.submitting = false;
 
     // ✅只保留一次 qNo 宣告
     const qNo = Math.min(CAT.step + 1, CAT.n);
@@ -2406,12 +2408,9 @@ function renderQuestion(item) {
         optWrap.appendChild(btn);
     });
 
-    document.getElementById("btnSubmit").disabled = true;
-
-    const btnNext = document.getElementById("btnNext");
-    btnNext.disabled = true;
-    btnNext.classList.add("opacity-50", "bg-slate-700", "text-slate-500");
-    btnNext.classList.remove("bg-emerald-500", "hover:bg-emerald-400", "text-white", "animate-bounce", "shadow-lg", "shadow-emerald-500/50");
+    setOptionsLocked(false);
+    setSubmitEnabled(false);
+    setNextButtonState("disabled");
 
     document.getElementById("hint").innerHTML = '<i class="fa-solid fa-circle-info text-blue-400"></i> 請選擇一個選項';
 
@@ -3171,11 +3170,49 @@ function getOptionTextFromWrongItem(w, key){
 
 
       
+    function setSubmitEnabled(enabled) {
+        const btnSubmit = document.getElementById("btnSubmit");
+        if (!btnSubmit) return;
+        btnSubmit.disabled = !enabled;
+        btnSubmit.setAttribute("aria-disabled", String(!enabled));
+    }
+
+    function setOptionsLocked(locked) {
+        document.querySelectorAll(".option-btn").forEach(btn => {
+            btn.disabled = !!locked;
+            btn.setAttribute("aria-disabled", String(!!locked));
+        });
+    }
+
+    function setNextButtonState(state) {
+        const btnNext = document.getElementById("btnNext");
+        if (!btnNext) return;
+
+        const isReady = state === "next" || state === "finish";
+        btnNext.disabled = !isReady;
+        btnNext.setAttribute("aria-disabled", String(!isReady));
+        btnNext.classList.toggle("opacity-50", !isReady);
+        btnNext.classList.toggle("bg-slate-700", !isReady);
+        btnNext.classList.toggle("text-slate-500", !isReady);
+        btnNext.classList.toggle("bg-emerald-500", isReady);
+        btnNext.classList.toggle("hover:bg-emerald-400", isReady);
+        btnNext.classList.toggle("text-white", isReady);
+        btnNext.classList.toggle("shadow-lg", isReady);
+        btnNext.classList.toggle("shadow-emerald-500/50", isReady);
+        btnNext.classList.toggle("animate-bounce", state === "next");
+
+        btnNext.innerHTML = state === "finish"
+            ? `<span>AI評分診斷</span> <i class="fa-solid fa-chart-line"></i>`
+            : `<span data-i18n="btn_next">下一題</span> <i class="fa-solid fa-arrow-right"></i>`;
+    }
+
     function selectOption(key, btnElem) {
+        if (CAT.answerLocked || CAT.submitting) return;
         CAT.selected = key;
         document.querySelectorAll(".option-btn").forEach(b => b.classList.remove("selected"));
         btnElem.classList.add("selected");
-        document.getElementById("btnSubmit").disabled = false;
+        setSubmitEnabled(true);
+        setNextButtonState("disabled");
         document.getElementById("hint").innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i> 已選擇 ${key}`;
         trackAdaptiveEvent("option_selected", {
           item_id: itemKey(CAT.current || {}),
@@ -3185,7 +3222,12 @@ function getOptionTextFromWrongItem(w, key){
     }
 
    async function submitAnswer() {
-  document.getElementById("btnSubmit").disabled = true;
+  if (CAT.submitting || CAT.answerLocked || !CAT.selected) return;
+  CAT.submitting = true;
+  CAT.answerLocked = true;
+  setSubmitEnabled(false);
+  setNextButtonState("disabled");
+  setOptionsLocked(true);
 
   try {
     const thetaBefore = finiteNumber(CAT.theta, 0);
@@ -3259,19 +3301,14 @@ function getOptionTextFromWrongItem(w, key){
       progress_percent: CAT.n ? Math.round((CAT.step / CAT.n) * 100) : 0
     });
 
-    const btnNext = document.getElementById("btnNext");
+    CAT.submitting = false;
 
     // ====== 重點：只用 CAT.step 判斷是否結束，不要用 json.done ======
     if (CAT.step >= CAT.n) {
       // 已答滿 CAT.n 題：不立刻分析，改成讓學生按「AI評分診斷」才分析
       CAT.next = null;
 
-      btnNext.disabled = false;
-      btnNext.classList.remove("opacity-50", "bg-slate-700", "text-slate-500");
-      btnNext.classList.add("bg-emerald-500", "hover:bg-emerald-400", "text-white", "shadow-lg", "shadow-emerald-500/50");
-
-      // 把「下一題」改成「AI評分診斷」
-      btnNext.innerHTML = `<span>AI評分診斷</span> <i class="fa-solid fa-chart-line"></i>`;
+      setNextButtonState("finish");
 
       document.getElementById("hint").innerHTML = "已完成作答，請按「AI評分診斷」開始分析";
       return;
@@ -3294,18 +3331,17 @@ if (!nextItem) {
 CAT.next = nextItem;
 
 
-    btnNext.disabled = false;
-    btnNext.classList.remove("opacity-50", "bg-slate-700", "text-slate-500");
-    btnNext.classList.add("bg-emerald-500", "hover:bg-emerald-400", "text-white", "animate-bounce", "shadow-lg", "shadow-emerald-500/50");
-
-    // 確保不是最後一題時，按鈕維持「下一題」
-    btnNext.innerHTML = `<span data-i18n="btn_next">下一題</span> <i class="fa-solid fa-arrow-right"></i>`;
+    setNextButtonState("next");
 
     document.getElementById("hint").innerHTML = "答案已送出，請按下一題";
 
   } catch (e) {
     UI.toast("錯誤", "送出失敗: " + e.message, "bad");
-    document.getElementById("btnSubmit").disabled = false;
+    CAT.submitting = false;
+    CAT.answerLocked = false;
+    setOptionsLocked(false);
+    setSubmitEnabled(!!CAT.selected);
+    setNextButtonState("disabled");
   }
 }
 
@@ -4025,6 +4061,8 @@ function toggleZhuyinMode() {
         document.getElementById("btnStart").addEventListener("click", startTest);
         document.getElementById("btnSubmit").addEventListener("click", submitAnswer);
         document.getElementById("btnNext").addEventListener("click", async () => {
+  if (document.getElementById("btnNext").disabled) return;
+  setNextButtonState("disabled");
   // 若已答滿題數：按下就開始分析
   if (CAT.step >= CAT.n) {
     await finishTest();
