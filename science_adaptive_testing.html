@@ -320,6 +320,205 @@ rp { display: none !important; }
     margin-bottom: 8px !important;    /* 項目之間的間距 */
 }
     
+/* 2026-04 readability pass: adaptive-test tables */
+.stimulus-table-wrap {
+    margin: 1rem 0 1.25rem;
+    overflow-x: auto;
+    border: 2px solid #111827;
+    border-radius: 0.85rem;
+    background: #fff8e7;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+}
+.stimulus-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #111827;
+    background: #fff8e7;
+    font-size: 0.98rem;
+    line-height: 1.75;
+}
+.stimulus-table th,
+.stimulus-table td {
+    border: 1.5px solid #111827;
+    padding: 0.8rem 1rem;
+    vertical-align: top;
+}
+.stimulus-table thead th {
+    background: #f3dfba;
+    color: #111827;
+    font-weight: 900;
+    text-align: left;
+}
+.stimulus-table tbody tr:nth-child(even) td {
+    background: #fff1d6;
+}
+
+/* 2026-04 PDF report polish */
+#pdf-report-content {
+    color: #243244;
+    font-family: "Microsoft JhengHei", "Noto Sans TC", "Heiti TC", sans-serif;
+}
+#pdf-report-content .pdf-page {
+    padding: 20mm 22mm 24mm;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    border-top: 8px solid #1d4ed8;
+    border-bottom: 1px solid #dbeafe;
+}
+#pdf-report-content .pdf-cover-page {
+    padding: 16mm;
+    background:
+      radial-gradient(circle at top right, rgba(37, 99, 235, 0.18), transparent 36%),
+      linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+}
+#pdf-report-content .pdf-blank-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #cbd5e1;
+    font-size: 13px;
+    letter-spacing: 0.12em;
+}
+#pdf-report-content .pdf-report-page,
+#pdf-report-content .dynamic-wrong-page {
+    padding-top: 24mm;
+}
+#pdf-report-content .pdf-page-body,
+#pdf-report-content .pdf-wrong-next-container {
+    margin-top: 8mm;
+}
+#pdf-report-content .cover-container {
+    border: 1px solid #bfdbfe;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.86);
+    box-shadow: 0 22px 55px rgba(30, 58, 138, 0.12);
+}
+#pdf-report-content .pdf-header {
+    border-bottom: 3px solid #1e3a8a;
+    padding-bottom: 12px;
+    margin-bottom: 28px;
+}
+#pdf-report-content .ph-title {
+    font-size: 25px;
+    letter-spacing: 0;
+}
+#pdf-report-content .ph-sub {
+    font-size: 13px;
+    color: #64748b;
+}
+#pdf-report-content .pdf-report-no {
+    color: #94a3b8 !important;
+    font-size: 24px;
+}
+#pdf-report-content .stat-num {
+    font-size: 46px;
+}
+#pdf-report-content .stat-desc {
+    font-size: 13px;
+    color: #475569;
+    margin-top: 8px;
+}
+#pdf-report-content .wrong-item {
+    margin-bottom: 28px;
+    border: 1px solid #e2e8f0;
+    border-left: 6px solid #ef4444;
+    border-radius: 14px;
+    padding: 18px;
+    page-break-inside: avoid;
+    background: #ffffff;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+#pdf-report-content .wi-header {
+    gap: 12px;
+    margin-bottom: 12px;
+    align-items: flex-start;
+}
+#pdf-report-content .wi-index {
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+    line-height: 30px;
+}
+#pdf-report-content .wi-stem {
+    font-size: 17px;
+    line-height: 1.8;
+    color: #1f2937;
+    font-weight: 800;
+}
+#pdf-report-content .wi-ans-row {
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+#pdf-report-content .ans-box {
+    padding: 6px 10px;
+    border-radius: 6px;
+    line-height: 1.5;
+}
+#pdf-report-content .wi-footer {
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 15.5px;
+    line-height: 1.9;
+    color: #334155;
+}
+#pdf-report-content .advice-card {
+    margin-bottom: 18px;
+    border-radius: 14px;
+    padding: 18px 20px;
+    border-left-width: 6px;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+#pdf-report-content .advice-title {
+    margin-bottom: 8px;
+    font-size: 17px;
+    color: #0f172a;
+}
+#pdf-report-content .advice-content {
+    font-size: 15.5px;
+    line-height: 1.95;
+    color: #334155;
+}
+#pdf-report-content .pdf-footer-fixed {
+    bottom: 11mm;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+
+/* 2026-04 zhuyin mode: render actual bopomofo at the right side of Han characters. */
+body.zhuyin-mode .leading-relaxed {
+    line-height: 2.85 !important;
+}
+.zhuyin-char {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    vertical-align: middle;
+    margin: 0 0.11em;
+}
+.zhuyin-base {
+    display: inline-block;
+}
+.zhuyin-mark {
+    display: inline-block;
+    min-width: 0.9em;
+    margin-left: 0.04em;
+    font-family: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", "Bopomofo", sans-serif;
+    font-size: 0.46em;
+    line-height: 1.05;
+    color: #facc15;
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    letter-spacing: 0;
+}
+
   </style>
 <script src="./assets/js/aischool-shared.js?v=20260429-adaptive-jsonp"></script>
 <script src="./assets/js/learning-analytics.js?v=20260429-adaptive-jsonp"></script>
@@ -558,7 +757,7 @@ rp { display: none !important; }
 
 <div id="pdf-report-content">
     
-    <div class="pdf-page">
+    <div class="pdf-page pdf-cover-page">
       <div class="cover-container">
         <div class="cover-logo">AI SCIENCE</div>
         <div class="cover-subtitle">自然科學適性診斷報告</div>
@@ -584,20 +783,21 @@ rp { display: none !important; }
       </div>
       </div>
 
-<div class="pdf-page" style="display:flex; justify-content:center; align-items:center; color:#e2e8f0; font-size:12px;">
+<div class="pdf-page pdf-blank-page">
   [ 此頁留白 INTENTIONALLY BLANK ]
 </div>
 
 
-    <div class="pdf-page">
+    <div class="pdf-page pdf-report-page">
       <div class="pdf-header">
          <div>
              <div class="ph-title">診斷結果詳析</div>
              <div class="ph-sub">DIAGNOSTIC REPORT</div>
          </div>
-         <div class="ph-title" style="color:#cbd5e1;">01</div>
+         <div class="ph-title pdf-report-no" data-pdf-report-no>01</div>
       </div>
 
+      <div class="pdf-page-body">
       <div class="stats-box">
          <div class="stat-item">
             <div class="stat-num" id="pdf-inner-score">--</div>
@@ -613,23 +813,26 @@ rp { display: none !important; }
         錯題概念分析
       </div>
       <div id="pdf-wrong-container"></div>
+      </div>
       
-      <div class="pdf-footer-fixed">Page 1</div>
+      <div class="pdf-footer-fixed">1</div>
     </div>
 
-    <div class="pdf-page">
+    <div class="pdf-page pdf-report-page">
       <div class="pdf-header">
          <div>
              <div class="ph-title">AI 學習診斷</div>
 <div class="ph-sub">LEARNING DIAGNOSIS</div>
 
          </div>
-         <div class="ph-title" style="color:#cbd5e1;">02</div>
+         <div class="ph-title pdf-report-no" data-pdf-report-no>02</div>
       </div>
 
+      <div class="pdf-page-body">
       <div id="pdf-advice-container"></div>
+      </div>
 
-      <div class="pdf-footer-fixed">Page 2</div>
+      <div class="pdf-footer-fixed">2</div>
     </div>
   </div>
 
@@ -1419,17 +1622,17 @@ function renderQuestion(item) {
         const rows = data.table.rows || [];
 
         let html = `
-            <div class="mb-4 overflow-x-auto rounded-lg border border-slate-600">
-                <table class="w-full text-sm text-left text-slate-300">
-                    <thead class="text-xs text-slate-200 uppercase bg-slate-700">
+            <div class="stimulus-table-wrap">
+                <table class="stimulus-table">
+                    <thead>
                         <tr>
-                            ${cols.map(c => `<th scope="col" class="px-4 py-3 border-b border-slate-600">${c}</th>`).join('')}
+                            ${cols.map(c => `<th scope="col">${safeTextHtml(c)}</th>`).join('')}
                         </tr>
                     </thead>
                     <tbody>
                         ${rows.map((row, i) => `
-                            <tr class="${i % 2 === 0 ? 'bg-slate-800' : 'bg-slate-700/50'} border-b border-slate-700 hover:bg-slate-600">
-                                ${row.map(cell => `<td class="px-4 py-3">${cell}</td>`).join('')}
+                            <tr>
+                                ${row.map(cell => `<td>${safeTextHtml(cell)}</td>`).join('')}
                             </tr>
                         `).join('')}
                     </tbody>
@@ -2162,7 +2365,7 @@ console.log("wrongItems =", wrongItems);
       
       // A4 像素高度約為 1123px (96dpi)。扣掉上下 padding 和頁尾保留空間
       // 設定一個安全高度閥值，超過這個高度就換頁
-      const PAGE_SAFE_HEIGHT = 950; 
+      const PAGE_SAFE_HEIGHT = 900;
 
       // 先把第一頁視為「當前頁面」
       let currentPageBody = pdfFirstPageContainer; 
@@ -2202,7 +2405,7 @@ console.log("wrongItems =", wrongItems);
              // --- 建立新的一頁 (A4) ---
              currentPageNum++;
              const newPageDiv = document.createElement("div");
-             newPageDiv.className = "pdf-page dynamic-wrong-page"; 
+             newPageDiv.className = "pdf-page pdf-report-page dynamic-wrong-page";
 
              newPageDiv.innerHTML = `
                   <div class="pdf-header">
@@ -2210,11 +2413,11 @@ console.log("wrongItems =", wrongItems);
                            <div class="ph-title">診斷結果詳析 (續)</div>
                            <div class="ph-sub">DIAGNOSTIC REPORT (CONT.)</div>
                        </div>
-                       <div class="ph-title" style="color:#cbd5e1;">01-${currentPageNum}</div>
+                       <div class="ph-title pdf-report-no" data-pdf-report-no>${String(currentPageNum).padStart(2, "0")}</div>
                   </div>
-                  <div class="pdf-wrong-next-container" style="margin-top: 10px;">
+                  <div class="pdf-wrong-next-container pdf-page-body">
                       </div>
-                  <div class="pdf-footer-fixed">Page 1-${currentPageNum}</div>
+                  <div class="pdf-footer-fixed">${currentPageNum}</div>
              `;
 
              // 插入到 DOM (在 Advice 頁之前)
@@ -2353,6 +2556,7 @@ console.log("AI 解析後 aiObj =", aiObj);
     `;
 
     updatePdfInfo(score100, correct, total);
+    refreshPdfPageNumbers();
 
     if(typeof isZhuyinActive !== 'undefined' && isZhuyinActive) {
        setTimeout(applyZhuyinToPage, 100);
@@ -2443,6 +2647,25 @@ function safeTextHtml(text) {
         document.getElementById("pdf-inner-count").textContent = `${correct}/${total}`;
     }
 
+function refreshPdfPageNumbers() {
+  const pages = Array.from(document.querySelectorAll("#pdf-report-content .pdf-page"));
+  let reportNo = 0;
+  pages.forEach((page, index) => {
+    const footer = page.querySelector(".pdf-footer-fixed");
+    if (index < 2) {
+      page.classList.remove("pdf-report-page");
+      if (footer) footer.textContent = "";
+      return;
+    }
+    page.classList.add("pdf-report-page");
+    reportNo += 1;
+    const label = String(reportNo);
+    if (footer) footer.textContent = label;
+    const headerNo = page.querySelector("[data-pdf-report-no]");
+    if (headerNo) headerNo.textContent = String(reportNo).padStart(2, "0");
+  });
+}
+
 function sanitizeFileName(name){
   return String(name || "")
     .replace(/[\\\/:*?"<>|]/g, "_")
@@ -2463,6 +2686,7 @@ function buildPdfFileName(){
       
 function downloadPDF() {
   const el = document.getElementById("pdf-report-content");
+  refreshPdfPageNumbers();
   el.style.display = "block";
 
   const opt = {
@@ -2555,6 +2779,38 @@ function convertToRubyHtml(text) {
     return html;
 }
 // 2. 將頁面上的指定區塊加上注音
+function getZhuyinForChar(char) {
+    if (typeof pinyinPro === "undefined" || typeof pinyinPro.pinyin !== "function") return "";
+    try {
+        const result = pinyinPro.pinyin(char, {
+            pattern: "zhuyin",
+            toneType: "symbol",
+            type: "array",
+            nonZh: "consecutive",
+            multiple: false
+        });
+        let value = Array.isArray(result) ? result[0] : result;
+        if (value && typeof value === "object") {
+            value = value.zhuyin || value.pinyin || value.result || value.value || "";
+        }
+        value = String(value || "").trim();
+        return /[ㄅ-ㄩ]/.test(value) ? value : "";
+    } catch (err) {
+        console.warn("Zhuyin conversion failed for:", char, err);
+        return "";
+    }
+}
+
+function convertToRubyHtml(text) {
+    const source = String(text || "");
+    return Array.from(source).map((char) => {
+        if (!/[\u4e00-\u9fff]/.test(char)) return safeTextHtml(char);
+        const zhuyin = getZhuyinForChar(char);
+        if (!zhuyin) return safeTextHtml(char);
+        return `<span class="zhuyin-char"><span class="zhuyin-base">${safeTextHtml(char)}</span><span class="zhuyin-mark">${safeTextHtml(zhuyin)}</span></span>`;
+    }).join("");
+}
+
 function applyZhuyinToPage() {
     const targets = [
         ...document.querySelectorAll("#qStem .mt-2"), 
@@ -2589,14 +2845,14 @@ function removeZhuyinFromPage() {
 // 4. 遞迴遍歷 DOM
 function traverseAndConvert(node) {
     if (node.nodeType === 3) { // Text Node
-        const text = node.nodeValue.trim();
-        if (text) {
+        const text = node.nodeValue || "";
+        if (/[\u4e00-\u9fff]/.test(text)) {
             const span = document.createElement("span");
             span.innerHTML = convertToRubyHtml(text);
             node.parentNode.replaceChild(span, node);
         }
     } else if (node.nodeType === 1) { // Element Node
-        if (['RUBY', 'RT', 'SCRIPT', 'STYLE', 'TABLE', 'SVG'].includes(node.tagName)) return;
+        if (['RUBY', 'RT', 'SCRIPT', 'STYLE', 'SVG'].includes(node.tagName)) return;
         Array.from(node.childNodes).forEach(child => traverseAndConvert(child));
     }
 }
