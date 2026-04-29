@@ -321,11 +321,23 @@ rp { display: none !important; }
 }
     
   </style>
-  <script src="./assets/js/aischool-shared.js"></script>
-  <script src="./assets/js/learning-analytics.js"></script>
-  <script>
-    window.AISchool.requireRole(["student"], "請先登入學生帳號，再使用 AI 適性診斷。", "index.html");
-  </script>
+<script src="./assets/js/aischool-shared.js?v=20260429-adaptive-jsonp"></script>
+<script src="./assets/js/learning-analytics.js?v=20260429-adaptive-jsonp"></script>
+<script>
+  window.AISchool.requireRole(["student", "admin"], "請先登入學生帳號，再使用 AI 適性診斷。", "index.html");
+  (function repairAdaptiveTestingEndpoint() {
+    try {
+      const canonicalEndpoint = window.AISchoolConfig?.gas?.studentAdaptiveTesting || "";
+      const info = window.AISchool?.getGasUrlInfo?.("studentAdaptiveTesting");
+      if (canonicalEndpoint && info?.source === "override" && info.url !== canonicalEndpoint) {
+        window.AISchool.setGasOverride("studentAdaptiveTesting", "");
+        console.warn("[AISchool] Cleared stale studentAdaptiveTesting GAS override.");
+      }
+    } catch (err) {
+      console.warn("[AISchool] Unable to verify adaptive testing endpoint override.", err);
+    }
+  })();
+</script>
 </head>
 
 <body class="antialiased selection:bg-blue-500 selection:text-white">
@@ -860,22 +872,120 @@ function changeLanguage() {
     }
     function hideLoading(){ document.getElementById("loading-overlay").style.display = "none"; }
 
-async function api(payload){
-  payload = payload || {};
+function normalizeApiPayload(payload){
+  const next = { ...(payload || {}) };
 
-  // === 1) 補齊常見後端參數別名（很多 GAS 後端不是用 content_db_id 這個鍵）===
-  const dbid = payload.content_db_id || CONTENT_DB_ID;
-  payload.content_db_id = dbid;
-  payload.spreadsheet_id = payload.spreadsheet_id || dbid;
-  payload.db_id = payload.db_id || dbid;
+  // 補齊常見後端參數別名（很多 GAS 後端不是用 content_db_id 這個鍵）
+  const dbid = next.content_db_id || CONTENT_DB_ID;
+  next.content_db_id = dbid;
+  next.spreadsheet_id = next.spreadsheet_id || dbid;
+  next.db_id = next.db_id || dbid;
 
   // 只有「讀教材」才預設 Sheet1
   const needSheet1 = new Set(["get_metadata","getMetadata","action_get_metadata"]);
-  if(!payload.sheet_name && needSheet1.has(payload.action)){
-    payload.sheet_name = CONTENT_SHEET_NAME;  // "Sheet1"
-    payload.sheetName  = CONTENT_SHEET_NAME;  // 常見別名
+  if(!next.sheet_name && needSheet1.has(next.action)){
+    next.sheet_name = CONTENT_SHEET_NAME;
+    next.sheetName  = CONTENT_SHEET_NAME;
   }
 
+  return next;
+}
+
+function toGasQueryValue(value){
+  if (value === undefined || value === null) return "";
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value);
+}
+
+function parseApiResponse(raw){
+  const rawTrim = String(raw || "").trim().replace(/^\)\]\}',?\s*/,"");
+
+  if(/^<!doctype html/i.test(rawTrim) || /<html/i.test(rawTrim)){
+    const head = rawTrim.slice(0, 200).replace(/\s+/g, " ");
+    throw new Error(`GAS returned HTML (not JSON). Check deployment/permission. Body(head): ${head}`);
+  }
+
+  try{
+    return rawTrim ? JSON.parse(rawTrim) : {};
+  }catch(e){
+    const head = rawTrim.slice(0, 200).replace(/\s+/g, " ");
+    throw new Error("Non-JSON response. Body(head): " + head);
+  }
+}
+
+function assertApiOk(json){
+  const status = String(json?.status || "").toLowerCase();
+  const isError =
+    (json?.ok === false) ||
+    (json?.success === false) ||
+    (status === "error" || status === "fail" || status === "failed") ||
+    (!!json?.error);
+
+  if(isError){
+    throw new Error(json.message || json.error || `API returned error (status=${json.status || "?"}).`);
+  }
+
+  return json;
+}
+
+function apiViaJsonp(payload, timeoutMs = 45000){
+  if (!GAS_API_URL) return Promise.reject(new Error("GAS API URL is not configured."));
+
+  return new Promise((resolve, reject) => {
+    const callbackName = "__aisAdaptiveJsonp_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+    const script = document.createElement("script");
+    let done = false;
+    let timer = null;
+
+    function cleanup(){
+      done = true;
+      if (timer) clearTimeout(timer);
+      try { delete window[callbackName]; } catch (_) { window[callbackName] = undefined; }
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    window[callbackName] = (json) => {
+      if (done) return;
+      cleanup();
+      try {
+        resolve(assertApiOk(json || {}));
+      } catch (err) {
+        reject(err);
+      }
+    };
+
+    try {
+      const url = new URL(GAS_API_URL);
+      Object.entries(payload || {}).forEach(([key, value]) => {
+        if (value === undefined || value === null) return;
+        url.searchParams.set(key, toGasQueryValue(value));
+      });
+      url.searchParams.set("callback", callbackName);
+      url.searchParams.set("_", String(Date.now()));
+
+      script.async = true;
+      script.src = url.toString();
+      script.onerror = () => {
+        if (done) return;
+        cleanup();
+        reject(new Error("JSONP request failed. Check Apps Script deployment permission."));
+      };
+
+      timer = setTimeout(() => {
+        if (done) return;
+        cleanup();
+        reject(new Error("JSONP request timeout. Apps Script may be busy or unreachable."));
+      }, timeoutMs);
+
+      document.head.appendChild(script);
+    } catch (err) {
+      cleanup();
+      reject(err);
+    }
+  });
+}
+
+async function apiViaPost(payload){
   let res, raw;
   try{
     res = await fetch(GAS_API_URL, {
@@ -889,40 +999,44 @@ async function api(payload){
   }
 
   raw = await res.text();
-  const rawTrim = String(raw || "").trim().replace(/^\)\]\}',?\s*/,"");
-
-  // === 2) HTTP 狀態先判斷（很多時候會是 302/403/500）===
   if(!res.ok){
-    const head = rawTrim.slice(0, 200).replace(/\s+/g, " ");
+    const head = String(raw || "").trim().slice(0, 200).replace(/\s+/g, " ");
     throw new Error(`GAS HTTP ${res.status}. Body(head): ${head}`);
   }
 
-  // === 3) 明確偵測「其實拿到 HTML」(登入頁/錯誤頁)===
-  if(/^<!doctype html/i.test(rawTrim) || /<html/i.test(rawTrim)){
-    const head = rawTrim.slice(0, 200).replace(/\s+/g, " ");
-    throw new Error(`GAS returned HTML (not JSON). Check deployment/permission. Body(head): ${head}`);
+  return assertApiOk(parseApiResponse(raw));
+}
+
+async function api(payload){
+  const normalizedPayload = normalizeApiPayload(payload);
+  const shouldPreferJsonp = /script\.google\.com|script\.googleusercontent\.com/i.test(GAS_API_URL);
+  let firstError = null;
+
+  if (shouldPreferJsonp) {
+    try {
+      return await apiViaJsonp(normalizedPayload);
+    } catch (err) {
+      firstError = err;
+      console.warn("[AISchool] JSONP API failed, trying POST fallback.", err);
+    }
   }
 
-  let json = {};
-  try{
-    json = rawTrim ? JSON.parse(rawTrim) : {};
-  }catch(e){
-    const head = rawTrim.slice(0, 200).replace(/\s+/g, " ");
-    throw new Error("Non-JSON response. Body(head): " + head);
+  try {
+    return await apiViaPost(normalizedPayload);
+  } catch (err) {
+    if (!firstError) firstError = err;
+    console.warn("[AISchool] POST API failed.", err);
   }
 
-  const status = String(json.status || "").toLowerCase();
-  const isError =
-    (json.ok === false) ||
-    (json.success === false) ||
-    (status === "error" || status === "fail" || status === "failed") ||
-    (!!json.error);
-
-  if(isError){
-    throw new Error(json.message || json.error || `API returned error (status=${json.status || "?"}).`);
+  if (!shouldPreferJsonp) {
+    try {
+      return await apiViaJsonp(normalizedPayload);
+    } catch (err) {
+      console.warn("[AISchool] JSONP fallback failed.", err);
+    }
   }
 
-  return json;
+  throw firstError || new Error("API request failed.");
 }
 
 
