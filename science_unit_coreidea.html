@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>單元重點精熟</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./assets/css/tailwind.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
 
     <script>
+        window.tailwind = window.tailwind || {};
         tailwind.config = {
             theme: {
                 extend: {
@@ -104,6 +105,129 @@ mermaid.initialize({
             outline: none;
         }
         select:disabled { opacity: 0.5; cursor: not-allowed; }
+        #selection-panel { overflow: visible !important; }
+        .aischool-select-shell { position: relative; }
+        .aischool-select-native {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            left: 0;
+            bottom: 0;
+        }
+        .aischool-select { position: relative; width: 100%; }
+        .aischool-select-button {
+            width: 100%;
+            min-height: 3.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.85rem;
+            padding: 0.85rem 1rem;
+            color: #f8fafc;
+            font-weight: 900;
+            letter-spacing: 0;
+            border-radius: 1rem;
+            border: 1px solid rgba(148, 163, 184, 0.24);
+            background:
+                linear-gradient(180deg, rgba(38, 53, 77, 0.96), rgba(15, 23, 42, 0.96)),
+                radial-gradient(circle at top left, rgba(56, 189, 248, 0.22), transparent 42%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 14px 32px rgba(2, 8, 23, 0.24);
+            transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease, background 0.18s ease;
+        }
+        .aischool-select-button:hover:not(:disabled),
+        .aischool-select-button[aria-expanded="true"] {
+            border-color: rgba(56, 189, 248, 0.68);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 0 0 4px rgba(56, 189, 248, 0.16), 0 18px 36px rgba(8, 47, 73, 0.36);
+            transform: translateY(-1px);
+        }
+        .aischool-select-button:focus-visible {
+            outline: none;
+            border-color: rgba(34, 211, 238, 0.82);
+            box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.22), 0 18px 36px rgba(8, 47, 73, 0.36);
+        }
+        .aischool-select-button:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+        .aischool-select-value {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            text-align: left;
+        }
+        .aischool-select-icon {
+            width: 2rem;
+            height: 2rem;
+            display: grid;
+            place-items: center;
+            border-radius: 999px;
+            color: #bae6fd;
+            background: rgba(255,255,255,0.06);
+            transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease;
+        }
+        .aischool-select-button[aria-expanded="true"] .aischool-select-icon {
+            transform: rotate(180deg);
+            background: rgba(56, 189, 248, 0.18);
+            color: #67e8f9;
+        }
+        .aischool-select-menu {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: calc(100% + 0.5rem);
+            z-index: 80;
+            max-height: 16rem;
+            overflow-y: auto;
+            padding: 0.45rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(125, 211, 252, 0.22);
+            background: rgba(11, 18, 32, 0.98);
+            box-shadow: 0 22px 60px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255,255,255,0.06);
+            backdrop-filter: blur(18px);
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-6px) scale(0.98);
+            transform-origin: top;
+            transition: opacity 0.16s ease, transform 0.16s ease;
+        }
+        .aischool-select.open .aischool-select-menu {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
+        .aischool-select-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            min-height: 2.8rem;
+            padding: 0.68rem 0.78rem;
+            color: #dbeafe;
+            font-weight: 800;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: background 0.14s ease, color 0.14s ease, transform 0.14s ease;
+        }
+        .aischool-select-option:hover,
+        .aischool-select-option.is-active {
+            background: rgba(56, 189, 248, 0.12);
+            color: #ffffff;
+            transform: translateX(2px);
+        }
+        .aischool-select-option[aria-selected="true"] {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.92), rgba(6, 182, 212, 0.92));
+            color: #ffffff;
+            box-shadow: 0 10px 20px rgba(6, 182, 212, 0.18);
+        }
+        .aischool-select-option.is-disabled {
+            color: #64748b;
+            cursor: default;
+            transform: none;
+        }
+        .aischool-select-menu::-webkit-scrollbar { width: 0.55rem; }
+        .aischool-select-menu::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.8); border-radius: 999px; }
+        .aischool-select-menu::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.55); border-radius: 999px; }
 
         #btn-generate, .tech-btn-primary {
             background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%) !important;
@@ -1014,23 +1138,23 @@ mermaid.initialize({
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="flex flex-col gap-2">
                     <label class="text-xs text-slate-400 font-bold uppercase tracking-wider ml-1" data-i18n="label_stage">學習階段</label>
-                    <select id="sel-stage" class="w-full p-3"><option value="" disabled selected>Loading...</option></select>
+                    <div class="aischool-select-shell"><select id="sel-stage" data-enhance-select class="w-full p-3"><option value="" disabled selected>Loading...</option></select></div>
                 </div>
                 <div class="flex flex-col gap-2">
                     <label class="text-xs text-slate-400 font-bold uppercase tracking-wider ml-1" data-i18n="label_publisher">版本</label>
-                    <select id="sel-publisher" disabled class="w-full p-3"><option value="" disabled selected data-i18n="select_default">Select...</option></select>
+                    <div class="aischool-select-shell"><select id="sel-publisher" data-enhance-select disabled class="w-full p-3"><option value="" disabled selected data-i18n="select_default">Select...</option></select></div>
                 </div>
                 <div class="flex flex-col gap-2">
                     <label class="text-xs text-slate-400 font-bold uppercase tracking-wider ml-1" data-i18n="label_grade">年級</label>
-                    <select id="sel-grade" disabled class="w-full p-3"><option value="" disabled selected data-i18n="select_default">Select...</option></select>
+                    <div class="aischool-select-shell"><select id="sel-grade" data-enhance-select disabled class="w-full p-3"><option value="" disabled selected data-i18n="select_default">Select...</option></select></div>
                 </div>
                 <div class="flex flex-col gap-2">
                     <label class="text-xs text-slate-400 font-bold uppercase tracking-wider ml-1" data-i18n="label_semester">學期</label>
-                    <select id="sel-semester" disabled class="w-full p-3"><option value="" disabled selected data-i18n="select_default">Select...</option></select>
+                    <div class="aischool-select-shell"><select id="sel-semester" data-enhance-select disabled class="w-full p-3"><option value="" disabled selected data-i18n="select_default">Select...</option></select></div>
                 </div>
                 <div class="flex flex-col gap-2 md:col-span-2 lg:col-span-4">
                     <label class="text-xs text-slate-400 font-bold uppercase tracking-wider ml-1" data-i18n="label_unit">單元名稱</label>
-                    <select id="sel-unit" disabled class="w-full p-3"><option value="" disabled selected data-i18n="select_default">Select...</option></select>
+                    <div class="aischool-select-shell"><select id="sel-unit" data-enhance-select disabled class="w-full p-3"><option value="" disabled selected data-i18n="select_default">Select...</option></select></div>
                 </div>
             </div>
 
@@ -1739,6 +1863,7 @@ async function fetchGeneratedUnitContent(snapshot) {
 
     window.onload = async () => {
         const userInfo = document.getElementById("user-info");
+        initEnhancedSelects();
 
 let user = getActiveStudentUser();
 
@@ -1851,7 +1976,175 @@ document.querySelectorAll("[data-i18n]").forEach(el => {
 }
 
 
+    const enhancedSelectRegistry = new Map();
+
+    function initEnhancedSelects(root = document) {
+        root.querySelectorAll("select[data-enhance-select]").forEach(select => enhanceSelect(select));
+        if (!window.__aischoolSelectOutsideBound) {
+            document.addEventListener("click", event => {
+                enhancedSelectRegistry.forEach((state, select) => {
+                    if (!state.host.contains(event.target)) closeEnhancedSelect(select);
+                });
+            });
+            window.__aischoolSelectOutsideBound = true;
+        }
+    }
+
+    function enhanceSelect(select) {
+        if (!select) return;
+        if (enhancedSelectRegistry.has(select)) {
+            syncEnhancedSelect(select);
+            return;
+        }
+
+        const host = document.createElement("div");
+        host.className = "aischool-select";
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "aischool-select-button";
+        button.setAttribute("aria-haspopup", "listbox");
+        button.setAttribute("aria-expanded", "false");
+        const value = document.createElement("span");
+        value.className = "aischool-select-value";
+        const icon = document.createElement("span");
+        icon.className = "aischool-select-icon";
+        icon.innerHTML = '<i class="fa-solid fa-chevron-down" aria-hidden="true"></i>';
+        const menu = document.createElement("div");
+        menu.className = "aischool-select-menu";
+        menu.setAttribute("role", "listbox");
+
+        button.append(value, icon);
+        host.append(button, menu);
+        select.classList.add("aischool-select-native");
+        select.setAttribute("aria-hidden", "true");
+        select.tabIndex = -1;
+        select.insertAdjacentElement("afterend", host);
+
+        const state = { host, button, value, menu, activeIndex: -1 };
+        enhancedSelectRegistry.set(select, state);
+
+        button.addEventListener("click", () => {
+            if (select.disabled) return;
+            host.classList.contains("open") ? closeEnhancedSelect(select) : openEnhancedSelect(select);
+        });
+        button.addEventListener("keydown", event => handleEnhancedSelectKey(select, event));
+        select.addEventListener("change", () => syncEnhancedSelect(select));
+        syncEnhancedSelect(select);
+    }
+
+    function syncEnhancedSelect(select) {
+        const state = enhancedSelectRegistry.get(select);
+        if (!state) return;
+        const selected = select.selectedOptions && select.selectedOptions[0] ? select.selectedOptions[0] : select.options[select.selectedIndex];
+        state.value.textContent = selected ? selected.textContent : "Select...";
+        state.button.disabled = !!select.disabled;
+        state.host.classList.toggle("is-disabled", !!select.disabled);
+        state.menu.innerHTML = "";
+
+        Array.from(select.options).forEach((option, index) => {
+            const row = document.createElement("div");
+            row.className = "aischool-select-option";
+            row.setAttribute("role", "option");
+            row.dataset.index = String(index);
+            row.textContent = option.textContent || option.value || "Select...";
+            row.setAttribute("aria-selected", option.selected ? "true" : "false");
+            if (option.disabled) row.classList.add("is-disabled");
+            row.addEventListener("click", () => selectEnhancedOption(select, index));
+            state.menu.appendChild(row);
+        });
+        setEnhancedActiveIndex(select, select.selectedIndex >= 0 ? select.selectedIndex : firstEnabledOptionIndex(select));
+    }
+
+    function syncAllEnhancedSelects() {
+        enhancedSelectRegistry.forEach((_, select) => syncEnhancedSelect(select));
+    }
+
+    function openEnhancedSelect(select) {
+        const state = enhancedSelectRegistry.get(select);
+        if (!state || select.disabled) return;
+        enhancedSelectRegistry.forEach((_, otherSelect) => {
+            if (otherSelect !== select) closeEnhancedSelect(otherSelect);
+        });
+        syncEnhancedSelect(select);
+        state.host.classList.add("open");
+        state.button.setAttribute("aria-expanded", "true");
+        const active = select.selectedIndex >= 0 ? select.selectedIndex : firstEnabledOptionIndex(select);
+        setEnhancedActiveIndex(select, active);
+        scrollEnhancedActiveIntoView(select);
+    }
+
+    function closeEnhancedSelect(select) {
+        const state = enhancedSelectRegistry.get(select);
+        if (!state) return;
+        state.host.classList.remove("open");
+        state.button.setAttribute("aria-expanded", "false");
+    }
+
+    function selectEnhancedOption(select, index) {
+        const option = select.options[index];
+        if (!option || option.disabled) return;
+        select.selectedIndex = index;
+        select.dispatchEvent(new Event("change", { bubbles: true }));
+        closeEnhancedSelect(select);
+        const state = enhancedSelectRegistry.get(select);
+        if (state) state.button.focus();
+    }
+
+    function firstEnabledOptionIndex(select) {
+        return Array.from(select.options).findIndex(option => !option.disabled);
+    }
+
+    function moveEnhancedActive(select, direction) {
+        const options = Array.from(select.options);
+        if (!options.length) return;
+        let index = enhancedSelectRegistry.get(select)?.activeIndex ?? select.selectedIndex;
+        for (let step = 0; step < options.length; step += 1) {
+            index = (index + direction + options.length) % options.length;
+            if (!options[index].disabled) {
+                setEnhancedActiveIndex(select, index);
+                scrollEnhancedActiveIntoView(select);
+                return;
+            }
+        }
+    }
+
+    function setEnhancedActiveIndex(select, index) {
+        const state = enhancedSelectRegistry.get(select);
+        if (!state) return;
+        state.activeIndex = index;
+        Array.from(state.menu.children).forEach(child => {
+            child.classList.toggle("is-active", Number(child.dataset.index) === index);
+        });
+    }
+
+    function scrollEnhancedActiveIntoView(select) {
+        const state = enhancedSelectRegistry.get(select);
+        if (!state) return;
+        const active = state.menu.querySelector(".is-active");
+        if (active) active.scrollIntoView({ block: "nearest" });
+    }
+
+    function handleEnhancedSelectKey(select, event) {
+        const state = enhancedSelectRegistry.get(select);
+        if (!state) return;
+        const isOpen = state.host.classList.contains("open");
+        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            if (!isOpen) openEnhancedSelect(select);
+            else moveEnhancedActive(select, event.key === "ArrowDown" ? 1 : -1);
+        } else if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            if (!isOpen) openEnhancedSelect(select);
+            else selectEnhancedOption(select, state.activeIndex);
+        } else if (event.key === "Escape") {
+            closeEnhancedSelect(select);
+        } else if (event.key === "Tab") {
+            closeEnhancedSelect(select);
+        }
+    }
+
     function initSelectors() {
+        initEnhancedSelects();
         const stages = [...new Set(allData.map(d => d.stage))];
         populate("sel-stage", stages);
 
@@ -1872,6 +2165,7 @@ document.querySelectorAll("[data-i18n]").forEach(el => {
         };
         
         changeLanguage();
+        syncAllEnhancedSelects();
     }
 
     function updateLevel(level, value) {
@@ -1886,6 +2180,7 @@ document.querySelectorAll("[data-i18n]").forEach(el => {
             if (el) {
                 el.innerHTML='<option disabled selected data-i18n="select_default">Select...</option>';
                 el.disabled=true;
+                syncEnhancedSelect(el);
             }
         }
         const btn = document.getElementById("btn-generate");
@@ -1915,9 +2210,11 @@ document.querySelectorAll("[data-i18n]").forEach(el => {
                 });
                 unitSelect.disabled=false;
             }
+            syncEnhancedSelect(unitSelect);
         }
         
         changeLanguage();
+        syncAllEnhancedSelects();
     }
 
     function populate(id, list, type) {
@@ -1933,6 +2230,7 @@ document.querySelectorAll("[data-i18n]").forEach(el => {
             el.add(opt);
         });
         el.disabled=false;
+        syncEnhancedSelect(el);
     }
 function showLoadingView() {
     const selPanel = document.getElementById("selection-panel");
@@ -2897,7 +3195,13 @@ function parseConceptNodeText(text) {
         .replace(/[；;]+/g, "\n")
         .split(/\n+/)
         .map(line => line.replace(/^\s*(?:\d+\s*[.)、．]|[一二三四五六七八九十]+\s*[、.])\s*/u, "").trim())
-        .filter(Boolean);
+        .filter(line => line && !isWeakConceptNodeText(line));
+}
+
+function isWeakConceptNodeText(text) {
+    const value = String(text || "").trim();
+    if (!value) return true;
+    return /^(從以上|由以上|由此|如圖|依據上文|根據上文|本實驗|以上實驗|以上可知|結論是)/u.test(value);
 }
 
 function normalizeTextList(value) {
@@ -2910,7 +3214,7 @@ function normalizeTextList(value) {
                 }
                 return "";
             })
-            .filter(Boolean);
+            .filter(text => text && !isWeakConceptNodeText(text));
     }
 
     if (typeof value === "string") {
@@ -2919,7 +3223,7 @@ function normalizeTextList(value) {
         return value
             .split(/\n+/)
             .map(item => item.trim())
-            .filter(Boolean);
+            .filter(text => text && !isWeakConceptNodeText(text));
     }
 
     return [];
@@ -3014,36 +3318,57 @@ function normalizeStructuredSection(section, index) {
 function buildDerivedConceptSummary(concepts, data) {
     if (!Array.isArray(concepts) || concepts.length === 0) return null;
 
-    const bodies = [
-        getSummaryUiText("body_focus", "先把最核心的名詞、構造或現象看懂，後面的概念才容易連起來。"),
-        getSummaryUiText("body_structure", "把相關概念一起讀，可以更快掌握同一主題的重點脈絡。"),
-        getSummaryUiText("body_connection", "看到變化、影響或作用關係時，要特別留意它們如何彼此連動。"),
-        getSummaryUiText("body_application", "最後再把重點放回生活情境、實作活動或學習提醒中，記憶會更穩。")
+    const cleanConcepts = concepts.filter(text => !isWeakConceptNodeText(text));
+    if (!cleanConcepts.length) return null;
+
+    const bodyTemplates = [
+        "本段先釐清「{focus}」等核心名詞與自然現象，重點是能說出定義、辨認特徵，並知道這些概念在本課扮演的角色。",
+        "本段整理重點內容與形成條件，學習時要能比較不同概念的異同，並掌握課文中判斷現象的依據。",
+        "本段強調概念之間的因果與影響關係，請特別留意先後順序、改變條件後的結果，以及可能的迷思觀念。",
+        "本段把概念帶回生活與實作情境，練習用科學語言解釋觀察結果，並能將本課知識應用到新問題。"
     ];
 
-    const sections = splitConceptsIntoChunks(concepts).map((chunk, index) => {
+    const sections = splitConceptsIntoChunks(cleanConcepts).map((chunk, index) => {
         const normalized = normalizeStructuredSection({ points: chunk }, index);
-        if (normalized) normalized.body = bodies[index] || "";
+        if (normalized) {
+            const focusText = chunk.slice(0, 3).join("、");
+            normalized.body = (bodyTemplates[index] || bodyTemplates[bodyTemplates.length - 1]).replace("{focus}", focusText || "本段重點");
+        }
         return normalized;
     }).filter(Boolean);
 
-    const relationTexts = concepts
+    const relationTexts = cleanConcepts
         .filter(text => /關係|影響|循環|變化|作用|連結|轉換|互動/u.test(text))
-        .slice(0, 3)
+        .slice(0, 4)
         .map(text => ({ text: text }));
+
+    if (relationTexts.length < 2 && cleanConcepts.length >= 4) {
+        relationTexts.push({
+            from: cleanConcepts[0],
+            label: "影響",
+            to: cleanConcepts[1]
+        });
+        relationTexts.push({
+            from: cleanConcepts[2],
+            label: "連動",
+            to: cleanConcepts[3]
+        });
+    }
 
     return {
         title: String(data.topic || data.unitName || (data.raw_content && data.raw_content.unitName) || filters.unitName || "").trim(),
-        lead: getSummaryUiText("lead_structured", "依照「基礎概念、重點整理、觀念連結、應用延伸」四層來整理本單元。"),
+        lead: `本整理依課文核心概念分層整理，先掌握基礎名詞與自然現象，再理解機制與關係，最後連回生活應用。共整理 ${cleanConcepts.length} 個重點，建議搭配知識架構圖一起複習。`,
         chips: [
             getSummaryUiText("chip_concept", "概念節點整理"),
-            getSummaryUiText("chip_layered", "層次筆記")
+            getSummaryUiText("chip_layered", "層次筆記"),
+            getSummaryUiText("chip_recap", "考前複習版")
         ],
         sections: sections,
         relations: relationTexts,
         takeaways: [
-            getSummaryUiText("takeaway_order", "複習時可依「先概念、再特徵、後關係、最後應用」的順序整理。"),
-            `${getSummaryUiText("takeaway_count_prefix", "本單元共整理")} ${concepts.length} ${getSummaryUiText("takeaway_count_suffix", "個核心概念，建議搭配知識架構圖一起記憶。")}`
+            "複習時先背概念定義，再用課文例子驗證，最後做情境題推理，理解會更穩固。",
+            "看到題目提到原因、條件、結果時，先找對應的概念關係，避免只靠直覺作答。",
+            `${getSummaryUiText("takeaway_count_prefix", "本單元共整理")} ${cleanConcepts.length} ${getSummaryUiText("takeaway_count_suffix", "個核心概念，建議搭配知識架構圖一起記憶。")}`
         ]
     };
 }
@@ -4630,7 +4955,7 @@ if (quizState.currentIndex === 0 && !quizState.answers[0]) {
                 item_id: quizState.currentIndex + 1,
                 response: selectedIndex,
                 correct: isCorrect,
-                concept_tag: q.concept || q.conceptName || q.topic || String(quizState.currentIndex + 1)
+                concept_tag: q.concept || q.conceptName || q.topic || `第 ${quizState.currentIndex + 1} 題`
             });
         }
 

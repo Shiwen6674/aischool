@@ -7,6 +7,8 @@
   const GAS_ENDPOINT_OVERRIDE_KEY = "AISCHOOL_GAS_OVERRIDES";
   const SPREADSHEET_OVERRIDE_KEY = "AISCHOOL_SPREADSHEET_OVERRIDES";
   const PRIMARY_SPREADSHEET_ID = "1cDOsaa7E0EwD1R9CeCWoGf8_9ZMcFv8fxQ5d-LWUKu8";
+  const CAT_ITEM_BANK_SPREADSHEET_ID = "1cEfMEy3bvDa1tET3xmh7ShGeJy8KLUMa_JuULGBD-mk";
+  const CAT_ITEM_BANK_GID = "1567965945";
   const LEGACY_SCIENCE_CONTENT_CSV_URL =
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vRbgkNiMflfeLQd3KN8F4yjjIr6G2flnCAy-nUPMiC7_xDfdg_0hJ2Qzbsr92u8htlPLFR8GwwQPK_g/pub?gid=0&single=true&output=csv";
   const GAS_ENDPOINTS = {
@@ -34,6 +36,14 @@
     scienceContentSheetName: "Sheet1",
     scienceContentCsvUrl: "",
     scienceLegacyContentCsvUrl: LEGACY_SCIENCE_CONTENT_CSV_URL,
+    catItemBankSpreadsheetId: CAT_ITEM_BANK_SPREADSHEET_ID,
+    catItemBankSheetName: "CATItemBank",
+    catItemBankGid: CAT_ITEM_BANK_GID,
+    catItemBankCsvUrl:
+      "https://docs.google.com/spreadsheets/d/" +
+      CAT_ITEM_BANK_SPREADSHEET_ID +
+      "/gviz/tq?tqx=out:csv&gid=" +
+      CAT_ITEM_BANK_GID,
     scienceUserSpreadsheetId: PRIMARY_SPREADSHEET_ID,
     scienceUserSheetName: "Users_student",
     scienceUserStudentIdCol: "J"
