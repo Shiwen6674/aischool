@@ -353,143 +353,261 @@ rp { display: none !important; }
     background: #fff1d6;
 }
 
-/* 2026-04 PDF report polish */
+/* 2026-04 PDF report premium layout */
 #pdf-report-content {
-    color: #243244;
-    font-family: "Microsoft JhengHei", "Noto Sans TC", "Heiti TC", sans-serif;
+    color: #1f2a3a;
+    font-family: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", "Heiti TC", sans-serif;
+    letter-spacing: 0;
+    background: #ffffff;
+    -webkit-font-smoothing: antialiased;
 }
 #pdf-report-content .pdf-page {
-    padding: 20mm 22mm 24mm;
-    background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
-    border-top: 8px solid #1d4ed8;
-    border-bottom: 1px solid #dbeafe;
+    width: 210mm;
+    height: 297mm;
+    min-height: 297mm;
+    padding: 22mm 21mm 18mm;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+    page-break-after: auto;
+    break-after: auto;
+    background: #fffdf8;
+    border: 0;
 }
 #pdf-report-content .pdf-cover-page {
-    padding: 16mm;
+    padding: 0;
     background:
-      radial-gradient(circle at top right, rgba(37, 99, 235, 0.18), transparent 36%),
-      linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+      radial-gradient(circle at 82% 14%, rgba(96, 165, 250, 0.35), transparent 28%),
+      radial-gradient(circle at 14% 86%, rgba(16, 185, 129, 0.16), transparent 30%),
+      linear-gradient(145deg, #0f2745 0%, #173b67 46%, #f8fafc 46.2%, #ffffff 100%);
 }
 #pdf-report-content .pdf-blank-page {
+    display: block;
+    background: #ffffff;
+    color: transparent;
+}
+#pdf-report-content .cover-container {
+    height: 100%;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    padding: 29mm 24mm 24mm;
+    box-sizing: border-box;
     display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #cbd5e1;
-    font-size: 13px;
-    letter-spacing: 0.12em;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: stretch;
+    text-align: left;
+    background: transparent;
+    box-shadow: none;
+}
+#pdf-report-content .cover-logo {
+    color: #ffffff;
+    font-size: 54px;
+    line-height: 1;
+    letter-spacing: 0;
+    margin: 0;
+    text-shadow: 0 16px 32px rgba(15, 23, 42, 0.24);
+}
+#pdf-report-content .cover-subtitle {
+    margin-top: 12px;
+    margin-bottom: auto;
+    color: #bfdbfe;
+    font-size: 20px;
+    letter-spacing: 0.22em;
+}
+#pdf-report-content .info-card {
+    width: 100%;
+    margin-top: 40mm;
+    padding: 24px 30px;
+    border: 1px solid #dbeafe;
+    border-left: 10px solid #2563eb;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 24px 48px rgba(15, 23, 42, 0.14);
+}
+#pdf-report-content .info-row {
+    padding: 13px 0;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 15px;
+}
+#pdf-report-content .info-label {
+    color: #64748b;
+    font-weight: 800;
+}
+#pdf-report-content .info-val {
+    color: #0f172a;
+    font-size: 18px;
+    font-weight: 900;
+}
+#pdf-report-content .score-highlight {
+    color: #ea580c;
+    font-size: 29px;
 }
 #pdf-report-content .pdf-report-page,
 #pdf-report-content .dynamic-wrong-page {
-    padding-top: 24mm;
-}
-#pdf-report-content .pdf-page-body,
-#pdf-report-content .pdf-wrong-next-container {
-    margin-top: 8mm;
-}
-#pdf-report-content .cover-container {
-    border: 1px solid #bfdbfe;
-    border-radius: 18px;
-    background: rgba(255,255,255,0.86);
-    box-shadow: 0 22px 55px rgba(30, 58, 138, 0.12);
+    padding-top: 25mm;
 }
 #pdf-report-content .pdf-header {
-    border-bottom: 3px solid #1e3a8a;
-    padding-bottom: 12px;
-    margin-bottom: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 14px;
+    margin-bottom: 24px;
+    border-bottom: 2px solid #dbeafe;
 }
 #pdf-report-content .ph-title {
+    color: #0f172a;
     font-size: 25px;
+    line-height: 1.15;
+    font-weight: 900;
     letter-spacing: 0;
 }
 #pdf-report-content .ph-sub {
-    font-size: 13px;
-    color: #64748b;
+    margin-top: 7px;
+    color: #2563eb;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.18em;
 }
 #pdf-report-content .pdf-report-no {
-    color: #94a3b8 !important;
-    font-size: 24px;
+    color: #cbd5e1 !important;
+    font-size: 31px;
+    letter-spacing: 0.02em;
+}
+#pdf-report-content .pdf-page-body,
+#pdf-report-content .pdf-wrong-next-container {
+    margin-top: 0;
+}
+#pdf-report-content .stats-box {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 23px;
+}
+#pdf-report-content .stat-item {
+    min-height: 78px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #f8fafc;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 #pdf-report-content .stat-num {
-    font-size: 46px;
+    font-size: 43px;
+    color: #2563eb;
 }
 #pdf-report-content .stat-desc {
-    font-size: 13px;
-    color: #475569;
     margin-top: 8px;
+    color: #475569;
+    font-size: 12px;
+}
+#pdf-report-content .pdf-section-label {
+    margin-bottom: 16px;
+    padding-left: 12px;
+    border-left: 5px solid #ef4444;
+    color: #172033;
+    font-size: 17px;
+    font-weight: 900;
 }
 #pdf-report-content .wrong-item {
-    margin-bottom: 28px;
+    margin-bottom: 17px;
+    padding: 16px 18px;
     border: 1px solid #e2e8f0;
-    border-left: 6px solid #ef4444;
-    border-radius: 14px;
-    padding: 18px;
-    page-break-inside: avoid;
+    border-left: 7px solid #ef4444;
+    border-radius: 15px;
     background: #ffffff;
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+    box-shadow: 0 12px 26px rgba(15, 23, 42, 0.06);
+    page-break-inside: avoid;
+    break-inside: avoid;
 }
 #pdf-report-content .wi-header {
-    gap: 12px;
+    gap: 13px;
     margin-bottom: 12px;
     align-items: flex-start;
 }
 #pdf-report-content .wi-index {
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: #ef4444;
+    color: #ffffff;
     font-size: 16px;
-    line-height: 30px;
+    line-height: 1;
+    font-weight: 900;
 }
 #pdf-report-content .wi-stem {
+    flex: 1;
+    color: #1e293b;
     font-size: 17px;
-    line-height: 1.8;
-    color: #1f2937;
-    font-weight: 800;
+    line-height: 1.72;
+    font-weight: 900;
 }
-#pdf-report-content .wi-ans-row {
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-bottom: 12px;
-    font-size: 14px;
+#pdf-report-content .wi-answer-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 5px;
+    margin: 6px 0 12px;
+    color: #475569;
+    font-size: 13.5px;
+    line-height: 1.55;
 }
-#pdf-report-content .ans-box {
-    padding: 6px 10px;
-    border-radius: 6px;
-    line-height: 1.5;
+#pdf-report-content .wi-answer-line strong {
+    font-weight: 900;
 }
 #pdf-report-content .wi-footer {
-    background: #fff7ed;
-    border: 1px solid #fed7aa;
-    padding: 14px 16px;
-    border-radius: 10px;
-    font-size: 15.5px;
-    line-height: 1.9;
-    color: #334155;
+    padding: 12px 14px;
+    border: 1px solid #fde68a;
+    border-radius: 12px;
+    background: #fffbeb;
+    color: #475569;
+    font-size: 14.8px;
+    line-height: 1.82;
 }
 #pdf-report-content .advice-card {
-    margin-bottom: 18px;
-    border-radius: 14px;
+    margin-bottom: 17px;
     padding: 18px 20px;
-    border-left-width: 6px;
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+    border: 1px solid #e2e8f0;
+    border-left-width: 7px;
+    border-radius: 15px;
+    background: #ffffff;
+    box-shadow: 0 12px 26px rgba(15, 23, 42, 0.06);
+    page-break-inside: avoid;
+    break-inside: avoid;
 }
 #pdf-report-content .advice-title {
     margin-bottom: 8px;
-    font-size: 17px;
     color: #0f172a;
+    font-size: 17px;
+    font-weight: 900;
 }
 #pdf-report-content .advice-content {
-    font-size: 15.5px;
-    line-height: 1.95;
     color: #334155;
+    font-size: 15.8px;
+    line-height: 1.92;
 }
 #pdf-report-content .pdf-footer-fixed {
-    bottom: 11mm;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-size: 13px;
+    position: absolute;
+    left: 50%;
+    right: auto;
+    bottom: 10mm;
+    transform: translateX(-50%);
     color: #64748b;
-    font-weight: 800;
+    font-size: 12.5px;
+    font-weight: 900;
     letter-spacing: 0.08em;
+}
+#pdf-report-content .pdf-footer-fixed::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: -7px;
+    width: 40mm;
+    height: 1px;
+    transform: translateX(-50%);
+    background: #e2e8f0;
 }
 
 /* 2026-04 zhuyin mode: render actual bopomofo at the right side of Han characters. */
@@ -783,9 +901,7 @@ body.zhuyin-mode .leading-relaxed {
       </div>
       </div>
 
-<div class="pdf-page pdf-blank-page">
-  [ 此頁留白 INTENTIONALLY BLANK ]
-</div>
+<div class="pdf-page pdf-blank-page" aria-hidden="true"></div>
 
 
     <div class="pdf-page pdf-report-page">
@@ -809,7 +925,7 @@ body.zhuyin-mode .leading-relaxed {
          </div>
       </div>
 
-      <div style="margin-bottom:20px; font-weight:800; color:#1e293b; border-left:5px solid #ef4444; padding-left:10px; font-size:16px;">
+      <div class="pdf-section-label">
         錯題概念分析
       </div>
       <div id="pdf-wrong-container"></div>
@@ -934,6 +1050,7 @@ body.zhuyin-mode .leading-relaxed {
     const CAT = { started: false, test_id: "", student_id: "", current: null, next: null, selected: "", n: 15, step: 0, itemMap: {}, itemPool: [], administeredItemIds: [], theta: 0, thetaSe: null, lastCorrect: null };
     const ACTION = { GET_UNIT_OPTIONS: "getUnitOptions", START_CAT: "startCAT", SUBMIT_NEXT: "submitAndNext", FINISH_CAT: "finishCAT" };
     const META_ACTION_CANDIDATES = ["get_metadata", "getMetadata", "action_get_metadata"];
+    let latestPdfWrongItems = [];
 
     if (MATERIALS_CSV_SOURCE === "legacy-fallback") {
       console.warn(`[AISchool] science_adaptive_testing is using the legacy published CSV fallback because spreadsheet ${CONTENT_DB_ID} has no configured public content CSV URL.`);
@@ -2593,13 +2710,7 @@ const score100 = Number(
 
     // ===== 錯題列表處理 =====
     const wList = document.getElementById("resWrongList");
-    const pdfReportContent = document.getElementById("pdf-report-content");
-    const pdfFirstPageContainer = document.getElementById("pdf-wrong-container"); 
-    
-    // 1. 清空舊內容
     wList.innerHTML = "";
-    pdfFirstPageContainer.innerHTML = "";
-    document.querySelectorAll(".dynamic-wrong-page").forEach(el => el.remove());
 
 const wrongItemsRaw =
   json.wrong_items ??
@@ -2621,6 +2732,7 @@ if (Array.isArray(wrongItemsRaw)) {
 
 console.log("wrongItemsRaw =", wrongItemsRaw);
 console.log("wrongItems =", wrongItems);
+    latestPdfWrongItems = wrongItems;
     trackAdaptiveEvent("test_completed", {
       score: score100,
       correct,
@@ -2635,85 +2747,15 @@ console.log("wrongItems =", wrongItems);
     if (!wrongItems.length) {
       // 全對的情況
       wList.innerHTML = "<div class='text-emerald-400 text-center font-bold text-xl py-4'>恭喜！全對，沒有錯題。</div>";
-      pdfFirstPageContainer.innerHTML = "<div style='padding:30px; text-align:center; color:#10b981; font-weight:bold; border:1px dashed #cbd5e1; border-radius:8px;'>表現優異，本單元無錯題！</div>";
+      renderPdfWrongItems([]);
     } else {
-      
-      // ★★★ 智慧高度偵測分頁邏輯 ★★★
-      
-      // A4 像素高度約為 1123px (96dpi)。扣掉上下 padding 和頁尾保留空間
-      // 設定一個安全高度閥值，超過這個高度就換頁
-      const PAGE_SAFE_HEIGHT = 900;
-
-      // 先把第一頁視為「當前頁面」
-      let currentPageBody = pdfFirstPageContainer; 
-      let currentPageNum = 1;
-      
-      // 依序處理每一題
       for (let i = 0; i < wrongItems.length; i++) {
          const w = wrongItems[i];
          const realIndex = w.index || (i + 1);
-
-         // 1. 產生 HTML
-         const pdfHtml = generateWrongItemHtml(w, realIndex);
          const webHtml = generateWebWrongItemHtml(w, realIndex);
-
-         // 2. Web 版：直接全部塞進去 (不分頁)
          wList.insertAdjacentHTML("beforeend", webHtml);
-
-         // 3. PDF 版：試著塞進當前頁面
-         // 建立一個暫時的 div 來塞 HTML，方便操作 DOM
-         const tempDiv = document.createElement("div");
-         tempDiv.innerHTML = pdfHtml;
-         const itemElement = tempDiv.firstElementChild;
-         
-         currentPageBody.appendChild(itemElement);
-
-         // ★ 關鍵判斷：檢查現在這一頁的高度是否爆了？
-         // 抓取包含這一頁所有內容的 .pdf-page 容器
-         const currentPdfPage = currentPageBody.closest(".pdf-page");
-         
-         // 如果目前高度超過安全值 (且這一頁不是只有剛放進去的這一題)
-         // (currentPdfPage.scrollHeight 代表內容撐開的實際高度)
-         if (currentPdfPage.scrollHeight > PAGE_SAFE_HEIGHT) {
-             
-             // 拿掉剛剛放進去的題目 (因為太擠了)
-             currentPageBody.removeChild(itemElement);
-
-             // --- 建立新的一頁 (A4) ---
-             currentPageNum++;
-             const newPageDiv = document.createElement("div");
-             newPageDiv.className = "pdf-page pdf-report-page dynamic-wrong-page";
-
-             newPageDiv.innerHTML = `
-                  <div class="pdf-header">
-                       <div>
-                           <div class="ph-title">診斷結果詳析 (續)</div>
-                           <div class="ph-sub">DIAGNOSTIC REPORT (CONT.)</div>
-                       </div>
-                       <div class="ph-title pdf-report-no" data-pdf-report-no>${String(currentPageNum).padStart(2, "0")}</div>
-                  </div>
-                  <div class="pdf-wrong-next-container pdf-page-body">
-                      </div>
-                  <div class="pdf-footer-fixed">${currentPageNum}</div>
-             `;
-
-             // 插入到 DOM (在 Advice 頁之前)
-             const adviceContainer = document.getElementById("pdf-advice-container");
-             const advicePage = adviceContainer ? adviceContainer.closest(".pdf-page") : null;
-             
-             if(advicePage && advicePage.parentNode) {
-                 advicePage.parentNode.insertBefore(newPageDiv, advicePage);
-             } else {
-                 pdfReportContent.appendChild(newPageDiv);
-             }
-
-             // 更新「當前頁面容器」指向新的一頁
-             currentPageBody = newPageDiv.querySelector(".pdf-wrong-next-container");
-
-             // 把剛剛拿出來的題目，重新塞到新頁面
-             currentPageBody.appendChild(itemElement);
-         }
       }
+      renderPdfWrongItems(wrongItems);
     }
 
     // ... (後續 AI 分析部分保持不變) ...
@@ -2850,27 +2892,158 @@ console.log("AI 解析後 aiObj =", aiObj);
    請貼在 finishTest() 的正下方 (不要貼在裡面喔)
    ========================================= */
 
+function withPdfMeasureContext(callback) {
+  const el = document.getElementById("pdf-report-content");
+  if (!el) return callback();
+
+  const computed = window.getComputedStyle(el);
+  const needsTemporaryLayout = computed.display === "none";
+  const previous = {
+    display: el.style.display,
+    position: el.style.position,
+    left: el.style.left,
+    top: el.style.top,
+    visibility: el.style.visibility,
+    pointerEvents: el.style.pointerEvents,
+    zIndex: el.style.zIndex
+  };
+
+  if (needsTemporaryLayout) {
+    el.style.display = "block";
+    el.style.position = "absolute";
+    el.style.left = "-10000px";
+    el.style.top = "0";
+    el.style.visibility = "hidden";
+    el.style.pointerEvents = "none";
+    el.style.zIndex = "-1";
+  }
+
+  try {
+    return callback();
+  } finally {
+    if (needsTemporaryLayout) {
+      el.style.display = previous.display;
+      el.style.position = previous.position;
+      el.style.left = previous.left;
+      el.style.top = previous.top;
+      el.style.visibility = previous.visibility;
+      el.style.pointerEvents = previous.pointerEvents;
+      el.style.zIndex = previous.zIndex;
+    }
+  }
+}
+
+function clearPdfWrongPages() {
+  const firstPageContainer = document.getElementById("pdf-wrong-container");
+  if (firstPageContainer) firstPageContainer.innerHTML = "";
+  document.querySelectorAll(".dynamic-wrong-page").forEach(el => el.remove());
+  return firstPageContainer;
+}
+
+function createPdfWrongContinuationPage() {
+  const pdfReportContent = document.getElementById("pdf-report-content");
+  const adviceContainer = document.getElementById("pdf-advice-container");
+  const advicePage = adviceContainer ? adviceContainer.closest(".pdf-page") : null;
+  const newPageDiv = document.createElement("div");
+  newPageDiv.className = "pdf-page pdf-report-page dynamic-wrong-page";
+  newPageDiv.innerHTML = `
+    <div class="pdf-header">
+      <div>
+        <div class="ph-title">診斷結果詳析（續）</div>
+        <div class="ph-sub">DIAGNOSTIC REPORT CONTINUED</div>
+      </div>
+      <div class="ph-title pdf-report-no" data-pdf-report-no></div>
+    </div>
+    <div class="pdf-section-label">錯題概念分析（續）</div>
+    <div class="pdf-wrong-next-container pdf-page-body"></div>
+    <div class="pdf-footer-fixed"></div>
+  `;
+
+  if (advicePage && advicePage.parentNode) {
+    advicePage.parentNode.insertBefore(newPageDiv, advicePage);
+  } else if (pdfReportContent) {
+    pdfReportContent.appendChild(newPageDiv);
+  }
+  return newPageDiv.querySelector(".pdf-wrong-next-container");
+}
+
+function getPdfContainerLimit(container) {
+  const page = container ? container.closest(".pdf-page") : null;
+  if (!page || !container) return 800;
+  const footer = page.querySelector(".pdf-footer-fixed");
+  const containerRect = container.getBoundingClientRect();
+  const pageRect = page.getBoundingClientRect();
+  const bottom = footer ? footer.getBoundingClientRect().top : pageRect.bottom;
+  return Math.max(520, Math.floor(bottom - containerRect.top - 18));
+}
+
+function renderPdfWrongItems(wrongItems) {
+  latestPdfWrongItems = Array.isArray(wrongItems) ? wrongItems : [];
+  withPdfMeasureContext(() => {
+    const firstPageContainer = clearPdfWrongPages();
+    if (!firstPageContainer) return;
+
+    if (!latestPdfWrongItems.length) {
+      firstPageContainer.innerHTML = `
+        <div class="wrong-item" style="border-left-color:#10b981;">
+          <div class="wi-header">
+            <div class="wi-index" style="background:#10b981;">✓</div>
+            <div class="wi-stem">表現優異，本單元沒有錯題。</div>
+          </div>
+          <div class="wi-footer" style="background:#ecfdf5;border-color:#bbf7d0;">
+            可以進一步挑戰延伸題，或回到閱讀材料整理自己的科學筆記。
+          </div>
+        </div>
+      `;
+      refreshPdfPageNumbers();
+      return;
+    }
+
+    let currentContainer = firstPageContainer;
+    latestPdfWrongItems.forEach((w, i) => {
+      const realIndex = w.index || (i + 1);
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = generateWrongItemHtml(w, realIndex).trim();
+      const itemElement = tempDiv.firstElementChild;
+      if (!itemElement) return;
+
+      currentContainer.appendChild(itemElement);
+      const limit = getPdfContainerLimit(currentContainer);
+      const itemDoesNotFit = currentContainer.scrollHeight > limit;
+      const shouldMoveToNextPage = itemDoesNotFit && (currentContainer.children.length > 1 || currentContainer === firstPageContainer);
+      if (shouldMoveToNextPage) {
+        currentContainer.removeChild(itemElement);
+        currentContainer = createPdfWrongContinuationPage();
+        currentContainer.appendChild(itemElement);
+      }
+    });
+
+    refreshPdfPageNumbers();
+  });
+}
+
 // 產生 PDF 用的錯題 HTML 字串
 function generateWrongItemHtml(w, qNum) {
     const sKey = String(w.student_answer || "").trim() || "？";
     const cKey = String(w.correct_answer || "").trim() || "？";
     const sText = getOptionTextFromWrongItem(w, sKey) || "（內容不明）";
     const cText = getOptionTextFromWrongItem(w, cKey) || "（內容不明）";
+    const remedialText = w.remedial_text || "請複習相關概念。";
     const stemHtml = processStem(w.stem); 
 
     return `
       <div class="wrong-item">
         <div class="wi-header">
           <div class="wi-index">${qNum}</div>
-          <div class="wi-stem" style="width:100%;">${stemHtml}</div>
+          <div class="wi-stem">${stemHtml}</div>
         </div>
         <div class="wi-body">
-          <div style="margin:8px 0 10px 0; font-size:12px; line-height:1.6; color:#334155;">
-            <div><span style="font-weight:900; color:#ef4444;">誤選 ${sKey}：</span>${sText}</div>
-            <div><span style="font-weight:900; color:#16a34a;">正解 ${cKey}：</span>${cText}</div>
+          <div class="wi-answer-list">
+            <div class="wi-answer-line"><strong style="color:#ef4444;">誤選 ${safeTextHtml(sKey)}：</strong>${safeTextHtml(sText)}</div>
+            <div class="wi-answer-line"><strong style="color:#16a34a;">正解 ${safeTextHtml(cKey)}：</strong>${safeTextHtml(cText)}</div>
           </div>
           <div class="wi-footer">
-            <strong>診斷解析：</strong>${w.remedial_text || "請複習相關概念。"}
+            <strong>診斷解析：</strong>${safeTextHtml(remedialText)}
           </div>
         </div>
       </div>
@@ -2963,14 +3136,15 @@ function buildPdfFileName(){
       
 function downloadPDF() {
   const el = document.getElementById("pdf-report-content");
-  refreshPdfPageNumbers();
   el.style.display = "block";
+  renderPdfWrongItems(latestPdfWrongItems);
+  refreshPdfPageNumbers();
 
   const opt = {
     margin: 0,
     filename: buildPdfFileName(),
-    image: { type: "jpeg", quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, allowTaint: true, backgroundColor: "#ffffff" },
+    image: { type: "jpeg", quality: 1 },
+    html2canvas: { scale: 2.4, useCORS: true, allowTaint: true, backgroundColor: "#ffffff", letterRendering: true },
     jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
     pagebreak: { mode: ["css"] }
   };
@@ -2980,7 +3154,9 @@ function downloadPDF() {
       console.error(err);
       UI.toast("錯誤", "PDF 匯出失敗: " + (err && err.message ? err.message : err), "bad");
     })
-    .finally(() => { el.style.display = "none"; });
+    .finally(() => {
+      el.style.display = "none";
+    });
 }
 function initQuestionCountStepper(){
   const inp = document.getElementById("inpN");
