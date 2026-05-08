@@ -90,16 +90,65 @@
         }
 
         #force-block {
-            background: linear-gradient(180deg, #60A5FA 0%, #2563EB 100%);
-            border-radius: 8px 8px 0 0;
+            --block-a: #22d3ee;
+            --block-b: #4f46e5;
+            --block-c: #a855f7;
+            --block-d: #f97316;
+            --force-shadow: 0.34;
+            background:
+                radial-gradient(circle at 28% 18%, rgba(255, 255, 255, 0.92) 0 8%, rgba(255, 255, 255, 0) 28%),
+                linear-gradient(135deg, var(--block-a) 0%, var(--block-b) 38%, var(--block-c) 66%, var(--block-d) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            border-radius: 14px 14px 6px 6px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: bold;
-            box-shadow: 0 -4px 10px rgba(37, 99, 235, 0.3);
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            transform: perspective(720px) rotateX(10deg) rotateY(-13deg) translateZ(0);
+            transform-origin: bottom center;
+            box-shadow:
+                inset 12px 14px 20px rgba(255, 255, 255, 0.30),
+                inset -18px -20px 26px rgba(20, 24, 60, 0.32),
+                12px -9px 0 rgba(124, 58, 237, 0.28),
+                22px -17px 28px rgba(14, 116, 144, 0.16),
+                0 -8px 18px rgba(236, 72, 153, var(--force-shadow));
             z-index: 10;
+        }
+
+        #force-block::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(110deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 32%),
+                repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0 8px, rgba(255, 255, 255, 0) 8px 18px);
+            mix-blend-mode: screen;
+            opacity: 0.58;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        #force-block::after {
+            content: "";
+            position: absolute;
+            top: 8%;
+            right: -12%;
+            width: 38%;
+            height: 108%;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(17, 24, 39, 0.28));
+            transform: skewY(-18deg);
+            pointer-events: none;
+        }
+
+        #block-label {
+            position: relative;
+            text-shadow: 0 3px 10px rgba(15, 23, 42, 0.48);
+            z-index: 1;
         }
 
         #surface-area {
@@ -254,8 +303,12 @@
                 const blockHeight = 50 + (force * 1.5);
                 forceBlock.style.height = `${blockHeight}px`;
 
-                const blueIntensity = Math.floor((force / 100) * 155) + 100;
-                forceBlock.style.background = `linear-gradient(180deg, rgb(${255 - blueIntensity}, 165, 250) 0%, rgb(37, 99, ${blueIntensity}) 100%)`;
+                const hueShift = force * 0.38;
+                forceBlock.style.setProperty('--block-a', `hsl(${185 + hueShift} 92% 56%)`);
+                forceBlock.style.setProperty('--block-b', `hsl(${226 + hueShift} 88% 57%)`);
+                forceBlock.style.setProperty('--block-c', `hsl(${285 + hueShift} 86% 60%)`);
+                forceBlock.style.setProperty('--block-d', `hsl(${24 + hueShift} 94% 58%)`);
+                forceBlock.style.setProperty('--force-shadow', (0.24 + force / 250).toFixed(2));
 
                 const areaWidth = area * 12;
                 forceBlock.style.width = `${areaWidth}px`;
