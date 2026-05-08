@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pressure - 壓力與力互動實驗室</title>
+    <meta name="description" content="透過互動滑桿探索力、面積與壓力的關係。">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #333;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            border-radius: 1.5rem;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: #3B82F6;
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.5);
+            transition: transform 0.1s;
+        }
+
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #E5E7EB;
+            border-radius: 4px;
+        }
+
+        input[type=range]::-moz-range-thumb {
+            height: 24px;
+            width: 24px;
+            border: 0;
+            border-radius: 50%;
+            background: #3B82F6;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.5);
+            transition: transform 0.1s;
+        }
+
+        input[type=range]::-moz-range-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        input[type=range]::-moz-range-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #E5E7EB;
+            border-radius: 4px;
+        }
+
+        .simulation-container {
+            position: relative;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding-bottom: 20px;
+        }
+
+        #force-block {
+            background: linear-gradient(180deg, #60A5FA 0%, #2563EB 100%);
+            border-radius: 8px 8px 0 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 -4px 10px rgba(37, 99, 235, 0.3);
+            z-index: 10;
+        }
+
+        #surface-area {
+            background-color: #9CA3AF;
+            height: 20px;
+            border-radius: 4px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 5;
+        }
+
+        #ground {
+            width: 100%;
+            height: 40px;
+            background-color: #D1D5DB;
+            border-radius: 0 0 16px 16px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #pressure-effect {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 100%;
+            background: radial-gradient(ellipse at top, rgba(239, 68, 68, 0.8) 0%, rgba(239, 68, 68, 0) 70%);
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+
+        .formula-box {
+            font-family: 'Courier New', Courier, monospace;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <main class="max-w-5xl mx-auto flex flex-col gap-8">
+        <header class="text-center mb-4">
+            <p class="text-sm font-bold tracking-widest uppercase text-blue-500 mb-2">pressure</p>
+            <h1 class="text-4xl md:text-5xl font-black text-blue-800 mb-2 drop-shadow-sm">力與壓力：揭開看不見的秘密</h1>
+            <p class="text-lg text-gray-600">透過互動滑桿，探索力 (Force)、面積 (Area) 與壓力 (Pressure) 的奇妙關係。</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <section class="glass-panel p-6 flex flex-col gap-6" aria-labelledby="concept-title">
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                    <h2 id="concept-title" class="text-xl font-bold text-blue-900 mb-2">核心概念</h2>
+                    <p class="text-gray-700 leading-relaxed">
+                        <strong>壓力 (Pressure)</strong> 是指物體單位面積上所受到的垂直作用力。<br>
+                        簡單來說：<span class="text-red-500 font-bold">力量越集中（面積越小），壓力就越大！</span>這就是為什麼被高跟鞋踩到，比被平底鞋踩到還要痛得多。
+                    </p>
+                    <div class="formula-box bg-white p-3 rounded-lg mt-3 text-center border shadow-inner">
+                        <span class="text-2xl font-bold">
+                            <span class="text-red-600 inline-block transition-transform" id="formula-p">P</span> =
+                            <span class="text-blue-600" id="formula-f">F</span> /
+                            <span class="text-green-600" id="formula-a">A</span>
+                        </span>
+                        <div class="text-sm text-gray-500 mt-1">壓力 (N/m²) = 力 (N) ÷ 面積 (m²)</div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-5 flex-grow justify-center">
+                    <div class="control-group">
+                        <div class="flex justify-between items-center gap-3 mb-2">
+                            <label for="force-slider" class="font-bold text-lg text-blue-800 flex items-center gap-2">
+                                <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                                向下的力 (Force)
+                            </label>
+                            <span id="force-value" class="font-mono font-bold text-xl text-blue-600 bg-blue-100 px-3 py-1 rounded-full whitespace-nowrap">50 N</span>
+                        </div>
+                        <input type="range" id="force-slider" min="10" max="100" value="50" aria-describedby="force-hint">
+                        <p id="force-hint" class="text-xs text-gray-500 mt-1 text-right">想像物體的重量增加</p>
+                    </div>
+
+                    <div class="control-group mt-4">
+                        <div class="flex justify-between items-center gap-3 mb-2">
+                            <label for="area-slider" class="font-bold text-lg text-green-700 flex items-center gap-2">
+                                <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+                                接觸面積 (Area)
+                            </label>
+                            <span id="area-value" class="font-mono font-bold text-xl text-green-600 bg-green-100 px-3 py-1 rounded-full whitespace-nowrap">10 m²</span>
+                        </div>
+                        <input type="range" id="area-slider" min="2" max="20" value="10" aria-describedby="area-hint">
+                        <p id="area-hint" class="text-xs text-gray-500 mt-1 text-right">想像接觸面從尖刺變成寬大木板</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="glass-panel p-6 flex flex-col relative overflow-hidden" aria-labelledby="simulation-title">
+                <h2 id="simulation-title" class="text-xl font-bold text-gray-800 mb-4 text-center">實驗模擬台</h2>
+
+                <div class="bg-white rounded-xl border-2 border-dashed border-gray-300 flex-grow simulation-container relative">
+                    <div id="force-block" style="width: 120px; height: 125px;">
+                        <span id="block-label" class="text-2xl drop-shadow-md" aria-hidden="true">▣</span>
+                    </div>
+                    <div id="surface-area" style="width: 120px;"></div>
+
+                    <div id="ground">
+                        <div id="pressure-effect" style="width: 180px;"></div>
+                    </div>
+                </div>
+
+                <div class="mt-6 text-center">
+                    <div class="text-gray-600 font-medium mb-1">計算產生的壓力 (Pressure)</div>
+                    <div class="text-5xl font-black text-red-600 mb-2 drop-shadow-md transition-all duration-300" id="pressure-display">
+                        5.0 <span class="text-2xl text-red-400">N/m²</span>
+                    </div>
+
+                    <div id="explanation-text" class="text-md font-bold text-gray-700 bg-gray-100 p-3 rounded-lg border-l-4 border-red-500 transition-all">
+                        力量普通，面積適中，產生了一般的壓力。
+                    </div>
+                </div>
+
+                <div class="w-full bg-gray-200 rounded-full h-4 mt-6 overflow-hidden" role="meter" aria-label="壓力比例" aria-valuemin="0" aria-valuemax="50" aria-valuenow="5">
+                    <div id="pressure-meter" class="bg-gradient-to-r from-green-400 via-yellow-400 to-red-500 h-4 rounded-full transition-all duration-300" style="width: 10%"></div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const forceSlider = document.getElementById('force-slider');
+            const areaSlider = document.getElementById('area-slider');
+
+            const forceValueDisplay = document.getElementById('force-value');
+            const areaValueDisplay = document.getElementById('area-value');
+            const pressureDisplay = document.getElementById('pressure-display');
+
+            const forceBlock = document.getElementById('force-block');
+            const surfaceArea = document.getElementById('surface-area');
+            const pressureEffect = document.getElementById('pressure-effect');
+            const pressureMeter = document.getElementById('pressure-meter');
+            const pressureMeterContainer = pressureMeter.parentElement;
+            const explanationText = document.getElementById('explanation-text');
+
+            const formulaP = document.getElementById('formula-p');
+            const formulaF = document.getElementById('formula-f');
+            const formulaA = document.getElementById('formula-a');
+
+            function updateSimulation() {
+                const force = parseFloat(forceSlider.value);
+                const area = parseFloat(areaSlider.value);
+                const pressure = force / area;
+
+                forceValueDisplay.textContent = `${force} N`;
+                areaValueDisplay.textContent = `${area} m²`;
+                pressureDisplay.innerHTML = `${pressure.toFixed(1)} <span class="text-2xl text-red-400">N/m²</span>`;
+
+                const blockHeight = 50 + (force * 1.5);
+                forceBlock.style.height = `${blockHeight}px`;
+
+                const blueIntensity = Math.floor((force / 100) * 155) + 100;
+                forceBlock.style.background = `linear-gradient(180deg, rgb(${255 - blueIntensity}, 165, 250) 0%, rgb(37, 99, ${blueIntensity}) 100%)`;
+
+                const areaWidth = area * 12;
+                forceBlock.style.width = `${areaWidth}px`;
+                surfaceArea.style.width = `${areaWidth}px`;
+                pressureEffect.style.width = `${areaWidth * 1.5}px`;
+
+                const maxPossiblePressure = 50;
+                const pressureRatio = pressure / maxPossiblePressure;
+
+                pressureMeter.style.width = `${Math.min(pressureRatio * 100, 100)}%`;
+                pressureMeterContainer.setAttribute('aria-valuenow', pressure.toFixed(1));
+
+                pressureEffect.style.opacity = Math.min(pressureRatio * 1.5, 1);
+
+                let explanation = "";
+                let borderColor = "";
+
+                if (pressure < 5) {
+                    explanation = "壓力很小，就像一本書平放在桌上，對地面幾乎沒有影響。";
+                    borderColor = "border-green-500";
+                    formulaP.style.transform = "scale(0.8)";
+                } else if (pressure < 15) {
+                    explanation = "壓力適中，力量均勻分散在面積上。";
+                    borderColor = "border-yellow-400";
+                    formulaP.style.transform = "scale(1)";
+                } else if (pressure < 30) {
+                    explanation = "壓力偏高！因為面積較小或力量較大，地面開始承受負擔。";
+                    borderColor = "border-orange-500";
+                    formulaP.style.transform = "scale(1.2)";
+                } else {
+                    explanation = "危險！極大的壓力！強大的力量集中在微小的面積上，就像圖釘刺入木板一樣！";
+                    borderColor = "border-red-600";
+                    formulaP.style.transform = "scale(1.5)";
+                }
+
+                explanationText.textContent = explanation;
+                explanationText.className = `text-md font-bold text-gray-700 bg-gray-100 p-3 rounded-lg border-l-4 ${borderColor} transition-all`;
+
+                formulaF.style.fontWeight = force > 70 ? '900' : '400';
+                formulaA.style.fontWeight = area < 5 ? '900' : '400';
+            }
+
+            forceSlider.addEventListener('input', updateSimulation);
+            areaSlider.addEventListener('input', updateSimulation);
+
+            updateSimulation();
+        });
+    </script>
+</body>
+</html>
