@@ -116,9 +116,13 @@ function buildVoiceInstructions(languageFamily, gender, speed) {
   if (languageFamily === "zh") {
     return [
       "Speak in natural Taiwan Mandarin for elementary science bilingual reading.",
+      "Use Traditional Chinese zh-TW pronunciations used in Taiwan schools, following Taiwan Ministry of Education 國語 preferences whenever they differ from Mainland Putonghua.",
+      "Do not use Mainland China Mandarin accent, erhua, or China-region syllable choices.",
       "Use a warm, clear, polished studio-quality teacher voice with natural phrasing.",
       "Do not read one Chinese character at a time; group words into meaningful short phrases.",
       "Read numeric lesson labels such as 1-1 as 1之1, not 1橫線1.",
+      "In A和B list contexts, pronounce 和 like Taiwan classroom hàn; keep fixed words such as 溫和、飽和、中和 as hé.",
+      "Pronounce common Taiwan variants correctly: 垃圾 as lè-sè, 蝸牛 as guā-niú, 公分 as gōng-fēn.",
       "Use light pauses after commas and longer pauses after sentence endings.",
       "Keep science terms accurate and easy for children to understand.",
       "Avoid robotic cadence, metallic timbre, clipped phone-speaker pacing, or over-dramatic broadcasting.",

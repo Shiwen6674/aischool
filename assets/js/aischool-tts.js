@@ -64,6 +64,11 @@
       .replace(/第\s*([1-9])\s*[-－–—]\s*([1-9])/g, "第$1之$2")
       .replace(/([一二三四五六七八九十])\s*[-－–—]\s*([一二三四五六七八九十])/g, "$1之$2")
       .replace(/AI\s*School/g, "A I School")
+      // Speech-only Taiwan Mandarin pronunciation fixes for common words that
+      // many generic Chinese TTS voices otherwise read with Mainland pronunciations.
+      .replace(/垃圾/g, "樂色")
+      .replace(/蝸牛/g, "瓜牛")
+      .replace(/厘米/g, "公分")
       .replace(/\s{2,}/g, " ")
       .trim();
   }
@@ -439,6 +444,16 @@
       profileId: `${platform}-${family}-${gender}`,
       locale: request?.lang || (family === "en" ? "en-US" : "zh-TW"),
       style: family === "zh" ? "taiwan-mandarin-natural" : "clear-educational",
+      region: family === "zh" ? "Taiwan" : "US",
+      pronunciationLocale: family === "zh" ? "zh-TW-Taiwan-MOE" : "en-US",
+      pronunciationGuide: family === "zh"
+        ? [
+            "Use Taiwan Ministry of Education 國語 pronunciations.",
+            "Avoid Mainland Putonghua, erhua, and China-region syllable choices.",
+            "In A和B list contexts, pronounce 和 like Taiwan classroom hàn; keep fixed words such as 溫和、飽和、中和 as hé.",
+            "Pronounce 垃圾 as lè-sè and 蝸牛 as guā-niú."
+          ]
+        : [],
       timbre: gender === "male" ? "warm-male" : "warm-female",
       openAiVoice,
       naturalness: "high",
