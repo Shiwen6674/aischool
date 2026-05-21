@@ -906,7 +906,7 @@
         </aside>
     </div>
 
-    <div id="control-dock" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-[95%] max-w-lg md:max-w-xl transition-all duration-300">
+    <div id="control-dock" class="hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-[95%] max-w-lg md:max-w-xl transition-all duration-300">
         <div class="player-dock flex items-center justify-between gap-3 md:gap-5 bg-slate-900/90 md:bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-full px-5 py-3 md:px-6 md:py-2 shadow-2xl">
             
             <div class="flex flex-col items-center shrink-0 w-20 md:w-24 mr-2">
@@ -1336,7 +1336,12 @@ syncEnhancedSelects();
             Papa.parse(TARGET_URL, {
                 download: true, header: false,
                 skipEmptyLines: true, 
-                complete: res => { processData(res.data); document.getElementById('loader-overlay').style.display='none'; showToast("準備完成，開始探索吧！"); },
+                complete: res => {
+                    processData(res.data);
+                    document.getElementById('loader-overlay').style.display='none';
+                    document.getElementById('control-dock')?.classList.remove('hidden');
+                    showToast("準備完成，開始探索吧！");
+                },
                 error: () => document.getElementById('loader-overlay').innerHTML='<div class="text-red-500">連線錯誤，請重整</div>'
             });
         }
@@ -2405,6 +2410,76 @@ function getCheckVocabEntries() {
         .filter(item => item.zh && item.zh.length <= 8);
 }
 
+const QUICK_CHECK_FALLBACK_VOCAB = [
+    { zh: '水蒸氣', en: 'water vapor' },
+    { zh: '凝結', en: 'condensation' },
+    { zh: '蒸發', en: 'evaporation' },
+    { zh: '融化', en: 'melting' },
+    { zh: '溫度', en: 'temperature' },
+    { zh: '觀察', en: 'observation' },
+    { zh: '證據', en: 'evidence' },
+    { zh: '植物', en: 'plant' },
+    { zh: '根', en: 'root' },
+    { zh: '莖', en: 'stem' },
+    { zh: '葉', en: 'leaf' },
+    { zh: '磁鐵', en: 'magnet' },
+    { zh: '磁力', en: 'magnetic force' },
+    { zh: '動物', en: 'animal' },
+    { zh: '構造', en: 'structure' }
+];
+
+function getQuickCheckVocabPool(lines = []) {
+    const pool = [];
+    const seen = new Set();
+    const add = (item) => {
+        const zh = norm(item?.zh);
+        const en = norm(item?.en);
+        if (!zh || !en || !/[A-Za-z]/.test(en)) return;
+        const key = `${zh}::${en.toLowerCase()}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        pool.push({ zh, en });
+    };
+
+    getCheckVocabEntries().forEach(add);
+
+    const corpus = `${currentUnitData?.title || ''}\n${(lines || []).join('\n')}`.toLowerCase();
+    QUICK_CHECK_FALLBACK_VOCAB
+        .filter(item => corpus.includes(item.zh) || corpus.includes(item.en.toLowerCase()))
+        .forEach(add);
+    QUICK_CHECK_FALLBACK_VOCAB.forEach(add);
+
+    return pool;
+}
+
+function buildChineseStemEnglishOptionsCheck(pool) {
+    const item = pool[0];
+    if (!item) return null;
+    return {
+        type: 'bilingual_zh_stem_en_options',
+        stem: `「${item.zh}」在本單元中最接近哪一個英文科學詞？`,
+        correct: item.en,
+        options: makeOptions(item.en, pool.map(x => x.en), ['observation', 'evidence', 'temperature', 'change']),
+        feedback: `「${item.zh}」對應的英文是 ${item.en}。`,
+        feedbackCorrect: '答對了。',
+        feedbackWrong: '再看一次詞彙庫。'
+    };
+}
+
+function buildEnglishStemChineseOptionsCheck(pool) {
+    const item = pool[1] || pool[0];
+    if (!item) return null;
+    return {
+        type: 'bilingual_en_stem_zh_options',
+        stem: `Which Chinese science term best matches "${item.en}"?`,
+        correct: item.zh,
+        options: makeOptions(item.zh, pool.map(x => x.zh), ['觀察', '證據', '溫度', '變化']),
+        feedback: `"${item.en}" matches 「${item.zh}」 in this unit.`,
+        feedbackCorrect: 'Correct.',
+        feedbackWrong: 'Check the bilingual vocabulary again.'
+    };
+}
+
 function buildConceptCheck(lines) {
     const corpus = `${currentUnitData?.title || ''}\n${(lines || []).join('\n')}`;
     if (/水蒸氣|凝結|小水滴|冰水|白色煙霧/.test(corpus)) {
@@ -2485,55 +2560,111 @@ function buildConceptCheck(lines) {
     };
 }
 
-function buildQuickChecks(unit, lines) {
-    const paragraphLines = (lines || []).filter(line => classifyContentLine(line) === 'paragraph' && norm(line).length >= 12);
-    const vocabEntries = getCheckVocabEntries();
-    const vocabTerms = vocabEntries.map(item => item.zh);
-    const checks = [];
-
-    const conceptCheck = buildConceptCheck(lines);
-    if (conceptCheck) checks.push(conceptCheck);
-
-    const clozeSource = paragraphLines.find(line => vocabTerms.some(term => norm(line).includes(term)));
-    if (clozeSource) {
-        const term = vocabTerms.find(item => norm(clozeSource).includes(item));
-        if (term) {
-            checks.push({
-                type: 'text_cloze',
-                stem: `依據課文內容，空格最適合填入哪個科學詞？\n${clipText(clozeSource.replace(term, '（　）'), 74)}`,
-                correct: term,
-                options: makeOptions(term, vocabTerms, ['觀察', '證據', '變化', '溫度']),
-                feedback: `回到原句可看到「${term}」是這裡的關鍵詞。`
-            });
-        }
-    }
-
-    const bilingualPool = vocabEntries.filter(item => item.en && /[A-Za-z]/.test(item.en));
-    if (bilingualPool.length >= 3) {
-        const item = bilingualPool[0];
-        checks.push({
-            type: 'bilingual_vocab',
-            stem: `雙語詞彙檢核：「${item.en}」在本單元中最接近哪一個中文詞？`,
-            correct: item.zh,
-            options: makeOptions(item.zh, bilingualPool.map(x => x.zh), ['水蒸氣', '觀察', '證據', '溫度']),
-            feedback: `「${item.en}」在本頁對應的中文詞是「${item.zh}」。`
-        });
-    }
-
-    if (checks.length < 3 && paragraphLines.length >= 2) {
-        const correct = clipText(paragraphLines[0], 34);
-        checks.push({
-            type: 'evidence_sentence',
-            stem: '下列哪一句最適合當作回到課文查證的線索？',
+function buildEnglishConceptCheck(lines) {
+    const corpus = `${currentUnitData?.title || ''}\n${(lines || []).join('\n')}`;
+    if (/水蒸氣|凝結|小水滴|冰水|白色煙霧/.test(corpus)) {
+        const correct = 'Invisible water vapor cools and condenses into tiny water droplets.';
+        return {
+            type: 'concept_condensation_en',
+            stem: 'Which explanation best describes why small droplets appear on the outside of an ice-water cup?',
             correct,
-            options: makeOptions(correct, paragraphLines.slice(1, 6).map(line => clipText(line, 34)), [
-                '只要看標題就能知道全部答案',
-                '不需要任何資料也可以下結論',
-                '只要顏色相同原因就會相同'
+            options: makeOptions(correct, [
+                'Water inside the cup passes through the cup wall.',
+                'Ice directly becomes visible white vapor outside the cup.',
+                'The cup surface creates new water by itself.'
             ]),
-            feedback: '做閱讀檢核時，最好能回到課文中的句子找證據。'
-        });
+            feedback: 'The key idea is condensation: invisible water vapor becomes visible droplets when it cools.',
+            feedbackCorrect: 'Correct.',
+            feedbackWrong: 'Review the evidence in the reading.'
+        };
     }
+    if (/蒸發|水量變少|變乾/.test(corpus)) {
+        const correct = 'Liquid water changes into invisible water vapor more quickly when it gains heat.';
+        return {
+            type: 'concept_evaporation_en',
+            stem: 'Which statement best explains why a wet cloth dries faster in warm sunlight?',
+            correct,
+            options: makeOptions(correct, [
+                'The color of water becomes lighter and then disappears.',
+                'Sunlight pushes all water deep into the ground.',
+                'Water becomes heavier and stays inside the cloth.'
+            ]),
+            feedback: 'Evaporation changes liquid water into invisible water vapor, and heat can speed it up.',
+            feedbackCorrect: 'Correct.',
+            feedbackWrong: 'Review the evidence in the reading.'
+        };
+    }
+    if (/磁|磁鐵|磁力/.test(corpus)) {
+        const correct = 'A magnet can attract iron objects, so material evidence matters.';
+        return {
+            type: 'concept_magnetism_en',
+            stem: 'Which statement is the best scientific rule for testing a magnet?',
+            correct,
+            options: makeOptions(correct, [
+                'A magnet attracts every metal object in the same way.',
+                'A magnet works only when an object is very heavy.',
+                'A magnet attracts objects mainly because of their color.'
+            ]),
+            feedback: 'Magnetism should be judged by material and evidence, not by color or weight alone.',
+            feedbackCorrect: 'Correct.',
+            feedbackWrong: 'Review the evidence in the reading.'
+        };
+    }
+    if (/植物|蔬菜|生長|根|莖|葉/.test(corpus)) {
+        const correct = 'Plant growth should be explained with repeated observations and growing conditions.';
+        return {
+            type: 'concept_plant_growth_en',
+            stem: 'Which statement best supports a reliable conclusion about plant growth?',
+            correct,
+            options: makeOptions(correct, [
+                'The prettiest plant on the last day gives the best evidence.',
+                'Changing water and light every day makes the result clearer.',
+                'The flowerpot color is enough to explain plant growth.'
+            ]),
+            feedback: 'Reliable plant-growth conclusions need repeated records and clear conditions such as water, light, and space.',
+            feedbackCorrect: 'Correct.',
+            feedbackWrong: 'Review the evidence in the reading.'
+        };
+    }
+    if (/動物|構造|行為|生存/.test(corpus)) {
+        const correct = 'Animal structures and behaviors should be connected to survival in their environment.';
+        return {
+            type: 'concept_animal_adaptation_en',
+            stem: 'Which statement best matches scientific reading about animals?',
+            correct,
+            options: makeOptions(correct, [
+                'An animal name tells us every structure and behavior.',
+                'Color is the only evidence needed to explain animals.',
+                'All animals move, feed, and protect themselves in the same way.'
+            ]),
+            feedback: 'Scientific reading connects features, functions, environments, and evidence.',
+            feedbackCorrect: 'Correct.',
+            feedbackWrong: 'Review the evidence in the reading.'
+        };
+    }
+    const correct = 'A scientific explanation should use observations, conditions, and evidence.';
+    return {
+        type: 'concept_evidence_en',
+        stem: 'Which statement best describes good scientific reading?',
+        correct,
+        options: makeOptions(correct, [
+            'One observation is enough to explain every situation.',
+            'A favorite answer should be chosen before checking data.',
+            'The color of an object is always the main cause.'
+        ]),
+        feedback: 'Good scientific reading connects claims with evidence from the text.',
+        feedbackCorrect: 'Correct.',
+        feedbackWrong: 'Review the evidence in the reading.'
+    };
+}
+
+function buildQuickChecks(unit, lines) {
+    const vocabPool = getQuickCheckVocabPool(lines);
+    const checks = [
+        buildChineseStemEnglishOptionsCheck(vocabPool),
+        buildEnglishStemChineseOptionsCheck(vocabPool),
+        buildEnglishConceptCheck(lines)
+    ].filter(Boolean);
 
     return checks.slice(0, 3).map((check, index) => ({
         ...check,
@@ -2567,17 +2698,20 @@ function renderQuickChecks() {
             return `
                 <button class="quick-check-option${stateClass}" ${hasAnswered ? 'disabled' : ''} onclick="answerQuickCheck(${qIndex}, ${optIndex})">
                     <span class="quick-check-letter">${letters[optIndex] || ''}</span>
-                    <span>${escapeHtml(option)}</span>
+                    <span>${formatScienceTextHtml(option)}</span>
                 </button>`;
         }).join('');
 
+        const feedbackLead = quickCheckAnswers[qIndex]
+            ? (check.feedbackCorrect || '答對了。')
+            : (check.feedbackWrong || '再回文中找一次證據。');
         const feedback = hasAnswered
-            ? `<div class="quick-check-feedback">${quickCheckAnswers[qIndex] ? '答對了。' : '再回文中找一次證據。'} ${escapeHtml(check.feedback || '')}</div>`
+            ? `<div class="quick-check-feedback">${formatScienceTextHtml(feedbackLead)} ${formatScienceTextHtml(check.feedback || '')}</div>`
             : '';
 
         return `
             <div class="quick-check-item">
-                <div class="quick-check-stem">${qIndex + 1}. ${escapeHtml(check.stem)}</div>
+                <div class="quick-check-stem">${qIndex + 1}. ${formatScienceTextHtml(check.stem)}</div>
                 <div class="quick-check-options">${optionsHtml}</div>
                 ${feedback}
             </div>`;
