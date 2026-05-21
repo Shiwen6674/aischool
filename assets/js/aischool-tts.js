@@ -405,7 +405,7 @@
   }
 
   function getCloudVoiceId(family, gender) {
-    if (family === "zh") return gender === "male" ? "cedar" : "marin";
+    if (family === "zh") return gender === "male" ? "onyx" : "coral";
     return gender === "male" ? "onyx" : "coral";
   }
 
@@ -810,14 +810,30 @@
         (typeof config.languageResolver === "function" ? config.languageResolver(cleanText, request) : "") ||
         (request.isEng ? "en-US" : "zh-TW");
 
+      if (request.forceCloud && !isCloudConfigured(request.endpointKey)) {
+        const error = new Error("Cloud TTS endpoint is not configured.");
+        notifyModeChange("cloud-error");
+        if (typeof request.onError === "function") request.onError(error);
+        throw error;
+      }
+
+      if (request.forceCloud && Date.now() < cloudUnavailableUntil) {
+        cloudUnavailableUntil = 0;
+      }
+
       if (request.preferCloud && isCloudConfigured(request.endpointKey) && Date.now() >= cloudUnavailableUntil) {
         try {
           return await playCloud(cleanText, request, expectedRunId);
-        } catch {
+        } catch (error) {
           cloudFailureCount += 1;
           cloudUnavailableUntil = Date.now() + Math.min(CLOUD_FAILURE_COOLDOWN_MS * cloudFailureCount, 120000);
           if (typeof config.onCloudFallback === "function") {
-            config.onCloudFallback();
+            config.onCloudFallback(error);
+          }
+          if (request.forceCloud) {
+            notifyModeChange("cloud-error");
+            if (typeof request.onError === "function") request.onError(error);
+            throw error;
           }
         }
       }

@@ -108,7 +108,7 @@ function pickOpenAiVoice(languageFamily, gender, voiceProfile) {
   var hintedVoice = voiceProfile && voiceProfile.openAiVoice ? String(voiceProfile.openAiVoice) : "";
   if (hintedVoice) return hintedVoice;
 
-  if (languageFamily === "zh") return gender === "male" ? "cedar" : "marin";
+  if (languageFamily === "zh") return gender === "male" ? "onyx" : "coral";
   return gender === "male" ? "onyx" : "coral";
 }
 
@@ -116,12 +116,12 @@ function buildVoiceInstructions(languageFamily, gender, speed) {
   if (languageFamily === "zh") {
     return [
       "Speak in natural Taiwan Mandarin for elementary science bilingual reading.",
-      "Use a warm, clear, teacher-like tone with natural phrasing.",
+      "Use a warm, clear, polished studio-quality teacher voice with natural phrasing.",
       "Do not read one Chinese character at a time; group words into meaningful short phrases.",
       "Read numeric lesson labels such as 1-1 as 1之1, not 1橫線1.",
       "Use light pauses after commas and longer pauses after sentence endings.",
       "Keep science terms accurate and easy for children to understand.",
-      "Avoid robotic cadence, metallic timbre, or over-dramatic broadcasting.",
+      "Avoid robotic cadence, metallic timbre, clipped phone-speaker pacing, or over-dramatic broadcasting.",
       "Target speaking speed is " + speed + "x, calm enough for listening practice.",
       gender === "male" ? "Use a warm adult male timbre, not a pitch-shifted female voice." : "Use a warm adult female timbre, gentle and not shrill."
     ].join(" ");
@@ -129,8 +129,8 @@ function buildVoiceInstructions(languageFamily, gender, speed) {
 
   return [
     "Speak clear educational English for bilingual science reading.",
-    "Use natural phrasing, calm pacing, and friendly emphasis.",
-    "Avoid robotic cadence and overly flat intonation.",
+    "Use natural phrasing, calm pacing, friendly emphasis, and polished studio-quality clarity.",
+    "Avoid robotic cadence, clipped phone-speaker pacing, and overly flat intonation.",
     "Target speaking speed is " + speed + "x.",
     gender === "male" ? "Use a warm adult male timbre." : "Use a warm adult female timbre."
   ].join(" ");

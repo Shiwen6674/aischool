@@ -683,6 +683,48 @@
             background: linear-gradient(135deg, #22c55e, #10b981);
             box-shadow: 0 10px 22px rgba(34, 197, 94, 0.24);
         }
+        .ai-voice-toggle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            min-width: 3rem;
+            height: 2.25rem;
+            padding: 0 0.75rem;
+            border-radius: 999px;
+            color: #94a3b8;
+            background: rgba(15, 23, 42, 0.76);
+            border: 1px solid rgba(148, 163, 184, 0.24);
+            font-size: 0.72rem;
+            font-weight: 900;
+            letter-spacing: 0.04em;
+            transition: transform 150ms ease, color 150ms ease, background 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+        }
+        .ai-voice-toggle:hover {
+            color: #f8fafc;
+            border-color: rgba(56, 189, 248, 0.45);
+            transform: translateY(-1px);
+        }
+        .ai-voice-toggle.is-active {
+            color: #ecfeff;
+            background: linear-gradient(135deg, #0ea5e9, #22c55e);
+            border-color: rgba(125, 211, 252, 0.56);
+            box-shadow: 0 0 24px rgba(56, 189, 248, 0.22), 0 10px 22px rgba(34, 197, 94, 0.18);
+        }
+        .ai-voice-toggle:not(.is-active) {
+            color: #fbbf24;
+            border-color: rgba(251, 191, 36, 0.28);
+        }
+        @media (max-width: 640px) {
+            .ai-voice-toggle {
+                min-width: 2.35rem;
+                width: 2.35rem;
+                padding: 0;
+            }
+            .ai-voice-toggle #ai-voice-label {
+                display: none;
+            }
+        }
         .player-stop-btn {
             border-color: rgba(148, 163, 184, 0.32);
         }
@@ -877,6 +919,10 @@
                     <button onclick="setVoice('female')" id="btn-female" class="voice-toggle is-active" type="button" aria-label="中文女聲" title="中文女聲"><i class="fa-solid fa-person-dress text-lg md:text-sm"></i></button>
                 </div>
 
+                <button onclick="toggleAiVoice()" id="btn-ai-voice" class="ai-voice-toggle is-active" type="button" aria-label="AI 語音開關" aria-pressed="true" title="AI 語音開關">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i><span id="ai-voice-label">AI</span>
+                </button>
+
                 <button onclick="playPrev()" class="player-control-btn" id="btn-prev" type="button" aria-label="上一段" title="上一段">
                     <i class="fa-solid fa-backward-step text-lg md:text-sm"></i>
                 </button>
@@ -915,6 +961,8 @@
               COL_CONTENT=8, COL_CKIP=9, COL_VOCAB=18;
 
 let rawData=[], processedUnits=[], isSpeaking=false, isLooping=false, currentVoice='female', translationCache={}, synth=window.speechSynthesis;
+const AI_VOICE_MODE_KEY = "AISCHOOL_BILINGUAL_AI_VOICE_MODE";
+let aiVoiceEnabled = localStorage.getItem(AI_VOICE_MODE_KEY) !== "device";
 let activeVocabMap = {};
 let currentBlockIndex = 0;
 let currentUnitTitleZh = "";
@@ -1173,9 +1221,10 @@ const BILINGUAL_TRACKING_SCHEMA_VERSION = "2026-04-reading-check-v1";
                     getGender: () => currentVoice,
                     getRate: () => getUiRate(),
                     onModeChange: (mode) => updateTtsStatus(mode),
-                    onCloudFallback: () => updateTtsStatus('browser-fallback')
+                    onCloudFallback: () => updateTtsStatus(getAiVoiceEnabled() ? 'cloud-error' : 'browser-fallback')
                 });
             }
+            updateAiVoiceToggle();
             updateTtsStatus();
             if(synth) synth.onvoiceschanged = () => { synth.getVoices(); updateTtsStatus(); };
 suppressVoiceTracking = true;
@@ -1856,6 +1905,39 @@ function updateVoiceButtons() {
     }
 }
 
+function getAiVoiceEnabled() {
+    return aiVoiceEnabled !== false;
+}
+
+function updateAiVoiceToggle() {
+    const btn = document.getElementById('btn-ai-voice');
+    const label = document.getElementById('ai-voice-label');
+    const enabled = getAiVoiceEnabled();
+    if (btn) {
+        btn.classList.toggle('is-active', enabled);
+        btn.setAttribute('aria-pressed', String(enabled));
+        btn.setAttribute('aria-label', enabled ? 'AI 語音已開啟，按下切換為裝置機器音' : '裝置機器音已開啟，按下切換為 AI 語音');
+        btn.title = enabled ? 'AI 語音：中英文皆使用雲端自然語音' : '裝置機器音：使用手機或瀏覽器內建 TTS';
+    }
+    if (label) label.textContent = enabled ? 'AI' : '機器';
+}
+
+function setAiVoiceEnabled(enabled, options = {}) {
+    aiVoiceEnabled = Boolean(enabled);
+    localStorage.setItem(AI_VOICE_MODE_KEY, aiVoiceEnabled ? 'ai' : 'device');
+    updateAiVoiceToggle();
+    if (!options.silent) {
+        trackEvent('ai_voice_toggled', { value: aiVoiceEnabled ? 'on' : 'off' });
+        showToast(aiVoiceEnabled ? 'AI 語音已開啟' : '已切換為裝置機器音');
+    }
+    stopAudioOnly();
+    updateTtsStatus();
+}
+
+function toggleAiVoice() {
+    setAiVoiceEnabled(!getAiVoiceEnabled());
+}
+
 function updatePlaybackControls() {
     const blocks = getReadingBlocks();
     const hasBlocks = blocks.length > 0;
@@ -1881,11 +1963,26 @@ function updateTtsStatus(modeOverride) {
     const mode = modeOverride || ttsPlayer?.getMode?.() || 'idle';
     const cloudReady = Boolean(ttsPlayer?.isCloudConfigured?.('cloudTts'));
     const mobile = Boolean(window.AISchoolTTS?.helpers?.isMobileDevice?.());
+    const aiVoiceOn = getAiVoiceEnabled();
 
     if (mode === 'cloud') {
         status.textContent = 'AI Voice';
         status.title = '目前使用雲端 AI 語音朗讀';
         status.className = 'mt-1 text-[9px] font-bold uppercase tracking-wide text-emerald-400';
+        return;
+    }
+
+    if (mode === 'cloud-error') {
+        status.textContent = 'AI Error';
+        status.title = 'AI 語音暫時無法播放，請確認 OpenAI API key 或稍後再試';
+        status.className = 'mt-1 text-[9px] font-bold uppercase tracking-wide text-rose-300';
+        return;
+    }
+
+    if (!aiVoiceOn) {
+        status.textContent = mobile ? 'Device Mobile' : 'Device Voice';
+        status.title = 'AI 語音已關閉，目前使用裝置內建機器音';
+        status.className = 'mt-1 text-[9px] font-bold uppercase tracking-wide text-amber-300';
         return;
     }
 
@@ -1909,7 +2006,7 @@ function updateTtsStatus(modeOverride) {
 
     if (cloudReady) {
         status.textContent = 'AI Ready';
-        status.title = '雲端 AI 語音已就緒';
+        status.title = 'AI 語音已開啟，中英文會使用雲端自然語音';
         status.className = 'mt-1 text-[9px] font-bold uppercase tracking-wide text-cyan-400';
         return;
     }
@@ -2862,6 +2959,16 @@ function speakText(txt, onComplete) {
         return;
     }
 
+    const useAiVoice = getAiVoiceEnabled();
+    if (useAiVoice && !ttsPlayer?.speak) {
+        updateTtsStatus('cloud-error');
+        showToast('AI 語音模組尚未載入');
+        isSpeaking = false;
+        setPlaybackButtonIcon(false);
+        updatePlaybackControls();
+        return;
+    }
+
     const finishPlayback = () => {
         updateTtsStatus();
         if (onComplete) {
@@ -2880,10 +2987,19 @@ function speakText(txt, onComplete) {
             isEng,
             lang: resolveSpeechLanguage(cleanTxt),
             rate: getUiRate(),
+            preferCloud: useAiVoice,
+            forceCloud: useAiVoice,
             onComplete: finishPlayback
         }).catch(() => {
-            updateTtsStatus('browser');
-            finishPlayback();
+            updateTtsStatus(useAiVoice ? 'cloud-error' : 'browser');
+            if (useAiVoice) {
+                showToast('AI 語音暫時無法播放，請確認 API key 或稍後再試');
+                isSpeaking = false;
+                setPlaybackButtonIcon(false);
+                updatePlaybackControls();
+            } else {
+                finishPlayback();
+            }
         });
         return;
     }
