@@ -120,6 +120,16 @@
             transform: scale(1.05);
             display: inline-block;
         }
+        .chem-formula {
+            white-space: nowrap;
+            font-variant-numeric: lining-nums;
+            letter-spacing: 0.01em;
+        }
+        .chem-formula sub {
+            font-size: 0.62em;
+            line-height: 0;
+            vertical-align: -0.35em;
+        }
 
         /* 5. 閱讀區塊 (排版優化) */
         .content-block { 
@@ -1695,8 +1705,8 @@ function renderSingleVocabContainer(container) {
     card.className = "vocab-item";
     card.innerHTML = `
       <div class="flex-1 pr-2">
-        <div class="text-lg font-bold text-yellow-400 cursor-pointer mb-1" onclick="speakText('${zh.replace(/'/g,"\\'")}')">${escapeHtml(zh)}</div>
-        <div class="text-sm en-term-label cursor-pointer" data-zh="${escapeHtml(zh)}" onclick="speakVocabEn('${zh.replace(/'/g,"\\'")}', this)">${escapeHtml(showEn)}</div>
+        <div class="text-lg font-bold text-yellow-400 cursor-pointer mb-1" onclick="speakText('${zh.replace(/'/g,"\\'")}')">${formatScienceTextHtml(zh)}</div>
+        <div class="text-sm en-term-label cursor-pointer" data-zh="${escapeHtml(zh)}" onclick="speakVocabEn('${zh.replace(/'/g,"\\'")}', this)">${formatScienceTextHtml(showEn)}</div>
       </div>
       <div class="flex items-center gap-1">
         <button onclick="event.stopPropagation(); speakText('${zh.replace(/'/g,"\\'")}')" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center text-xs">中</button>
@@ -1757,7 +1767,7 @@ function renderVocabSidebar() {
           translateToEn(currentUnitTitleZh).then(en => {
             currentUnitTitleEn = en || "";
             const enEl = document.getElementById('title-en');
-            if(enEl) enEl.innerText = currentUnitTitleEn || "";
+            if(enEl) enEl.innerHTML = formatScienceTextHtml(currentUnitTitleEn || "");
           }).catch(() => {});
         }
 
@@ -1811,10 +1821,10 @@ async function translateVisibleBlocks() {
                 el.innerHTML = makeClickable(highlightEnglishVocabInText(txt));
                 translationCache[src] = txt;
             } else {
-                el.innerHTML = makeClickable(escapeHtml(src));
+                el.innerHTML = makeClickable(formatScienceTextHtml(src));
             }
         } catch (e) {
-            el.innerHTML = makeClickable(escapeHtml(src));
+                el.innerHTML = makeClickable(formatScienceTextHtml(src));
         }
     }
 
@@ -1824,6 +1834,122 @@ async function translateVisibleBlocks() {
 
         function makeClickable(html) { return `<span class="cursor-pointer hover:text-green-300 transition">${html}</span>`; }
         function escapeHtml(s){ return (s||"").toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+function escapeJsSingleQuoted(value) {
+  return (value || "").toString().replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/\r?\n/g, " ");
+}
+
+const CHEMICAL_ELEMENT_SYMBOLS = new Set([
+  "H","He","Li","Be","B","C","N","O","F","Ne","Na","Mg","Al","Si","P","S","Cl","Ar","K","Ca",
+  "Sc","Ti","V","Cr","Mn","Fe","Co","Ni","Cu","Zn","Ga","Ge","As","Se","Br","Kr","Rb","Sr","Y",
+  "Zr","Nb","Mo","Tc","Ru","Rh","Pd","Ag","Cd","In","Sn","Sb","Te","I","Xe","Cs","Ba","La","Ce",
+  "Pr","Nd","Pm","Sm","Eu","Gd","Tb","Dy","Ho","Er","Tm","Yb","Lu","Hf","Ta","W","Re","Os","Ir",
+  "Pt","Au","Hg","Tl","Pb","Bi","Po","At","Rn","Fr","Ra","Ac","Th","Pa","U","Np","Pu","Am","Cm",
+  "Bk","Cf","Es","Fm","Md","No","Lr","Rf","Db","Sg","Bh","Hs","Mt","Ds","Rg","Cn","Nh","Fl","Mc",
+  "Lv","Ts","Og"
+]);
+const CHEMICAL_FORMULA_OPERATORS = new Set(["+","-","=","→","←","⇌","(",")","·","＋","－"]);
+
+function readElementSymbolFromFormula(token, index) {
+  const first = token[index];
+  const next = token[index + 1] || "";
+  if (!/[A-Z]/.test(first)) return null;
+
+  if (/[a-z]/.test(next)) {
+    const exact = first + next;
+    if (CHEMICAL_ELEMENT_SYMBOLS.has(exact)) return { symbol: exact, length: 2 };
+  }
+
+  const one = first;
+  const normalizedTwo = first + next.toLowerCase();
+  if (/[A-Z]/.test(next) && CHEMICAL_ELEMENT_SYMBOLS.has(normalizedTwo) && !CHEMICAL_ELEMENT_SYMBOLS.has(next)) {
+    return { symbol: normalizedTwo, length: 2 };
+  }
+  if (CHEMICAL_ELEMENT_SYMBOLS.has(one)) return { symbol: one, length: 1 };
+  if (/[A-Z]/.test(next) && CHEMICAL_ELEMENT_SYMBOLS.has(normalizedTwo)) {
+    return { symbol: normalizedTwo, length: 2 };
+  }
+  return null;
+}
+
+function formatChemicalFormulaToken(token) {
+  const raw = (token || "").toString();
+  if (!/[A-Za-z]/.test(raw)) return "";
+
+  let html = "";
+  let normalized = "";
+  let elementCount = 0;
+  let hasSubscript = false;
+  let hasOperator = false;
+  let prevType = "";
+
+  for (let i = 0; i < raw.length;) {
+    const ch = raw[i];
+
+    if (/\d/.test(ch)) {
+      let j = i + 1;
+      while (j < raw.length && /\d/.test(raw[j])) j++;
+      const digits = raw.slice(i, j);
+      normalized += digits;
+      if (prevType === "element" || prevType === "close") {
+        html += `<sub>${escapeHtml(digits)}</sub>`;
+        hasSubscript = true;
+      } else {
+        html += escapeHtml(digits);
+      }
+      prevType = "digit";
+      i = j;
+      continue;
+    }
+
+    if (CHEMICAL_FORMULA_OPERATORS.has(ch)) {
+      html += escapeHtml(ch);
+      normalized += ch;
+      if (ch !== "(" && ch !== ")") hasOperator = true;
+      prevType = ch === ")" ? "close" : "operator";
+      i++;
+      continue;
+    }
+
+    if (/[A-Z]/.test(ch)) {
+      const read = readElementSymbolFromFormula(raw, i);
+      if (!read) return "";
+      html += escapeHtml(read.symbol);
+      normalized += read.symbol;
+      elementCount++;
+      prevType = "element";
+      i += read.length;
+      continue;
+    }
+
+    if (/[a-z]/.test(ch)) return "";
+    return "";
+  }
+
+  if (!elementCount) return "";
+  if (!hasSubscript && !hasOperator && elementCount < 2 && normalized === raw) return "";
+  return `<span class="chem-formula">${html}</span>`;
+}
+
+function formatScienceTextHtml(text) {
+  const src = (text || "").toString();
+  const tokenRe = /\d*[A-Z][A-Za-z0-9()+\-+=→←⇌·＋－]*/g;
+  let html = "";
+  let last = 0;
+  let match;
+
+  while ((match = tokenRe.exec(src)) !== null) {
+    const token = match[0];
+    const formatted = formatChemicalFormulaToken(token);
+    if (!formatted) continue;
+    html += escapeHtml(src.slice(last, match.index));
+    html += formatted;
+    last = match.index + token.length;
+  }
+
+  html += escapeHtml(src.slice(last));
+  return html;
+}
+
 function escapeRegExpLiteral(value) {
   return (value || "").toString().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -1844,31 +1970,42 @@ function buildEnglishVocabRegex(term) {
 
 function highlightEnglishVocabInText(txt) {
   const src = (txt || "").toString();
-  const terms = Object.values(activeVocabMap || {})
-    .map(v => (v || "").trim())
-    .filter(v => v && v !== "Loading..." && /[a-zA-Z]/.test(v));
+  const terms = Object.entries(activeVocabMap || {})
+    .map(([zh, en]) => ({
+      zh: (zh || "").trim(),
+      en: (en || "").trim()
+    }))
+    .filter(item => item.en && item.en !== "Loading..." && /[a-zA-Z]/.test(item.en));
 
-  const uniq = [...new Set(terms)].sort((a, b) => b.length - a.length);
-  if (!uniq.length) return escapeHtml(src);
+  const seen = new Set();
+  const uniq = terms
+    .sort((a, b) => b.en.length - a.en.length)
+    .filter(item => {
+      const key = item.en.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  if (!uniq.length) return formatScienceTextHtml(src);
 
   const matches = [];
 
   const overlaps = (start, end) =>
     matches.some(m => !(end <= m.start || start >= m.end));
 
-  for (const term of uniq) {
-    const re = buildEnglishVocabRegex(term);
+  for (const item of uniq) {
+    const re = buildEnglishVocabRegex(item.en);
 
     let match;
     while ((match = re.exec(src)) !== null) {
       const start = match.index;
       const end = start + match[0].length;
       if (overlaps(start, end)) continue;
-      matches.push({ start, end, text: match[0] });
+      matches.push({ start, end, text: match[0], zh: item.zh, en: item.en });
     }
   }
 
-  if (!matches.length) return escapeHtml(src);
+  if (!matches.length) return formatScienceTextHtml(src);
 
   matches.sort((a, b) => a.start - b.start);
 
@@ -1876,13 +2013,14 @@ function highlightEnglishVocabInText(txt) {
   let last = 0;
 
   for (const m of matches) {
-    html += escapeHtml(src.slice(last, m.start));
-    const js = m.text.replace(/'/g, "\\'");
-    html += `<span class="sci-term" onclick="event.stopPropagation(); trackEvent('term_clicked', { detail: '${escapeHtml(m.text)}', value: 'en' }); speakText('${js}')" title="${escapeHtml(m.text)}">${escapeHtml(m.text)}</span>`;
+    html += formatScienceTextHtml(src.slice(last, m.start));
+    const js = escapeJsSingleQuoted(m.text);
+    const title = escapeHtml(m.zh || m.en || m.text);
+    html += `<span class="sci-term" onclick="event.stopPropagation(); trackEvent('term_clicked', { detail: '${escapeHtml(m.text)}', value: 'en' }); speakText('${js}')" title="${title}">${formatScienceTextHtml(m.text)}</span>`;
     last = m.end;
   }
 
-  html += escapeHtml(src.slice(last));
+  html += formatScienceTextHtml(src.slice(last));
   return html;
 }
 
@@ -2590,7 +2728,7 @@ function checkUnitCompletion() {
             currentUnitTitleZh = unit.title;
             currentUnitTitleEn = "";
             document.getElementById('article-title').innerHTML = `
-              <div id="title-zh">${escapeHtml(currentUnitTitleZh)}</div>
+              <div id="title-zh">${formatScienceTextHtml(currentUnitTitleZh)}</div>
               <div id="title-en" class="text-xl md:text-2xl font-bold text-green-400 mt-2">Translating...</div>
             `;
             document.getElementById('status-bar').innerText = unit.title;
@@ -2625,7 +2763,7 @@ function checkUnitCompletion() {
                     navItem.onclick=()=>{ document.getElementById(anchorId).scrollIntoView({behavior:'smooth',block:'center'}); };
                     document.getElementById('unit-list').appendChild(navItem);
                     
-                    const displayHtml = escapeHtml(line);
+                    const displayHtml = formatScienceTextHtml(line);
 
                     contentDiv.innerHTML += `
                         <h2 id="${anchorId}" class="section-header reading-block" data-block-role="section">
@@ -2712,7 +2850,7 @@ suppressModeTracking = false;
         function processXRayWithCKIP(text, map, ckipTokenSet, ckipMergeSet) {
           const src = (text || "").toString().replace(/　/g, " ");
           const keys = Object.keys(map || {}).filter(Boolean).sort((a, b) => b.length - a.length);
-          if (!keys.length) return escapeHtml(src);
+          if (!keys.length) return formatScienceTextHtml(src);
           const spans = [];
           const overlaps = (s, e) => spans.some(sp => !(e <= sp.start || s >= sp.end));
           for (const term of keys) {
@@ -2727,27 +2865,45 @@ suppressModeTracking = false;
               spans.push({ start, end, term });
             }
           }
-          if (!spans.length) return escapeHtml(src);
+          if (!spans.length) return formatScienceTextHtml(src);
           spans.sort((a, b) => a.start - b.start);
           let html = "", last = 0;
           for (const sp of spans) {
-            html += escapeHtml(src.slice(last, sp.start));
+            html += formatScienceTextHtml(src.slice(last, sp.start));
             const zh = sp.term;
-            const js = ((map[zh] || zh) + "").toString().replace(/'/g, "\\'");
-            const title = escapeHtml(((map[zh] || "") + "").toString());
-            html += `<span class="sci-term" onclick="event.stopPropagation(); trackEvent('term_clicked', { detail: '${escapeHtml(zh)}', value: 'zh' }); speakText('${js}')" title="${title}">${escapeHtml(zh)}</span>`;
+            const en = ((map[zh] || "") + "").toString().trim();
+            const js = escapeJsSingleQuoted(zh);
+            const title = escapeHtml(en || zh);
+            html += `<span class="sci-term" data-term-lang="zh" data-zh-term="${escapeHtml(zh)}" onclick="event.stopPropagation(); trackEvent('term_clicked', { detail: '${escapeHtml(zh)}', value: 'zh' }); speakZhTerm('${js}')" title="${title}">${formatScienceTextHtml(zh)}</span>`;
             last = sp.end;
           }
-          html += escapeHtml(src.slice(last));
+          html += formatScienceTextHtml(src.slice(last));
           return html;
+        }
+
+        function refreshChineseTermTooltips(zh, en) {
+          const term = (zh || "").toString();
+          const translation = (en || "").toString().trim();
+          document.querySelectorAll('.sci-term[data-term-lang="zh"]').forEach(el => {
+            if (el.getAttribute('data-zh-term') === term) {
+              el.setAttribute('title', translation || term);
+            }
+          });
+        }
+
+        function speakZhTerm(zh) {
+          const term = (zh || "").toString();
+          const en = ((activeVocabMap && activeVocabMap[term]) || "").toString().trim();
+          speakText(en || term);
         }
 
         async function translateVocabItem(zh, el) {
           try {
             const local = getLocalScienceTranslation(zh);
             if (local) {
-              if(el) el.innerText = local;
+              if(el) el.innerHTML = formatScienceTextHtml(local);
               activeVocabMap[zh] = local;
+              refreshChineseTermTooltips(zh, local);
               rehighlightEnglishBlocks();
               return local;
             }
@@ -2757,13 +2913,15 @@ suppressModeTracking = false;
             const json = await res.json();
             const rawEn = (json && json[0] && json[0][0] && json[0][0][0]) ? json[0][0][0] : "";
             const en = polishScienceTranslation(zh, rawEn);
-            if(el) el.innerText = en || "—";
+            if(el) el.innerHTML = formatScienceTextHtml(en || "—");
             activeVocabMap[zh] = en || "";
+            refreshChineseTermTooltips(zh, en || "");
             rehighlightEnglishBlocks();
             return en || "";
           } catch(e) {
-            if(el) el.innerText = "—";
+            if(el) el.innerHTML = "—";
             activeVocabMap[zh] = "";
+            refreshChineseTermTooltips(zh, "");
             rehighlightEnglishBlocks();
             return "";
           }
