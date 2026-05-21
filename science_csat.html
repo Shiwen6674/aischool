@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI School | 高中學測自然科戰略中心</title>
+    <title>AI School | 高中學測專區</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&family=Outfit:wght@500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
@@ -12,11 +12,11 @@
     <script src="./assets/js/aischool-shared.js"></script>
     <script>
         window.AISchoolHubConfig = {
-            slug: "science-gsat-strategy",
+            slug: "science-gsat-zone",
             icon: "fa-solid fa-chart-line",
-            eyebrow: "GSAT Science Strategy",
-            title: "高中學測自然科戰略中心",
-            description: "針對高中學測自然科常見的素養題、圖表題與混合題型，先建立「背景脈絡、資料判讀、論證輸出」三段節奏。這頁幫你練的是解題策略，而不只是再背一次知識點。",
+            eyebrow: "GSAT Science Zone",
+            title: "高中學測專區",
+            description: "高中學測歷年試題彙整，進行 AI 深度解題。這頁協助你把題幹脈絡、圖表資料與概念推論連起來，形成更穩定的解題策略。",
             accent: "#6366f1",
             accentSoft: "rgba(99, 102, 241, 0.16)",
             accentStrong: "rgba(99, 102, 241, 0.34)",
@@ -25,12 +25,12 @@
             parent: { label: "自然科學模組", href: "student_science.html" },
             stats: [{ value: "3 段", label: "背景、資料、論證分段處理" }, { value: "2 圖", label: "至少比較兩個資料來源或圖表" }, { value: "1 回", label: "每次練習都要完成一輪論證整理" }],
             goals: ["學測自然科常常不是考你會不會背，而是能不能在新情境中抓對線索。", "看到圖表與探究題時，先整理資料在說什麼，再決定你要支持哪個判斷。", "混合題型的關鍵是把背景知識、題幹資料與選項推論真的連起來。"],
-            pathways: [{ title: "先補背景概念", description: "如果題目主題不熟，先到單元重點精熟頁補背景，避免素養題一開始就失速。", href: "science_unit_coreidea.html", meta: "Step 1", cta: "先補背景" }, { title: "整理探究流程", description: "遇到實驗或探究題時，先到虛擬實驗導學頁理清變因、假說與證據。", href: "science_virtural_lab.html", meta: "Step 2", cta: "整理探究流程" }, { title: "練長文與圖表整合", description: "用雙語閱讀頁練長篇資訊定位、關鍵詞抓取與段落切分。", href: "student_science_bilingual.html", meta: "Step 3", cta: "進入閱讀頁" }, { title: "回自然科模組", description: "若今天想切回診斷或其他自然科工具，可直接回上一層安排。", href: "student_science.html", meta: "Navigation", cta: "返回自然模組" }],
+            pathways: [{ title: "先補背景概念", description: "如果題目主題不熟，先到單元概念精熟頁補背景，避免素養題一開始就失速。", href: "science_unit_coreidea.html", meta: "Step 1", cta: "先補背景" }, { title: "整理探究流程", description: "遇到實驗或探究題時，先到虛擬實驗導學頁理清變因、假說與證據。", href: "science_virtural_lab.html", meta: "Step 2", cta: "整理探究流程" }, { title: "練長文與圖表整合", description: "用雙語閱讀頁練長篇資訊定位、關鍵詞抓取與段落切分。", href: "student_science_bilingual.html", meta: "Step 3", cta: "進入閱讀頁" }, { title: "回自然科模組", description: "若今天想切回診斷或其他自然科工具，可直接回上一層安排。", href: "student_science.html", meta: "Navigation", cta: "返回自然模組" }],
             checklist: ["選一個今天要練的學測自然科主題，先寫下你已知的背景知識。", "列出題幹或圖表中最關鍵的 3 個資訊，不急著直接選答案。", "寫一句「這份資料支持什麼、不支持什麼」，避免論證漂掉。", "把你最後的判斷和支持證據配對，確認不是只靠印象作答。", "在筆記區留下你下次要再補的背景知識或資料判讀盲點。"],
             prompts: [{ title: "這是知識問題還是判讀問題", description: "我是真的不懂背景知識，還是其實懂概念卻沒有讀懂資料在說什麼？" }, { title: "資料支持到哪裡", description: "這份圖表是在提供趨勢、比較結果，還是只有相關性而不是因果？" }, { title: "學測論證有沒有站穩", description: "我的答案是被資料支撐的，還是只是寫出我原本記得的知識點？" }],
-            resources: [{ title: "單元重點精熟", description: "先把主題背景與關鍵概念補穩，再回來處理素養題。", href: "science_unit_coreidea.html", meta: "Concept review", cta: "補背景概念" }, { title: "虛擬實驗導學", description: "把探究與實驗題拆成變因、假說與預測，降低混合題失分。", href: "science_virtural_lab.html", meta: "Inquiry prep", cta: "前往探究頁" }, { title: "學習筆記", description: "把今天的資料判讀結論、證據鏈與盲點記在本頁。", href: "#notes", meta: "On page", cta: "前往筆記" }],
+            resources: [{ title: "單元概念精熟", description: "先把主題背景與關鍵概念補穩，再回來處理素養題。", href: "science_unit_coreidea.html", meta: "Concept review", cta: "補背景概念" }, { title: "虛擬實驗導學", description: "把探究與實驗題拆成變因、假說與預測，降低混合題失分。", href: "science_virtural_lab.html", meta: "Inquiry prep", cta: "前往探究頁" }, { title: "學習筆記", description: "把今天的資料判讀結論、證據鏈與盲點記在本頁。", href: "#notes", meta: "On page", cta: "前往筆記" }],
             notePrompt: "寫下今天練的學測自然科主題、你最後的判斷與證據，以及下一次要補的背景知識。",
-            footerNote: "雖然檔名仍是 `science_csat.html`，但內容現在明確對齊高中學測自然科戰略情境，保留舊檔名只是為了不打斷目前網站連結。",
+            footerNote: "雖然檔名仍是 `science_csat.html`，但內容現在明確對齊高中學測自然科專區情境，保留舊檔名只是為了不打斷目前網站連結。",
             quote: "學測自然科拉開差距的地方，往往不是記得更多，而是你能不能把資料、概念與推論接成一條線。"
         };
     </script>

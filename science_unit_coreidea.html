@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>單元重點精熟</title>
+    <title>單元概念精熟</title>
     <link rel="stylesheet" href="./assets/css/tailwind.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
@@ -1086,7 +1086,7 @@ mermaid.initialize({
     <script src="./assets/js/aischool-shared.js"></script>
     <script src="./assets/js/learning-analytics.js"></script>
     <script>
-        window.AISchool.requireRole(["student"], "請先登入學生帳號，再使用單元重點精熟。", "index.html");
+        window.AISchool.requireRole(["student"], "請先登入學生帳號，再使用單元概念精熟。", "index.html");
     </script>
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col">
@@ -1103,7 +1103,7 @@ mermaid.initialize({
 
         <div class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
             <h1 class="text-xl font-black text-white tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-400" data-i18n="page_title">
-                單元重點精熟
+                單元概念精熟
             </h1>
             <span class="text-[10px] text-slate-400 tracking-[0.2em] uppercase hidden sm:block" data-i18n="page_subtitle">AI Intelligent Note Generation</span>
         </div>
@@ -1458,7 +1458,7 @@ const MAX_UNIT_RESULT_CACHE = 12;
     const i18n = {
         "zh-TW": { 
             back_home:"返回 AI Science", 
-            page_title:"單元重點精熟", 
+            page_title:"單元概念精熟",
             page_subtitle:"AI 智能筆記生成", 
             settings_title:"請挑選你要的學習單元", 
             label_stage:"學習階段", 
@@ -1874,7 +1874,7 @@ if (userInfo) userInfo.innerText = user.name || "訪客";
 if (window.AISchool && window.AISchool.setCurrentUser && user.account !== "訪客") {
     window.AISchool.setCurrentUser(user);
 }
-        logEvent("page_view", "進入單元重點精熟頁");
+        logEvent("page_view", "進入單元概念精熟頁");
 
 // 若你希望關掉瀏覽器也保留登入，再加這行：
 // localStorage.setItem("currentUser", JSON.stringify(user));
