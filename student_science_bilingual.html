@@ -1824,6 +1824,24 @@ async function translateVisibleBlocks() {
 
         function makeClickable(html) { return `<span class="cursor-pointer hover:text-green-300 transition">${html}</span>`; }
         function escapeHtml(s){ return (s||"").toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+function escapeRegExpLiteral(value) {
+  return (value || "").toString().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function buildEnglishVocabRegex(term) {
+  const raw = (term || "").toString().trim();
+  const escaped = escapeRegExpLiteral(raw);
+  if (!/^[A-Za-z]+$/.test(raw)) return new RegExp(escaped, "gi");
+
+  if (/[^aeiou]y$/i.test(raw)) {
+    const root = escapeRegExpLiteral(raw.slice(0, -1));
+    return new RegExp(`\\b(?:${escaped}|${root}(?:ies|\\s*ies?))\\b`, "gi");
+  }
+
+  const suffix = /s$/i.test(raw) ? "es" : "(?:s|es)";
+  return new RegExp(`\\b${escaped}(?:\\s*${suffix})?\\b`, "gi");
+}
+
 function highlightEnglishVocabInText(txt) {
   const src = (txt || "").toString();
   const terms = Object.values(activeVocabMap || {})
@@ -1839,11 +1857,7 @@ function highlightEnglishVocabInText(txt) {
     matches.some(m => !(end <= m.start || start >= m.end));
 
   for (const term of uniq) {
-    const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const isSingleWord = /^[A-Za-z]+$/.test(term);
-    const re = isSingleWord
-      ? new RegExp(`\\b${escaped}\\b`, 'gi')
-      : new RegExp(escaped, 'gi');
+    const re = buildEnglishVocabRegex(term);
 
     let match;
     while ((match = re.exec(src)) !== null) {

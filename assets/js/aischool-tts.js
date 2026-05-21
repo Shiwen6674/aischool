@@ -57,11 +57,45 @@
     return isEng ? normalized : normalizeMandarinPronunciation(normalized);
   }
 
-  function normalizeMandarinPronunciation(text) {
+  const TAIWAN_DIGIT_READINGS = {
+    0: "零",
+    1: "一",
+    2: "二",
+    3: "三",
+    4: "四",
+    5: "五",
+    6: "六",
+    7: "七",
+    8: "八",
+    9: "九"
+  };
+
+  function toTaiwanMandarinDigit(digit) {
+    return TAIWAN_DIGIT_READINGS[digit] || digit;
+  }
+
+  function normalizeTaiwanArabicNumerals(text) {
     return String(text || "")
-      // Section labels like 1-1 should be read as "1之1" in Mandarin, not "1 hyphen 1".
-      .replace(/(^|[^\d])([1-9])\s*[-－–—]\s*([1-9])(?!\d)(?!\s*(?:年|月|日|度|℃|公分|厘米|分鐘|分|秒|元|%|％))/g, "$1$2之$3")
-      .replace(/第\s*([1-9])\s*[-－–—]\s*([1-9])/g, "第$1之$2")
+      // Convert section labels before single-digit conversion, so 1-1 never becomes 1-一.
+      .replace(/(^|[^\d])([1-9])\s*[-－–—]\s*([1-9])(?!\d)(?!\s*(?:年|月|日|度|℃|公分|厘米|分鐘|分|秒|元|%|％))/g, (match, prefix, left, right) =>
+        `${prefix}${toTaiwanMandarinDigit(left)}之${toTaiwanMandarinDigit(right)}`)
+      .replace(/第\s*([1-9])\s*[-－–—]\s*([1-9])/g, (match, left, right) =>
+        `第${toTaiwanMandarinDigit(left)}之${toTaiwanMandarinDigit(right)}`)
+      // Read Chinese lesson decimals such as 1.2化學 as 一點二化學, not 幺點二.
+      .replace(/(^|[^\d])([0-9])\s*[.．]\s*([0-9])(?=\s*[\u4E00-\u9FFF])/g, (match, prefix, left, right) =>
+        `${prefix}${toTaiwanMandarinDigit(left)}點${toTaiwanMandarinDigit(right)}`)
+      // Read single Arabic numerals in Chinese text as Taiwan Mandarin digits.
+      .replace(/(^|[^\dA-Za-z])([0-9])(?=\s*[\u4E00-\u9FFF])/g, (match, prefix, digit) =>
+        `${prefix}${toTaiwanMandarinDigit(digit)}`)
+      .replace(/([\u4E00-\u9FFF])([0-9])(?=$|[^\dA-Za-z])/g, (match, prefix, digit) =>
+        `${prefix}${toTaiwanMandarinDigit(digit)}`)
+      .replace(/([\u4E00-\u9FFF])\s+(?=[零一二三四五六七八九十])/g, "$1")
+      .replace(/([零一二三四五六七八九十])\s+(?=[\u4E00-\u9FFF])/g, "$1");
+  }
+
+  function normalizeMandarinPronunciation(text) {
+    return normalizeTaiwanArabicNumerals(text)
+      // Section labels like 1-1 should be read as "一之一" in Mandarin, not "1 hyphen 1".
       .replace(/([一二三四五六七八九十])\s*[-－–—]\s*([一二三四五六七八九十])/g, "$1之$2")
       .replace(/AI\s*School/g, "A I School")
       // Speech-only Taiwan Mandarin pronunciation fixes for common words that
@@ -450,6 +484,8 @@
         ? [
             "Use Taiwan Ministry of Education 國語 pronunciations.",
             "Avoid Mainland Putonghua, erhua, and China-region syllable choices.",
+            "Read Arabic numeral 1 in Chinese text as Taiwan Mandarin 一/yī, not Mainland-style 幺/yāo.",
+            "Read section decimals such as 1.2化學 as 一點二化學.",
             "In A和B list contexts, pronounce 和 like Taiwan classroom hàn; keep fixed words such as 溫和、飽和、中和 as hé.",
             "Pronounce 垃圾 as lè-sè and 蝸牛 as guā-niú."
           ]
