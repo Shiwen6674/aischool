@@ -534,13 +534,15 @@
       }
 
       const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), isMobileDevice() ? 18000 : 15000);
+      const timeout = window.setTimeout(() => controller.abort(), isMobileDevice() ? 70000 : 55000);
       let response;
       try {
         response = await fetch(endpointInfo.url, {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            // Apps Script web apps do not reliably answer CORS preflight OPTIONS requests.
+            // text/plain keeps this a simple CORS request while doPost still receives JSON.
+            "Content-Type": "text/plain;charset=utf-8",
             Accept: "application/json, audio/mpeg, audio/aac, audio/mp4, audio/wav, audio/ogg"
           },
           body: JSON.stringify({
