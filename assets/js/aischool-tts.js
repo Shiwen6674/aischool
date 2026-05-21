@@ -414,10 +414,17 @@
   }
 
   function getCloudSpeechSpeed(request) {
-    const base = Number(request?.rate || 1);
+    const base = clamp(Number(request?.rate || 1), 0.5, 2);
     const family = request?.isEng ? "en" : "zh";
-    const naturalBase = family === "zh" ? base * 0.86 : base * 0.98;
-    return Number(clamp(naturalBase, family === "zh" ? 0.72 : 0.78, family === "zh" ? 1.05 : 1.12).toFixed(2));
+    const centerSpeed = family === "zh" ? 0.88 : 1.0;
+    const slowSlope = family === "zh" ? 0.78 : 0.8;
+    const fastSlope = family === "zh" ? 0.56 : 0.62;
+    const multiplier = base < 1
+      ? 1 - ((1 - base) * slowSlope)
+      : 1 + ((base - 1) * fastSlope);
+    const minSpeed = family === "zh" ? 0.54 : 0.58;
+    const maxSpeed = family === "zh" ? 1.38 : 1.55;
+    return Number(clamp(centerSpeed * multiplier, minSpeed, maxSpeed).toFixed(2));
   }
 
   function buildCloudVoiceProfile(request) {

@@ -38,7 +38,7 @@ function doPost(e) {
     var languageFamily = body.languageFamily === "en" ? "en" : "zh";
     var gender = body.gender === "male" ? "male" : "female";
     var format = normalizeAudioFormat(body.format, body.deviceClass);
-    var speed = clampNumber(Number(body.speed || body.rate || 1), languageFamily === "zh" ? 0.72 : 0.78, languageFamily === "zh" ? 1.05 : 1.12);
+    var speed = clampNumber(Number(body.speed || body.rate || 1), languageFamily === "zh" ? 0.54 : 0.58, languageFamily === "zh" ? 1.38 : 1.55);
     var voice = pickOpenAiVoice(languageFamily, gender, body.voiceProfile);
     var instructions = buildVoiceInstructions(languageFamily, gender, speed);
 
