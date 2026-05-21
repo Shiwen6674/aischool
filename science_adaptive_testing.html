@@ -12,6 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+TC:wght@300;400;700;900&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="./assets/js/aischool-tts.js?v=20260522-adaptive-question-audio"></script>
 
   <script>
     window.tailwind = window.tailwind || {};
@@ -221,6 +222,39 @@ input[type="number"] {
     .option-btn:hover:not(:disabled) { background: rgba(255,255,255,0.1); border-color: #38bdf8; transform: translateY(-2px); }
     .option-btn.selected { background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%); border-color: transparent; color: white; box-shadow: 0 0 15px rgba(6, 182, 212, 0.5); }
     .option-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .question-chip-row {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.85rem;
+    }
+    .question-audio-btn {
+      width: 2rem;
+      height: 2rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.7rem;
+      border: 1px solid rgba(251, 146, 60, 0.26);
+      background: rgba(15, 23, 42, 0.34);
+      color: #fed7aa;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+      transition: transform 0.16s ease, background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+    }
+    .question-audio-btn:hover {
+      transform: translateY(-1px);
+      background: rgba(249, 115, 22, 0.18);
+      border-color: rgba(251, 146, 60, 0.55);
+      color: #ffffff;
+    }
+    .question-audio-btn.is-playing {
+      background: linear-gradient(135deg, rgba(249, 115, 22, 0.85), rgba(234, 88, 12, 0.9));
+      border-color: transparent;
+      color: #ffffff;
+      box-shadow: 0 10px 24px rgba(249, 115, 22, 0.24);
+    }
 
     .btn-submit-orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); box-shadow: 0 4px 14px rgba(234, 88, 12, 0.4); color: white; transition: all 0.2s; }
     .btn-submit-orange:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); }
@@ -819,30 +853,54 @@ body.zhuyin-mode .leading-relaxed {
 }
 body.zhuyin-mode #qStem,
 body.zhuyin-mode .option-btn .flex-1 {
-    line-height: 2.35 !important;
+    line-height: 2.15 !important;
 }
 .zhuyin-char {
     display: inline-flex;
     flex-direction: row;
     align-items: center;
-    vertical-align: middle;
-    margin: 0 0.08em;
+    position: relative;
+    vertical-align: baseline;
+    margin: 0 0.045em;
+    padding-right: 0.04em;
 }
 .zhuyin-base {
     display: inline-block;
-    font-family: "BiauKai", "DFKai-SB", "KaiTi", "Noto Sans TC", "Microsoft JhengHei", serif;
+    font-family: inherit;
+    font-weight: inherit;
+    color: inherit;
 }
 .zhuyin-mark {
-    display: inline-block;
-    min-width: 0.9em;
-    margin-left: 0.04em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-width: 0.78em;
+    height: 1.55em;
+    margin-left: 0.035em;
     font-family: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", "Bopomofo", sans-serif;
-    font-size: 0.46em;
-    line-height: 1.05;
-    color: #fde68a;
+    font-size: 0.42em;
+    line-height: 1;
+    color: rgba(226, 232, 240, 0.9);
+    font-weight: 800;
+    letter-spacing: 0;
+}
+.zhuyin-body {
     writing-mode: vertical-rl;
     text-orientation: upright;
     letter-spacing: 0;
+}
+.zhuyin-tone {
+    position: absolute;
+    left: calc(100% - 0.05em);
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(253, 230, 138, 0.92);
+    font-size: 1.08em;
+    line-height: 1;
+}
+.zhuyin-tone.neutral {
+    top: 22%;
 }
 
   </style>
@@ -989,7 +1047,15 @@ body.zhuyin-mode .option-btn .flex-1 {
       <div id="qArea" class="relative z-10 min-h-[300px]">
         <div id="qWrap" class="hidden">
           <div class="bg-white/10 rounded-2xl p-6 border border-white/20 shadow-inner mb-6">
-            <span id="qNoBadge" class="inline-block px-3 py-1 rounded-md bg-orange-500/20 text-orange-300 text-xs font-bold mb-3 tracking-wider">QUESTION</span>
+            <div class="question-chip-row">
+              <span id="qNoBadge" class="inline-block px-3 py-1 rounded-md bg-orange-500/20 text-orange-300 text-xs font-bold tracking-wider">QUESTION</span>
+              <button id="btnQuestionPlay" type="button" class="question-audio-btn" aria-label="播放或暫停題目">
+                <i class="fa-solid fa-play"></i>
+              </button>
+              <button id="btnQuestionStop" type="button" class="question-audio-btn" aria-label="停止朗讀題目">
+                <i class="fa-solid fa-stop"></i>
+              </button>
+            </div>
 
             <div id="qStem" class="text-2xl md:text-[1.65rem] font-bold text-white leading-relaxed mt-2"></div>
           </div>
@@ -1259,7 +1325,8 @@ body.zhuyin-mode .option-btn .flex-1 {
        1) GLOBAL STATE
        =========================== */
     const Meta = { mode: "tree", tree: {}, unitIndex: {}, publishers: [], unitsByPublisher: {} };
-    const CAT = { started: false, test_id: "", student_id: "", current: null, next: null, selected: "", n: 15, step: 0, itemMap: {}, itemPool: [], bankItemIds: new Set(), administeredItemIds: [], responses: [], theta: 0, thetaSe: null, lastCorrect: null };
+    const CAT = { started: false, test_id: "", student_id: "", current: null, next: null, selected: "", n: 15, step: 0, itemMap: {}, itemPool: [], bankItemIds: new Set(), administeredItemIds: [], responses: [], theta: 0, thetaSe: null, lastCorrect: null, currentSpeechText: "" };
+    const QuestionAudio = { player: null, state: "idle" };
     const ACTION = { GET_UNIT_OPTIONS: "getUnitOptions", START_CAT: "startCAT", SUBMIT_NEXT: "submitAndNext", FINISH_CAT: "finishCAT" };
     const META_ACTION_CANDIDATES = ["get_metadata", "getMetadata", "action_get_metadata"];
     let latestPdfWrongItems = [];
@@ -2506,11 +2573,13 @@ async function startTest() {
 
 // 2. 渲染題目 (整合了原本邏輯 + 自動套用注音)
 function renderQuestion(item) {
+    stopQuestionAudio();
     CAT.current = item;
     markItemAdministered(item || {});
     CAT.selected = "";
     CAT.answerLocked = false;
     CAT.submitting = false;
+    CAT.currentSpeechText = buildQuestionSpeechText(item);
 
     // ✅只保留一次 qNo 宣告
     const qNo = Math.min(CAT.step + 1, CAT.n);
@@ -2552,6 +2621,210 @@ function renderQuestion(item) {
     }
 }
 
+function buildQuestionSpeechText(item) {
+    if (!item) return "";
+    const questionNo = Math.min(CAT.step + 1, CAT.n);
+    const stemText = stemToSpeechText(item.stem || "");
+    const optionText = ["A", "B", "C", "D"]
+        .map(key => {
+            const value = getOptionTextFromWrongItem(item, key);
+            return value ? `選項${key}，${value}` : "";
+        })
+        .filter(Boolean)
+        .join("。");
+    return stripQuestionPromptArtifacts(`第${questionNo}題。${stemText}。${optionText}`).replace(/\s+/g, " ").trim();
+}
+
+function stemToSpeechText(rawStem) {
+    let source = String(rawStem || "").replace(/\r\n?/g, "\n").trim();
+    if (!source) return "";
+
+    const tableSpeech = [];
+    const addTableSpeech = (columns, rows, caption = "") => {
+        const cols = (columns || []).map(normalizeCellText).filter(Boolean);
+        const normalizedRows = (rows || [])
+            .map(row => Array.isArray(row) ? row.map(normalizeCellText).filter(Boolean) : [normalizeCellText(row)].filter(Boolean))
+            .filter(row => row.length);
+        if (!cols.length && !normalizedRows.length) return "";
+        const tableText = [
+            caption ? `表格標題：${caption}` : "表格資料如下",
+            cols.length ? `欄位：${cols.join("、")}` : "",
+            ...normalizedRows.map((row, index) => `第${index + 1}列：${row.join("、")}`)
+        ].filter(Boolean).join("。");
+        tableSpeech.push(tableText);
+        return "";
+    };
+
+    if (source.includes("[STIMULUS_JSON]")) {
+        const markerIndex = source.indexOf("[STIMULUS_JSON]");
+        const textPart = source.slice(0, markerIndex).trim();
+        const jsonPart = source.slice(markerIndex + "[STIMULUS_JSON]".length).trim();
+        try {
+            const stimData = JSON.parse(jsonPart);
+            if (stimData?.kind === "table" && stimData.table) {
+                addTableSpeech(stimData.table.columns || [], stimData.table.rows || []);
+            }
+            source = textPart.includes("【題目】")
+                ? textPart.split("【題目】").pop().trim()
+                : textPart;
+        } catch {
+            source = textPart || source;
+        }
+    }
+
+    source = source.replace(/<table[\s\S]*?<\/table>/gi, (tableHtml) => {
+        const table = parseHtmlTableForSpeech(tableHtml);
+        if (table) addTableSpeech(table.columns, table.rows, table.caption);
+        return "\n";
+    });
+
+    const markdownTables = [];
+    source = replaceMarkdownTables(source, (tableHtml) => {
+        markdownTables.push(tableHtml);
+        return "\n";
+    });
+    markdownTables.forEach(html => {
+        const table = parseRenderedTableForSpeech(html);
+        if (table) addTableSpeech(table.columns, table.rows, table.caption);
+    });
+
+    const plain = stripQuestionPromptArtifacts(stripNonTableHtml(source));
+    const plainRows = [];
+    const proseLines = [];
+    plain.split("\n").forEach(line => {
+        const row = splitPlainTableRow(line);
+        if (row && row.length >= 2) plainRows.push(row);
+        else proseLines.push(line);
+    });
+    if (plainRows.length >= 2) {
+        addTableSpeech(inferPlainTableColumns(plainRows), plainRows);
+    } else {
+        proseLines.push(...plainRows.map(row => row.join("、")));
+    }
+
+    return [
+        proseLines.map(line => line.trim()).filter(Boolean).join("。"),
+        ...tableSpeech
+    ].filter(Boolean).join("。");
+}
+
+function parseHtmlTableForSpeech(tableHtml) {
+    try {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(`<body>${tableHtml}</body>`, "text/html");
+        const table = doc.querySelector("table");
+        return table ? extractTableElementForSpeech(table) : null;
+    } catch {
+        return null;
+    }
+}
+
+function parseRenderedTableForSpeech(html) {
+    try {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(`<body>${html}</body>`, "text/html");
+        const table = doc.querySelector("table");
+        return table ? extractTableElementForSpeech(table) : null;
+    } catch {
+        return null;
+    }
+}
+
+function extractTableElementForSpeech(table) {
+    const caption = (table.querySelector("caption, .stimulus-table-caption")?.textContent || "").trim();
+    const trs = Array.from(table.querySelectorAll("tr"));
+    let columns = [];
+    const rows = [];
+    trs.forEach((tr, index) => {
+        const cells = Array.from(tr.children)
+            .filter(cell => /^(TH|TD)$/i.test(cell.tagName))
+            .map(cell => normalizeCellText(cell.textContent || ""))
+            .filter(Boolean);
+        if (!cells.length) return;
+        const hasHeaderCells = Array.from(tr.children).some(cell => /^TH$/i.test(cell.tagName));
+        if (index === 0 && hasHeaderCells) columns = cells;
+        else rows.push(cells);
+    });
+    return { caption, columns, rows };
+}
+
+function getQuestionAudioPlayer() {
+    if (QuestionAudio.player) return QuestionAudio.player;
+    if (!window.AISchoolTTS?.createPlayer) return null;
+    QuestionAudio.player = window.AISchoolTTS.createPlayer({
+        endpointKey: "cloudTts",
+        preferCloud: true,
+        getGender: () => "female",
+        getRate: () => 0.9,
+        onModeChange: (mode) => {
+            if (mode === "idle") {
+                QuestionAudio.state = "idle";
+                updateQuestionAudioUi();
+            }
+        }
+    });
+    return QuestionAudio.player;
+}
+
+function updateQuestionAudioUi() {
+    const playBtn = document.getElementById("btnQuestionPlay");
+    const stopBtn = document.getElementById("btnQuestionStop");
+    if (!playBtn || !stopBtn) return;
+    const isPlaying = QuestionAudio.state === "playing";
+    const isPaused = QuestionAudio.state === "paused";
+    playBtn.classList.toggle("is-playing", isPlaying);
+    playBtn.innerHTML = `<i class="fa-solid fa-${isPlaying ? "pause" : "play"}"></i>`;
+    playBtn.setAttribute("aria-label", isPlaying ? "暫停朗讀題目" : (isPaused ? "繼續朗讀題目" : "播放題目"));
+    stopBtn.disabled = QuestionAudio.state === "idle";
+    stopBtn.classList.toggle("opacity-50", QuestionAudio.state === "idle");
+}
+
+async function toggleQuestionAudio() {
+    const player = getQuestionAudioPlayer();
+    if (!player || !CAT.currentSpeechText) return;
+    if (QuestionAudio.state === "playing") {
+        if (player.pause()) {
+            QuestionAudio.state = "paused";
+            updateQuestionAudioUi();
+        }
+        return;
+    }
+    if (QuestionAudio.state === "paused") {
+        if (player.resume()) {
+            QuestionAudio.state = "playing";
+            updateQuestionAudioUi();
+        }
+        return;
+    }
+
+    const runToken = Date.now();
+    QuestionAudio.runToken = runToken;
+    QuestionAudio.state = "playing";
+    updateQuestionAudioUi();
+    try {
+        await player.speak(CAT.currentSpeechText, {
+            lang: "zh-TW",
+            isEng: false,
+            gender: "female",
+            rate: 0.88,
+            preferCloud: true
+        });
+    } finally {
+        if (QuestionAudio.runToken === runToken && QuestionAudio.state !== "paused") {
+            QuestionAudio.state = "idle";
+            updateQuestionAudioUi();
+        }
+    }
+}
+
+function stopQuestionAudio() {
+    const player = QuestionAudio.player;
+    if (player) player.cancel();
+    QuestionAudio.state = "idle";
+    QuestionAudio.runToken = 0;
+    updateQuestionAudioUi();
+}
+
 
 function renderStimulus(data) {
     if (!data || data.kind !== "table" || !data.table) return "";
@@ -2583,7 +2856,7 @@ function renderStemContent(rawStem) {
             const questionPart = textPart.includes("【題目】")
                 ? textPart.split("【題目】").pop().trim()
                 : textPart;
-            source = `${addTableFragment(stimulusHtml)}${questionPart}`;
+            source = `${questionPart}${addTableFragment(stimulusHtml)}`;
         } catch (e) {
             console.error("STIMULUS_JSON parse error", e);
             source = textPart || source;
@@ -2593,14 +2866,21 @@ function renderStemContent(rawStem) {
     source = source.replace(/<table[\s\S]*?<\/table>/gi, (tableHtml) => addTableFragment(renderHtmlTable(tableHtml)));
     source = replaceMarkdownTables(source, addTableFragment);
 
-    return source
+    const textParts = [];
+    const stimulusParts = [];
+    source
         .split(/(@@STEM_TABLE_\d+@@)/g)
-        .map(part => {
+        .forEach(part => {
             const tokenMatch = part.match(/^@@STEM_TABLE_(\d+)@@$/);
-            if (tokenMatch) return tableFragments[Number(tokenMatch[1])] || "";
-            return renderTextWithPlainTables(part);
-        })
-        .join("");
+            if (tokenMatch) {
+                const tableHtml = tableFragments[Number(tokenMatch[1])] || "";
+                if (tableHtml) stimulusParts.push(tableHtml);
+                return;
+            }
+            const textHtml = renderTextWithPlainTables(part);
+            if (textHtml) textParts.push(textHtml);
+        });
+    return `${textParts.join("")}${stimulusParts.join("")}`;
 }
 
 function renderHtmlTable(tableHtml) {
@@ -2676,12 +2956,13 @@ function renderTextWithPlainTables(text) {
         .replace(/\u00a0/g, " ")
         .replace(/\r\n?/g, "\n");
     const lines = plainText.split("\n");
-    const chunks = [];
+    const textChunks = [];
+    const tableChunks = [];
     let prose = [];
 
     const flushProse = () => {
         const html = renderTextBlock(prose.join("\n"));
-        if (html) chunks.push(html);
+        if (html) textChunks.push(html);
         prose = [];
     };
 
@@ -2698,7 +2979,7 @@ function renderTextWithPlainTables(text) {
             }
             if (rows.length >= 2) {
                 flushProse();
-                chunks.push(renderTableFromMatrix(inferPlainTableColumns(rows), rows));
+                tableChunks.push(renderTableFromMatrix(inferPlainTableColumns(rows), rows));
                 i = j - 1;
                 continue;
             }
@@ -2706,7 +2987,7 @@ function renderTextWithPlainTables(text) {
         prose.push(lines[i]);
     }
     flushProse();
-    return chunks.join("");
+    return `${textChunks.join("")}${tableChunks.join("")}`;
 }
 
 function splitPlainTableRow(line) {
@@ -2792,8 +3073,15 @@ function stripNonTableHtml(value) {
         .replace(/<[^>]+>/g, "");
 }
 
+function stripQuestionPromptArtifacts(value) {
+    return String(value || "")
+        .replace(/請完整呈現題目[。．.]?/g, "")
+        .replace(/請完整呈現(?:上方|下方)?(?:的)?(?:題幹|題目)[。．.]?/g, "")
+        .replace(/\n{3,}/g, "\n\n");
+}
+
 function renderTextBlock(text) {
-    const clean = stripNonTableHtml(text)
+    const clean = stripQuestionPromptArtifacts(stripNonTableHtml(text))
         .split("\n")
         .map(line => line.trim())
         .filter(Boolean)
@@ -3523,6 +3811,7 @@ function buildLocalFinishResult() {
 }
 
 async function finishTest() {
+  stopQuestionAudio();
   showLoading("ANALYZING", "AI 正在分析學習弱點...");
 
   try {
@@ -4166,13 +4455,21 @@ function getZhuyinForChar(char) {
     }
 }
 
+function splitZhuyinTone(zhuyin) {
+    const raw = String(zhuyin || "");
+    const tone = (raw.match(/[ˊˇˋ˙]/) || [""])[0];
+    const body = raw.replace(/[ˊˇˋ˙]/g, "");
+    return { body, tone };
+}
+
 function convertToRubyHtml(text) {
     const source = String(text || "");
     return Array.from(source).map((char) => {
         if (!/[\u4e00-\u9fff]/.test(char)) return safeTextHtml(char);
         const zhuyin = getZhuyinForChar(char);
         if (!zhuyin) return safeTextHtml(char);
-        return `<span class="zhuyin-char"><span class="zhuyin-base">${safeTextHtml(char)}</span><span class="zhuyin-mark">${safeTextHtml(zhuyin)}</span></span>`;
+        const { body, tone } = splitZhuyinTone(zhuyin);
+        return `<span class="zhuyin-char"><span class="zhuyin-base">${safeTextHtml(char)}</span><span class="zhuyin-mark"><span class="zhuyin-body">${safeTextHtml(body)}</span>${tone ? `<span class="zhuyin-tone${tone === "˙" ? " neutral" : ""}">${safeTextHtml(tone)}</span>` : ""}</span></span>`;
     }).join("");
 }
 
@@ -4218,7 +4515,12 @@ function traverseAndConvert(node) {
         }
     } else if (node.nodeType === 1) { // Element Node
         if (['RUBY', 'RT', 'SCRIPT', 'STYLE', 'SVG'].includes(node.tagName)) return;
-        if (node.classList && (node.classList.contains("zhuyin-char") || node.classList.contains("zhuyin-mark"))) return;
+        if (node.classList && (
+            node.classList.contains("zhuyin-char") ||
+            node.classList.contains("zhuyin-mark") ||
+            node.classList.contains("zhuyin-body") ||
+            node.classList.contains("zhuyin-tone")
+        )) return;
         Array.from(node.childNodes).forEach(child => traverseAndConvert(child));
     }
 }
@@ -4250,6 +4552,8 @@ function toggleZhuyinMode() {
       initQuestionCountStepper();
         document.getElementById("btnStart").addEventListener("click", startTest);
         document.getElementById("btnSubmit").addEventListener("click", submitAnswer);
+        document.getElementById("btnQuestionPlay")?.addEventListener("click", toggleQuestionAudio);
+        document.getElementById("btnQuestionStop")?.addEventListener("click", stopQuestionAudio);
         document.getElementById("btnNext").addEventListener("click", async () => {
   if (document.getElementById("btnNext").disabled) return;
   setNextButtonState("disabled");
