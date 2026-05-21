@@ -38,7 +38,7 @@ function doPost(e) {
     var languageFamily = body.languageFamily === "en" ? "en" : "zh";
     var gender = body.gender === "male" ? "male" : "female";
     var format = normalizeAudioFormat(body.format, body.deviceClass);
-    var speed = clampNumber(Number(body.speed || body.rate || 1), 0.78, 1.12);
+    var speed = clampNumber(Number(body.speed || body.rate || 1), languageFamily === "zh" ? 0.72 : 0.78, languageFamily === "zh" ? 1.05 : 1.12);
     var voice = pickOpenAiVoice(languageFamily, gender, body.voiceProfile);
     var instructions = buildVoiceInstructions(languageFamily, gender, speed);
 
@@ -118,6 +118,7 @@ function buildVoiceInstructions(languageFamily, gender, speed) {
       "Speak in natural Taiwan Mandarin for elementary science bilingual reading.",
       "Use a warm, clear, teacher-like tone with natural phrasing.",
       "Do not read one Chinese character at a time; group words into meaningful short phrases.",
+      "Read numeric lesson labels such as 1-1 as 1之1, not 1橫線1.",
       "Use light pauses after commas and longer pauses after sentence endings.",
       "Keep science terms accurate and easy for children to understand.",
       "Avoid robotic cadence, metallic timbre, or over-dramatic broadcasting.",

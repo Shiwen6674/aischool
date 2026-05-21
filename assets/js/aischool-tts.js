@@ -38,7 +38,7 @@
     return textarea.value.replace(/\u00A0/g, " ");
   }
 
-  function normalizeSpeechText(text) {
+  function normalizeSpeechText(text, isEngOverride) {
     const decoded = decodeHtmlEntities(text)
       .replace(/<[^>]*>/g, " ")
       .replace(/[ \t\r\n]+/g, " ")
@@ -47,15 +47,29 @@
 
     if (!decoded) return "";
 
-    return decoded
+    const normalized = decoded
       .replace(/([\u4E00-\u9FFF])([A-Za-z0-9])/g, "$1 $2")
       .replace(/([A-Za-z0-9])([\u4E00-\u9FFF])/g, "$1 $2")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+
+    const isEng = typeof isEngOverride === "boolean" ? isEngOverride : isMostlyEnglish(normalized);
+    return isEng ? normalized : normalizeMandarinPronunciation(normalized);
+  }
+
+  function normalizeMandarinPronunciation(text) {
+    return String(text || "")
+      // Section labels like 1-1 should be read as "1之1" in Mandarin, not "1 hyphen 1".
+      .replace(/(^|[^\d])([1-9])\s*[-－–—]\s*([1-9])(?!\d)(?!\s*(?:年|月|日|度|℃|公分|厘米|分鐘|分|秒|元|%|％))/g, "$1$2之$3")
+      .replace(/第\s*([1-9])\s*[-－–—]\s*([1-9])/g, "第$1之$2")
+      .replace(/([一二三四五六七八九十])\s*[-－–—]\s*([一二三四五六七八九十])/g, "$1之$2")
+      .replace(/AI\s*School/g, "A I School")
       .replace(/\s{2,}/g, " ")
       .trim();
   }
 
   function splitTextForSpeak(text, isEng, maxChunkLength) {
-    const sourceText = normalizeSpeechText(text);
+    const sourceText = normalizeSpeechText(text, isEng);
     const regex = isEng ? /([.?!;]+\s*)/ : /([\u3002\uff01\uff1f\uff1b!?;]+\s*)/;
     const segments = sourceText
       .split(regex)
@@ -313,9 +327,9 @@
           neutral: { rate: 0.95, pitch: 0.93 }
         },
         zh: {
-          female: { rate: 0.84, pitch: 0.99 },
-          male: { rate: 0.82, pitch: 0.9 },
-          neutral: { rate: 0.83, pitch: 0.95 }
+          female: { rate: 0.76, pitch: 1.0 },
+          male: { rate: 0.74, pitch: 0.91 },
+          neutral: { rate: 0.75, pitch: 0.96 }
         }
       },
       android: {
@@ -325,9 +339,9 @@
           neutral: { rate: 0.97, pitch: 0.94 }
         },
         zh: {
-          female: { rate: 0.87, pitch: 0.99 },
-          male: { rate: 0.84, pitch: 0.9 },
-          neutral: { rate: 0.86, pitch: 0.95 }
+          female: { rate: 0.78, pitch: 1.0 },
+          male: { rate: 0.75, pitch: 0.91 },
+          neutral: { rate: 0.77, pitch: 0.96 }
         }
       },
       desktop: {
@@ -337,9 +351,9 @@
           neutral: { rate: 0.98, pitch: 0.95 }
         },
         zh: {
-          female: { rate: 0.91, pitch: 1.0 },
-          male: { rate: 0.88, pitch: 0.91 },
-          neutral: { rate: 0.9, pitch: 0.96 }
+          female: { rate: 0.84, pitch: 1.0 },
+          male: { rate: 0.81, pitch: 0.92 },
+          neutral: { rate: 0.83, pitch: 0.96 }
         }
       }
     };
@@ -385,7 +399,7 @@
     }
 
     return {
-      rate: clamp(rate, isEng ? 0.84 : 0.68, isEng ? 1.12 : 0.98),
+      rate: clamp(rate, isEng ? 0.84 : 0.62, isEng ? 1.12 : 0.94),
       pitch: clamp(pitch, genderKey === "male" ? 0.84 : 0.9, genderKey === "male" ? 1.0 : 1.06)
     };
   }
@@ -402,8 +416,8 @@
   function getCloudSpeechSpeed(request) {
     const base = Number(request?.rate || 1);
     const family = request?.isEng ? "en" : "zh";
-    const naturalBase = family === "zh" ? base * 0.94 : base * 0.98;
-    return Number(clamp(naturalBase, 0.78, 1.12).toFixed(2));
+    const naturalBase = family === "zh" ? base * 0.86 : base * 0.98;
+    return Number(clamp(naturalBase, family === "zh" ? 0.72 : 0.78, family === "zh" ? 1.05 : 1.12).toFixed(2));
   }
 
   function buildCloudVoiceProfile(request) {
@@ -728,9 +742,9 @@
 
       const selectedVoice = pickBestVoice(voices, request.isEng, request.gender);
       const mobile = isMobileDevice();
-      const maxChunkLength = request.isEng ? (mobile ? 165 : 260) : (mobile ? 52 : 78);
+      const maxChunkLength = request.isEng ? (mobile ? 165 : 260) : (mobile ? 44 : 68);
       const chunks = splitTextForSpeak(text, request.isEng, maxChunkLength);
-      const chunkGapMs = request.isEng ? (mobile ? 55 : 20) : (mobile ? 70 : 35);
+      const chunkGapMs = request.isEng ? (mobile ? 55 : 20) : (mobile ? 110 : 55);
 
       notifyModeChange("browser");
       paused = false;
@@ -779,7 +793,7 @@
         ...optionsOverride
       };
 
-      const cleanText = normalizeSpeechText(text);
+      const cleanText = normalizeSpeechText(text, typeof request.isEng === "boolean" ? request.isEng : undefined);
       if (!cleanText) {
         if (typeof request.onComplete === "function") request.onComplete();
         return false;
@@ -844,6 +858,7 @@
       isIOSDevice,
       isMobileDevice,
       isMostlyEnglish,
+      normalizeMandarinPronunciation,
       normalizeSpeechText,
       pickBestVoice,
       splitTextForSpeak
