@@ -512,6 +512,9 @@ rp { display: none !important; }
     letter-spacing: 0;
     background: #ffffff;
     -webkit-font-smoothing: antialiased;
+    width: 210mm;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 #pdf-report-content .pdf-page {
     width: 210mm;
@@ -525,13 +528,25 @@ rp { display: none !important; }
     break-after: auto;
     background: #fffdf8;
     border: 0;
+    margin: 0 !important;
 }
 #pdf-report-content .pdf-cover-page {
     padding: 0;
+    background: #0f2745;
+}
+#pdf-report-content .pdf-cover-page::before {
+    content: "";
+    position: absolute;
+    inset: -1.5mm;
+    z-index: 0;
     background:
       radial-gradient(circle at 82% 14%, rgba(96, 165, 250, 0.35), transparent 28%),
       radial-gradient(circle at 14% 86%, rgba(16, 185, 129, 0.16), transparent 30%),
       linear-gradient(145deg, #0f2745 0%, #173b67 46%, #f8fafc 46.2%, #ffffff 100%);
+}
+#pdf-report-content .pdf-cover-page > * {
+    position: relative;
+    z-index: 1;
 }
 #pdf-report-content .pdf-blank-page {
     display: block;
@@ -2100,6 +2115,36 @@ function _parseCSV(text){
     function getUnitInfoString() {
         const p = getUnitPayload();
         return `${p.stage}${p.grade}年級 ${p.semester} ${p.textbook_version} 「${p.unit_name}」`;
+    }
+
+    function normalizePdfGradeLabel(grade) {
+        const raw = String(grade || "").trim();
+        if (!raw) return "";
+        const match = raw.match(/\d+/);
+        return match ? `${match[0]}年級` : raw.replace(/年級$/, "") + "年級";
+    }
+
+    function normalizePdfSemesterLabel(semester) {
+        const raw = String(semester || "").trim();
+        if (/^(1|一|上|上學期|上学期)$/i.test(raw)) return "上學期";
+        if (/^(2|二|下|下學期|下学期)$/i.test(raw)) return "下學期";
+        return raw ? `${raw}學期` : "";
+    }
+
+    function selectedOptionLabel(id) {
+        const select = document.getElementById(id);
+        const option = select && select.selectedOptions && select.selectedOptions[0] ? select.selectedOptions[0] : null;
+        return option ? String(option.textContent || "").trim() : "";
+    }
+
+    function getPdfUnitInfoString() {
+        const p = getUnitPayload();
+        const stage = selectedOptionLabel("selStage") || String(p.stage || "").trim();
+        const publisher = selectedOptionLabel("selPublisher") || String(p.textbook_version || "").trim();
+        const grade = normalizePdfGradeLabel(selectedOptionLabel("selGrade") || p.grade);
+        const semester = normalizePdfSemesterLabel(selectedOptionLabel("selSemester") || p.semester);
+        const unit = selectedOptionLabel("selUnit") || String(p.unit_name || "").trim();
+        return `${stage}${publisher}${grade}${semester}${unit ? `「${unit}」` : ""}`;
     }
 
 /* =========================================
@@ -3912,7 +3957,7 @@ function safeTextHtml(text) {
 }
 
     function updatePdfInfo(score, correct, total) {
-        document.getElementById("pdf-unit-title").textContent = getUnitInfoString();
+        document.getElementById("pdf-unit-title").textContent = getPdfUnitInfoString();
         document.getElementById("pdf-name").textContent = document.getElementById("user-info").textContent;
         const d = new Date();
         document.getElementById("pdf-date").textContent = `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
@@ -3948,19 +3993,37 @@ function sanitizeFileName(name){
 }
 
 function buildPdfFileName(){
-  const p = getUnitPayload();
-  const grade = p.grade ? `${p.grade}年級` : "";
-  const version = p.textbook_version || "";
-  const sem = p.semester || "";
-  const unit = p.unit_name || "";
-  const base = `AI Science 學習診斷報告書＿${grade}${version}${sem}＿${unit}`;
+  const base = `AI Science 學習診斷報告書＿${getPdfUnitInfoString()}`;
   return sanitizeFileName(base) + ".pdf";
 }
 
       
 function downloadPDF() {
   const el = document.getElementById("pdf-report-content");
+  const previousStyle = {
+    display: el.style.display,
+    position: el.style.position,
+    left: el.style.left,
+    top: el.style.top,
+    right: el.style.right,
+    bottom: el.style.bottom,
+    width: el.style.width,
+    margin: el.style.margin,
+    padding: el.style.padding,
+    transform: el.style.transform,
+    zIndex: el.style.zIndex
+  };
   el.style.display = "block";
+  el.style.position = "fixed";
+  el.style.left = "0";
+  el.style.top = "0";
+  el.style.right = "auto";
+  el.style.bottom = "auto";
+  el.style.width = "210mm";
+  el.style.margin = "0";
+  el.style.padding = "0";
+  el.style.transform = "none";
+  el.style.zIndex = "2147483647";
   renderPdfWrongItems(latestPdfWrongItems);
   refreshPdfPageNumbers();
 
@@ -3979,7 +4042,7 @@ function downloadPDF() {
       UI.toast("錯誤", "PDF 匯出失敗: " + (err && err.message ? err.message : err), "bad");
     })
     .finally(() => {
-      el.style.display = "none";
+      Object.assign(el.style, previousStyle);
     });
 }
 function initQuestionCountStepper(){
