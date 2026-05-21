@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Science Adaptive Testing | AI 適性診斷中心</title>
+  <title>AI Science Adaptive Testing | AI適性測驗</title>
 
   <link rel="stylesheet" href="./assets/css/tailwind.css">
   <script src="https://unpkg.com/pinyin-pro@3.19.6/dist/index.js"></script>
@@ -862,7 +862,7 @@ body.zhuyin-mode .leading-relaxed {
           <span class="font-bold tracking-wide text-sm hidden sm:block" data-i18n="back_home">返回 AI Science</span>
         </a>
         <div class="hidden md:flex flex-col border-l border-white/20 pl-4">
-          <h1 class="text-lg font-black text-white tracking-wide" data-i18n="page_title">AI 適性診斷中心</h1>
+          <h1 class="text-lg font-black text-white tracking-wide" data-i18n="page_title">AI適性測驗</h1>
         </div>
       </div>
 
@@ -894,7 +894,7 @@ body.zhuyin-mode .leading-relaxed {
       <div class="flex flex-wrap items-center justify-between mb-6 border-b border-white/10 pb-4 relative z-10">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white flex items-center justify-center text-lg font-bold shadow-lg shadow-blue-500/30">1</div>
-          <h2 class="text-xl font-bold text-white" data-i18n="step1_title">單元配置</h2>
+          <h2 class="text-xl font-bold text-white" data-i18n="step1_title">單元選擇</h2>
         </div>
         <button id="btnReload" class="text-sm text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/5 transition">
           <i class="fa-solid fa-rotate"></i> <span data-i18n="btn_reload">重整教材</span>
@@ -1161,9 +1161,9 @@ body.zhuyin-mode .leading-relaxed {
 
     const i18n = {
       "zh-TW": {
-        page_title: "AI 適性診斷中心",
+        page_title: "AI適性測驗",
         back_home: "返回 AI Science",
-        step1_title: "單元配置",
+        step1_title: "單元選擇",
         step2_title: "試題作答",
         step3_title: "AI 診斷報告",
         btn_reload: "重整教材",
@@ -1179,9 +1179,9 @@ body.zhuyin-mode .leading-relaxed {
         label_score: "總分"
       },
       "en": {
-        page_title: "AI Adaptive Diagnostic Center",
+        page_title: "AI Adaptive Test",
         back_home: "Back to AI Science",
-        step1_title: "Unit Setup",
+        step1_title: "Unit Selection",
         step2_title: "Answer Questions",
         step3_title: "AI Diagnostic Report",
         btn_reload: "Reload Materials",
@@ -1197,9 +1197,9 @@ body.zhuyin-mode .leading-relaxed {
         label_score: "Score"
       },
       "ja": {
-        page_title: "AI 適応型診断センター",
+        page_title: "AI適応型テスト",
         back_home: "AI Science に戻る",
-        step1_title: "単元設定",
+        step1_title: "単元選択",
         step2_title: "解答",
         step3_title: "AI 診断レポート",
         btn_reload: "教材を再読み込み",
@@ -1215,9 +1215,9 @@ body.zhuyin-mode .leading-relaxed {
         label_score: "得点"
       },
       "zh-CN": {
-        page_title: "AI 适性诊断中心",
+        page_title: "AI适性测验",
         back_home: "返回 AI Science",
-        step1_title: "单元配置",
+        step1_title: "单元选择",
         step2_title: "试题作答",
         step3_title: "AI 诊断报告",
         btn_reload: "重载教材",
@@ -1378,8 +1378,16 @@ function changeLanguage() {
     }
 
     function showLoading(title, text){
-        document.getElementById("loading-title").textContent = title || "LOADING";
-        document.getElementById("loading-desc").textContent = text || "處理中...";
+        const titleEl = document.getElementById("loading-title");
+        const descEl = document.getElementById("loading-desc");
+        titleEl.textContent = title || "LOADING";
+        if (typeof text === "string") {
+            descEl.textContent = text;
+            descEl.classList.toggle("hidden", text.trim() === "");
+        } else {
+            descEl.textContent = "處理中...";
+            descEl.classList.remove("hidden");
+        }
         document.getElementById("loading-overlay").style.display = "flex";
     }
     function hideLoading(){ document.getElementById("loading-overlay").style.display = "none"; }
@@ -2379,7 +2387,7 @@ async function startTest() {
     CAT.administeredItemIds = [];
     CAT.responses = [];
 
-    showLoading("ITEMBANK", "正在從 CATItemBank 題庫載入試題...");
+    showLoading("AI正在命題，請稍後...", "");
 
     try {
         const unitPayload = getUnitPayload();
