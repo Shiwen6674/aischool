@@ -3102,6 +3102,19 @@ function buildFallbackAiFeedback(context) {
   const correct = Number(context?.correct) || 0;
   const total = Number(context?.total) || 0;
   const wrongCount = wrongItems.length;
+  const isPerfectScore = total > 0 && wrongCount === 0 && (score >= 100 || correct >= total);
+
+  if (isPerfectScore) {
+    return {
+      summary: `本次測驗共 ${total} 題，答對 ${correct} 題，表現非常穩定。你已能掌握本單元目前抽測到的核心概念與題意判讀。`,
+      weakness_analysis: "本次沒有錯題，暫未偵測到需要優先補救的迷思概念。建議保持目前的作答策略，接著挑戰更高難度或跨情境應用題，確認概念能否穩定遷移。",
+      action_plan: [
+        "挑戰同單元較高難度題目，檢查能否在新情境中維持正確判斷。",
+        "整理本次答題時使用的關鍵判斷依據，形成自己的概念筆記。",
+        "下一次練習可提高題數或混合相近單元，確認概念是否真正精熟。"
+      ]
+    };
+  }
 
   const remedialNotes = uniqueTexts(
     wrongItems.map((item) =>
@@ -3174,6 +3187,15 @@ function mergeAiFeedbackWithFallback(aiFeedback, context) {
   const fallback = buildFallbackAiFeedback(context);
   const source = aiFeedback && typeof aiFeedback === "object" ? aiFeedback : {};
   const sourceActions = normalizeActionPlan(source.action_plan);
+  const wrongItems = Array.isArray(context?.wrongItems) ? context.wrongItems : [];
+  const score = Number(context?.score100) || 0;
+  const correct = Number(context?.correct) || 0;
+  const total = Number(context?.total) || 0;
+  const isPerfectScore = total > 0 && wrongItems.length === 0 && (score >= 100 || correct >= total);
+
+  if (isPerfectScore) {
+    return fallback;
+  }
 
   return {
     summary: hasMeaningfulAiText(source.summary) ? normalizeAiText(source.summary) : fallback.summary,
