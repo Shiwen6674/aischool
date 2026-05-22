@@ -9,10 +9,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;700;900&family=Orbitron:wght@500;700;900&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./assets/css/tailwind.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script>
+        window.tailwind = window.tailwind || {};
         tailwind.config = {
             darkMode: 'class',
             theme: {
@@ -254,7 +255,7 @@
     </style>
     <script src="./assets/js/aischool-shared.js"></script>
     <script>
-        window.AISchool.requireRole(["student"], "請先登入學生帳號，再進入自然科學模組。", "index.html");
+        window.AISchool.requireRole(["student", "admin"], "請先登入學生帳號，再進入自然科學模組。", "index.html");
     </script>
 </head>
 <body class="min-h-screen flex flex-col font-sans selection:bg-teal-500/30 selection:text-teal-100">
@@ -303,6 +304,16 @@
                         <option value="zh-CN">简体中文</option>
                     </select>
                 </div>
+
+                <a href="account_settings.html" class="hidden sm:inline-flex items-center gap-2 text-slate-400 hover:text-teal-200 font-bold text-sm transition">
+                    <i class="fa-solid fa-gauge-high"></i>
+                    <span>帳戶與額度</span>
+                </a>
+
+                <button onclick="logout()" class="inline-flex items-center gap-2 text-slate-400 hover:text-rose-300 font-bold text-sm transition">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>登出</span>
+                </button>
             </div>
         </div>
     </nav>
@@ -446,6 +457,15 @@
 
         if (currentUser) {
             document.getElementById("user-display").textContent = `${currentUser.role || 'Student'}: ${currentUser.name}`;
+        }
+
+        function logout() {
+            if (window.AISchoolMembership && typeof window.AISchoolMembership.logoutWithSurvey === "function") {
+                window.AISchoolMembership.logoutWithSurvey("student-science");
+                return;
+            }
+            if (window.AISchool) window.AISchool.clearCurrentUser();
+            window.location.href = "index.html";
         }
 
         // 2. 微觀分子 Canvas (維持原樣，確保背景特效)

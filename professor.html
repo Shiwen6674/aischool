@@ -9,11 +9,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@300;500;700&family=Noto+Sans+TC:wght@300;400;600;800&display=swap" rel="stylesheet">
 
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="./assets/css/tailwind.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 
   <script>
+    window.tailwind = window.tailwind || {};
     tailwind.config = {
       darkMode: 'class',
       theme: {
@@ -166,6 +167,10 @@
             <div class="hidden text-[11px] text-slate-400 font-semibold" id="user-unit">—</div>
           </div>
         </div>
+
+        <a href="account_settings.html" class="text-purple-200 hover:text-white font-bold text-sm transition px-3 py-2 rounded-lg hover:bg-purple-500/10">
+          <i class="fa-solid fa-gauge-high mr-1"></i>帳戶與額度
+        </a>
 
         <button id="logout-btn" onclick="openLogoutSurvey()" class="hidden text-rose-300 hover:text-rose-200 font-bold text-sm transition px-3 py-2 rounded-lg hover:bg-rose-500/10">
           <i class="fa-solid fa-right-from-bracket mr-1"></i><span data-i18n="logout">登出</span>

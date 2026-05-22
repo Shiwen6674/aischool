@@ -25,6 +25,7 @@
     studentAdaptiveTesting: "https://script.google.com/macros/s/AKfycbxvAOgRDBE6T-2R37UeTzo0RSQukgGOlEYyBrTw8zUSOlIKNIzLdJXozjNx4Hn6brc2/exec",
     studentUnitCoreIdea: "https://script.google.com/macros/s/AKfycbynf2DkhZ6V9lCLH3MH-Ud7DjTMPDKAu2DJm3OC22lTYaPJe5TiA8GRfyG0lihLUZxa/exec",
     studentBilingualTracking: "https://script.google.com/macros/s/AKfycbwXvqOFGVuay1_jZ7dau5VkNqSqGppQ3ffIizlcyB4R0XwvQU7Km5JFuYR4wfFG2OMxHA/exec",
+    membershipBilling: "https://script.google.com/macros/s/AKfycbzuxjkR2kM_fPGu9-5hNXH78YFkpONi4uH6i3XMcSdRTGqgdQod3lytlx7kOeRrTfGa4g/exec",
     learningAnalytics: "https://script.google.com/macros/s/AKfycbyQjTYw0bqUzw3VzQNQfSvPXRXpQjgEgJ_bKlaDFr_bsxMfKAJ1mFGqBSJnB0-nheQJ_g/exec"
   };
   const GAS_ENDPOINT_FALLBACKS = {
@@ -107,12 +108,55 @@
   function normalizeUser(user) {
     if (!user || typeof user !== "object") return null;
 
+    const membershipPlan =
+      user.membershipPlan ||
+      user.MembershipPlan ||
+      user.subscriptionPlan ||
+      user.SubscriptionPlan ||
+      user.plan ||
+      user.Plan ||
+      user.sponsorPlan ||
+      user.SponsorPlan ||
+      "";
+    const membershipStatus =
+      user.membershipStatus ||
+      user.MembershipStatus ||
+      user.subscriptionStatus ||
+      user.SubscriptionStatus ||
+      user.status ||
+      user.Status ||
+      user.sponsorStatus ||
+      user.SponsorStatus ||
+      "";
+    const membershipExpiresAt =
+      user.membershipExpiresAt ||
+      user.MembershipExpiresAt ||
+      user.membershipUntil ||
+      user.MembershipUntil ||
+      user.subscriptionUntil ||
+      user.SubscriptionUntil ||
+      user.paidUntil ||
+      user.PaidUntil ||
+      user.expiresAt ||
+      user.ExpiresAt ||
+      "";
+
     return {
       ...user,
       email: user.email || user.Email || "",
       name: user.name || user.Name || user.username || user.email || user.Email || "User",
       role: normalizeRole(user.role || user.Role || ""),
       account: user.account || user.Account || "",
+      admin: user.admin === true || String(user.admin || user.Admin || "").toLowerCase() === "true",
+      studentId: user.studentId || user.StudentID || user.student_id || user.StudentId || "",
+      student_id: user.student_id || user.StudentID || user.studentId || user.StudentId || "",
+      membershipPlan,
+      membershipStatus,
+      membershipExpiresAt,
+      dailyQuotaTwd: Number(user.dailyQuotaTwd || user.DailyQuotaTwd || user.dailyQuota || user.DailyQuota || 0) || 0,
+      hourlyQuotaTwd: Number(user.hourlyQuotaTwd || user.HourlyQuotaTwd || user.hourlyQuota || user.HourlyQuota || 0) || 0,
+      dailyUsedTwd: Number(user.dailyUsedTwd || user.DailyUsedTwd || user.dailyUsed || user.DailyUsed || 0) || 0,
+      hourlyUsedTwd: Number(user.hourlyUsedTwd || user.HourlyUsedTwd || user.hourlyUsed || user.HourlyUsed || 0) || 0,
       id:
         user.id ||
         user.ID ||
@@ -431,4 +475,21 @@
     setFlashMessage,
     setLanguage
   };
+
+  function loadMembershipRuntime() {
+    if (typeof document === "undefined") return;
+    if (window.AISchoolMembership || document.getElementById("aischool-membership-runtime")) return;
+
+    const script = document.createElement("script");
+    const currentScript = document.currentScript;
+    const baseUrl = currentScript && currentScript.src
+      ? currentScript.src.replace(/\/[^/]*$/, "/")
+      : "./assets/js/";
+    script.id = "aischool-membership-runtime";
+    script.src = baseUrl + "aischool-membership.js?v=20260522-formal";
+    script.defer = true;
+    document.head.appendChild(script);
+  }
+
+  loadMembershipRuntime();
 })();

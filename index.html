@@ -1540,6 +1540,7 @@ const normalizedRole = (isTruthyLoginValue(user.admin) || normalizeRole(user.rol
     : normalizeRole(user.role);
 
 const userInfo = {
+    ...user,
     email: user.email || email,
     name: user.name || user.email || email,
     role: normalizedRole,
@@ -1683,6 +1684,7 @@ if (result.result === 'success') {
     const normalizedRole = normalizeRole(user.role);
 
     const userInfo = {
+        ...user,
         email: user.email,
         name: user.name,
         role: normalizedRole

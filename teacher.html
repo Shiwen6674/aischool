@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teaching Hub | Science Learning Hub</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./assets/css/tailwind.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800;900&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
     
     <script>
+        window.tailwind = window.tailwind || {};
         tailwind.config = {
             theme: {
                 extend: {
@@ -243,9 +244,36 @@
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%; z-index: -10;
             overflow: hidden;
-            background: linear-gradient(-40deg, #effcf4, #ecfdf5, #eafff7, #f3fbf7, #f8fafc);
+            background:
+                radial-gradient(circle at 18% 12%, rgba(167, 243, 208, 0.62), transparent 28rem),
+                radial-gradient(circle at 86% 10%, rgba(125, 211, 252, 0.34), transparent 30rem),
+                linear-gradient(-40deg, #f7fffb, #effcf4, #ecfdf5, #eefdf9, #f8fafc);
             background-size: 400% 400%;
             animation: gradientBG 20s ease infinite;
+        }
+        main {
+            filter: saturate(1.02);
+        }
+        #dashboard-view .feature-card {
+            min-height: 24rem;
+            border-width: 1.5px;
+            background:
+                linear-gradient(180deg, var(--card-top), rgba(255, 255, 255, 0.94));
+        }
+        #dashboard-view .feature-card h3 {
+            color: #123a31;
+        }
+        #dashboard-view .feature-card p {
+            color: #475569;
+            font-weight: 700;
+        }
+        #dashboard-view .feature-card .w-28 {
+            box-shadow:
+                0 22px 38px -22px rgba(var(--card-accent-rgb), 0.55),
+                0 1px 0 rgba(255, 255, 255, 0.88) inset;
+        }
+        nav.glass-panel {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(236, 253, 245, 0.78));
         }
         @keyframes gradientBG {
             0% { background-position: 0% 50%; }
@@ -293,6 +321,9 @@
                         <div class="w-9 h-9 rounded-full bg-gradient-to-br from-green-100 to-emerald-50 text-green-600 flex items-center justify-center text-sm font-bold border border-green-200 shadow-sm" id="user-avatar">T</div>
                         <span class="text-sm font-bold text-slate-700 hidden md:block" id="user-name-display">Teacher</span>
                     </div>
+                    <a href="account_settings.html" class="text-slate-500 hover:text-emerald-600 transition p-2 rounded-full hover:bg-emerald-50" title="帳戶與額度">
+                        <i class="fa-solid fa-gauge-high text-lg"></i>
+                    </a>
                     <button onclick="logout()" class="text-slate-400 hover:text-rose-500 transition p-2 rounded-full hover:bg-rose-50" title="登出">
                         <i class="fa-solid fa-right-from-bracket text-lg"></i>
                     </button>
@@ -312,7 +343,7 @@
                     <p class="text-slate-500 text-xl md:text-2xl max-w-3xl mx-auto font-medium" data-i18n="select_tool">請選擇下方的教學輔助工具以提升教學成效</p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-10 px-4 mb-12">
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-10 px-4 mb-12">
                     <!-- 卡片 1：命題用語檢核 (外層卡片直接跳轉) -->
                     <div onclick="window.location.href='teacher_itemvocabularyexamination.html'" class="glass-card feature-card tone-mint p-10 rounded-[2.5rem] cursor-pointer group relative overflow-hidden flex flex-col items-center text-center">
                         <div class="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-green-400/10 rounded-full blur-3xl group-hover:bg-green-400/20 transition"></div>
@@ -341,6 +372,16 @@
                         </div>
                         <h3 class="text-2xl font-bold text-slate-800 mb-4 group-hover:text-teal-600 transition" data-i18n="feat_t_3">學習狀況診斷</h3>
                         <p class="text-slate-500 text-base leading-relaxed" data-i18n="feat_t_3_desc">視覺化分析班級學習成效，精準定位迷思概念。</p>
+                    </div>
+
+                    <!-- 卡片 4：CAT 報表檢視 -->
+                    <div onclick="window.location.href='teacher_CAT_review.html'" class="glass-card p-10 rounded-[2.5rem] cursor-pointer group relative overflow-hidden flex flex-col items-center text-center">
+                        <div class="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-blue-400/10 rounded-full blur-3xl group-hover:bg-blue-400/20 transition"></div>
+                        <div class="w-28 h-28 bg-gradient-to-br from-blue-50 to-white rounded-3xl flex items-center justify-center mb-8 shadow-lg shadow-blue-100 group-hover:scale-110 transition duration-300 border border-blue-100 group-hover:border-blue-200">
+                            <i class="fa-solid fa-chart-column text-6xl text-blue-600"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-800 mb-4 group-hover:text-blue-600 transition" data-i18n="feat_t_4">CAT 診斷報表</h3>
+                        <p class="text-slate-500 text-base leading-relaxed" data-i18n="feat_t_4_desc">檢視學生診斷資料、能力值與 AI 建議，支援課後精準補救教學。</p>
                     </div>
                 </div>
             </div>
@@ -466,6 +507,7 @@
                 "feat_t_1": "命題用語檢核", "feat_t_1_desc": "智慧分析試題詞彙難易度，確保用語符合學生認知發展。",
                 "feat_t_2": "單元備課重點", "feat_t_2_desc": "自動生成單元核心概念架構與教學建議，縮短備課時間。",
                 "feat_t_3": "學習狀況診斷", "feat_t_3_desc": "視覺化分析班級學習成效，精準定位迷思概念。",
+                "feat_t_4": "CAT 診斷報表", "feat_t_4_desc": "檢視學生診斷資料、能力值與 AI 建議，支援課後精準補救教學。",
                 "logout": "登出"
             },
             "en": {
@@ -476,6 +518,7 @@
                 "feat_t_1": "Term Checker", "feat_t_1_desc": "Analyze vocabulary difficulty to ensure suitability for students.",
                 "feat_t_2": "Lesson Plan Helper", "feat_t_2_desc": "Generate core concepts and teaching suggestions automatically.",
                 "feat_t_3": "Student Diagnosis", "feat_t_3_desc": "Visualize class performance and pinpoint misconceptions.",
+                "feat_t_4": "CAT Reports", "feat_t_4_desc": "Review student diagnostics, ability values, and AI feedback for targeted remediation.",
                 "logout": "Logout"
             },
             "ja": {
@@ -486,6 +529,7 @@
                 "feat_t_1": "用語チェッカー", "feat_t_1_desc": "語彙の難易度を分析し、学生の認知発達に適合させます。",
                 "feat_t_2": "授業の要点", "feat_t_2_desc": "単元の核心概念と指導提案を自動生成し、準備時間を短縮します。",
                 "feat_t_3": "学習状況診断", "feat_t_3_desc": "クラスの学習成果を可視化し、誤解を正確に特定します。",
+                "feat_t_4": "CAT 診断レポート", "feat_t_4_desc": "生徒の診断データ・能力値・AI提案を確認し、補習指導に活用します。",
                 "logout": "ログアウト"
             },
             "zh-CN": {
@@ -496,16 +540,16 @@
                 "feat_t_1": "命题用语检核", "feat_t_1_desc": "智慧分析试题词汇难易度，确保用语符合学生认知发展。",
                 "feat_t_2": "单元备课重点", "feat_t_2_desc": "自动生成单元核心概念架构与教学建议，缩短备课时间。",
                 "feat_t_3": "学习状况诊断", "feat_t_3_desc": "视觉化分析班级学习成效，精准定位迷思概念。",
+                "feat_t_4": "CAT 诊断报表", "feat_t_4_desc": "检视学生诊断资料、能力值与 AI 建议，支援课后精准补救教学。",
                 "logout": "登出"
             }
         };
 
         // --- 1. 權限檢查 ---
-        const storedUser = window.AISchool ? window.AISchool.getCurrentUser() : null;
-        // 為了開發方便暫時允許未登入 (實際上線可取消註解)
-        // if (!userJson) { alert("請先登入！"); window.location.href = "index.html"; }
-        
-        const currentUser = storedUser || { name: "訪客教師", role: "Teacher" };
+        const storedUser = window.AISchool
+            ? window.AISchool.requireRole(["teacher", "admin"], "請先登入教師帳號，再進入教學中心。", "index.html")
+            : null;
+        const currentUser = storedUser || { name: "Teacher", role: "teacher" };
         document.getElementById("user-name-display").innerText = currentUser.name;
         document.getElementById("user-avatar").innerText = currentUser.name.charAt(0).toUpperCase();
 
@@ -563,14 +607,16 @@
         }
 
         function logout() {
-            if(confirm("確定要登出嗎？")) {
-                if (window.AISchool) {
-                    window.AISchool.clearCurrentUser();
-                } else {
-                    sessionStorage.removeItem("currentUser");
-                }
-                window.location.href = "index.html";
+            if (window.AISchoolMembership && typeof window.AISchoolMembership.logoutWithSurvey === "function") {
+                window.AISchoolMembership.logoutWithSurvey("teacher");
+                return;
             }
+            if (window.AISchool) {
+                window.AISchool.clearCurrentUser();
+            } else {
+                sessionStorage.removeItem("currentUser");
+            }
+            window.location.href = "index.html";
         }
 
         // *** Canvas 原子軌域動畫 (教師版配色 - 綠/青/黃) ***

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>帳戶與額度 | AI School</title>
+  <link rel="stylesheet" href="./assets/css/tailwind.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800;900&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="./assets/js/aischool-shared.js"></script>
+  <script>
+    window.AISchool.requireRole(["student", "teacher", "professor", "admin"], "請先登入，再管理帳戶與額度。", "index.html");
+  </script>
+  <style>
+    :root {
+      --ink: #e2e8f0;
+      --muted: #94a3b8;
+      --line: rgba(148, 163, 184, 0.18);
+      --cyan: #22d3ee;
+      --green: #22c55e;
+      --blue: #2563eb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Noto Sans TC", "Outfit", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 18% 8%, rgba(34, 211, 238, 0.18), transparent 34rem),
+        radial-gradient(circle at 86% 12%, rgba(79, 70, 229, 0.2), transparent 34rem),
+        linear-gradient(135deg, #020617 0%, #0f172a 48%, #111827 100%);
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent 86%);
+    }
+    .glass {
+      border: 1px solid var(--line);
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(15, 23, 42, 0.64));
+      box-shadow: 0 28px 80px rgba(2, 6, 23, 0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-radius: 999px;
+      border: 1px solid rgba(34, 211, 238, 0.28);
+      padding: 0.45rem 0.85rem;
+      color: #a5f3fc;
+      background: rgba(8, 145, 178, 0.12);
+      font-weight: 900;
+      font-size: 0.78rem;
+    }
+    .field {
+      width: 100%;
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      border-radius: 1rem;
+      padding: 0.95rem 1rem;
+      color: #f8fafc;
+      background: rgba(15, 23, 42, 0.82);
+      outline: none;
+      font-weight: 800;
+    }
+    .field:focus {
+      border-color: rgba(34, 211, 238, 0.55);
+      box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.12);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.55rem;
+      min-height: 3.1rem;
+      border: 0;
+      border-radius: 1rem;
+      padding: 0.8rem 1.1rem;
+      color: white;
+      font-weight: 950;
+      text-decoration: none;
+      cursor: pointer;
+      background: linear-gradient(135deg, #2563eb, #14b8a6);
+      box-shadow: 0 18px 42px rgba(20, 184, 166, 0.24);
+    }
+    .btn.secondary {
+      color: #dbeafe;
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      box-shadow: none;
+    }
+    .plan-card {
+      border-radius: 1.35rem;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      background: linear-gradient(160deg, rgba(30, 41, 59, 0.86), rgba(15, 23, 42, 0.72));
+      padding: 1.15rem;
+    }
+    .quota-track {
+      height: 0.75rem;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(2, 6, 23, 0.52);
+      border: 1px solid rgba(148, 163, 184, 0.14);
+    }
+    .quota-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--green), var(--cyan));
+      transition: width 0.25s ease;
+    }
+  </style>
+</head>
+<body>
+  <nav class="glass sticky top-0 z-40 border-x-0 border-t-0">
+    <div class="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between gap-4">
+      <a id="back-link" class="btn secondary" href="student_subject.html">
+        <i class="fa-solid fa-arrow-left"></i>
+        返回
+      </a>
+      <div class="flex items-center gap-3">
+        <i class="fa-solid fa-robot text-cyan-300 text-2xl drop-shadow-[0_0_12px_rgba(34,211,238,0.7)]"></i>
+        <span class="font-black text-xl tracking-tight">AI School</span>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-6xl mx-auto px-5 py-10 relative z-10">
+    <section class="glass rounded-[2rem] p-6 md:p-10 mb-8">
+      <span class="pill"><i class="fa-solid fa-gauge-high"></i> 帳戶與 AI 額度</span>
+      <div class="mt-6 grid lg:grid-cols-[1.1fr_0.9fr] gap-7 items-start">
+        <div>
+          <h1 class="text-4xl md:text-5xl font-black leading-tight mb-4">管理你的學習使用權限</h1>
+          <p class="text-slate-300 text-lg leading-8 max-w-2xl">
+            你可以在這裡檢視目前方案、AI 用額、免費體驗時間，或升級贊助方案。密碼修改會寄出 Email 驗證，確認後才會生效。
+          </p>
+        </div>
+        <div class="plan-card">
+          <div class="text-slate-400 text-sm font-black uppercase tracking-[0.18em] mb-2">Current Plan</div>
+          <div class="text-3xl font-black text-white" id="plan-label">讀取中</div>
+          <div class="text-cyan-200 font-bold mt-2" id="plan-expiry">--</div>
+          <div class="grid grid-cols-2 gap-3 mt-5">
+            <button class="btn" type="button" data-plan="weekly">週訂制 NT$150</button>
+            <button class="btn" type="button" data-plan="monthly">月訂制 NT$500</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid lg:grid-cols-2 gap-7">
+      <div class="glass rounded-[2rem] p-6 md:p-8">
+        <h2 class="text-2xl font-black mb-5"><i class="fa-solid fa-chart-simple text-cyan-300 mr-2"></i>額度狀態</h2>
+        <div class="space-y-6">
+          <div>
+            <div class="flex justify-between font-black text-sm mb-2">
+              <span>今日免費體驗</span>
+              <span id="free-quota-text">--</span>
+            </div>
+            <div class="quota-track"><div class="quota-fill" id="free-quota-fill"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between font-black text-sm mb-2">
+              <span>本小時 AI 用額</span>
+              <span id="hour-quota-text">--</span>
+            </div>
+            <div class="quota-track"><div class="quota-fill" id="hour-quota-fill"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between font-black text-sm mb-2">
+              <span>今日 AI 用額</span>
+              <span id="day-quota-text">--</span>
+            </div>
+            <div class="quota-track"><div class="quota-fill" id="day-quota-fill"></div></div>
+          </div>
+        </div>
+        <p class="mt-6 text-slate-400 leading-7 text-sm">
+          贊助方案目前以每日 NT$15、每小時 NT$2 作為 AI 呼叫保護額度，避免單一帳號異常消耗。自然科六個學習模組均可使用。
+        </p>
+      </div>
+
+      <div class="glass rounded-[2rem] p-6 md:p-8">
+        <h2 class="text-2xl font-black mb-5"><i class="fa-solid fa-key text-emerald-300 mr-2"></i>修改密碼</h2>
+        <form id="password-form" class="space-y-4">
+          <label class="block">
+            <span class="block text-sm font-black text-slate-300 mb-2">目前密碼</span>
+            <input class="field" id="current-password" type="password" autocomplete="current-password" required>
+          </label>
+          <label class="block">
+            <span class="block text-sm font-black text-slate-300 mb-2">新密碼</span>
+            <input class="field" id="new-password" type="password" autocomplete="new-password" minlength="8" required>
+          </label>
+          <label class="block">
+            <span class="block text-sm font-black text-slate-300 mb-2">再次輸入新密碼</span>
+            <input class="field" id="confirm-password" type="password" autocomplete="new-password" minlength="8" required>
+          </label>
+          <button class="btn w-full" type="submit">
+            <i class="fa-solid fa-envelope-circle-check"></i>
+            寄出 Email 驗證
+          </button>
+          <p class="text-sm text-slate-400 leading-7" id="password-message"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const user = window.AISchool.getCurrentUser();
+    const roleHome = {
+      student: "student_subject.html",
+      teacher: "teacher.html",
+      professor: "professor.html",
+      admin: "admin_learning_dashboard.html"
+    };
+    document.getElementById("back-link").href = roleHome[user.role] || "index.html";
+
+    function taipeiParts(date) {
+      const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Taipei",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        hourCycle: "h23"
+      }).formatToParts(date || new Date());
+      const bag = {};
+      parts.forEach((part) => {
+        if (part.type !== "literal") bag[part.type] = part.value;
+      });
+      return bag;
+    }
+
+    function localUsage(key) {
+      const prefix = `AISCHOOL_MEMBERSHIP_V1:${key}:${String(user.email || "").toLowerCase()}`;
+      try {
+        const data = JSON.parse(localStorage.getItem(prefix) || "{}");
+        const p = taipeiParts();
+        if (key === "daily" && data.date !== `${p.year}-${p.month}-${p.day}`) return {};
+        if (key === "hourly" && data.hour !== `${p.year}-${p.month}-${p.day}-${p.hour}`) return {};
+        return data;
+      } catch {
+        return {};
+      }
+    }
+
+    function percent(value, max) {
+      if (!max) return 0;
+      return Math.max(0, Math.min(100, Math.round((Number(value || 0) / max) * 100)));
+    }
+
+    function fill(id, pct) {
+      document.getElementById(id).style.width = `${pct}%`;
+    }
+
+    function renderLocalStatus() {
+      const tier = window.AISchoolMembership ? window.AISchoolMembership.getTier(user) : { label: "讀取中" };
+      document.getElementById("plan-label").textContent = tier.label || "免費體驗";
+      document.getElementById("plan-expiry").textContent = tier.expires ? `有效至 ${tier.expires}` : (tier.unlimited ? "此帳號不受額度限制" : "尚未啟用贊助方案");
+
+      const daily = localUsage("daily");
+      const hourly = localUsage("hourly");
+      const freePct = percent(daily.freeSeconds || 0, 600);
+      const hourPct = percent(hourly.costTwd || 0, 2);
+      const dayPct = percent(daily.costTwd || 0, 15);
+      fill("free-quota-fill", freePct);
+      fill("hour-quota-fill", hourPct);
+      fill("day-quota-fill", dayPct);
+      document.getElementById("free-quota-text").textContent = `${Math.max(0, 10 - Math.floor((daily.freeSeconds || 0) / 60))} 分鐘剩餘`;
+      document.getElementById("hour-quota-text").textContent = `${hourPct}% / NT$2`;
+      document.getElementById("day-quota-text").textContent = `${dayPct}% / NT$15`;
+    }
+
+    function whenMembershipReady() {
+      if (window.AISchoolMembership) return Promise.resolve(window.AISchoolMembership);
+      return new Promise((resolve) => {
+        let attempts = 0;
+        const timer = setInterval(() => {
+          attempts += 1;
+          if (window.AISchoolMembership) {
+            clearInterval(timer);
+            resolve(window.AISchoolMembership);
+          } else if (attempts > 120) {
+            clearInterval(timer);
+            resolve({
+              startEcpayCheckout: () => alert("帳戶服務載入中，請重新整理後再試。"),
+              requestPasswordChange: () => Promise.reject(new Error("membership_runtime_unavailable")),
+              refreshMembershipStatus: () => Promise.resolve(null)
+            });
+          }
+        }, 50);
+      });
+    }
+
+    document.querySelectorAll("[data-plan]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const membership = await whenMembershipReady();
+        membership.startEcpayCheckout(btn.getAttribute("data-plan"));
+      });
+    });
+
+    document.getElementById("password-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const msg = document.getElementById("password-message");
+      const currentPassword = document.getElementById("current-password").value;
+      const newPassword = document.getElementById("new-password").value;
+      const confirmPassword = document.getElementById("confirm-password").value;
+      if (newPassword !== confirmPassword) {
+        msg.textContent = "兩次輸入的新密碼不一致。";
+        return;
+      }
+      msg.textContent = "正在寄出驗證信...";
+      try {
+        const membership = await whenMembershipReady();
+        await membership.requestPasswordChange(currentPassword, newPassword);
+        msg.textContent = "已寄出驗證信，請至信箱點擊確認連結後再使用新密碼登入。";
+        event.target.reset();
+      } catch (err) {
+        msg.textContent = "目前無法送出密碼修改，請確認金流/會員後端已部署並稍後再試。";
+      }
+    });
+
+    renderLocalStatus();
+    whenMembershipReady().then((membership) => membership.refreshMembershipStatus()).finally(renderLocalStatus);
+    setInterval(renderLocalStatus, 15000);
+  </script>
+</body>
+</html>
