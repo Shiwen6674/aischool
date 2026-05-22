@@ -202,10 +202,9 @@ function extractOutputText(json) {
   (json.output || []).forEach((item) => {
     (item.content || []).forEach((content) => {
       if (content.text) out.push(content.text);
-      if (content.type === "output_text" && content.text) out.push(content.text);
     });
   });
-  return out.join("\n").trim();
+  return Array.from(new Set(out)).join("\n").trim();
 }
 
 function parseJsonText(text) {

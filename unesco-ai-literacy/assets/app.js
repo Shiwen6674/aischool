@@ -552,6 +552,18 @@
     return t("apiConnectionError");
   }
 
+  function cleanAiText(text) {
+    const value = String(text || "").trim();
+    if (!value) return "";
+    for (let split = Math.floor(value.length / 2) - 40; split <= Math.floor(value.length / 2) + 40; split += 1) {
+      if (split <= 0 || split >= value.length) continue;
+      const first = value.slice(0, split).trim();
+      const second = value.slice(split).trim();
+      if (first.length > 30 && first === second) return first;
+    }
+    return value;
+  }
+
   function logRemoteRecord(type, entry) {
     const endpoint = (state.config.gasEndpoint || "").trim();
     if (!endpoint) return;
@@ -1005,7 +1017,7 @@
     try {
       const context = retrieveContext(question, "both");
       const json = await postGas("chat", { question, context, history: state.messages.slice(-8) });
-      loadingMessage.text = String(json.answer || json.message || localChatAnswer(question));
+      loadingMessage.text = cleanAiText(json.answer || json.message || localChatAnswer(question));
       loadingMessage.source = "AICFT / AICFS";
       qs("#connectionNote").textContent = t("apiConnected");
     } catch (error) {
