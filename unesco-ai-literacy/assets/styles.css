@@ -281,6 +281,12 @@ textarea:focus {
   border-color: #b8c7e2;
 }
 
+.secondary-btn.listening {
+  color: #fff;
+  background: var(--red);
+  border-color: var(--red);
+}
+
 .secondary-btn:disabled {
   opacity: 0.55;
   cursor: not-allowed;

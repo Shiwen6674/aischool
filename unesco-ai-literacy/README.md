@@ -43,6 +43,12 @@ Use `OPENAI_API_KEY` as the property name. The GAS code also accepts `OPEN_API_K
 
 If `gasEndpoint` is empty or unavailable, the site continues with the built-in local question generator so class activity is not interrupted.
 
+Chat input:
+
+- Press `Enter` to send a message.
+- Press `Shift+Enter` to insert a new line.
+- Use the voice input button in browsers that support the Web Speech API, such as Chrome or Edge.
+
 ## Local Preview
 
 ```powershell

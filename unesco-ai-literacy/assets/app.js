@@ -54,10 +54,17 @@
       chatStep: "AI 學習夥伴",
       chatTitle: "先問問題，理解 AI 素養",
       chatPlaceholder: "你可以問：我該如何安全使用 AI？AICFS 的 AI 倫理是什麼？",
+      voiceInput: "語音輸入",
+      voiceListening: "聆聽中...",
+      voiceNotSupported: "這個瀏覽器不支援語音輸入，請改用 Chrome 或 Edge。",
       coachQuestion: "請 AI 問我",
       sendQuestion: "送出",
       enterAssessment: "進入評量",
       connectionReady: "AI 學習夥伴會依 AICFT 與 AICFS 文件回應你的問題。",
+      apiConnected: "AI API 已連線。",
+      apiKeyMissing: "AI API 尚未連線：請教師確認 Apps Script 指令碼屬性 OPENAI_API_KEY。",
+      apiKeyInvalid: "AI API 金鑰無法使用，請教師確認 OpenAI API key 或模型權限。",
+      apiConnectionError: "AI API 連線失敗，先以內建資料回覆。",
       assessmentStep: "測驗選單",
       assessmentTitle: "選擇評量內容",
       frameworkLabel: "評量框架",
@@ -134,10 +141,17 @@
       chatStep: "AI learning partner",
       chatTitle: "Ask first and understand AI literacy",
       chatPlaceholder: "You can ask: How can I use AI safely? What is AI ethics in AICFS?",
+      voiceInput: "Voice input",
+      voiceListening: "Listening...",
+      voiceNotSupported: "Voice input is not supported in this browser. Please use Chrome or Edge.",
       coachQuestion: "Ask me",
       sendQuestion: "Send",
       enterAssessment: "Enter assessment",
       connectionReady: "The AI learning partner answers with reference to AICFT and AICFS.",
+      apiConnected: "AI API is connected.",
+      apiKeyMissing: "AI API is not connected: ask the teacher to check the Apps Script property OPENAI_API_KEY.",
+      apiKeyInvalid: "The AI API key cannot be used. Ask the teacher to check the OpenAI API key or model access.",
+      apiConnectionError: "AI API connection failed. Continuing with built-in learning notes.",
       assessmentStep: "Assessment menu",
       assessmentTitle: "Choose assessment content",
       frameworkLabel: "Framework",
@@ -214,10 +228,17 @@
       chatStep: "Mitra belajar AI",
       chatTitle: "Bertanya dahulu untuk memahami literasi AI",
       chatPlaceholder: "Anda dapat bertanya: Bagaimana menggunakan AI dengan aman? Apa etika AI dalam AICFS?",
+      voiceInput: "Input suara",
+      voiceListening: "Mendengarkan...",
+      voiceNotSupported: "Browser ini belum mendukung input suara. Gunakan Chrome atau Edge.",
       coachQuestion: "AI bertanya",
       sendQuestion: "Kirim",
       enterAssessment: "Masuk penilaian",
       connectionReady: "Mitra belajar AI menjawab dengan rujukan AICFT dan AICFS.",
+      apiConnected: "API AI tersambung.",
+      apiKeyMissing: "API AI belum tersambung: minta guru memeriksa properti Apps Script OPENAI_API_KEY.",
+      apiKeyInvalid: "Kunci API AI tidak dapat digunakan. Minta guru memeriksa OpenAI API key atau akses model.",
+      apiConnectionError: "Koneksi API AI gagal. Belajar dilanjutkan dengan catatan bawaan.",
       assessmentStep: "Menu penilaian",
       assessmentTitle: "Pilih isi penilaian",
       frameworkLabel: "Kerangka",
@@ -294,10 +315,17 @@
       chatStep: "Umlingani wekufundza we-AI",
       chatTitle: "Buta kuqala kuze ucondze lwati lwe-AI",
       chatPlaceholder: "Ungabuta: Ngingayisebentisa njani i-AI ngekuphepha? Iyini i-AI ethics ku-AICFS?",
+      voiceInput: "Faka ngelivi",
+      voiceListening: "Kuyalalelwa...",
+      voiceNotSupported: "Lesiphequluli asisekeli kufaka ngelivi. Sebentisa Chrome noma Edge.",
       coachQuestion: "AI ayingibute",
       sendQuestion: "Tfumela",
       enterAssessment: "Ngena eluhlolweni",
       connectionReady: "Umlingani we-AI uphendvula asebentisa AICFT ne-AICFS.",
+      apiConnected: "I-AI API ixhunyiwe.",
+      apiKeyMissing: "I-AI API ayikaxhunywa: cela thishela ahlole i-Apps Script property OPENAI_API_KEY.",
+      apiKeyInvalid: "I-AI API key ayisebenzi. Cela thishela ahlole i-OpenAI API key noma imvume yemodeli.",
+      apiConnectionError: "Kuxhumana ne-AI API kwehlulekile. Kuchubeka ngemininingwane lesesistimini.",
       assessmentStep: "Imenyu yeluhlolo",
       assessmentTitle: "Khetsa lokutohlolwa",
       frameworkLabel: "Luhlaka",
@@ -448,6 +476,7 @@
       node.textContent = t(node.dataset.i18n);
     });
     qs("#chatInput").placeholder = t("chatPlaceholder");
+    resetVoiceButton();
     qs("#frameworkSelect").innerHTML = `
       <option value="aicfs">${escapeHtml(t("fw_aicfs"))}</option>
       <option value="aicft">${escapeHtml(t("fw_aicft"))}</option>
@@ -516,6 +545,13 @@
     return json;
   }
 
+  function gasErrorText(error) {
+    const message = String(error && error.message ? error.message : error || "");
+    if (/missing_OPENAI_API_KEY|OPENAI_API_KEY|missing_gas_endpoint/i.test(message)) return t("apiKeyMissing");
+    if (/openai_401|openai_403|invalid_api_key|insufficient_quota|model/i.test(message)) return t("apiKeyInvalid");
+    return t("apiConnectionError");
+  }
+
   function logRemoteRecord(type, entry) {
     const endpoint = (state.config.gasEndpoint || "").trim();
     if (!endpoint) return;
@@ -531,6 +567,69 @@
         record: entry
       })
     }).catch(() => {});
+  }
+
+  function speechLanguage() {
+    return {
+      zh: "zh-TW",
+      en: "en-US",
+      id: "id-ID",
+      ss: "ss-ZA"
+    }[state.lang] || "zh-TW";
+  }
+
+  function speechRecognitionClass() {
+    return window.SpeechRecognition || window.webkitSpeechRecognition;
+  }
+
+  function resetVoiceButton() {
+    const button = qs("#voiceInput");
+    if (!button) return;
+    button.textContent = t("voiceInput");
+    button.classList.remove("listening");
+  }
+
+  function toggleVoiceInput() {
+    const SpeechRecognition = speechRecognitionClass();
+    if (!SpeechRecognition) {
+      alert(t("voiceNotSupported"));
+      return;
+    }
+    if (state.voiceRecognition) {
+      state.voiceRecognition.stop();
+      state.voiceRecognition = null;
+      resetVoiceButton();
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    state.voiceRecognition = recognition;
+    recognition.lang = speechLanguage();
+    recognition.interimResults = false;
+    recognition.continuous = false;
+    recognition.onstart = () => {
+      qs("#voiceInput").textContent = t("voiceListening");
+      qs("#voiceInput").classList.add("listening");
+    };
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results)
+        .map((result) => result[0]?.transcript || "")
+        .join(" ")
+        .trim();
+      if (transcript) {
+        const input = qs("#chatInput");
+        input.value = input.value ? `${input.value} ${transcript}` : transcript;
+        input.focus();
+      }
+    };
+    recognition.onerror = () => {
+      qs("#connectionNote").textContent = t("voiceNotSupported");
+    };
+    recognition.onend = () => {
+      state.voiceRecognition = null;
+      resetVoiceButton();
+    };
+    recognition.start();
   }
 
   function localChatAnswer(question) {
@@ -908,9 +1007,12 @@
       const json = await postGas("chat", { question, context, history: state.messages.slice(-8) });
       loadingMessage.text = String(json.answer || json.message || localChatAnswer(question));
       loadingMessage.source = "AICFT / AICFS";
-    } catch (_) {
+      qs("#connectionNote").textContent = t("apiConnected");
+    } catch (error) {
+      const problem = gasErrorText(error);
       loadingMessage.text = localChatAnswer(question);
-      loadingMessage.source = t("localFallback");
+      loadingMessage.source = problem;
+      qs("#connectionNote").textContent = problem;
     }
     renderMessages();
   }
@@ -968,6 +1070,13 @@
       input.value = "";
       sendChat(question);
     });
+    qs("#chatInput").addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
+        event.preventDefault();
+        qs("#chatForm").requestSubmit();
+      }
+    });
+    qs("#voiceInput").addEventListener("click", toggleVoiceInput);
     qs("#coachQuestion").addEventListener("click", () => {
       addMessage("ai", t("askMe"), "AICFT / AICFS");
     });

@@ -14,8 +14,25 @@ function doPost(e) {
   }
 }
 
-function doGet() {
-  return jsonOutput({ ok: true, service: "UNESCO AI literacy OpenAI proxy" });
+function doGet(e) {
+  const props = PropertiesService.getScriptProperties();
+  const apiKey = firstProperty(props, [
+    "OPENAI_API_KEY",
+    "OPEN_API_KEY",
+    "OPENAI_KEY",
+    "API_KEY",
+    "OPEN API KEY",
+    "OPENAI API KEY",
+    "OpenAI API Key"
+  ]);
+  const data = {
+    ok: true,
+    service: "UNESCO AI literacy OpenAI proxy",
+    has_openai_key: Boolean(apiKey),
+    openai_model: props.getProperty("OPENAI_MODEL") || "gpt-5.4-mini",
+    has_spreadsheet_id: Boolean(props.getProperty("SPREADSHEET_ID"))
+  };
+  return jsonOutput(data);
 }
 
 function handleChat(body) {
@@ -106,7 +123,15 @@ function handleLogEvent(body) {
 
 function callOpenAI(payload) {
   const props = PropertiesService.getScriptProperties();
-  const apiKey = firstProperty(props, ["OPENAI_API_KEY", "OPEN_API_KEY", "OPENAI_KEY", "API_KEY"]);
+  const apiKey = firstProperty(props, [
+    "OPENAI_API_KEY",
+    "OPEN_API_KEY",
+    "OPENAI_KEY",
+    "API_KEY",
+    "OPEN API KEY",
+    "OPENAI API KEY",
+    "OpenAI API Key"
+  ]);
   if (!apiKey) throw new Error("missing_OPENAI_API_KEY: set Script Properties OPENAI_API_KEY");
   const model = props.getProperty("OPENAI_MODEL") || "gpt-5.4-mini";
   const response = UrlFetchApp.fetch(OPENAI_RESPONSES_URL, {

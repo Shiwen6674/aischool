@@ -111,7 +111,7 @@ story.append(table([
     ["步驟 / Step", "操作 / Action"],
     ["1", "閱讀知情同意：系統會蒐集登入資料、對話內容、測驗選擇、作答結果與診斷建議。 / Read informed consent: the system records login, conversation, assessment choice, answers, and diagnostic feedback."],
     ["2", "輸入姓名、學號、班級與課堂代碼。 / Enter name, student ID, class, and course code."],
-    ["3", "與 AI 學習夥伴對話，詢問 AICFT 或 AICFS 相關問題。 / Chat with the AI learning partner about AICFT or AICFS."],
+    ["3", "與 AI 學習夥伴對話，詢問 AICFT 或 AICFS 相關問題。按 Enter 送出、Shift+Enter 換行，也可使用語音輸入。 / Chat with the AI learning partner about AICFT or AICFS. Press Enter to send, Shift+Enter for a new line, or use voice input."],
     ["4", "按「進入評量」，選擇 AICFT 或 AICFS，選擇 10 至 30 題。 / Press Enter assessment, choose AICFT or AICFS, and select 10 to 30 questions."],
     ["5", "逐題作答。AI 會出題，系統會批改並顯示說明。 / Answer one question at a time. AI generates items and the system checks answers."],
     ["6", "查看總分、弱點面向、答錯題與 AI 診斷，下載 PDF。 / Review score, weak areas, missed items, AI diagnosis, and download PDF."]
