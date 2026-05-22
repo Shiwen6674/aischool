@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UNESCO AI 素養自主學習評量</title>
+  <meta name="description" content="AICFT/AICFS 自主學習評量、RAG 對話、診斷回饋與學習關懷預警原型。">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#consent" aria-label="UNESCO AI Literacy Home">
+      <span class="brand-mark">AI</span>
+      <span>
+        <strong data-i18n="appTitle">UNESCO AI 素養自主學習評量</strong>
+        <small data-i18n="appSubtitle">AICFT / AICFS RAG learning-care prototype</small>
+      </span>
+    </a>
+    <nav class="top-actions" aria-label="Primary">
+      <label class="language-switch">
+        <span data-i18n="language">語言</span>
+        <select id="languageSelect">
+          <option value="zh">繁體中文</option>
+          <option value="en">English</option>
+        </select>
+      </label>
+      <button class="ghost-btn" type="button" data-route="choose" data-i18n="navChoose">選擇</button>
+      <button class="ghost-btn" type="button" data-route="chat" data-i18n="navChat">對話</button>
+      <button class="ghost-btn" type="button" data-route="feedback" data-i18n="navFeedback">回饋</button>
+    </nav>
+  </header>
+
+  <main class="shell">
+    <aside class="flow-panel" aria-label="Learning flow">
+      <ol class="flow-list">
+        <li data-step-dot="consent"><span>1</span><strong data-i18n="stepConsent">知情同意</strong></li>
+        <li data-step-dot="login"><span>2</span><strong data-i18n="stepLogin">登入</strong></li>
+        <li data-step-dot="choose"><span>3</span><strong data-i18n="stepChoose">選擇</strong></li>
+        <li data-step-dot="chat"><span>4</span><strong data-i18n="stepChat">對話</strong></li>
+        <li data-step-dot="quiz"><span>5</span><strong data-i18n="stepQuiz">作答</strong></li>
+        <li data-step-dot="feedback"><span>6</span><strong data-i18n="stepFeedback">診斷</strong></li>
+      </ol>
+      <section class="signal-board">
+        <h2 data-i18n="warningTitle">學習關懷訊號</h2>
+        <div class="signal-row">
+          <span class="signal good"></span><span data-i18n="signalGood">80-100：穩定發展</span>
+        </div>
+        <div class="signal-row">
+          <span class="signal watch"></span><span data-i18n="signalWatch">60-79：需要補強</span>
+        </div>
+        <div class="signal-row">
+          <span class="signal alert"></span><span data-i18n="signalAlert">0-59：優先關懷</span>
+        </div>
+      </section>
+      <section class="source-box">
+        <h2 data-i18n="sourceTitle">RAG 資料源</h2>
+        <a href="sources/AICFT_UNESCO_2024.pdf" target="_blank" rel="noreferrer">AICFT PDF</a>
+        <a href="sources/AICFS_UNESCO_2024.pdf" target="_blank" rel="noreferrer">AICFS PDF</a>
+        <a href="docs/AI_literacy_tracking_schema.xlsx" target="_blank" rel="noreferrer" data-i18n="schemaLink">資料表設計</a>
+        <a href="docs/UNESCO_AI_Literacy_Manual_ZH_EN.pdf" target="_blank" rel="noreferrer" data-i18n="manualLink">中英手冊 PDF</a>
+      </section>
+    </aside>
+
+    <div class="content">
+      <section class="hero-panel">
+        <div>
+          <p class="eyebrow" data-i18n="heroEyebrow">Learning care + RAG + self-assessment</p>
+          <h1 data-i18n="heroTitle">用 UNESCO AI 能力框架做自主學習評量</h1>
+          <p data-i18n="heroText">學生或教師可先同意資料使用、登入、選擇 AICFT 或 AICFS、進行 AI 問答與 10-30 題自評，最後取得預警式診斷與 PDF 報告。</p>
+        </div>
+        <div class="matrix-visual" aria-label="AI competency matrix visual">
+          <div class="matrix-head">AICFT / AICFS</div>
+          <div class="matrix-grid">
+            <span>Human</span><span>Ethics</span><span>Tech</span>
+            <span>Pedagogy</span><span>Design</span><span>Growth</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="consent" class="page-section active" data-route-section="consent">
+        <div class="section-head">
+          <p class="eyebrow" data-i18n="consentEyebrow">Step 1</p>
+          <h2 data-i18n="consentTitle">知情同意</h2>
+          <p data-i18n="consentText">本網站為教學展示與自主學習評量原型。你的登入、對話與評量資料會先保存在本機瀏覽器，可由你匯出 CSV；若教師日後串接試算表，應另行告知資料用途、保存期間與權限。</p>
+        </div>
+        <div class="notice-grid">
+          <article>
+            <h3 data-i18n="consentDataTitle">會記錄的資料</h3>
+            <p data-i18n="consentDataText">姓名、班級、角色、同意時間、框架選擇、對話提問、評量答案、分數與建議。</p>
+          </article>
+          <article>
+            <h3 data-i18n="consentPurposeTitle">使用目的</h3>
+            <p data-i18n="consentPurposeText">協助學習者理解 AI 素養、追蹤自我進展、產生診斷回饋，並供教師示範學習分析設計。</p>
+          </article>
+          <article>
+            <h3 data-i18n="consentLimitTitle">限制</h3>
+            <p data-i18n="consentLimitText">此版不是正式心理測驗，也不含 IRT。分數是學習診斷訊號，不應作為高風險決策依據。</p>
+          </article>
+        </div>
+        <label class="check-line">
+          <input id="consentCheck" type="checkbox">
+          <span data-i18n="consentAgree">我已理解並同意以上說明，願意開始自主學習評量。</span>
+        </label>
+        <div class="button-row">
+          <button id="consentNext" class="primary-btn" type="button" data-i18n="startLogin">同意並前往登入</button>
+        </div>
+      </section>
+
+      <section id="login" class="page-section" data-route-section="login">
+        <div class="section-head">
+          <p class="eyebrow" data-i18n="loginEyebrow">Step 2</p>
+          <h2 data-i18n="loginTitle">登入資料</h2>
+          <p data-i18n="loginText">這裡採教室原型登入，不驗證密碼。正式上線請改用學校帳號、Google 登入或 Firebase Authentication。</p>
+        </div>
+        <form id="loginForm" class="form-grid">
+          <label>
+            <span data-i18n="nameLabel">姓名</span>
+            <input name="name" required autocomplete="name" placeholder="王小明">
+          </label>
+          <label>
+            <span data-i18n="accountLabel">學號/教師代號</span>
+            <input name="account" required placeholder="S001">
+          </label>
+          <label>
+            <span data-i18n="classLabel">班級/單位</span>
+            <input name="className" required placeholder="AI literacy 101">
+          </label>
+          <label>
+            <span data-i18n="emailLabel">Email</span>
+            <input name="email" type="email" placeholder="student@example.edu">
+          </label>
+          <label>
+            <span data-i18n="roleLabel">角色</span>
+            <select name="role" required>
+              <option value="student" data-i18n="roleStudent">學生</option>
+              <option value="teacher" data-i18n="roleTeacher">教師</option>
+              <option value="researcher" data-i18n="roleResearcher">研究/助教</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="passwordLabel">課堂代碼</span>
+            <input name="courseCode" placeholder="UNESCO-AI">
+          </label>
+          <div class="button-row span-2">
+            <button class="primary-btn" type="submit" data-i18n="loginSubmit">儲存登入並前往選擇</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="choose" class="page-section" data-route-section="choose">
+        <div class="section-head">
+          <p class="eyebrow" data-i18n="chooseEyebrow">Step 3</p>
+          <h2 data-i18n="chooseTitle">選擇框架與題數</h2>
+          <p data-i18n="chooseText">多語連動選單會依框架更新能力面向與層級。題數可選 10-30 題，系統會盡量平均抽取各面向。</p>
+        </div>
+        <div class="choice-grid">
+          <label>
+            <span data-i18n="frameworkLabel">框架</span>
+            <select id="frameworkSelect"></select>
+          </label>
+          <label>
+            <span data-i18n="dimensionLabel">能力面向</span>
+            <select id="dimensionSelect"></select>
+          </label>
+          <label>
+            <span data-i18n="levelLabel">層級</span>
+            <select id="levelSelect"></select>
+          </label>
+          <label>
+            <span data-i18n="countLabel">測驗題數</span>
+            <select id="countSelect">
+              <option value="10">10</option>
+              <option value="15">15</option>
+              <option value="20" selected>20</option>
+              <option value="25">25</option>
+              <option value="30">30</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="modeLabel">學習模式</span>
+            <select id="modeSelect">
+              <option value="ask" data-i18n="modeAsk">我問 AI</option>
+              <option value="coach" data-i18n="modeCoach">AI 問我</option>
+              <option value="assessment" data-i18n="modeAssessment">直接作答</option>
+            </select>
+          </label>
+        </div>
+        <div id="frameworkMatrix" class="framework-matrix"></div>
+        <div class="button-row">
+          <button id="goChat" class="secondary-btn" type="button" data-i18n="goChat">前往對話</button>
+          <button id="startQuiz" class="primary-btn" type="button" data-i18n="startQuiz">開始作答</button>
+        </div>
+      </section>
+
+      <section id="chat" class="page-section" data-route-section="chat">
+        <div class="section-head">
+          <p class="eyebrow" data-i18n="chatEyebrow">Step 4</p>
+          <h2 data-i18n="chatTitle">AICFT / AICFS 對話區</h2>
+          <p data-i18n="chatText">這是本機 RAG-style 對話：系統會從兩份 PDF 摘要索引找最相關內容，產生可追溯的學習回應。若要真正串接大型語言模型，可在正式版加入 API 後端。</p>
+        </div>
+        <div class="chat-layout">
+          <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
+          <form id="chatForm" class="chat-form">
+            <textarea id="chatInput" rows="3" required placeholder="請問 AICFS 的 Ethics by design 是什麼？"></textarea>
+            <div class="button-row">
+              <button class="secondary-btn" id="coachQuestion" type="button" data-i18n="coachQuestion">讓 AI 問我一題</button>
+              <button class="primary-btn" type="submit" data-i18n="sendQuestion">送出問題</button>
+            </div>
+          </form>
+        </div>
+        <div class="button-row">
+          <button class="primary-btn" id="chatToQuiz" type="button" data-i18n="chatToQuiz">完成對話，開始作答</button>
+        </div>
+      </section>
+
+      <section id="quiz" class="page-section" data-route-section="quiz">
+        <div class="section-head">
+          <p class="eyebrow" data-i18n="quizEyebrow">Step 5</p>
+          <h2 data-i18n="quizTitle">試題作答區</h2>
+          <p data-i18n="quizText">請依目前能力與實際行為作答。這不是考倒你的測驗，而是幫你知道下一步要補哪裡。</p>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-info"><span id="progressText">0 / 0</span><span id="autosaveText" data-i18n="autosave">已自動暫存</span></div>
+          <div class="progress-track"><span id="progressBar"></span></div>
+        </div>
+        <form id="quizForm">
+          <div id="questionList" class="question-list"></div>
+          <div class="button-row">
+            <button class="secondary-btn" type="button" id="backChoose" data-i18n="backChoose">返回選擇</button>
+            <button class="primary-btn" type="submit" data-i18n="submitQuiz">提交並看診斷</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="feedback" class="page-section" data-route-section="feedback">
+        <div id="reportArea">
+          <div class="section-head">
+            <p class="eyebrow" data-i18n="feedbackEyebrow">Step 6</p>
+            <h2 data-i18n="feedbackTitle">診斷回饋</h2>
+            <p data-i18n="feedbackText">報告會整合總分、面向分數、預警訊號與下一步學習建議。可直接列印或另存 PDF。</p>
+          </div>
+          <div id="feedbackEmpty" class="empty-state" data-i18n="feedbackEmpty">尚未完成作答。請先前往選擇並開始評量。</div>
+          <div id="feedbackContent" class="feedback-content hidden"></div>
+        </div>
+        <div class="button-row">
+          <button id="printReport" class="primary-btn" type="button" data-i18n="printReport">列印 / 另存 PDF 診斷</button>
+          <button id="exportLoginCsv" class="secondary-btn" type="button" data-i18n="exportLogin">匯出登入 CSV</button>
+          <button id="exportChatCsv" class="secondary-btn" type="button" data-i18n="exportChat">匯出對話 CSV</button>
+          <button id="exportAssessmentCsv" class="secondary-btn" type="button" data-i18n="exportAssessment">匯出評量 CSV</button>
+          <button id="clearLocalData" class="danger-btn" type="button" data-i18n="clearData">清除本機資料</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p data-i18n="footerText">Prototype for classroom use. Sources: UNESCO AICFT and AICFS, 2024. Local data stays in this browser unless exported.</p>
+  </footer>
+
+  <template id="messageTemplate">
+    <article class="message">
+      <strong></strong>
+      <p></p>
+      <small></small>
+    </article>
+  </template>
+
+  <script src="assets/app.js" defer></script>
+</body>
+</html>

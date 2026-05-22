@@ -1,0 +1,249 @@
+{
+  "sources": [
+    {
+      "id": "aicft",
+      "title": "AI competency framework for teachers",
+      "publisher": "UNESCO",
+      "year": 2024,
+      "officialPage": "https://www.unesco.org/en/articles/ai-competency-framework-teachers",
+      "unesdoc": "https://unesdoc.unesco.org/ark:/48223/pf0000391104_eng",
+      "localPdf": "sources/AICFT_UNESCO_2024.pdf",
+      "license": "CC BY-SA 3.0 IGO, excluding marked third-party images"
+    },
+    {
+      "id": "aicfs",
+      "title": "AI competency framework for students",
+      "publisher": "UNESCO",
+      "year": 2024,
+      "officialPage": "https://www.unesco.org/en/articles/ai-competency-framework-students",
+      "unesdoc": "https://unesdoc.unesco.org/ark:/48223/pf0000391105_eng",
+      "localPdf": "sources/AICFS_UNESCO_2024.pdf",
+      "license": "CC BY-SA 3.0 IGO, excluding marked third-party images"
+    }
+  ],
+  "frameworks": {
+    "aicft": {
+      "label": {
+        "zh": "AICFT 教師 AI 素養",
+        "en": "AICFT Teacher AI Competency"
+      },
+      "audience": "teachers",
+      "levels": [
+        {
+          "id": "acquire",
+          "zh": "Acquire 建立",
+          "en": "Acquire"
+        },
+        {
+          "id": "deepen",
+          "zh": "Deepen 深化",
+          "en": "Deepen"
+        },
+        {
+          "id": "create",
+          "zh": "Create 創造",
+          "en": "Create"
+        }
+      ],
+      "dimensions": [
+        {
+          "id": "human",
+          "zh": "以人為本心態",
+          "en": "Human-centred mindset",
+          "competencies": {
+            "acquire": {
+              "zh": "人類能動性",
+              "en": "Human agency"
+            },
+            "deepen": {
+              "zh": "人類問責",
+              "en": "Human accountability"
+            },
+            "create": {
+              "zh": "社會責任",
+              "en": "Social responsibility"
+            }
+          }
+        },
+        {
+          "id": "ethics",
+          "zh": "AI 倫理",
+          "en": "Ethics of AI",
+          "competencies": {
+            "acquire": {
+              "zh": "倫理原則",
+              "en": "Ethical principles"
+            },
+            "deepen": {
+              "zh": "安全與負責任使用",
+              "en": "Safe and responsible use"
+            },
+            "create": {
+              "zh": "共創倫理規則",
+              "en": "Co-creating ethical rules"
+            }
+          }
+        },
+        {
+          "id": "foundations",
+          "zh": "AI 基礎與應用",
+          "en": "AI foundations and applications",
+          "competencies": {
+            "acquire": {
+              "zh": "基本 AI 技術與應用",
+              "en": "Basic AI techniques and applications"
+            },
+            "deepen": {
+              "zh": "應用技能",
+              "en": "Application skills"
+            },
+            "create": {
+              "zh": "運用 AI 創造",
+              "en": "Creating with AI"
+            }
+          }
+        },
+        {
+          "id": "pedagogy",
+          "zh": "AI 教學法",
+          "en": "AI pedagogy",
+          "competencies": {
+            "acquire": {
+              "zh": "AI 輔助教學",
+              "en": "AI-assisted teaching"
+            },
+            "deepen": {
+              "zh": "AI 與教學法整合",
+              "en": "AI-pedagogy integration"
+            },
+            "create": {
+              "zh": "AI 增強的教學轉化",
+              "en": "AI-enhanced pedagogical transformation"
+            }
+          }
+        },
+        {
+          "id": "professional",
+          "zh": "AI 促進專業學習",
+          "en": "AI for professional development",
+          "competencies": {
+            "acquire": {
+              "zh": "AI 支持終身專業學習",
+              "en": "AI enabling lifelong professional learning"
+            },
+            "deepen": {
+              "zh": "AI 促進組織學習",
+              "en": "AI to enhance organizational learning"
+            },
+            "create": {
+              "zh": "AI 支持專業轉型",
+              "en": "AI to support professional transformation"
+            }
+          }
+        }
+      ]
+    },
+    "aicfs": {
+      "label": {
+        "zh": "AICFS 學生 AI 素養",
+        "en": "AICFS Student AI Competency"
+      },
+      "audience": "students",
+      "levels": [
+        {
+          "id": "understand",
+          "zh": "Understand 理解",
+          "en": "Understand"
+        },
+        {
+          "id": "apply",
+          "zh": "Apply 應用",
+          "en": "Apply"
+        },
+        {
+          "id": "create",
+          "zh": "Create 創造",
+          "en": "Create"
+        }
+      ],
+      "dimensions": [
+        {
+          "id": "human",
+          "zh": "以人為本心態",
+          "en": "Human-centred mindset",
+          "competencies": {
+            "understand": {
+              "zh": "人類能動性",
+              "en": "Human agency"
+            },
+            "apply": {
+              "zh": "人類問責",
+              "en": "Human accountability"
+            },
+            "create": {
+              "zh": "AI 時代公民責任",
+              "en": "Citizenship in the era of AI"
+            }
+          }
+        },
+        {
+          "id": "ethics",
+          "zh": "AI 倫理",
+          "en": "Ethics of AI",
+          "competencies": {
+            "understand": {
+              "zh": "具身倫理",
+              "en": "Embodied ethics"
+            },
+            "apply": {
+              "zh": "安全與負責任使用",
+              "en": "Safe and responsible use"
+            },
+            "create": {
+              "zh": "設計中的倫理",
+              "en": "Ethics by design"
+            }
+          }
+        },
+        {
+          "id": "techniques",
+          "zh": "AI 技術與應用",
+          "en": "AI techniques and applications",
+          "competencies": {
+            "understand": {
+              "zh": "AI 基礎",
+              "en": "AI foundations"
+            },
+            "apply": {
+              "zh": "應用技能",
+              "en": "Application skills"
+            },
+            "create": {
+              "zh": "建立 AI 工具",
+              "en": "Creating AI tools"
+            }
+          }
+        },
+        {
+          "id": "design",
+          "zh": "AI 系統設計",
+          "en": "AI system design",
+          "competencies": {
+            "understand": {
+              "zh": "問題界定",
+              "en": "Problem scoping"
+            },
+            "apply": {
+              "zh": "架構設計",
+              "en": "Architecture design"
+            },
+            "create": {
+              "zh": "迭代與回饋循環",
+              "en": "Iteration and feedback loops"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

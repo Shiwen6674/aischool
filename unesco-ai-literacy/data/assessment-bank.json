@@ -1,0 +1,522 @@
+{
+  "scale": [
+    {
+      "value": 1,
+      "zh": "尚未做到",
+      "en": "Not yet"
+    },
+    {
+      "value": 2,
+      "zh": "偶爾做到",
+      "en": "Sometimes"
+    },
+    {
+      "value": 3,
+      "zh": "經常做到",
+      "en": "Often"
+    },
+    {
+      "value": 4,
+      "zh": "能穩定做到並說明理由",
+      "en": "Consistently, with reasons"
+    }
+  ],
+  "items": [
+    {
+      "id": "t-human-01",
+      "framework": "aicft",
+      "dimension": "human",
+      "level": "acquire",
+      "zh": "我會先判斷 AI 是否真的有助於學生學習，而不是因為新奇就使用。",
+      "en": "I first judge whether AI truly supports student learning instead of using it only because it is new."
+    },
+    {
+      "id": "t-human-02",
+      "framework": "aicft",
+      "dimension": "human",
+      "level": "acquire",
+      "zh": "我能向學生說明 AI 產出需要人類檢核，不能直接視為正確答案。",
+      "en": "I can explain to students that AI outputs require human checking and should not be treated as automatically correct."
+    },
+    {
+      "id": "t-human-03",
+      "framework": "aicft",
+      "dimension": "human",
+      "level": "deepen",
+      "zh": "我設計 AI 活動時會保留學生選擇、反思與表達的空間。",
+      "en": "When designing AI activities, I preserve room for student choice, reflection, and expression."
+    },
+    {
+      "id": "t-human-04",
+      "framework": "aicft",
+      "dimension": "human",
+      "level": "deepen",
+      "zh": "我能辨識 AI 可能降低學生思考深度或造成過度依賴的情境。",
+      "en": "I can identify situations where AI may reduce students' depth of thinking or create over-reliance."
+    },
+    {
+      "id": "t-human-05",
+      "framework": "aicft",
+      "dimension": "human",
+      "level": "create",
+      "zh": "我能帶領同儕討論 AI 對學校、公平與學習文化的影響。",
+      "en": "I can lead colleagues in discussing AI's impact on school culture, equity, and learning."
+    },
+    {
+      "id": "t-human-06",
+      "framework": "aicft",
+      "dimension": "human",
+      "level": "create",
+      "zh": "我能將人權、包容與永續原則納入校本 AI 使用規範。",
+      "en": "I can include human rights, inclusion, and sustainability principles in school-based AI use guidelines."
+    },
+    {
+      "id": "t-ethics-01",
+      "framework": "aicft",
+      "dimension": "ethics",
+      "level": "acquire",
+      "zh": "我知道在 AI 工具中輸入學生個資、成績或敏感資料前需要特別檢核。",
+      "en": "I know that entering student personal data, grades, or sensitive information into AI tools requires careful checking."
+    },
+    {
+      "id": "t-ethics-02",
+      "framework": "aicft",
+      "dimension": "ethics",
+      "level": "acquire",
+      "zh": "我能辨識 AI 產出可能有偏誤、刻板印象或不公平內容。",
+      "en": "I can recognize that AI outputs may contain bias, stereotypes, or unfair content."
+    },
+    {
+      "id": "t-ethics-03",
+      "framework": "aicft",
+      "dimension": "ethics",
+      "level": "deepen",
+      "zh": "我會在課程中安排學生檢查 AI 答案來源、限制與風險。",
+      "en": "I arrange learning tasks where students examine AI answers for sources, limitations, and risks."
+    },
+    {
+      "id": "t-ethics-04",
+      "framework": "aicft",
+      "dimension": "ethics",
+      "level": "deepen",
+      "zh": "我能建立課堂 AI 使用規則，例如引用、透明揭露與禁止代寫。",
+      "en": "I can establish classroom AI rules such as citation, transparent disclosure, and no ghostwriting."
+    },
+    {
+      "id": "t-ethics-05",
+      "framework": "aicft",
+      "dimension": "ethics",
+      "level": "create",
+      "zh": "我能和學生共同修訂 AI 使用準則，使其符合不同課程與情境。",
+      "en": "I can revise AI use guidelines with students so they fit different courses and contexts."
+    },
+    {
+      "id": "t-ethics-06",
+      "framework": "aicft",
+      "dimension": "ethics",
+      "level": "create",
+      "zh": "我能提出校內 AI 倫理事件的預防、回報與補救流程。",
+      "en": "I can propose prevention, reporting, and remediation procedures for AI ethics incidents at school."
+    },
+    {
+      "id": "t-foundations-01",
+      "framework": "aicft",
+      "dimension": "foundations",
+      "level": "acquire",
+      "zh": "我能用簡單語言說明資料、模型、提示詞與生成式 AI 的基本關係。",
+      "en": "I can explain the basic relationship among data, models, prompts, and generative AI in simple language."
+    },
+    {
+      "id": "t-foundations-02",
+      "framework": "aicft",
+      "dimension": "foundations",
+      "level": "acquire",
+      "zh": "我能比較不同 AI 工具的功能、限制、費用與資料政策。",
+      "en": "I can compare AI tools by functions, limitations, cost, and data policies."
+    },
+    {
+      "id": "t-foundations-03",
+      "framework": "aicft",
+      "dimension": "foundations",
+      "level": "deepen",
+      "zh": "我能設計提示詞，使 AI 產出符合課程目標、學生程度與評量規準。",
+      "en": "I can design prompts so AI outputs align with learning goals, student levels, and assessment criteria."
+    },
+    {
+      "id": "t-foundations-04",
+      "framework": "aicft",
+      "dimension": "foundations",
+      "level": "deepen",
+      "zh": "我能用 AI 協助產生多版本教材，但會檢查正確性與可讀性。",
+      "en": "I can use AI to create multiple versions of learning materials while checking accuracy and readability."
+    },
+    {
+      "id": "t-foundations-05",
+      "framework": "aicft",
+      "dimension": "foundations",
+      "level": "create",
+      "zh": "我能把 AI 工具、開放資料或自建資料整合成可重複使用的教學流程。",
+      "en": "I can integrate AI tools, open data, or local data into reusable teaching workflows."
+    },
+    {
+      "id": "t-foundations-06",
+      "framework": "aicft",
+      "dimension": "foundations",
+      "level": "create",
+      "zh": "我能客製化 AI 輔助活動，讓學生產出、檢核與改進作品。",
+      "en": "I can customize AI-assisted activities where students produce, check, and improve their work."
+    },
+    {
+      "id": "t-pedagogy-01",
+      "framework": "aicft",
+      "dimension": "pedagogy",
+      "level": "acquire",
+      "zh": "我會依學習目標選擇 AI 工具，而不是先選工具再找教學用途。",
+      "en": "I choose AI tools based on learning goals rather than choosing a tool first and searching for uses."
+    },
+    {
+      "id": "t-pedagogy-02",
+      "framework": "aicft",
+      "dimension": "pedagogy",
+      "level": "acquire",
+      "zh": "我能用 AI 協助備課、形成性提問或回饋，但不讓 AI 取代教師判斷。",
+      "en": "I can use AI for preparation, formative questioning, or feedback without letting AI replace teacher judgment."
+    },
+    {
+      "id": "t-pedagogy-03",
+      "framework": "aicft",
+      "dimension": "pedagogy",
+      "level": "deepen",
+      "zh": "我能設計學生與 AI 對話後再討論、驗證、修正的活動。",
+      "en": "I can design activities where students converse with AI and then discuss, verify, and revise."
+    },
+    {
+      "id": "t-pedagogy-04",
+      "framework": "aicft",
+      "dimension": "pedagogy",
+      "level": "deepen",
+      "zh": "我能利用 AI 支援差異化任務，讓不同程度學生都有適當挑戰。",
+      "en": "I can use AI to support differentiated tasks so students at different levels receive appropriate challenge."
+    },
+    {
+      "id": "t-pedagogy-05",
+      "framework": "aicft",
+      "dimension": "pedagogy",
+      "level": "create",
+      "zh": "我能用 AI 重新設計課程流程，例如探究、合作、反思與診斷回饋。",
+      "en": "I can redesign course workflows with AI, including inquiry, collaboration, reflection, and diagnostic feedback."
+    },
+    {
+      "id": "t-pedagogy-06",
+      "framework": "aicft",
+      "dimension": "pedagogy",
+      "level": "create",
+      "zh": "我能發展以 AI 輔助但強化學生創造力與批判力的評量任務。",
+      "en": "I can develop AI-assisted assessment tasks that strengthen student creativity and critical thinking."
+    },
+    {
+      "id": "t-professional-01",
+      "framework": "aicft",
+      "dimension": "professional",
+      "level": "acquire",
+      "zh": "我會用 AI 協助整理專業學習資料，但會核對來源與可信度。",
+      "en": "I use AI to organize professional learning resources while checking sources and credibility."
+    },
+    {
+      "id": "t-professional-02",
+      "framework": "aicft",
+      "dimension": "professional",
+      "level": "acquire",
+      "zh": "我能根據自己的教學需求設定 AI 素養學習目標。",
+      "en": "I can set AI competency learning goals based on my own teaching needs."
+    },
+    {
+      "id": "t-professional-03",
+      "framework": "aicft",
+      "dimension": "professional",
+      "level": "deepen",
+      "zh": "我會和同儕分享 AI 教學案例、失敗經驗與改進策略。",
+      "en": "I share AI teaching cases, failure experiences, and improvement strategies with colleagues."
+    },
+    {
+      "id": "t-professional-04",
+      "framework": "aicft",
+      "dimension": "professional",
+      "level": "deepen",
+      "zh": "我能運用學習資料或學生回饋調整自己的 AI 教學實踐。",
+      "en": "I can use learning data or student feedback to adjust my AI teaching practice."
+    },
+    {
+      "id": "t-professional-05",
+      "framework": "aicft",
+      "dimension": "professional",
+      "level": "create",
+      "zh": "我能規劃校內教師 AI 專業社群或工作坊。",
+      "en": "I can plan teacher AI professional learning communities or workshops at school."
+    },
+    {
+      "id": "t-professional-06",
+      "framework": "aicft",
+      "dimension": "professional",
+      "level": "create",
+      "zh": "我能把 AI 專業學習成果轉化為校本政策、教材或培訓資源。",
+      "en": "I can turn AI professional learning outcomes into school-based policy, materials, or training resources."
+    },
+    {
+      "id": "s-human-01",
+      "framework": "aicfs",
+      "dimension": "human",
+      "level": "understand",
+      "zh": "我知道 AI 可能幫助我學習，但最後仍需要自己理解與判斷。",
+      "en": "I know AI may help me learn, but I still need to understand and judge for myself."
+    },
+    {
+      "id": "s-human-02",
+      "framework": "aicfs",
+      "dimension": "human",
+      "level": "understand",
+      "zh": "我能說出一個不應該完全依賴 AI 的學習情境。",
+      "en": "I can name a learning situation where I should not fully rely on AI."
+    },
+    {
+      "id": "s-human-03",
+      "framework": "aicfs",
+      "dimension": "human",
+      "level": "apply",
+      "zh": "使用 AI 完成作業時，我會保留自己的想法並說明 AI 幫了什麼。",
+      "en": "When using AI for assignments, I keep my own ideas and explain how AI helped."
+    },
+    {
+      "id": "s-human-04",
+      "framework": "aicfs",
+      "dimension": "human",
+      "level": "apply",
+      "zh": "我能分辨哪些決定應由人負責，而不能交給 AI 決定。",
+      "en": "I can distinguish which decisions should remain human responsibilities and not be handed to AI."
+    },
+    {
+      "id": "s-human-05",
+      "framework": "aicfs",
+      "dimension": "human",
+      "level": "create",
+      "zh": "我會思考 AI 作品對同學、社群、弱勢者或環境可能造成的影響。",
+      "en": "I consider how AI work may affect classmates, communities, vulnerable groups, or the environment."
+    },
+    {
+      "id": "s-human-06",
+      "framework": "aicfs",
+      "dimension": "human",
+      "level": "create",
+      "zh": "我能提出讓 AI 使用更公平、更包容的改善建議。",
+      "en": "I can propose improvements that make AI use more fair and inclusive."
+    },
+    {
+      "id": "s-human-07",
+      "framework": "aicfs",
+      "dimension": "human",
+      "level": "apply",
+      "zh": "我能在 AI 建議與自己的觀察不同時，主動查證與反思。",
+      "en": "When AI suggestions differ from my observations, I actively verify and reflect."
+    },
+    {
+      "id": "s-human-08",
+      "framework": "aicfs",
+      "dimension": "human",
+      "level": "create",
+      "zh": "我能用 AI 協助公共議題學習，但會保留多元觀點。",
+      "en": "I can use AI to support learning about public issues while preserving multiple perspectives."
+    },
+    {
+      "id": "s-ethics-01",
+      "framework": "aicfs",
+      "dimension": "ethics",
+      "level": "understand",
+      "zh": "我知道不應把自己或他人的個資直接輸入不明 AI 工具。",
+      "en": "I know I should not enter my own or others' personal data into unknown AI tools."
+    },
+    {
+      "id": "s-ethics-02",
+      "framework": "aicfs",
+      "dimension": "ethics",
+      "level": "understand",
+      "zh": "我知道 AI 可能產生錯誤、偏見或不完整的資訊。",
+      "en": "I know AI may produce wrong, biased, or incomplete information."
+    },
+    {
+      "id": "s-ethics-03",
+      "framework": "aicfs",
+      "dimension": "ethics",
+      "level": "apply",
+      "zh": "我會在使用 AI 內容時標明或說明 AI 的協助。",
+      "en": "I disclose or explain AI assistance when using AI-generated content."
+    },
+    {
+      "id": "s-ethics-04",
+      "framework": "aicfs",
+      "dimension": "ethics",
+      "level": "apply",
+      "zh": "我會檢查 AI 回答是否傷害、排除或誤解某些群體。",
+      "en": "I check whether AI answers harm, exclude, or misrepresent certain groups."
+    },
+    {
+      "id": "s-ethics-05",
+      "framework": "aicfs",
+      "dimension": "ethics",
+      "level": "create",
+      "zh": "我能在 AI 作品設計中加入隱私、安全與公平檢核。",
+      "en": "I can include privacy, safety, and fairness checks in AI project design."
+    },
+    {
+      "id": "s-ethics-06",
+      "framework": "aicfs",
+      "dimension": "ethics",
+      "level": "create",
+      "zh": "我能為小組 AI 專題訂定負責任使用規則。",
+      "en": "I can create responsible-use rules for a group AI project."
+    },
+    {
+      "id": "s-ethics-07",
+      "framework": "aicfs",
+      "dimension": "ethics",
+      "level": "apply",
+      "zh": "我能拒絕用 AI 代寫、作弊或冒用他人作品。",
+      "en": "I can refuse to use AI for ghostwriting, cheating, or misusing others' work."
+    },
+    {
+      "id": "s-ethics-08",
+      "framework": "aicfs",
+      "dimension": "ethics",
+      "level": "create",
+      "zh": "我能解釋自己的 AI 作品如何避免資料濫用或不公平結果。",
+      "en": "I can explain how my AI work avoids data misuse or unfair outcomes."
+    },
+    {
+      "id": "s-techniques-01",
+      "framework": "aicfs",
+      "dimension": "techniques",
+      "level": "understand",
+      "zh": "我能用自己的話說明 AI、資料、模型與演算法的大意。",
+      "en": "I can explain the basic ideas of AI, data, models, and algorithms in my own words."
+    },
+    {
+      "id": "s-techniques-02",
+      "framework": "aicfs",
+      "dimension": "techniques",
+      "level": "understand",
+      "zh": "我知道生成式 AI 是依訓練資料與提示詞產生內容，不等於真正理解。",
+      "en": "I know generative AI creates content from training data and prompts; it does not equal human understanding."
+    },
+    {
+      "id": "s-techniques-03",
+      "framework": "aicfs",
+      "dimension": "techniques",
+      "level": "apply",
+      "zh": "我能寫出清楚提示詞，包含任務、條件、受眾與輸出格式。",
+      "en": "I can write clear prompts that include task, conditions, audience, and output format."
+    },
+    {
+      "id": "s-techniques-04",
+      "framework": "aicfs",
+      "dimension": "techniques",
+      "level": "apply",
+      "zh": "我能比較 AI 回答與課本、網站或實驗資料，找出差異。",
+      "en": "I can compare AI answers with textbooks, websites, or experiment data to find differences."
+    },
+    {
+      "id": "s-techniques-05",
+      "framework": "aicfs",
+      "dimension": "techniques",
+      "level": "create",
+      "zh": "我能用 AI 協助製作學習作品，但會自己改寫、驗證與改善。",
+      "en": "I can use AI to help create learning products while rewriting, verifying, and improving them myself."
+    },
+    {
+      "id": "s-techniques-06",
+      "framework": "aicfs",
+      "dimension": "techniques",
+      "level": "create",
+      "zh": "我能使用簡單資料或工具做出 AI 概念原型或流程圖。",
+      "en": "I can use simple data or tools to create an AI concept prototype or workflow."
+    },
+    {
+      "id": "s-techniques-07",
+      "framework": "aicfs",
+      "dimension": "techniques",
+      "level": "apply",
+      "zh": "我能調整提示詞，讓 AI 回答更符合證據、格式與學習目的。",
+      "en": "I can revise prompts so AI responses better fit evidence, format, and learning purpose."
+    },
+    {
+      "id": "s-techniques-08",
+      "framework": "aicfs",
+      "dimension": "techniques",
+      "level": "understand",
+      "zh": "我能辨識 AI 工具常見限制，例如幻覺、資料過時或不透明。",
+      "en": "I can identify common AI limitations such as hallucination, outdated data, or opacity."
+    },
+    {
+      "id": "s-design-01",
+      "framework": "aicfs",
+      "dimension": "design",
+      "level": "understand",
+      "zh": "我能先界定問題，再判斷是否適合使用 AI。",
+      "en": "I can define a problem first and then decide whether AI is appropriate."
+    },
+    {
+      "id": "s-design-02",
+      "framework": "aicfs",
+      "dimension": "design",
+      "level": "understand",
+      "zh": "我能說明一個 AI 系統需要資料、目標、使用者與限制。",
+      "en": "I can explain that an AI system needs data, goals, users, and constraints."
+    },
+    {
+      "id": "s-design-03",
+      "framework": "aicfs",
+      "dimension": "design",
+      "level": "apply",
+      "zh": "我能畫出簡單 AI 解決方案流程：輸入、處理、輸出與檢核。",
+      "en": "I can draw a simple AI solution flow: input, process, output, and checking."
+    },
+    {
+      "id": "s-design-04",
+      "framework": "aicfs",
+      "dimension": "design",
+      "level": "apply",
+      "zh": "我能根據使用者需求調整 AI 作品的資料、介面或回饋方式。",
+      "en": "I can adjust an AI product's data, interface, or feedback based on user needs."
+    },
+    {
+      "id": "s-design-05",
+      "framework": "aicfs",
+      "dimension": "design",
+      "level": "create",
+      "zh": "我能根據同儕回饋迭代修改 AI 專題作品。",
+      "en": "I can iteratively improve an AI project based on peer feedback."
+    },
+    {
+      "id": "s-design-06",
+      "framework": "aicfs",
+      "dimension": "design",
+      "level": "create",
+      "zh": "我能評估 AI 解決方案是否真的改善問題，而不是只展示技術。",
+      "en": "I can evaluate whether an AI solution truly improves a problem rather than only displaying technology."
+    },
+    {
+      "id": "s-design-07",
+      "framework": "aicfs",
+      "dimension": "design",
+      "level": "apply",
+      "zh": "我能在設計 AI 活動時列出可能的失敗情境與應對方式。",
+      "en": "I can list possible failure situations and responses when designing an AI activity."
+    },
+    {
+      "id": "s-design-08",
+      "framework": "aicfs",
+      "dimension": "design",
+      "level": "create",
+      "zh": "我能把測試結果、使用者回饋與倫理檢核整合成下一版改善計畫。",
+      "en": "I can combine test results, user feedback, and ethics checks into a next-version improvement plan."
+    }
+  ]
+}

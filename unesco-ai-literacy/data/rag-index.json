@@ -1,0 +1,112 @@
+[
+  {
+    "id": "aicft-overview",
+    "framework": "aicft",
+    "title": "AICFT overview",
+    "section": "UNESCO teacher framework",
+    "keywords": ["teacher", "教師", "competency", "framework", "AICFT", "professional development"],
+    "zh": "AICFT 是 UNESCO 於 2024 年提出的教師 AI 能力框架，用於界定教師在 AI 時代需要具備的知識、技能、價值與態度。它包含五個面向與三個進階層級，共十五個能力區塊。",
+    "en": "AICFT is UNESCO's 2024 AI competency framework for teachers. It defines the knowledge, skills, values, and attitudes teachers need in the AI era across five aspects and three progression levels, forming fifteen competency blocks.",
+    "source": "AI competency framework for teachers, UNESCO, 2024"
+  },
+  {
+    "id": "aicft-levels",
+    "framework": "aicft",
+    "title": "AICFT progression levels",
+    "section": "Acquire, Deepen, Create",
+    "keywords": ["Acquire", "Deepen", "Create", "level", "層級", "深化", "創造"],
+    "zh": "AICFT 的三個層級是 Acquire、Deepen、Create。Acquire 代表教師能評估、選擇並適當使用 AI 工具；Deepen 著重能設計有意義的 AI 教學策略；Create 著重能創新配置 AI 系統並轉化教育實踐。",
+    "en": "The AICFT levels are Acquire, Deepen, and Create. Acquire focuses on evaluating, selecting, and using AI tools appropriately; Deepen focuses on designing meaningful AI-integrated pedagogy; Create focuses on innovative AI configuration and educational transformation.",
+    "source": "AI competency framework for teachers, UNESCO, 2024"
+  },
+  {
+    "id": "aicft-human",
+    "framework": "aicft",
+    "title": "Human-centred mindset for teachers",
+    "section": "Human-centred mindset",
+    "keywords": ["human agency", "human accountability", "social responsibility", "人類能動性", "問責", "社會責任"],
+    "zh": "教師使用 AI 時應保持以人為本，保護學生與教師的能動性、權利與福祉，並在 AI 融入教學時維持人類問責與社會責任。",
+    "en": "Teachers should keep AI use human-centred by protecting learner and teacher agency, rights, and wellbeing, while maintaining human accountability and social responsibility in AI-integrated education.",
+    "source": "AI competency framework for teachers, UNESCO, 2024"
+  },
+  {
+    "id": "aicft-ethics",
+    "framework": "aicft",
+    "title": "Ethics of AI for teachers",
+    "section": "Ethics of AI",
+    "keywords": ["ethics", "privacy", "bias", "safety", "responsible use", "倫理", "隱私", "偏誤", "安全"],
+    "zh": "教師需要理解 AI 倫理原則，能辨識資料隱私、偏誤、不公平、透明度與安全風險，並引導學生負責任地使用 AI。",
+    "en": "Teachers need to understand AI ethical principles, identify risks around data privacy, bias, unfairness, transparency, and safety, and guide students toward responsible AI use.",
+    "source": "AI competency framework for teachers, UNESCO, 2024"
+  },
+  {
+    "id": "aicft-pedagogy",
+    "framework": "aicft",
+    "title": "AI pedagogy",
+    "section": "AI pedagogy",
+    "keywords": ["pedagogy", "teaching", "assessment", "AI-assisted", "教學法", "評量"],
+    "zh": "AI 教學法不是把工具直接塞進課堂，而是先確認學習目標、學生需求、風險與評量方式，再選擇適當 AI 工具支持備課、學習活動、回饋與差異化教學。",
+    "en": "AI pedagogy is not simply inserting tools into class. It begins with learning goals, learner needs, risks, and assessment design, then selects suitable AI tools for preparation, activities, feedback, and differentiation.",
+    "source": "AI competency framework for teachers, UNESCO, 2024"
+  },
+  {
+    "id": "aicfs-overview",
+    "framework": "aicfs",
+    "title": "AICFS overview",
+    "section": "UNESCO student framework",
+    "keywords": ["student", "學生", "AICFS", "curriculum", "AI literacy", "素養"],
+    "zh": "AICFS 是 UNESCO 於 2024 年提出的學生 AI 能力框架，旨在協助教育系統把 AI 學習目標納入課程，培養學生安全、批判、負責任且具創造力地使用與共同設計 AI。",
+    "en": "AICFS is UNESCO's 2024 AI competency framework for students. It helps education systems integrate AI learning objectives into curricula so students can use and co-design AI safely, critically, responsibly, and creatively.",
+    "source": "AI competency framework for students, UNESCO, 2024"
+  },
+  {
+    "id": "aicfs-levels",
+    "framework": "aicfs",
+    "title": "AICFS progression levels",
+    "section": "Understand, Apply, Create",
+    "keywords": ["Understand", "Apply", "Create", "理解", "應用", "創造", "progression"],
+    "zh": "AICFS 的三個層級是 Understand、Apply、Create。Understand 建立所有學生都需要的 AI 概念、態度與安全意識；Apply 強調在真實任務中負責任地使用 AI；Create 強調以倫理與永續觀點設計或改良 AI 解決方案。",
+    "en": "The AICFS levels are Understand, Apply, and Create. Understand builds essential AI concepts, attitudes, and safety awareness; Apply focuses on responsible use in authentic tasks; Create focuses on ethically and sustainably designing or improving AI solutions.",
+    "source": "AI competency framework for students, UNESCO, 2024"
+  },
+  {
+    "id": "aicfs-human",
+    "framework": "aicfs",
+    "title": "Human-centred mindset for students",
+    "section": "Human-centred mindset",
+    "keywords": ["agency", "accountability", "citizenship", "公民", "能動性", "問責"],
+    "zh": "學生需要理解 AI 不能取代人類判斷，使用 AI 時仍要保留自我思考、選擇與責任，並思考 AI 對社會、公平與永續的影響。",
+    "en": "Students need to understand that AI cannot replace human judgment. They should preserve their own thinking, choices, and responsibility while considering AI's effects on society, equity, and sustainability.",
+    "source": "AI competency framework for students, UNESCO, 2024"
+  },
+  {
+    "id": "aicfs-ethics",
+    "framework": "aicfs",
+    "title": "Ethics of AI for students",
+    "section": "Ethics of AI",
+    "keywords": ["embodied ethics", "safe use", "ethics by design", "具身倫理", "安全使用", "設計倫理"],
+    "zh": "AICFS 把倫理放在學生能力核心：學生要能在日常情境中辨識風險、保護資料與他人權利，並在設計 AI 作品時把公平、透明、安全與包容納入設計。",
+    "en": "AICFS places ethics at the core of student competency: students should recognize risks in everyday contexts, protect data and rights, and embed fairness, transparency, safety, and inclusion when designing AI work.",
+    "source": "AI competency framework for students, UNESCO, 2024"
+  },
+  {
+    "id": "aicfs-design",
+    "framework": "aicfs",
+    "title": "AI system design",
+    "section": "AI system design",
+    "keywords": ["problem scoping", "architecture", "feedback loop", "問題界定", "架構", "回饋循環"],
+    "zh": "AI 系統設計能力從問題界定開始：學生要判斷問題是否適合用 AI，思考資料、模型、使用者、風險與回饋，再以迭代方式改善解決方案。",
+    "en": "AI system design begins with problem scoping: students decide whether AI is appropriate, consider data, models, users, risks, and feedback, and improve solutions through iteration.",
+    "source": "AI competency framework for students, UNESCO, 2024"
+  },
+  {
+    "id": "warning-feedback",
+    "framework": "both",
+    "title": "Learning-care warning feedback",
+    "section": "Assessment feedback",
+    "keywords": ["warning", "diagnostic", "learning care", "預警", "診斷", "回饋"],
+    "zh": "本網站參考學習關懷預警系統概念，把總分、面向分數、低分面向與建議行動整合成綠、黃、紅三種提示，目的在於促進自我調整學習，而不是貼標籤。",
+    "en": "This site follows a learning-care warning concept by integrating total score, dimension scores, low-score areas, and recommended actions into green, yellow, and red signals. The goal is self-regulated learning, not labeling.",
+    "source": "Local instructional design based on learning analytics practice"
+  }
+]
