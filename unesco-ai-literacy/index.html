@@ -97,9 +97,18 @@
       </div>
       <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
       <form id="chatForm" class="chat-form">
-        <textarea id="chatInput" rows="3" required></textarea>
+        <div class="chat-input-shell">
+          <textarea id="chatInput" rows="3" required></textarea>
+          <button id="voiceInput" type="button" class="mic-btn" data-i18n-title="voiceInput" aria-label="語音輸入" title="語音輸入">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3Z"></path>
+              <path d="M19 11a7 7 0 0 1-14 0"></path>
+              <path d="M12 18v3"></path>
+              <path d="M8 21h8"></path>
+            </svg>
+          </button>
+        </div>
         <div class="actions split-actions">
-          <button id="voiceInput" type="button" class="secondary-btn" data-i18n="voiceInput">語音輸入</button>
           <button id="coachQuestion" type="button" class="secondary-btn" data-i18n="coachQuestion">請 AI 問我</button>
           <button type="submit" class="primary-btn" data-i18n="sendQuestion">送出</button>
           <button id="chatToAssessment" type="button" class="primary-btn" data-i18n="enterAssessment">進入評量</button>
@@ -177,7 +186,7 @@
   <template id="messageTemplate">
     <article class="message">
       <strong></strong>
-      <p></p>
+      <div class="message-body"></div>
       <small></small>
     </article>
   </template>

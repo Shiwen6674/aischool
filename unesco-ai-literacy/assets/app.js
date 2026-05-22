@@ -399,6 +399,34 @@
       .replace(/'/g, "&#039;");
   }
 
+  function normalizeMarkdown(value) {
+    return String(value || "")
+      .replace(/\r/g, "")
+      .split("\n")
+      .map((line) => line
+        .replace(/^\s{0,3}#{1,6}\s+/, "")
+        .replace(/^\s*[-*]\s+/, "• ")
+        .replace(/`([^`]+)`/g, "$1"))
+      .join("\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+  }
+
+  function richInlineHtml(value) {
+    return normalizeMarkdown(value).split("**").map((part, index) => {
+      const text = escapeHtml(part);
+      return index % 2 === 1 ? `<strong>${text}</strong>` : text;
+    }).join("");
+  }
+
+  function richTextHtml(value) {
+    const text = normalizeMarkdown(value);
+    if (!text) return "";
+    return text.split(/\n{2,}/).map((block) => (
+      `<p>${richInlineHtml(block).replace(/\n/g, "<br>")}</p>`
+    )).join("");
+  }
+
   function sessionId() {
     let id = sessionStorage.getItem(SESSION_KEY);
     if (!id) {
@@ -474,6 +502,11 @@
     document.documentElement.lang = state.lang === "zh" ? "zh-Hant" : state.lang;
     qsa("[data-i18n]").forEach((node) => {
       node.textContent = t(node.dataset.i18n);
+    });
+    qsa("[data-i18n-title]").forEach((node) => {
+      const value = t(node.dataset.i18nTitle);
+      node.setAttribute("title", value);
+      node.setAttribute("aria-label", value);
     });
     qs("#chatInput").placeholder = t("chatPlaceholder");
     resetVoiceButton();
@@ -597,7 +630,8 @@
   function resetVoiceButton() {
     const button = qs("#voiceInput");
     if (!button) return;
-    button.textContent = t("voiceInput");
+    button.setAttribute("title", t("voiceInput"));
+    button.setAttribute("aria-label", t("voiceInput"));
     button.classList.remove("listening");
   }
 
@@ -620,7 +654,8 @@
     recognition.interimResults = false;
     recognition.continuous = false;
     recognition.onstart = () => {
-      qs("#voiceInput").textContent = t("voiceListening");
+      qs("#voiceInput").setAttribute("title", t("voiceListening"));
+      qs("#voiceInput").setAttribute("aria-label", t("voiceListening"));
       qs("#voiceInput").classList.add("listening");
     };
     recognition.onresult = (event) => {
@@ -679,7 +714,7 @@
       const node = template.content.firstElementChild.cloneNode(true);
       node.classList.add(message.role === "user" ? "user" : "ai");
       node.querySelector("strong").textContent = message.role === "user" ? t("userName") : t("aiName");
-      node.querySelector("p").textContent = message.text;
+      node.querySelector(".message-body").innerHTML = richTextHtml(message.text);
       node.querySelector("small").textContent = message.source || "";
       list.appendChild(node);
     });
@@ -1005,7 +1040,7 @@
       </section>
       <section class="diagnosis-box">
         <h2>${escapeHtml(t("aiDiagnosis"))}</h2>
-        <p class="diagnosis-text">${escapeHtml(result.diagnosis)}</p>
+        <div class="diagnosis-text">${richTextHtml(result.diagnosis)}</div>
       </section>
     `;
   }
@@ -1029,15 +1064,203 @@
     renderMessages();
   }
 
+  function reportLabels() {
+    const shared = {
+      coverSubtitle: "UNESCO AICFT / AICFS",
+      generatedAt: state.lang === "zh" ? "產生時間" : "Generated",
+      student: t("nameLabel"),
+      className: t("classLabel"),
+      framework: t("frameworkLabel"),
+      score: t("score"),
+      accuracy: t("accuracy"),
+      comprehensive: t("aiDiagnosis"),
+      wrongAnalysis: t("wrongQuestions"),
+      detailedChat: state.lang === "zh" ? "詳細對話" : "Detailed conversation",
+      dimensionProfile: state.lang === "zh" ? "能力面向表現" : "Dimension profile",
+      selectedAnswer: state.lang === "zh" ? "你的答案" : "Your answer",
+      correctAnswer: state.lang === "zh" ? "建議答案" : "Suggested answer",
+      noChat: state.lang === "zh" ? "本次下載前尚未留下對話紀錄。" : "No conversation was recorded before this report.",
+      noWrong: t("noWrong")
+    };
+    if (state.lang === "id") {
+      shared.generatedAt = "Dibuat";
+      shared.detailedChat = "Percakapan rinci";
+      shared.dimensionProfile = "Profil dimensi";
+      shared.selectedAnswer = "Jawaban Anda";
+      shared.correctAnswer = "Jawaban yang disarankan";
+      shared.noChat = "Belum ada catatan percakapan sebelum laporan ini.";
+    }
+    if (state.lang === "ss") {
+      shared.generatedAt = "Kwakhiwe";
+      shared.detailedChat = "Ingcoco lenabile";
+      shared.dimensionProfile = "Umlandvo wetigaba";
+      shared.selectedAnswer = "Imphendvulo yakho";
+      shared.correctAnswer = "Imphendvulo lenconyiwe";
+      shared.noChat = "Kute ingcoco lebhaliwe ngaphambi kwalombiko.";
+    }
+    return shared;
+  }
+
+  function chunkItems(items, size) {
+    const chunks = [];
+    for (let index = 0; index < items.length; index += size) {
+      chunks.push(items.slice(index, index + size));
+    }
+    return chunks.length ? chunks : [[]];
+  }
+
+  function reportPage(title, body, extraClass = "") {
+    return `
+      <section class="pdf-page ${extraClass}">
+        <header class="pdf-page-head">
+          <span>${escapeHtml(t("appTitle"))}</span>
+          <b>${escapeHtml(title)}</b>
+        </header>
+        ${body}
+        <footer class="pdf-page-foot">UNESCO AI Literacy Self-Assessment</footer>
+      </section>
+    `;
+  }
+
+  function dimensionReportRows(result) {
+    return result.dimensions.map((dim) => `
+      <div class="pdf-dimension-row">
+        <span>${escapeHtml(dim.label)}</span>
+        <div><i style="width:${dim.score}%"></i></div>
+        <b>${dim.score}</b>
+      </div>
+    `).join("");
+  }
+
+  function wrongReportItems(items, labels) {
+    if (!items.length) {
+      return `<div class="pdf-soft-card"><p>${escapeHtml(labels.noWrong)}</p></div>`;
+    }
+    return items.map((item, index) => `
+      <article class="pdf-analysis-item">
+        <h3>${index + 1}. ${escapeHtml(item.question)}</h3>
+        <p><b>${escapeHtml(labels.selectedAnswer)}:</b> ${escapeHtml(item.selectedText || "")}</p>
+        <p><b>${escapeHtml(labels.correctAnswer)}:</b> ${escapeHtml(item.answerText || "")}</p>
+        <div>${richTextHtml(item.explanation || "")}</div>
+      </article>
+    `).join("");
+  }
+
+  function chatReportItems(messages, labels) {
+    if (!messages.length) {
+      return `<div class="pdf-soft-card"><p>${escapeHtml(labels.noChat)}</p></div>`;
+    }
+    return messages.map((message) => `
+      <article class="pdf-chat-item ${message.role === "user" ? "user" : "ai"}">
+        <h3>${escapeHtml(message.role === "user" ? t("userName") : t("aiName"))}</h3>
+        <div>${richTextHtml(message.text)}</div>
+      </article>
+    `).join("");
+  }
+
+  function buildPdfReport() {
+    const result = state.result;
+    const labels = reportLabels();
+    const completed = new Date(result.completedAt).toLocaleString();
+    const chatMessages = state.messages.filter((message) => normalizeMarkdown(message.text) && message.text !== t("loading"));
+    const wrongChunks = chunkItems(result.wrong, 3);
+    const chatChunks = chunkItems(chatMessages, 4);
+    const pages = [];
+
+    pages.push(`
+      <section class="pdf-page pdf-cover">
+        <div class="pdf-cover-brand">
+          <span>AI</span>
+          <b>${escapeHtml(labels.coverSubtitle)}</b>
+        </div>
+        <div class="pdf-cover-main">
+          <p>${escapeHtml(t("feedbackStep"))}</p>
+          <h1>${escapeHtml(t("feedbackTitle"))}</h1>
+          <div class="pdf-score-panel">
+            <div>
+              <span>${escapeHtml(labels.score)}</span>
+              <strong>${result.score}</strong>
+              <em class="${result.status.key}">${escapeHtml(result.status.label)}</em>
+            </div>
+            <dl>
+              <dt>${escapeHtml(labels.student)}</dt><dd>${escapeHtml(state.user?.name || "")}</dd>
+              <dt>${escapeHtml(labels.className)}</dt><dd>${escapeHtml(state.user?.className || "")}</dd>
+              <dt>${escapeHtml(labels.framework)}</dt><dd>${escapeHtml(result.frameworkLabel)}</dd>
+              <dt>${escapeHtml(labels.accuracy)}</dt><dd>${result.correctCount}/${result.total}</dd>
+              <dt>${escapeHtml(labels.generatedAt)}</dt><dd>${escapeHtml(completed)}</dd>
+            </dl>
+          </div>
+        </div>
+        <footer class="pdf-cover-foot">UNESCO AI Literacy Self-Assessment</footer>
+      </section>
+    `);
+
+    pages.push(reportPage(labels.comprehensive, `
+      <div class="pdf-section-grid">
+        <article class="pdf-soft-card pdf-diagnosis-card">
+          <h2>${escapeHtml(labels.comprehensive)}</h2>
+          <div>${richTextHtml(result.diagnosis)}</div>
+        </article>
+        <article class="pdf-soft-card">
+          <h2>${escapeHtml(labels.dimensionProfile)}</h2>
+          <div class="pdf-dimension-list">${dimensionReportRows(result)}</div>
+        </article>
+      </div>
+    `));
+
+    wrongChunks.forEach((items, index) => {
+      pages.push(reportPage(`${labels.wrongAnalysis}${wrongChunks.length > 1 ? ` ${index + 1}` : ""}`, `
+        <div class="pdf-analysis-list">${wrongReportItems(items, labels)}</div>
+      `));
+    });
+
+    chatChunks.forEach((messages, index) => {
+      pages.push(reportPage(`${labels.detailedChat}${chatChunks.length > 1 ? ` ${index + 1}` : ""}`, `
+        <div class="pdf-chat-list">${chatReportItems(messages, labels)}</div>
+      `));
+    });
+
+    const root = document.createElement("div");
+    root.className = "pdf-render-root";
+    root.innerHTML = pages.join("");
+    return root;
+  }
+
   function downloadReport() {
-    const area = qs("#reportArea");
+    if (!state.result) return;
     if (window.html2pdf) {
+      const report = buildPdfReport();
+      const scrollX = window.scrollX;
+      const scrollY = window.scrollY;
+      document.body.insertBefore(report, document.body.firstChild);
+      window.scrollTo(0, 0);
       window.html2pdf().set({
-        margin: 10,
+        margin: 0,
         filename: "UNESCO_AI_literacy_diagnosis.pdf",
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
-      }).from(area).save();
+        html2canvas: {
+          scale: 2,
+          backgroundColor: "#f7f2ec",
+          useCORS: true,
+          x: 0,
+          y: 0,
+          scrollX: 0,
+          scrollY: 0,
+          width: report.offsetWidth,
+          height: report.scrollHeight,
+          windowWidth: report.scrollWidth,
+          windowHeight: report.scrollHeight
+        },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        pagebreak: { mode: ["css"] }
+      }).from(report).save()
+        .then(() => {
+          report.remove();
+          window.scrollTo(scrollX, scrollY);
+        })
+        .catch(() => {
+          report.remove();
+          window.scrollTo(scrollX, scrollY);
+        });
       return;
     }
     window.print();

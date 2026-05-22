@@ -41,6 +41,7 @@ function handleChat(body) {
     "Answer in the requested language.",
     "Use UNESCO AICFT and AICFS context when relevant.",
     "Do not ask for sensitive personal data.",
+    "Avoid markdown tables, code fences, and heading markers. If emphasis is useful, use **only the key term**.",
     "Give one practical next step."
   ].join("\n");
   const context = compactContext(body.context);
