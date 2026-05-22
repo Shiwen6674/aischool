@@ -1,35 +1,60 @@
-# UNESCO AI Literacy Self-Learning Assessment
+# UNESCO AI Literacy Self-Assessment
 
-Static GitHub Pages prototype for an informed-consent, login, framework selection, RAG-style chat, self-assessment, and diagnostic feedback flow based on UNESCO AICFT and AICFS.
+Public student-facing website for UNESCO AICFT/AICFS AI literacy learning.
 
-## Pages
+Student flow:
 
-- `index.html` - application entry point.
-- `sources/` - official PDF sources used for local RAG indexing.
-- `data/` - framework metadata, item bank, and tracking schema.
-- `docs/` - bilingual operation manual and spreadsheet schema workbook.
+1. Informed consent
+2. Simple student login
+3. AI learning partner chat
+4. Assessment menu with AICFT/AICFS and 10-30 questions
+5. One-question-at-a-time answering flow
+6. Diagnostic feedback and PDF report
 
-## Local Preview
-
-```powershell
-cd "G:\我的雲端硬碟\05AI資料\codex\aischool"
-python -m http.server 4173
-```
-
-Open:
-
-```text
-http://localhost:4173/unesco-ai-literacy/
-```
-
-## GitHub Pages URL
-
-After pushing to `Shiwen6674/aischool`, the page is expected at:
+## URL
 
 ```text
 https://shiwen6674.github.io/aischool/unesco-ai-literacy/
 ```
 
-## Data Notice
+## OpenAI via Google Apps Script
 
-This is a classroom-ready static prototype. Login, chat, and assessment logs are stored in browser `localStorage` and can be exported as CSV. For real class-wide collection, connect the schema in `docs/AI_literacy_tracking_schema.xlsx` to Google Sheets Apps Script, Firebase, or another backend.
+The frontend never stores the OpenAI API key or spreadsheet credentials. Use `gas/openai-learning-partner/Code.gs` as a Google Apps Script web app.
+
+After deploying the Apps Script web app, set the endpoint in:
+
+```text
+data/site-config.json
+```
+
+```json
+{
+  "gasEndpoint": "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec"
+}
+```
+
+Apps Script properties:
+
+- `OPENAI_API_KEY`
+- `OPENAI_MODEL` optional, default `gpt-5.4-mini`
+- `SPREADSHEET_ID` optional, writes consent, login, chat, and assessment records to Google Sheets
+
+If `gasEndpoint` is empty or unavailable, the site continues with the built-in local question generator so class activity is not interrupted.
+
+## Local Preview
+
+```powershell
+cd "G:\我的雲端硬碟\05AI資料\codex\aischool"
+python -m http.server 4180
+# Open http://localhost:4180/unesco-ai-literacy/
+```
+
+## Record Design
+
+The browser keeps learning records in `localStorage`. For class collection, configure `SPREADSHEET_ID` in Apps Script. The provided workbook `docs/AI_literacy_tracking_schema.xlsx` documents the consent, login, chat, and assessment sheets.
+
+## Sources
+
+- UNESCO AICFT official page: https://www.unesco.org/en/articles/ai-competency-framework-teachers
+- UNESCO AICFS official page: https://www.unesco.org/en/articles/ai-competency-framework-students
+- Local PDFs are kept in `sources/` for classroom reference and prompt context.
