@@ -1,5 +1,5 @@
 {
-  "gasEndpoint": "",
+  "gasEndpoint": "https://script.google.com/macros/s/AKfycbxUZlFEtoa_qMIYGhEAMhQHfXyLU62BOgeqwBC6i9bIG8Vo0zBWALSF8cOWPfqw89aB/exec",
   "openAiProxyMode": "google_apps_script",
   "version": "2026-05-22-public-student"
 }

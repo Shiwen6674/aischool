@@ -10,6 +10,8 @@ This Google Apps Script web app keeps the OpenAI API key and optional Google She
    - `OPENAI_API_KEY`: your OpenAI API key
    - `OPENAI_MODEL`: optional, default is `gpt-5.4-mini`
    - `SPREADSHEET_ID`: optional Google Sheet ID for consent, login, chat, and assessment logs
+
+The code also accepts `OPEN_API_KEY`, `OPENAI_KEY`, or `API_KEY`, but `OPENAI_API_KEY` is recommended.
 4. Deploy as **Web app**:
    - Execute as: Me
    - Who has access: Anyone

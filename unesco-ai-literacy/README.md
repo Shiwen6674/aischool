@@ -39,6 +39,8 @@ Apps Script properties:
 - `OPENAI_MODEL` optional, default `gpt-5.4-mini`
 - `SPREADSHEET_ID` optional, writes consent, login, chat, and assessment records to Google Sheets
 
+Use `OPENAI_API_KEY` as the property name. The GAS code also accepts `OPEN_API_KEY`, `OPENAI_KEY`, or `API_KEY` to reduce setup mistakes.
+
 If `gasEndpoint` is empty or unavailable, the site continues with the built-in local question generator so class activity is not interrupted.
 
 ## Local Preview

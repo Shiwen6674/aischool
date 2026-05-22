@@ -106,8 +106,8 @@ function handleLogEvent(body) {
 
 function callOpenAI(payload) {
   const props = PropertiesService.getScriptProperties();
-  const apiKey = props.getProperty("OPENAI_API_KEY");
-  if (!apiKey) throw new Error("missing_OPENAI_API_KEY");
+  const apiKey = firstProperty(props, ["OPENAI_API_KEY", "OPEN_API_KEY", "OPENAI_KEY", "API_KEY"]);
+  if (!apiKey) throw new Error("missing_OPENAI_API_KEY: set Script Properties OPENAI_API_KEY");
   const model = props.getProperty("OPENAI_MODEL") || "gpt-5.4-mini";
   const response = UrlFetchApp.fetch(OPENAI_RESPONSES_URL, {
     method: "post",
@@ -125,6 +125,14 @@ function callOpenAI(payload) {
   const text = response.getContentText();
   if (code < 200 || code >= 300) throw new Error(`openai_${code}: ${text.slice(0, 500)}`);
   return extractOutputText(JSON.parse(text));
+}
+
+function firstProperty(props, names) {
+  for (let i = 0; i < names.length; i += 1) {
+    const value = props.getProperty(names[i]);
+    if (value) return value;
+  }
+  return "";
 }
 
 function sheetNameFor(type) {
