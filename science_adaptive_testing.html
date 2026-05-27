@@ -1325,7 +1325,7 @@ body.zhuyin-mode .option-btn .flex-1 {
        1) GLOBAL STATE
        =========================== */
     const Meta = { mode: "tree", tree: {}, unitIndex: {}, publishers: [], unitsByPublisher: {}, catItems: [] };
-    const CAT = { started: false, test_id: "", student_id: "", current: null, next: null, selected: "", n: 15, step: 0, itemMap: {}, itemPool: [], bankItemIds: new Set(), administeredItemIds: [], responses: [], theta: 0, thetaSe: null, lastCorrect: null, currentSpeechText: "" };
+    const CAT = { started: false, test_id: "", student_id: "", itemSource: "", aiBackendManaged: false, current: null, next: null, selected: "", n: 15, step: 0, itemMap: {}, itemPool: [], bankItemIds: new Set(), administeredItemIds: [], responses: [], theta: 0, thetaSe: null, lastCorrect: null, currentSpeechText: "" };
     const QuestionAudio = { player: null, state: "idle" };
     const ACTION = { GET_UNIT_OPTIONS: "getUnitOptions", START_CAT: "startCAT", SUBMIT_NEXT: "submitAndNext", FINISH_CAT: "finishCAT" };
     const META_ACTION_CANDIDATES = ["get_metadata", "getMetadata", "action_get_metadata"];
@@ -1617,12 +1617,14 @@ async function apiViaPost(payload){
 
 async function api(payload){
   const normalizedPayload = normalizeApiPayload(payload);
-  const shouldPreferJsonp = /script\.google\.com|script\.googleusercontent\.com/i.test(GAS_API_URL);
+  const forcePost = normalizedPayload.force_post === true || normalizedPayload.force_post === "true";
+  const requestTimeoutMs = Number(normalizedPayload.client_timeout_ms || normalizedPayload.timeout_ms || 45000);
+  const shouldPreferJsonp = !forcePost && /script\.google\.com|script\.googleusercontent\.com/i.test(GAS_API_URL);
   let firstError = null;
 
   if (shouldPreferJsonp) {
     try {
-      return await apiViaJsonp(normalizedPayload);
+      return await apiViaJsonp(normalizedPayload, requestTimeoutMs);
     } catch (err) {
       firstError = err;
       console.warn("[AISchool] JSONP API failed, trying POST fallback.", err);
@@ -1638,7 +1640,7 @@ async function api(payload){
 
   if (!shouldPreferJsonp) {
     try {
-      return await apiViaJsonp(normalizedPayload);
+      return await apiViaJsonp(normalizedPayload, requestTimeoutMs);
     } catch (err) {
       console.warn("[AISchool] JSONP fallback failed.", err);
     }
@@ -1771,6 +1773,37 @@ function _parseCSV(text){
         return item;
     }
 
+    function normalizeRuntimeCatItem(row, index, unit = {}, source = "CATItemBank") {
+        const sourceItem = row && typeof row === "object" ? row : {};
+        const rawStem = sourceItem.stem || sourceItem.item_content || sourceItem.question || sourceItem.text || "";
+        const rawFormat = String(sourceItem.item_format || sourceItem.format || "").trim();
+        const fallbackFormat = /<table[\s>]|STIMULUS_JSON|（表格）|\|/.test(String(rawStem || "")) ? "表格題" : "文字題";
+        const normalizedFormat = /^(mcq|multiple[-_\s]?choice|choice)$/i.test(rawFormat) ? fallbackFormat : (rawFormat || fallbackFormat);
+        const normalized = normalizeCatItemRow({
+            ...sourceItem,
+            item_id: sourceItem.item_id || sourceItem.itemId || sourceItem.id || sourceItem.question_id || `${source === "AI" ? "AI" : "CAT"}-${Date.now()}-${index + 1}`,
+            subject: sourceItem.subject || "自然科學",
+            grade: sourceItem.grade || unit.grade || "",
+            textbook_version: sourceItem.textbook_version || sourceItem.publisher || unit.textbook_version || "",
+            semester: sourceItem.semester || unit.semester || "",
+            unit_name: sourceItem.unit_name || sourceItem.unit || unit.unit_name || "",
+            concept_tag: sourceItem.concept_tag || sourceItem.concept_node || sourceItem.concept || "",
+            stem: rawStem,
+            correct_key: sourceItem.correct_key || sourceItem.correctKey || sourceItem.answer_key || sourceItem.answerKey || sourceItem.answer || sourceItem.correct_answer || sourceItem.correctAnswer || sourceItem.correct_option || sourceItem.correctOption || "",
+            option_A: sourceItem.option_A || sourceItem.option_a || sourceItem.OptionA || sourceItem.A || sourceItem.options?.A || "",
+            option_B: sourceItem.option_B || sourceItem.option_b || sourceItem.OptionB || sourceItem.B || sourceItem.options?.B || "",
+            option_C: sourceItem.option_C || sourceItem.option_c || sourceItem.OptionC || sourceItem.C || sourceItem.options?.C || "",
+            option_D: sourceItem.option_D || sourceItem.option_d || sourceItem.OptionD || sourceItem.D || sourceItem.options?.D || "",
+            status: sourceItem.status || "active",
+            item_format: normalizedFormat,
+            IRT_a: sourceItem.IRT_a || sourceItem.irt_a || sourceItem.a || "",
+            IRT_b: sourceItem.IRT_b || sourceItem.irt_b || sourceItem.b || sourceItem.initial_difficulty_guess || "",
+            IRT_c: sourceItem.IRT_c || sourceItem.irt_c || sourceItem.c || ""
+        }, index);
+        normalized.item_source = source;
+        return normalized;
+    }
+
     function isActiveCatItem(item) {
         const status = String(item?.status || "").trim();
         return !/disabled|inactive|deleted|停用|刪除|删除/i.test(status);
@@ -1785,6 +1818,10 @@ function _parseCSV(text){
 
     function isUsableCatItem(item) {
         return Boolean(item && itemKey(item) && item.stem && getCorrectKey(item) && hasUsableCatOptions(item) && isActiveCatItem(item) && isAllowedCatItemFormat(item));
+    }
+
+    function isDisplayableCatItem(item) {
+        return Boolean(item && itemKey(item) && item.stem && hasUsableCatOptions(item) && isActiveCatItem(item) && isAllowedCatItemFormat(item));
     }
 
     function filterCatItemsForUnit(items, unit) {
@@ -1899,6 +1936,11 @@ function _parseCSV(text){
         throw lastError || new Error("Unable to load CATItemBank.");
     }
 
+    function isCatItemBankEmptyError(err) {
+        const msg = String(err?.message || err || "").toLowerCase();
+        return /no rows matched|no matching rows|no usable|找不到可用/.test(msg);
+    }
+
     function makeLocalTestId() {
         if (window.crypto && typeof window.crypto.randomUUID === "function") {
             return window.crypto.randomUUID();
@@ -1939,7 +1981,9 @@ function _parseCSV(text){
             (json.result && Array.isArray(json.result.items) ? json.result.items[0] : null);
     }
 
-    function buildCatWorkbookPayload() {
+    function buildCatWorkbookPayload(mode = "") {
+        const usingAiFallback = CAT.itemSource === "AI";
+        const sourceMode = mode || (usingAiFallback ? "ai_fallback" : "catitembank_first");
         return {
             content_db_id: CAT_ITEM_BANK_DB_ID,
             spreadsheet_id: CAT_ITEM_BANK_DB_ID,
@@ -1950,8 +1994,9 @@ function _parseCSV(text){
             item_bank_sheet_name: CAT_ITEM_BANK_SHEET_NAME,
             response_sheet: "CATresponse",
             response_sheet_name: "CATresponse",
-            item_source: "CATItemBank",
-            item_source_mode: "spreadsheet_only"
+            item_source: usingAiFallback ? "AIGenerated" : "CATItemBank",
+            item_source_mode: sourceMode,
+            item_source_strategy: "catitembank_first_ai_fallback"
         };
     }
 
@@ -2150,21 +2195,12 @@ function _parseCSV(text){
 
     async function bootstrapMaterials(){
         try {
+            let cachedCatItems = [];
             try {
-                const catItems = await loadAllCatItemBankItems();
-                const meta = buildMetaTreeFromCatItems(catItems);
-                if (Object.keys(meta.tree).length) {
-                    Meta.mode = "catitembank";
-                    Meta.tree = meta.tree;
-                    Meta.unitIndex = meta.unitIndex;
-                    Meta.catItems = catItems;
-                    refreshDropdowns();
-                    UI.toast("題庫已載入", `已載入 ${catItems.length} 題文字題與表格題`, "good");
-                    setConnBadgeOnline();
-                    return;
-                }
+                cachedCatItems = await loadAllCatItemBankItems();
+                Meta.catItems = cachedCatItems;
             } catch (bankErr) {
-                console.warn("[AISchool] CATItemBank inventory unavailable; falling back to materials metadata.", bankErr);
+                console.warn("[AISchool] CATItemBank inventory unavailable; materials metadata will still be loaded.", bankErr);
             }
 
             let rows = [];
@@ -2184,10 +2220,23 @@ function _parseCSV(text){
                 }catch(_){}
             }
             if(!rows.length) rows = await _loadRowsFromPublicCSV();
+            if(!rows.length && cachedCatItems.length){
+                const meta = buildMetaTreeFromCatItems(cachedCatItems);
+                if (Object.keys(meta.tree).length) {
+                    Meta.mode = "catitembank-fallback";
+                    Meta.tree = meta.tree;
+                    Meta.unitIndex = meta.unitIndex;
+                    refreshDropdowns();
+                    UI.toast("題庫已載入", `教材清單暫時無法讀取，先顯示題庫中 ${cachedCatItems.length} 題可用單元`, "warn");
+                    setConnBadgeOnline();
+                    return;
+                }
+            }
             if(!rows.length) throw new Error("No materials found");
 
             const tree = {};
             const unitIndex = {};
+            const seenUnits = new Set();
             rows.forEach(r => {
                 const s = _pickRowValue(r, ["stage","學習階段","中小學"]);
                 const g = _pickRowValue(r, ["grade","年級"]);
@@ -2209,15 +2258,19 @@ function _parseCSV(text){
                 if(!tree[s][g][sem]) tree[s][g][sem]={};
                 if(!tree[s][g][sem][v]) tree[s][g][sem][v]=[];
 
-                tree[s][g][sem][v].push({ unit_key: unitName, unit_name: unitName });
+                const unitKey = `${s}||${g}||${sem}||${v}||${unitName}`;
+                if (!seenUnits.has(unitKey)) {
+                    tree[s][g][sem][v].push({ unit_key: unitName, unit_name: unitName });
+                    seenUnits.add(unitKey);
+                }
                 unitIndex[unitName] = r;
             });
 
+            Meta.mode = cachedCatItems.length ? "hybrid" : "materials";
             Meta.tree = tree;
             Meta.unitIndex = unitIndex;
-            Meta.catItems = [];
             refreshDropdowns();
-            UI.toast("連線成功", "教材資料已載入", "good");
+            UI.toast("連線成功", cachedCatItems.length ? `教材資料已載入，題庫可用 ${cachedCatItems.length} 題` : "教材資料已載入", "good");
             setConnBadgeOnline();
         } catch(e) {
             console.error(e);
@@ -2618,6 +2671,80 @@ function buildIrtPayload(extra = {}) {
     };
 }
 
+function normalizeItemsForRuntime(items = [], unitPayload = getUnitPayload(), source = CAT.itemSource || "CATItemBank") {
+    return (items || [])
+        .map((item, index) => normalizeRuntimeCatItem(item, index, unitPayload, source))
+        .filter(isUsableCatItem);
+}
+
+function normalizeItemsForDisplay(items = [], unitPayload = getUnitPayload(), source = CAT.itemSource || "AI") {
+    return (items || [])
+        .map((item, index) => normalizeRuntimeCatItem(item, index, unitPayload, source))
+        .filter(isDisplayableCatItem);
+}
+
+function aiItemGenerationPolicy(unitPayload, count) {
+    return {
+        mode: "generate_items_when_bank_empty",
+        reason: "CATItemBank has no matching usable text/table item for the selected unit.",
+        language: "zh-TW",
+        target_count: count,
+        allowed_item_formats: ["文字題", "表格題"],
+        excluded_item_formats: ["圖示題"],
+        required_fields: ["item_id", "subject", "grade", "textbook_version", "semester", "unit_name", "concept_tag", "stem", "correct_key", "option_A", "option_B", "option_C", "option_D", "item_format", "cognitive_level", "PISA_context", "PISA_knowledge", "PISA_competency", "IRT_a", "IRT_b", "IRT_c"],
+        quality_rules: [
+            "題幹必須有完整情境，對應 PISA 個人、區域/國家、全球情境輪替。",
+            "四個選項長度與語氣接近，不可讓正答明顯比誘答更長或更像標準答案。",
+            "表格題的表格必須寫成 HTML table，且放在題幹情境之後。",
+            "不得產生圖示題；若需要圖像，改寫成文字或表格資料。",
+            "國小題目用臺灣自然科常用語，避免中國用語。"
+        ],
+        unit: unitPayload
+    };
+}
+
+async function startAiGeneratedCat(unitPayload, sid, n) {
+    CAT.itemSource = "AI";
+    CAT.aiBackendManaged = false;
+    const json = await api({
+        action: ACTION.START_CAT,
+        ...buildCatWorkbookPayload("ai_fallback"),
+        student_id: sid,
+        unit: unitPayload,
+        n,
+        num_items: n,
+        n_items: n,
+        max_items: n,
+        maxItems: n,
+        force_post: true,
+        client_timeout_ms: 90000,
+        generate_if_empty: true,
+        ai_generation: true,
+        allowed_item_formats: ["文字題", "表格題"],
+        excluded_item_formats: ["圖示題"],
+        settings: { max_items: n, adaptive_strategy: "irt_3pl", irt_model: IRT_CONFIG.model, item_source_strategy: "catitembank_first_ai_fallback" },
+        generation_policy: aiItemGenerationPolicy(unitPayload, Math.max(n, 12)),
+        ...buildIrtPayload()
+    });
+
+    const rawItems = extractItemsFromCatResponse(json);
+    const items = normalizeItemsForRuntime(rawItems, unitPayload, "AI");
+    CAT.test_id = String(json.test_id || json.data?.test_id || json.result?.test_id || makeLocalTestId());
+    if (items.length) {
+        registerCatItems(items);
+        return chooseInitialLocalItem() || items[0];
+    }
+
+    const displayItems = normalizeItemsForDisplay(rawItems, unitPayload, "AI");
+    if (displayItems.length) {
+        CAT.aiBackendManaged = true;
+        registerCatItems(displayItems);
+        return displayItems[0];
+    }
+
+    throw new Error("AI 命題服務沒有回傳可用的文字題或表格題。");
+}
+
 async function startTest() {
     const uVal = document.getElementById("selUnit").value;
     if(!uVal) { UI.toast("提示", "請先完成單元選擇", "warn"); return; }
@@ -2630,6 +2757,8 @@ async function startTest() {
     CAT.theta = 0;
     CAT.thetaSe = null;
     CAT.lastCorrect = null;
+    CAT.itemSource = "";
+    CAT.aiBackendManaged = false;
     CAT.itemMap = {};
     CAT.itemPool = [];
     CAT.bankItemIds = new Set();
@@ -2640,20 +2769,37 @@ async function startTest() {
 
     try {
         const unitPayload = getUnitPayload();
-        const bankItems = await loadCatItemBankItems(unitPayload);
-        registerCatItems(bankItems);
-        CAT.bankItemIds = new Set(bankItems.map(itemKey).filter(Boolean));
+        let firstItem = null;
+        let sourceLabel = "CATItemBank";
+        let bankItems = [];
 
-        const firstItem = chooseInitialLocalItem();
+        try {
+            CAT.itemSource = "CATItemBank";
+            bankItems = await loadCatItemBankItems(unitPayload);
+            const runtimeBankItems = normalizeItemsForRuntime(bankItems, unitPayload, "CATItemBank");
+            if (!runtimeBankItems.length) throw new Error("CATItemBank rows matched, but no usable text/table items.");
+            registerCatItems(runtimeBankItems);
+            CAT.bankItemIds = new Set(runtimeBankItems.map(itemKey).filter(Boolean));
+            firstItem = chooseInitialLocalItem();
+        } catch (bankErr) {
+            if (!isCatItemBankEmptyError(bankErr)) throw bankErr;
+            console.info("[AISchool] No matching CATItemBank rows; switching to AI item generation.", bankErr);
+            UI.toast("題庫尚未建置", "此單元目前沒有題庫試題，改由 AI 依命題規範產生本次測驗。", "warn");
+            CAT.itemMap = {};
+            CAT.itemPool = [];
+            CAT.bankItemIds = new Set();
+            firstItem = await startAiGeneratedCat(unitPayload, sid, n);
+            sourceLabel = "AI";
+        }
 
-        if (!firstItem) throw new Error("CATItemBank 找不到可用題目資料");
+        if (!firstItem) throw new Error(sourceLabel === "AI" ? "AI 命題後仍找不到可用題目資料" : "CATItemBank 找不到可用題目資料");
 
         CAT.started = true;
-        CAT.test_id = makeLocalTestId();
+        if (!CAT.test_id) CAT.test_id = makeLocalTestId();
         CAT.student_id = sid;
         CAT.n = n;
         CAT.step = 0;
-        trackAdaptiveEvent("test_started", { score: "", duration: "", item_id: "", max_items: n, theta: CAT.theta, irt_model: IRT_CONFIG.model, item_source: "CATItemBank", item_bank_count: bankItems.length });
+        trackAdaptiveEvent("test_started", { score: "", duration: "", item_id: "", max_items: n, theta: CAT.theta, irt_model: IRT_CONFIG.model, item_source: sourceLabel, item_bank_count: bankItems.length, generated_item_count: sourceLabel === "AI" ? CAT.itemPool.length : 0 });
 
         document.getElementById("secConfig").classList.add("hidden");
         document.getElementById("secQuiz").classList.remove("hidden");
@@ -2663,7 +2809,11 @@ async function startTest() {
         UI.setProgress(0, n);
         updateZhuyinAvailability({ auto: true });
     } catch(e) {
-        UI.toast("錯誤", "題庫載入失敗: " + e.message, "bad");
+        const msg = String(e && e.message ? e.message : e);
+        const friendly = /OPENAI_API_KEY/i.test(msg)
+            ? "此單元題庫尚未建置，且 AI 命題後端尚未設定 OPENAI_API_KEY。請在 Adaptive Testing Apps Script 指令碼屬性補上金鑰後再試。"
+            : "測驗載入失敗: " + msg;
+        UI.toast("錯誤", friendly, "bad");
     } finally {
         hideLoading();
     }
@@ -3773,11 +3923,13 @@ function getOptionTextFromWrongItem(w, key){
     const thetaBefore = finiteNumber(CAT.theta, 0);
     const currentIrt = normalizeIrtParams(CAT.current || {});
     const localCorrectGuess = normalizeCorrectness(undefined, CAT.current, CAT.selected);
+    const isAiGeneratedRun = CAT.itemSource === "AI";
+    const requiresBackendScoring = isAiGeneratedRun && CAT.aiBackendManaged;
     let json = {};
-    try {
+    if (!isAiGeneratedRun || requiresBackendScoring) try {
       json = await api({
       action: ACTION.SUBMIT_NEXT,
-      ...buildCatWorkbookPayload(),
+      ...buildCatWorkbookPayload(requiresBackendScoring ? "ai_fallback" : ""),
       test_id: CAT.test_id,
       student_id: CAT.student_id,
       item_id: itemKey(CAT.current || {}),
@@ -3800,18 +3952,24 @@ function getOptionTextFromWrongItem(w, key){
   // ★如果你的後端在 submitAndNext 才寫題庫/寫回應，建議也一併帶 sheet 名稱（保險）
   unit: getUnitPayload(),
     });
-      registerCatItems(extractItemsFromCatResponse(json).filter(isCatBankItem));
+      const apiItems = requiresBackendScoring
+          ? normalizeItemsForDisplay(extractItemsFromCatResponse(json), getUnitPayload(), "AI")
+          : normalizeItemsForRuntime(extractItemsFromCatResponse(json), getUnitPayload(), CAT.itemSource || "CATItemBank")
+              .filter(item => CAT.itemSource !== "CATItemBank" || isCatBankItem(item));
+      registerCatItems(apiItems);
     } catch (apiErr) {
       console.warn("[AISchool] submitAndNext failed; continuing with local CAT scoring.", apiErr);
+      if (requiresBackendScoring) throw apiErr;
       UI.toast("暫以本機評分", "後端紀錄暫時失敗，本次作答仍會依題庫與 IRT 規則繼續。", "warn");
     }
     const apiCorrect = normalizeCorrectness(json.correct ?? json.is_correct ?? json.data?.correct ?? json.data?.is_correct ?? json.result?.correct ?? json.result?.is_correct, CAT.current, CAT.selected);
-    const effectiveCorrect = apiCorrect ?? localCorrectGuess ?? false;
-    const fallbackTheta = updateLocalTheta(CAT.current, effectiveCorrect);
+    const effectiveCorrect = apiCorrect ?? localCorrectGuess;
+    const hasCorrectness = effectiveCorrect !== null && effectiveCorrect !== undefined;
+    const fallbackTheta = hasCorrectness ? updateLocalTheta(CAT.current, !!effectiveCorrect) : CAT.theta;
     const apiTheta = resolveApiTheta(json);
     if (apiTheta !== null) {
       CAT.theta = apiTheta;
-      CAT.lastCorrect = !!effectiveCorrect;
+      if (hasCorrectness) CAT.lastCorrect = !!effectiveCorrect;
     } else {
       CAT.theta = fallbackTheta;
     }
@@ -3819,7 +3977,7 @@ function getOptionTextFromWrongItem(w, key){
       item_id: itemKey(CAT.current || {}),
       response_option: CAT.selected,
       correct_key: getCorrectKey(CAT.current || {}),
-      is_correct: !!effectiveCorrect,
+      is_correct: hasCorrectness ? !!effectiveCorrect : null,
       theta_before: thetaBefore,
       theta_after: CAT.theta,
       unit_name: CAT.current?.unit_name || getUnitPayload().unit_name || "",
@@ -3832,7 +3990,7 @@ function getOptionTextFromWrongItem(w, key){
     trackAdaptiveEvent("item_answered", {
       item_id: itemKey(CAT.current || {}),
       response: CAT.selected,
-      correct: effectiveCorrect,
+      correct: hasCorrectness ? !!effectiveCorrect : "",
       theta_before: thetaBefore,
       theta_after: CAT.theta,
       item_irt_a: currentIrt.a,
@@ -3855,16 +4013,32 @@ function getOptionTextFromWrongItem(w, key){
     }
 
     // 還沒答滿 CAT.n 題：正常前進到下一題
-    const apiNextRaw = extractNextItemFromResponse(json);
+    const apiNextRaw = (!isAiGeneratedRun || requiresBackendScoring) ? extractNextItemFromResponse(json) : null;
+    const normalizedApiNext = apiNextRaw
+        ? (requiresBackendScoring
+            ? normalizeItemsForDisplay([apiNextRaw], getUnitPayload(), "AI")[0]
+            : normalizeRuntimeCatItem(apiNextRaw, CAT.step, getUnitPayload(), CAT.itemSource || "CATItemBank"))
+        : null;
+    if (normalizedApiNext) registerCatItems([normalizedApiNext]);
     const apiNextKey = itemKey(apiNextRaw || {});
-    let nextItem = apiNextKey && isCatBankItem(apiNextRaw) ? (CAT.itemMap[apiNextKey] || apiNextRaw) : null;
+    let nextItem = apiNextKey && (requiresBackendScoring || CAT.itemSource !== "CATItemBank" || isCatBankItem(apiNextRaw)) ? (CAT.itemMap[apiNextKey] || normalizedApiNext || apiNextRaw) : null;
 
-if (!nextItem || CAT.administeredItemIds.includes(itemKey(nextItem)) || !followsIrtDirection(nextItem, effectiveCorrect)) {
-  nextItem = chooseLocalNextItem(effectiveCorrect);
+if (requiresBackendScoring && nextItem && CAT.administeredItemIds.includes(itemKey(nextItem))) {
+  nextItem = null;
+}
+
+if (!requiresBackendScoring && (!nextItem || CAT.administeredItemIds.includes(itemKey(nextItem)) || !followsIrtDirection(nextItem, !!effectiveCorrect))) {
+  nextItem = chooseLocalNextItem(!!effectiveCorrect);
 }
 
 if (!nextItem) {
-  UI.toast("錯誤", "CATItemBank 題庫中已沒有符合 IRT 規則的下一題，無法繼續作答。", "bad");
+  if (json.done || json.data?.done || json.result?.done) {
+    CAT.next = null;
+    setNextButtonState("finish");
+    document.getElementById("hint").innerHTML = "已完成作答，請按「AI評分診斷」開始分析";
+    return;
+  }
+  UI.toast("錯誤", "目前題目池已沒有符合 IRT 規則的下一題，無法繼續作答。", "bad");
   return;
 }
 
@@ -3915,6 +4089,9 @@ async function finishTest() {
   try {
     let json = {};
     try {
+      if (CAT.itemSource === "AI" && !CAT.aiBackendManaged) {
+        json = buildLocalFinishResult();
+      } else {
       json = await api({
       action: ACTION.FINISH_CAT,
       ...buildCatWorkbookPayload(),
@@ -3927,10 +4104,14 @@ async function finishTest() {
       administered_item_ids: CAT.administeredItemIds.slice(),
       ai_feedback: true
     });
+      }
     } catch (apiErr) {
       console.warn("[AISchool] finishCAT failed; using local report fallback.", apiErr);
       json = buildLocalFinishResult();
       UI.toast("暫以本機報告", "後端診斷暫時失敗，已先用本次作答資料產生報告。", "warn");
+    }
+    if (CAT.responses.length && Number(json.total_count ?? json.data?.total_count ?? json.result?.total_count ?? 0) === 0) {
+      json = buildLocalFinishResult();
     }
 console.log("finishCAT 回傳資料 =", json);
 
