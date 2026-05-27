@@ -1324,7 +1324,7 @@ body.zhuyin-mode .option-btn .flex-1 {
     /* ===========================
        1) GLOBAL STATE
        =========================== */
-    const Meta = { mode: "tree", tree: {}, unitIndex: {}, publishers: [], unitsByPublisher: {} };
+    const Meta = { mode: "tree", tree: {}, unitIndex: {}, publishers: [], unitsByPublisher: {}, catItems: [] };
     const CAT = { started: false, test_id: "", student_id: "", current: null, next: null, selected: "", n: 15, step: 0, itemMap: {}, itemPool: [], bankItemIds: new Set(), administeredItemIds: [], responses: [], theta: 0, thetaSe: null, lastCorrect: null, currentSpeechText: "" };
     const QuestionAudio = { player: null, state: "idle" };
     const ACTION = { GET_UNIT_OPTIONS: "getUnitOptions", START_CAT: "startCAT", SUBMIT_NEXT: "submitAndNext", FINISH_CAT: "finishCAT" };
@@ -1705,7 +1705,23 @@ function _parseCSV(text){
         const text = String(value || "").trim();
         if (/^(1|一|上|上學期|上学期)$/i.test(text)) return "上";
         if (/^(2|二|下|下學期|下学期)$/i.test(text)) return "下";
+        if (/^\d+$/.test(text)) return Number(text) % 2 === 1 ? "上" : "下";
         return normalizeMatchText(text);
+    }
+
+    function inferStageFromGrade(value) {
+        const n = Number(normalizeGradeText(value));
+        if (!Number.isFinite(n) || n <= 0) return "";
+        if (n <= 6) return "國小";
+        if (n <= 9) return "國中";
+        return "高中";
+    }
+
+    function semesterLabel(value) {
+        const normalized = normalizeSemesterText(value);
+        if (normalized === "上") return "上";
+        if (normalized === "下") return "下";
+        return String(value || "").trim();
     }
 
     function hasUsableCatOptions(item) {
@@ -1799,7 +1815,71 @@ function _parseCSV(text){
         return scoped;
     }
 
+    async function loadAllCatItemBankItems() {
+        let lastError = null;
+        for (const url of buildCatItemBankUrls()) {
+            try {
+                const res = await fetch(url, { cache: "no-store" });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const text = await res.text();
+                const rows = _parseCSV(text);
+                const items = rows.map(normalizeCatItemRow).filter(isUsableCatItem);
+                if (items.length) return items;
+                lastError = new Error("CATItemBank loaded, but no usable text/table items were found.");
+            } catch (err) {
+                lastError = err;
+                console.warn("[AISchool] CATItemBank CSV inventory load failed:", url, err);
+            }
+        }
+        throw lastError || new Error("Unable to load CATItemBank.");
+    }
+
+    function buildMetaTreeFromCatItems(items) {
+        const tree = {};
+        const unitIndex = {};
+        const seenUnits = new Set();
+
+        (items || []).forEach(item => {
+            const stage = _pickRowValue(item, ["stage", "學習階段", "中小學"]) || inferStageFromGrade(item.grade);
+            const grade = normalizeGradeText(item.grade);
+            const semester = semesterLabel(item.semester);
+            const publisher = String(item.textbook_version || "").trim();
+            const unitName = String(item.unit_name || "").trim();
+            if (!stage || !grade || !semester || !publisher || !unitName) return;
+
+            if (!tree[stage]) tree[stage] = {};
+            if (!tree[stage][grade]) tree[stage][grade] = {};
+            if (!tree[stage][grade][semester]) tree[stage][grade][semester] = {};
+            if (!tree[stage][grade][semester][publisher]) tree[stage][grade][semester][publisher] = [];
+
+            const unitKey = `${stage}||${grade}||${semester}||${publisher}||${unitName}`;
+            if (!seenUnits.has(unitKey)) {
+                tree[stage][grade][semester][publisher].push({ unit_key: unitName, unit_name: unitName });
+                seenUnits.add(unitKey);
+            }
+            unitIndex[unitKey] = item;
+        });
+
+        Object.values(tree).forEach(gradeMap => {
+            Object.values(gradeMap).forEach(semMap => {
+                Object.values(semMap).forEach(pubMap => {
+                    Object.values(pubMap).forEach(units => {
+                        units.sort((a, b) => String(a.unit_name).localeCompare(String(b.unit_name), "zh-Hant"));
+                    });
+                });
+            });
+        });
+
+        return { tree, unitIndex };
+    }
+
     async function loadCatItemBankItems(unit) {
+        if (Meta.catItems && Meta.catItems.length) {
+            const filtered = filterCatItemsForUnit(Meta.catItems, unit);
+            if (filtered.length) return filtered;
+            throw new Error("CATItemBank loaded, but no rows matched this unit.");
+        }
+
         let lastError = null;
         for (const url of buildCatItemBankUrls()) {
             try {
@@ -2070,6 +2150,23 @@ function _parseCSV(text){
 
     async function bootstrapMaterials(){
         try {
+            try {
+                const catItems = await loadAllCatItemBankItems();
+                const meta = buildMetaTreeFromCatItems(catItems);
+                if (Object.keys(meta.tree).length) {
+                    Meta.mode = "catitembank";
+                    Meta.tree = meta.tree;
+                    Meta.unitIndex = meta.unitIndex;
+                    Meta.catItems = catItems;
+                    refreshDropdowns();
+                    UI.toast("題庫已載入", `已載入 ${catItems.length} 題文字題與表格題`, "good");
+                    setConnBadgeOnline();
+                    return;
+                }
+            } catch (bankErr) {
+                console.warn("[AISchool] CATItemBank inventory unavailable; falling back to materials metadata.", bankErr);
+            }
+
             let rows = [];
             for(const act of META_ACTION_CANDIDATES){
                 try{
@@ -2118,6 +2215,7 @@ function _parseCSV(text){
 
             Meta.tree = tree;
             Meta.unitIndex = unitIndex;
+            Meta.catItems = [];
             refreshDropdowns();
             UI.toast("連線成功", "教材資料已載入", "good");
             setConnBadgeOnline();
