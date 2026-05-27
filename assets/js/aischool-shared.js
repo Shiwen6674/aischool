@@ -6,6 +6,7 @@
   const LEGACY_USER_STORAGE_KEYS = ["currentUser"];
   const GAS_ENDPOINT_OVERRIDE_KEY = "AISCHOOL_GAS_OVERRIDES";
   const SPREADSHEET_OVERRIDE_KEY = "AISCHOOL_SPREADSHEET_OVERRIDES";
+  const MEMBERSHIP_UI_ENABLED = false;
   const PRIMARY_SPREADSHEET_ID = "1cDOsaa7E0EwD1R9CeCWoGf8_9ZMcFv8fxQ5d-LWUKu8";
   const CAT_ITEM_BANK_SPREADSHEET_ID = "1cEfMEy3bvDa1tET3xmh7ShGeJy8KLUMa_JuULGBD-mk";
   const CAT_ITEM_BANK_GID = "1567965945";
@@ -453,9 +454,32 @@
 
   installUiPolish();
 
+  function installTemporaryMembershipUiHider() {
+    if (typeof document === "undefined" || MEMBERSHIP_UI_ENABLED) return;
+    if (document.getElementById("aischool-membership-ui-hider")) return;
+
+    const style = document.createElement("style");
+    style.id = "aischool-membership-ui-hider";
+    style.textContent = `
+      #ais-membership-widget,
+      .ais-membership-widget,
+      a[href="account_settings.html"],
+      a[href$="/account_settings.html"],
+      a[href$="account_settings.html"],
+      [data-membership-ui],
+      [data-role="membership-link"] {
+        display: none !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  installTemporaryMembershipUiHider();
+
   window.AISchoolConfig = {
     gas: GAS_ENDPOINTS,
-    spreadsheets: SPREADSHEET_CONFIG
+    spreadsheets: SPREADSHEET_CONFIG,
+    membershipUiEnabled: MEMBERSHIP_UI_ENABLED
   };
   window.AISchool = {
     clearCurrentUser,
@@ -463,6 +487,7 @@
     getGasUrl,
     getGasUrlInfo,
     getLanguage,
+    getMembershipUiEnabled: () => MEMBERSHIP_UI_ENABLED,
     getSpreadsheetConfig,
     isPlaceholderGasUrl,
     normalizeRole,
@@ -486,7 +511,7 @@
       ? currentScript.src.replace(/\/[^/]*$/, "/")
       : "./assets/js/";
     script.id = "aischool-membership-runtime";
-    script.src = baseUrl + "aischool-membership.js?v=20260522-formal";
+    script.src = baseUrl + "aischool-membership.js?v=20260527-hide-quota-ui";
     script.defer = true;
     document.head.appendChild(script);
   }

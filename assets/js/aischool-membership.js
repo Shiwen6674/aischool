@@ -8,6 +8,9 @@
   const PAID_DAILY_QUOTA_TWD = 15;
   const PAID_HOURLY_QUOTA_TWD = 2;
   const STORAGE_PREFIX = "AISCHOOL_MEMBERSHIP_V1";
+  const MEMBERSHIP_UI_VISIBLE =
+    Boolean(window.AISchoolConfig?.membershipUiEnabled) ||
+    Boolean(window.AISchool?.getMembershipUiEnabled?.());
   const EXEMPT_EMAILS = new Set([
     "student@gmail.com",
     "teacher@gmail.com",
@@ -427,6 +430,12 @@
 
   function ensureWidget() {
     ensureStyles();
+    if (!MEMBERSHIP_UI_VISIBLE) {
+      const existing = document.getElementById("ais-membership-widget");
+      if (existing) existing.remove();
+      return null;
+    }
+
     let widget = document.getElementById("ais-membership-widget");
     if (widget) return widget;
     widget = document.createElement("aside");
@@ -494,8 +503,15 @@
   }
 
   function renderWidget() {
+    if (!MEMBERSHIP_UI_VISIBLE) {
+      const widget = document.getElementById("ais-membership-widget");
+      if (widget) widget.classList.add("is-hidden");
+      return;
+    }
+
     const user = getUser();
     const widget = ensureWidget();
+    if (!widget) return;
     if (!user) {
       widget.classList.add("is-hidden");
       return;
@@ -896,7 +912,7 @@
 
   function init() {
     ensureStyles();
-    ensureWidget();
+    if (MEMBERSHIP_UI_VISIBLE) ensureWidget();
     patchSessionMutators();
     patchFetch();
     initActivityListeners();
