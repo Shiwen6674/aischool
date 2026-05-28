@@ -4651,6 +4651,45 @@ function waitForNextPaint() {
   });
 }
 
+function createPdfExportClone(sourceEl) {
+  const host = document.createElement("div");
+  host.setAttribute("data-pdf-export", "true");
+  host.className = "pdf-export-host";
+  Object.assign(host.style, {
+    position: "fixed",
+    left: "0",
+    top: "0",
+    width: "210mm",
+    minHeight: "297mm",
+    margin: "0",
+    padding: "0",
+    background: "#ffffff",
+    overflow: "visible",
+    pointerEvents: "none",
+    zIndex: "9000"
+  });
+
+  const clone = sourceEl.cloneNode(true);
+  Object.assign(clone.style, {
+    display: "block",
+    position: "static",
+    left: "auto",
+    top: "auto",
+    right: "auto",
+    bottom: "auto",
+    width: "210mm",
+    margin: "0",
+    padding: "0",
+    transform: "none",
+    visibility: "visible",
+    pointerEvents: "none"
+  });
+
+  host.appendChild(clone);
+  document.body.appendChild(host);
+  return { host, exportEl: clone };
+}
+
 async function downloadPDF() {
   const el = document.getElementById("pdf-report-content");
   if (!el) {
@@ -4661,53 +4700,42 @@ async function downloadPDF() {
     UI.toast("錯誤", "PDF 匯出套件尚未載入完成，請重新整理後再試。", "bad");
     return;
   }
-  const previousStyle = {
-    display: el.style.display,
-    position: el.style.position,
-    left: el.style.left,
-    top: el.style.top,
-    right: el.style.right,
-    bottom: el.style.bottom,
-    width: el.style.width,
-    margin: el.style.margin,
-    padding: el.style.padding,
-    transform: el.style.transform,
-    zIndex: el.style.zIndex,
-    visibility: el.style.visibility,
-    pointerEvents: el.style.pointerEvents
-  };
+  let exportHost = null;
   try {
-    el.style.display = "block";
-    el.style.position = "fixed";
-    el.style.left = "0";
-    el.style.top = "0";
-    el.style.right = "auto";
-    el.style.bottom = "auto";
-    el.style.width = "210mm";
-    el.style.margin = "0";
-    el.style.padding = "0";
-    el.style.transform = "none";
-    el.style.zIndex = "2147483647";
-    el.style.visibility = "visible";
-    el.style.pointerEvents = "none";
+    showLoading("正在產生 PDF", "正在整理診斷報告書，請稍候...");
     renderPdfWrongItems(latestPdfWrongItems);
     refreshPdfPageNumbers();
+    const prepared = createPdfExportClone(el);
+    exportHost = prepared.host;
+    const exportEl = prepared.exportEl;
 
     if (document.fonts && document.fonts.ready) {
       await document.fonts.ready;
     }
     await waitForNextPaint();
+    const exportWidth = Math.max(794, Math.ceil(exportEl.scrollWidth || exportEl.getBoundingClientRect().width || 794));
+    const exportHeight = Math.max(1123, Math.ceil(exportEl.scrollHeight || exportEl.getBoundingClientRect().height || 1123));
 
     const opt = {
       margin: 0,
       filename: buildPdfFileName(),
       image: { type: "jpeg", quality: 1 },
-      html2canvas: { scale: 2.4, useCORS: true, allowTaint: true, backgroundColor: "#ffffff", letterRendering: true },
+      html2canvas: {
+        scale: 2.4,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: "#ffffff",
+        letterRendering: true,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: exportWidth,
+        windowHeight: exportHeight
+      },
       jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       pagebreak: { mode: ["css"] }
     };
 
-    const pdfBlob = await html2pdf().set(opt).from(el).toPdf().outputPdf("blob");
+    const pdfBlob = await html2pdf().set(opt).from(exportEl).toPdf().outputPdf("blob");
     if (!(await isProbablyPdfBlob(pdfBlob))) {
       throw new Error("產生的檔案不是有效 PDF，已停止下載。");
     }
@@ -4717,7 +4745,8 @@ async function downloadPDF() {
     console.error(err);
     UI.toast("錯誤", "PDF 匯出失敗: " + (err && err.message ? err.message : err), "bad");
   } finally {
-    Object.assign(el.style, previousStyle);
+    if (exportHost) exportHost.remove();
+    hideLoading();
   }
 }
 function initQuestionCountStepper(){
