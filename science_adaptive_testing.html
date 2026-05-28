@@ -491,10 +491,16 @@ rp { display: none !important; }
 .stem-prose {
     margin-top: 0.55rem;
     color: #f8fafc;
-    font-size: clamp(1.32rem, 2vw, 1.62rem);
-    font-weight: 800;
-    line-height: 1.95;
-    letter-spacing: 0;
+    font-size: clamp(1.28rem, 1.85vw, 1.54rem);
+    font-weight: 700;
+    line-height: 2.06;
+    letter-spacing: 0.012em;
+    text-wrap: pretty;
+}
+.option-btn .flex-1 {
+    font-weight: 700;
+    line-height: 1.78;
+    letter-spacing: 0.01em;
 }
 .stem-prose + .stimulus-table-wrap,
 .stimulus-table-wrap + .stem-prose {
@@ -848,20 +854,28 @@ rp { display: none !important; }
 
 /* 2026-04 zhuyin mode: render actual bopomofo at the right side of Han characters. */
 body.zhuyin-mode .leading-relaxed {
-    line-height: 2.85 !important;
+    line-height: 3.05 !important;
 }
 body.zhuyin-mode #qStem,
 body.zhuyin-mode .option-btn .flex-1 {
-    line-height: 2.15 !important;
+    line-height: 2.32 !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.014em;
+}
+body.zhuyin-mode .stem-prose {
+    line-height: 2.22;
+    font-weight: 700;
+    letter-spacing: 0.014em;
 }
 .zhuyin-char {
     display: inline-flex;
     flex-direction: row;
     align-items: center;
     position: relative;
-    vertical-align: baseline;
-    margin: 0 0.045em;
-    padding-right: 0.04em;
+    vertical-align: -0.06em;
+    margin: 0 0.055em;
+    padding-right: 0.18em;
+    white-space: nowrap;
 }
 .zhuyin-base {
     display: inline-block;
@@ -874,24 +888,37 @@ body.zhuyin-mode .option-btn .flex-1 {
     align-items: center;
     justify-content: center;
     position: relative;
-    min-width: 0.78em;
-    height: 1.55em;
+    width: 0.72em;
+    min-width: 0.72em;
+    min-height: 1.78em;
+    height: 1.78em;
     margin-left: 0.035em;
     font-family: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", "Bopomofo", sans-serif;
-    font-size: 0.42em;
+    font-size: 0.34em;
     line-height: 1;
-    color: rgba(226, 232, 240, 0.9);
-    font-weight: 800;
+    color: rgba(226, 232, 240, 0.88);
+    font-weight: 700;
     letter-spacing: 0;
 }
 .zhuyin-body {
-    writing-mode: vertical-rl;
-    text-orientation: upright;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.025em;
+    writing-mode: horizontal-tb;
+    text-orientation: mixed;
     letter-spacing: 0;
+    line-height: 0.92;
+    white-space: nowrap;
+}
+.zhuyin-body span {
+    display: block;
+    line-height: 0.92;
 }
 .zhuyin-tone {
     position: absolute;
-    left: calc(100% - 0.05em);
+    left: calc(100% + 0.04em);
     top: 50%;
     transform: translateY(-50%);
     color: rgba(253, 230, 138, 0.92);
@@ -899,7 +926,8 @@ body.zhuyin-mode .option-btn .flex-1 {
     line-height: 1;
 }
 .zhuyin-tone.neutral {
-    top: 22%;
+    top: 20%;
+    transform: none;
 }
 
   </style>
@@ -4884,21 +4912,40 @@ const ZHUYIN_FINALS = {
     v: "ㄩ", ve: "ㄩㄝ", van: "ㄩㄢ", vn: "ㄩㄣ",
     ü: "ㄩ", üe: "ㄩㄝ", üan: "ㄩㄢ", ün: "ㄩㄣ"
 };
-const ZHUYIN_TONES = { 1: "", 2: "ˊ", 3: "ˇ", 4: "ˋ", 5: "˙" };
+const ZHUYIN_TONES = { 0: "˙", 1: "", 2: "ˊ", 3: "ˇ", 4: "ˋ", 5: "˙" };
 const ZERO_INITIAL_REWRITES = {
     yi: "i", ya: "ia", yao: "iao", ye: "ie", you: "iu", yan: "ian", yin: "in",
     yang: "iang", ying: "ing", yong: "iong", yu: "v", yue: "ve", yuan: "van", yun: "vn",
     wu: "u", wa: "ua", wo: "uo", wai: "uai", wei: "ui", wan: "uan", wen: "un",
     wang: "uang", weng: "ong"
 };
+const ZHUYIN_PHRASE_OVERRIDES = [
+    { text: "長出", zhuyin: ["ㄓㄤˇ", "ㄔㄨ"] },
+    { text: "生長", zhuyin: ["ㄕㄥ", "ㄓㄤˇ"] },
+    { text: "成長", zhuyin: ["ㄔㄥˊ", "ㄓㄤˇ"] },
+    { text: "長大", zhuyin: ["ㄓㄤˇ", "ㄉㄚˋ"] },
+    { text: "長高", zhuyin: ["ㄓㄤˇ", "ㄍㄠ"] },
+    { text: "長得", zhuyin: ["ㄓㄤˇ", "˙ㄉㄜ"] },
+    { text: "長度", zhuyin: ["ㄔㄤˊ", "ㄉㄨˋ"] },
+    { text: "長短", zhuyin: ["ㄔㄤˊ", "ㄉㄨㄢˇ"] },
+    { text: "很長", zhuyin: ["ㄏㄣˇ", "ㄔㄤˊ"] },
+    { text: "較長", zhuyin: ["ㄐㄧㄠˋ", "ㄔㄤˊ"] },
+    { text: "最長", zhuyin: ["ㄗㄨㄟˋ", "ㄔㄤˊ"] },
+    { text: "重量", zhuyin: ["ㄓㄨㄥˋ", "ㄌㄧㄤˋ"] },
+    { text: "重要", zhuyin: ["ㄓㄨㄥˋ", "ㄧㄠˋ"] },
+    { text: "種子", zhuyin: ["ㄓㄨㄥˇ", "ㄗˇ"] },
+    { text: "一種", zhuyin: ["ㄧ", "ㄓㄨㄥˇ"] },
+    { text: "銀行", zhuyin: ["ㄧㄣˊ", "ㄏㄤˊ"] },
+    { text: "行走", zhuyin: ["ㄒㄧㄥˊ", "ㄗㄡˇ"] }
+].sort((a, b) => b.text.length - a.text.length);
 
 function pinyinSyllableToZhuyin(raw) {
     let syllable = String(raw || "").trim().toLowerCase();
     if (!syllable) return "";
-    const toneMatch = syllable.match(/[1-5]$/);
-    const tone = toneMatch ? toneMatch[0] : "1";
+    const toneMatch = syllable.match(/[0-5]$/);
+    const tone = toneMatch ? (toneMatch[0] === "0" ? "5" : toneMatch[0]) : "1";
     syllable = syllable
-        .replace(/[1-5]$/g, "")
+        .replace(/[0-5]$/g, "")
         .replace(/u:/g, "v")
         .replace(/ü/g, "v")
         .normalize("NFD")
@@ -4943,6 +4990,55 @@ function getZhuyinForChar(char) {
     }
 }
 
+function isPinyinSyllable(value) {
+    const normalized = String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/u:/g, "v")
+        .replace(/ü/g, "v")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    return /^[a-zv]+[0-5]?$/.test(normalized);
+}
+
+function getPhraseZhuyinOverrideAt(source, index) {
+    for (const item of ZHUYIN_PHRASE_OVERRIDES) {
+        if (source.startsWith(item.text, index)) return item;
+    }
+    return null;
+}
+
+function getZhuyinSequenceForText(text) {
+    const source = String(text || "");
+    const chars = Array.from(source);
+    if (typeof pinyinPro === "undefined" || typeof pinyinPro.pinyin !== "function") {
+        return chars.map(char => getZhuyinForChar(char));
+    }
+    try {
+        const result = pinyinPro.pinyin(source, {
+            toneType: "num",
+            type: "array",
+            nonZh: "consecutive",
+            multiple: false
+        });
+        const pinyinList = Array.isArray(result) ? result : [result];
+        let pi = 0;
+        return chars.map((char) => {
+            if (!/[\u4e00-\u9fff]/.test(char)) {
+                if (pinyinList[pi] === char) pi += 1;
+                return "";
+            }
+            while (pi < pinyinList.length && !isPinyinSyllable(pinyinList[pi])) pi += 1;
+            const syllable = pinyinList[pi] || "";
+            if (pi < pinyinList.length) pi += 1;
+            return pinyinSyllableToZhuyin(syllable) || getZhuyinForChar(char);
+        });
+    } catch (err) {
+        console.warn("Zhuyin sentence conversion failed:", source, err);
+        return chars.map(char => getZhuyinForChar(char));
+    }
+}
+
 function splitZhuyinTone(zhuyin) {
     const raw = String(zhuyin || "");
     const tone = (raw.match(/[ˊˇˋ˙]/) || [""])[0];
@@ -4950,15 +5046,42 @@ function splitZhuyinTone(zhuyin) {
     return { body, tone };
 }
 
+function renderZhuyinChar(char, zhuyin) {
+    if (!zhuyin) return safeTextHtml(char);
+    const { body, tone } = splitZhuyinTone(zhuyin);
+    if (!body) return safeTextHtml(char);
+    const bodyHtml = Array.from(body)
+        .map(symbol => `<span>${safeTextHtml(symbol)}</span>`)
+        .join("");
+    const toneHtml = tone
+        ? `<span class="zhuyin-tone${tone === "˙" ? " neutral" : ""}">${safeTextHtml(tone)}</span>`
+        : "";
+    return `<span class="zhuyin-char"><span class="zhuyin-base">${safeTextHtml(char)}</span><span class="zhuyin-mark"><span class="zhuyin-body">${bodyHtml}</span>${toneHtml}</span></span>`;
+}
+
 function convertToRubyHtml(text) {
     const source = String(text || "");
-    return Array.from(source).map((char) => {
-        if (!/[\u4e00-\u9fff]/.test(char)) return safeTextHtml(char);
-        const zhuyin = getZhuyinForChar(char);
-        if (!zhuyin) return safeTextHtml(char);
-        const { body, tone } = splitZhuyinTone(zhuyin);
-        return `<span class="zhuyin-char"><span class="zhuyin-base">${safeTextHtml(char)}</span><span class="zhuyin-mark"><span class="zhuyin-body">${safeTextHtml(body)}</span>${tone ? `<span class="zhuyin-tone${tone === "˙" ? " neutral" : ""}">${safeTextHtml(tone)}</span>` : ""}</span></span>`;
-    }).join("");
+    const chars = Array.from(source);
+    const sentenceZhuyin = getZhuyinSequenceForText(source);
+    const html = [];
+    for (let i = 0; i < chars.length; i += 1) {
+        const char = chars[i];
+        if (!/[\u4e00-\u9fff]/.test(char)) {
+            html.push(safeTextHtml(char));
+            continue;
+        }
+        const phraseOverride = getPhraseZhuyinOverrideAt(source, i);
+        if (phraseOverride) {
+            const phraseChars = Array.from(phraseOverride.text);
+            phraseChars.forEach((phraseChar, offset) => {
+                html.push(renderZhuyinChar(phraseChar, phraseOverride.zhuyin[offset]));
+            });
+            i += phraseChars.length - 1;
+            continue;
+        }
+        html.push(renderZhuyinChar(char, sentenceZhuyin[i] || getZhuyinForChar(char)));
+    }
+    return html.join("");
 }
 
 function applyZhuyinToPage() {
