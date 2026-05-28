@@ -554,7 +554,7 @@ rp { display: none !important; }
     width: 210mm;
     height: 297mm;
     min-height: 297mm;
-    padding: 22mm 21mm 18mm;
+    padding: 0;
     box-sizing: border-box;
     position: relative;
     overflow: hidden;
@@ -592,7 +592,7 @@ rp { display: none !important; }
     margin: 0;
     border: 0;
     border-radius: 0;
-    padding: 29mm 24mm 24mm;
+    padding: 0;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -607,19 +607,18 @@ rp { display: none !important; }
     font-size: 54px;
     line-height: 1;
     letter-spacing: 0;
-    margin: 0;
+    margin: 29mm 24mm 0;
     text-shadow: 0 16px 32px rgba(15, 23, 42, 0.24);
 }
 #pdf-report-content .cover-subtitle {
-    margin-top: 12px;
-    margin-bottom: auto;
+    margin: 12px 24mm auto;
     color: #bfdbfe;
     font-size: 20px;
     letter-spacing: 0.22em;
 }
 #pdf-report-content .info-card {
-    width: 100%;
-    margin-top: 40mm;
+    width: auto;
+    margin: 0 24mm 24mm;
     padding: 24px 30px;
     border: 1px solid #dbeafe;
     border-left: 10px solid #2563eb;
@@ -647,14 +646,14 @@ rp { display: none !important; }
 }
 #pdf-report-content .pdf-report-page,
 #pdf-report-content .dynamic-wrong-page {
-    padding-top: 25mm;
+    padding-top: 0;
 }
 #pdf-report-content .pdf-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     padding-bottom: 14px;
-    margin-bottom: 24px;
+    margin: 25mm 21mm 24px;
     border-bottom: 2px solid #dbeafe;
 }
 #pdf-report-content .ph-title {
@@ -678,7 +677,7 @@ rp { display: none !important; }
 }
 #pdf-report-content .pdf-page-body,
 #pdf-report-content .pdf-wrong-next-container {
-    margin-top: 0;
+    margin: 0 21mm;
 }
 #pdf-report-content .stats-box {
     display: grid;
@@ -4652,6 +4651,11 @@ function waitForNextPaint() {
 }
 
 function createPdfExportClone(sourceEl) {
+  const originalId = sourceEl.id;
+  const temporarySourceId = `${originalId}-source`;
+  sourceEl.id = temporarySourceId;
+  sourceEl.setAttribute("data-pdf-source-id", originalId);
+
   const host = document.createElement("div");
   host.setAttribute("data-pdf-export", "true");
   host.className = "pdf-export-host";
@@ -4670,6 +4674,8 @@ function createPdfExportClone(sourceEl) {
   });
 
   const clone = sourceEl.cloneNode(true);
+  clone.id = originalId;
+  clone.removeAttribute("data-pdf-source-id");
   Object.assign(clone.style, {
     display: "block",
     position: "static",
@@ -4687,7 +4693,68 @@ function createPdfExportClone(sourceEl) {
 
   host.appendChild(clone);
   document.body.appendChild(host);
-  return { host, exportEl: clone };
+  return {
+    host,
+    exportEl: clone,
+    restore() {
+      if (sourceEl.id === temporarySourceId) {
+        sourceEl.id = originalId;
+      }
+      sourceEl.removeAttribute("data-pdf-source-id");
+      host.remove();
+    }
+  };
+}
+
+function repaintPdfPagesFromCanvas(pdf, canvas, cropLeftRatio = 0, expectedPageCount = 0) {
+  if (!pdf || !canvas || !canvas.width || !canvas.height) return;
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const cropLeft = Math.max(0, Math.min(canvas.width - 1, Math.round(canvas.width * cropLeftRatio)));
+  const contentWidth = canvas.width - cropLeft;
+  const pagePixelHeight = Math.max(1, Math.floor(contentWidth * (pageHeight / pageWidth)));
+  const calculatedPageCount = Math.max(1, Math.ceil(canvas.height / pagePixelHeight));
+  const pageCount = expectedPageCount > 0 ? expectedPageCount : calculatedPageCount;
+  const existingPages = pdf.internal.getNumberOfPages();
+
+  for (let pageNo = existingPages; pageNo > pageCount; pageNo -= 1) {
+    pdf.deletePage(pageNo);
+  }
+  while (pdf.internal.getNumberOfPages() < pageCount) {
+    pdf.addPage();
+  }
+
+  const slice = document.createElement("canvas");
+  slice.width = contentWidth;
+  slice.height = pagePixelHeight;
+  const ctx = slice.getContext("2d");
+  if (!ctx) return;
+
+  for (let i = 0; i < pageCount; i += 1) {
+    const sourceY = i * pagePixelHeight;
+    const sourceHeight = Math.min(pagePixelHeight, canvas.height - sourceY);
+    ctx.clearRect(0, 0, slice.width, slice.height);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, slice.width, slice.height);
+    if (sourceHeight > 0) {
+      ctx.drawImage(
+        canvas,
+        cropLeft,
+        sourceY,
+        contentWidth,
+        sourceHeight,
+        0,
+        0,
+        slice.width,
+        sourceHeight
+      );
+    }
+
+    pdf.setPage(i + 1);
+    pdf.setFillColor(255, 255, 255);
+    pdf.rect(0, 0, pageWidth, pageHeight, "F");
+    pdf.addImage(slice.toDataURL("image/jpeg", 1), "JPEG", 0, 0, pageWidth, pageHeight, undefined, "FAST");
+  }
 }
 
 async function downloadPDF() {
@@ -4700,13 +4767,12 @@ async function downloadPDF() {
     UI.toast("錯誤", "PDF 匯出套件尚未載入完成，請重新整理後再試。", "bad");
     return;
   }
-  let exportHost = null;
+  let prepared = null;
   try {
     showLoading("正在產生 PDF", "正在整理診斷報告書，請稍候...");
     renderPdfWrongItems(latestPdfWrongItems);
     refreshPdfPageNumbers();
-    const prepared = createPdfExportClone(el);
-    exportHost = prepared.host;
+    prepared = createPdfExportClone(el);
     const exportEl = prepared.exportEl;
 
     if (document.fonts && document.fonts.ready) {
@@ -4726,6 +4792,8 @@ async function downloadPDF() {
         allowTaint: true,
         backgroundColor: "#ffffff",
         letterRendering: true,
+        x: 0,
+        width: exportWidth,
         scrollX: 0,
         scrollY: 0,
         windowWidth: exportWidth,
@@ -4735,7 +4803,12 @@ async function downloadPDF() {
       pagebreak: { mode: ["css"] }
     };
 
-    const pdfBlob = await html2pdf().set(opt).from(exportEl).toPdf().outputPdf("blob");
+    const worker = html2pdf().set(opt).from(exportEl).toCanvas().toPdf();
+    const canvas = await worker.get("canvas");
+    const pdf = await worker.get("pdf");
+    const expectedPageCount = exportEl.querySelectorAll(".pdf-page").length;
+    repaintPdfPagesFromCanvas(pdf, canvas, 0, expectedPageCount);
+    const pdfBlob = await worker.outputPdf("blob");
     if (!(await isProbablyPdfBlob(pdfBlob))) {
       throw new Error("產生的檔案不是有效 PDF，已停止下載。");
     }
@@ -4745,7 +4818,7 @@ async function downloadPDF() {
     console.error(err);
     UI.toast("錯誤", "PDF 匯出失敗: " + (err && err.message ? err.message : err), "bad");
   } finally {
-    if (exportHost) exportHost.remove();
+    if (prepared && typeof prepared.restore === "function") prepared.restore();
     hideLoading();
   }
 }
