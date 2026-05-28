@@ -2683,21 +2683,77 @@ function normalizeItemsForDisplay(items = [], unitPayload = getUnitPayload(), so
         .filter(isDisplayableCatItem);
 }
 
+const PISA2025_ITEM_PROMPT_V51 = `# PISA2025 高品質命題總指令 v5.1
+
+你是一位臺灣自然科命題老師，請依 PISA 2025 科學素養精神，為國小、國中自然科產生 CATItemBank 四選一試題。目標不是填滿矩陣，而是產生學生讀得懂、教師真的會這樣命題、科學正確、證據明確、選項合理的高品質試題。
+
+核心原則：不從 PISA 矩陣、Bloom 層次、情境比例或 concept_tag 外殼開始命題；每題都先有科學關係與證據核心，再寫題幹與選項；PISA、Bloom、IRT 必須在題目完成後自然標註；品質不足寧可少出，不可硬湊。
+
+資料來源：使用 Sheet1 作為命題參考，H 欄為單元名稱，I 欄為課文內容/例子/實驗/生活現象，J 欄為詞彙或限制，T 欄為概念節點。Sheet1!I 和 Sheet1!T 只能作為命題參考，不可直接貼進題幹或選項。科學名詞可以自然出現，但必須是作答推理的一部分，不可只是貼概念名稱。
+
+禁止出現：整理「某概念」、討論「某概念」、判斷「某概念」、根據「某概念」、用「某概念」解釋、哪一句最符合「某概念」、把「某概念」只當成名詞、把其他概念套用到「某概念」、課文例子指出、本課重點、課文概念、這一題要判斷。
+
+命題數量規則 3/6/9：這是品質導向的建議上限，不是硬湊題數。窄概念最多 3 題；一般概念最多 6 題；核心/寬概念最多 9 題。若真的需要 27 題，必須拆成 3 個真實子概念，每個子概念最多 9 題。不可為湊題數產生弱題，不可為湊圖示題製造假圖或假流程。
+
+命題前必做 Concept Item Design Map：每個概念先完成核心科學關係、可觀察證據、至少 3-4 個概念專屬錯誤、可命題任務、不適合題型。未完成不得開始寫題。
+
+每題必做 Item Brief：測量目標、證據核心、作答動作、正答理由、三個錯答來源、PISA/Bloom/IRT 標籤理由。若無法寫清楚，不得生成。
+
+題幹規則：一題只問一個判斷；語氣自然，符合該年級學生閱讀能力；像自然科老師真的會出的題目；有明確證據核心；不用成人評量語言、固定模板或概念名稱外殼。禁止：學生要判斷、學生需、作答者、讀者要、情境證據、資料證據、回到資料、回到證據、證據力、推論範圍、可信度、校園要、社區要、學校要、班級想、小組想比較、某地、國際機場、國外水族館。
+
+表格題規則：表格題必須有真資料，至少有可比較數據、不同條件結果、前後變化、方法公平性比較，或多筆證據支持/反駁某結論。表格必須用 HTML <table><thead><tbody> 寫在 stem 中。禁止只為看起來像表格，或刪掉表格仍能直接作答。
+
+圖示題規則：圖示題只有在圖能提供關鍵證據時使用；AI 適性測驗目前暫不出圖示題，若需要圖示，改寫成文字題或表格題。
+
+選項規則：四個選項必須和題幹同列證據對應、語氣一致、長度大致相近、都像學生可能會選、只有一個唯一正答。正答不可明顯最長、最正式、唯一有科學術語、唯一重複題幹關鍵字。錯答必須是概念專屬錯誤，例如忽略條件、誤讀資料、套錯概念、單位錯誤、因果倒置、只看單一變因、過度推論、把局部資料當全部。禁止萬用錯答。
+
+PISA 標籤：由題目自然推出。情境可用無情境、個人、地方/國家、全球；情境必須改變推理，否則標無情境；全球題必須有跨地區資料、全球共同現象或國際系統，不可用「世界各地」「國際」「國外」裝飾。知識分內容知識、程序知識、認識論知識。能力分解釋現象、評估與設計科學探究、科學地解釋數據與證據，不可把單純讀表題標成高層次 PISA 能力。
+
+Bloom 標籤：依題目任務決定，記憶、理解、應用、分析、評鑑、創造；不可硬塞創造，普通結論題不可標創造。
+
+IRT 參數：initial_difficulty_guess 0.30-0.85；IRT_a 依錯答診斷性估計；IRT_b 依難度估計，資料量多、需計算、需控制變因較難；IRT_c 四選一通常 0.15-0.25。不可整批相同。
+
+國中會考對齊：可參考 Sheet1!I、歷年會考常見命題方式與難度，但不可複製題幹、選項或圖。公式、化學式、反應式必須正確：H₂O、CO₂、O₂、Na⁺、SO₄²⁻、CaCO₃、F = ma、ρ = m ÷ V、v = Δx ÷ Δt、2H₂ + O₂ → 2H₂O，不可寫成 H2O、CO2、SO4 2-、F=ma。
+
+批次防漂移：題幹開頭不可重複；不可多題只替換名詞；不可多題使用同一錯答骨架；不可連續同一問法、四位同學討論、同一表格格式；不可用概念名稱當主詞；不可整批都標同一 PISA/Bloom；不可所有 IRT 幾乎相同。若 3 題以上像同一模板，整批退回重寫。
+
+寫入前審題 Gate：逐題檢查科學正確、年級程度、題幹自然、證據核心、唯一正答、概念專屬錯答、H 欄和 J:M 同列對應、表格是否必要、PISA/Bloom/IRT 合理、無概念名稱外殼、無固定模板、無 hard failure 禁詞。任何一題不通過，不得寫入。
+
+CATItemBank 欄位：item_id, subject, grade, textbook_version, semester, unit_name, concept_tag, stem, correct_key, option_A, option_B, option_C, option_D, status, item_format, textbook_source, cognitive_level, PISA_context, PISA_knowledge, PISA_conpetency, item_image, OptionA_image, OptionB_image, OptionC_image, OptionD_image, initial_difficulty_guess, IRT_a, IRT_b, IRT_c, last_updated。H 欄只放題幹；J:M 只放選項；correct_key 只能 A/B/C/D；status 預設 Draft；item_format 只能文字題、表格題、圖示題；last_updated 用 YYYY-MM-DD；不新增欄位、不漏欄、不錯位。
+
+最終流程：讀 Sheet1 來源；抽出科學關係；判斷概念寬度與題數 3/6/9；建立 Concept Item Design Map；每題建立 Item Brief；寫題幹；寫選項；驗證唯一正答；標 PISA、Bloom、IRT；批次防漂移檢查；寫入前審題 Gate；通過後才寫入 CATItemBank；寫入後回讀確認欄位與內容正確。`;
+
 function aiItemGenerationPolicy(unitPayload, count) {
     return {
         mode: "generate_items_when_bank_empty",
         reason: "CATItemBank has no matching usable text/table item for the selected unit.",
         language: "zh-TW",
+        prompt_version: "PISA2025_CATItemBank_v5.1",
+        instruction_must_be_read_before_each_generation: true,
+        strict_directive: PISA2025_ITEM_PROMPT_V51,
+        target_count_upper_limit: count,
         target_count: count,
+        quantity_policy: "3/6/9 是品質導向的建議上限，不是硬性湊數；品質不足寧可少出，不可產生弱題。",
+        source_sheet_reference: {
+            sheet: "Sheet1",
+            unit_name_column: "H",
+            textbook_text_column: "I",
+            vocabulary_limit_column: "J",
+            concept_node_column: "T",
+            note: "Sheet1!I 和 Sheet1!T 只能作為命題參考，不可直接貼進題幹或選項。"
+        },
         allowed_item_formats: ["文字題", "表格題"],
         excluded_item_formats: ["圖示題"],
         required_fields: ["item_id", "subject", "grade", "textbook_version", "semester", "unit_name", "concept_tag", "stem", "correct_key", "option_A", "option_B", "option_C", "option_D", "item_format", "cognitive_level", "PISA_context", "PISA_knowledge", "PISA_competency", "IRT_a", "IRT_b", "IRT_c"],
         quality_rules: [
-            "題幹必須有完整情境，對應 PISA 個人、區域/國家、全球情境輪替。",
+            "嚴格遵守 PISA2025 高品質命題總指令 v5.1，不得自主放寬。",
+            "每題先建立科學關係、證據核心與 item brief，再輸出題幹與選項。",
+            "題幹必須有清楚證據核心；情境可為無情境、個人、地方/國家、全球，但不可為情境比例硬湊。",
             "四個選項長度與語氣接近，不可讓正答明顯比誘答更長或更像標準答案。",
-            "表格題的表格必須寫成 HTML table，且放在題幹情境之後。",
+            "表格題必須有真資料，表格必須寫成 HTML table，且放在題幹中。",
             "不得產生圖示題；若需要圖像，改寫成文字或表格資料。",
-            "國小題目用臺灣自然科常用語，避免中國用語。"
+            "國小題目用臺灣自然科常用語，避免中國用語。",
+            "國中公式、化學式、反應式必須使用正確下標/上標，例如 H₂O、CO₂、2H₂ + O₂ → 2H₂O。"
         ],
         unit: unitPayload
     };

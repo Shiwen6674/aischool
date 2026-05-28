@@ -5,6 +5,29 @@ const DEFAULT_SESSION_SHEET = "CATSession";
 const DEFAULT_CONCEPT_MAP_SHEET = "CATConceptMap";
 const DEFAULT_OPENAI_ITEM_MODEL = "gpt-5.4-mini";
 const EXCLUDED_TEST_ITEM_FORMATS = ["圖示題"];
+const DEFAULT_SOURCE_SHEET = "Sheet1";
+const PISA2025_ITEM_PROMPT_V51 = [
+  "# PISA2025 高品質命題總指令 v5.1",
+  "你是一位臺灣自然科命題老師，請依 PISA 2025 科學素養精神，為國小、國中自然科產生 CATItemBank 四選一試題。目標不是填滿矩陣，而是產生學生讀得懂、教師真的會這樣命題、科學正確、證據明確、選項合理的高品質試題。",
+  "核心原則：不從 PISA 矩陣、Bloom 層次、情境比例或 concept_tag 外殼開始命題；每題都先有科學關係與證據核心，再寫題幹與選項；PISA、Bloom、IRT 必須在題目完成後自然標註；品質不足寧可少出，不可硬湊。",
+  "資料來源：使用 Sheet1 作為命題參考，H 欄為單元名稱，I 欄為課文內容/例子/實驗/生活現象，J 欄為詞彙或限制，T 欄為概念節點。Sheet1!I 和 Sheet1!T 只能作為命題參考，不可直接貼進題幹或選項。科學名詞可以自然出現，但必須是作答推理的一部分，不可只是貼概念名稱。",
+  "禁止出現：整理「某概念」、討論「某概念」、判斷「某概念」、根據「某概念」、用「某概念」解釋、哪一句最符合「某概念」、把「某概念」只當成名詞、把其他概念套用到「某概念」、課文例子指出、本課重點、課文概念、這一題要判斷。",
+  "命題數量規則 3/6/9：這是品質導向的建議上限，不是硬湊題數。窄概念最多 3 題；一般概念最多 6 題；核心/寬概念最多 9 題。若真的需要 27 題，必須拆成 3 個真實子概念，每個子概念最多 9 題。不可為湊題數產生弱題，不可為湊圖示題製造假圖或假流程。",
+  "命題前必做 Concept Item Design Map：每個概念先完成核心科學關係、可觀察證據、至少 3-4 個概念專屬錯誤、可命題任務、不適合題型。未完成不得開始寫題。",
+  "每題必做 Item Brief：測量目標、證據核心、作答動作、正答理由、三個錯答來源、PISA/Bloom/IRT 標籤理由。若無法寫清楚，不得生成。",
+  "題幹規則：一題只問一個判斷；語氣自然，符合該年級學生閱讀能力；像自然科老師真的會出的題目；有明確證據核心；不用成人評量語言、固定模板或概念名稱外殼。禁止：學生要判斷、學生需、作答者、讀者要、情境證據、資料證據、回到資料、回到證據、證據力、推論範圍、可信度、校園要、社區要、學校要、班級想、小組想比較、某地、國際機場、國外水族館。",
+  "表格題規則：表格題必須有真資料，至少有可比較數據、不同條件結果、前後變化、方法公平性比較，或多筆證據支持/反駁某結論。表格必須用 HTML <table><thead><tbody> 寫在 stem 中。禁止只為看起來像表格，或刪掉表格仍能直接作答。",
+  "圖示題規則：圖示題只有在圖能提供關鍵證據時使用；AI 適性測驗目前暫不出圖示題，若需要圖示，改寫成文字題或表格題。",
+  "選項規則：四個選項必須和題幹同列證據對應、語氣一致、長度大致相近、都像學生可能會選、只有一個唯一正答。正答不可明顯最長、最正式、唯一有科學術語、唯一重複題幹關鍵字。錯答必須是概念專屬錯誤，例如忽略條件、誤讀資料、套錯概念、單位錯誤、因果倒置、只看單一變因、過度推論、把局部資料當全部。禁止萬用錯答。",
+  "PISA 標籤：由題目自然推出。情境可用無情境、個人、地方/國家、全球；情境必須改變推理，否則標無情境；全球題必須有跨地區資料、全球共同現象或國際系統，不可用「世界各地」「國際」「國外」裝飾。知識分內容知識、程序知識、認識論知識。能力分解釋現象、評估與設計科學探究、科學地解釋數據與證據，不可把單純讀表題標成高層次 PISA 能力。",
+  "Bloom 標籤：依題目任務決定，記憶、理解、應用、分析、評鑑、創造；不可硬塞創造，普通結論題不可標創造。",
+  "IRT 參數：initial_difficulty_guess 0.30-0.85；IRT_a 依錯答診斷性估計；IRT_b 依難度估計，資料量多、需計算、需控制變因較難；IRT_c 四選一通常 0.15-0.25。不可整批相同。",
+  "國中會考對齊：可參考 Sheet1!I、歷年會考常見命題方式與難度，但不可複製題幹、選項或圖。公式、化學式、反應式必須正確：H₂O、CO₂、O₂、Na⁺、SO₄²⁻、CaCO₃、F = ma、ρ = m ÷ V、v = Δx ÷ Δt、2H₂ + O₂ → 2H₂O，不可寫成 H2O、CO2、SO4 2-、F=ma。",
+  "批次防漂移：題幹開頭不可重複；不可多題只替換名詞；不可多題使用同一錯答骨架；不可連續同一問法、四位同學討論、同一表格格式；不可用概念名稱當主詞；不可整批都標同一 PISA/Bloom；不可所有 IRT 幾乎相同。若 3 題以上像同一模板，整批退回重寫。",
+  "寫入前審題 Gate：逐題檢查科學正確、年級程度、題幹自然、證據核心、唯一正答、概念專屬錯答、H 欄和 J:M 同列對應、表格是否必要、PISA/Bloom/IRT 合理、無概念名稱外殼、無固定模板、無 hard failure 禁詞。任何一題不通過，不得寫入。",
+  "CATItemBank 欄位：item_id, subject, grade, textbook_version, semester, unit_name, concept_tag, stem, correct_key, option_A, option_B, option_C, option_D, status, item_format, textbook_source, cognitive_level, PISA_context, PISA_knowledge, PISA_conpetency, item_image, OptionA_image, OptionB_image, OptionC_image, OptionD_image, initial_difficulty_guess, IRT_a, IRT_b, IRT_c, last_updated。H 欄只放題幹；J:M 只放選項；correct_key 只能 A/B/C/D；status 預設 Draft；item_format 只能文字題、表格題、圖示題；last_updated 用 YYYY-MM-DD；不新增欄位、不漏欄、不錯位。",
+  "最終流程：讀 Sheet1 來源；抽出科學關係；判斷概念寬度與題數 3/6/9；建立 Concept Item Design Map；每題建立 Item Brief；寫題幹；寫選項；驗證唯一正答；標 PISA、Bloom、IRT；批次防漂移檢查；寫入前審題 Gate；通過後才寫入 CATItemBank；寫入後回讀確認欄位與內容正確。"
+].join("\n");
 const IRT = {
   model: "3PL",
   minTheta: -3,
@@ -69,7 +92,7 @@ function startCAT_(params) {
     let items = filterItems_(table.items, unit);
     const usingAiFallback = !items.length && shouldGenerateAiItems_(params);
     if (usingAiFallback) {
-      items = generateAiCatItems_(params, unit, maxItems, theta);
+      items = generateAiCatItems_(params, unit, maxItems, theta, ss);
     }
     if (!items.length) throw new Error("CATItemBank has no usable Draft or Active items for the selected unit/concept.");
 
@@ -202,6 +225,7 @@ function workbook_(params) {
 function sheetName_(params, kind) {
   if (kind === "item") return String(params.item_bank_sheet || params.itembank_sheet || params.item_bank_sheet_name || DEFAULT_ITEM_SHEET);
   if (kind === "response") return String(params.response_sheet || params.response_sheet_name || DEFAULT_RESPONSE_SHEET);
+  if (kind === "source") return String(params.source_sheet || params.source_sheet_name || DEFAULT_SOURCE_SHEET);
   return DEFAULT_ITEM_SHEET;
 }
 
@@ -214,6 +238,54 @@ function readItemTable_(ss, name) {
   const headers = values[0].map(String);
   const items = values.slice(1).map((row, offset) => itemFromRow_(headers, row, offset + 2)).filter(item => item.item_id);
   return { sheet, items };
+}
+
+function readSourceContext_(ss, params, unit) {
+  const sheet = ss.getSheetByName(sheetName_(params, "source"));
+  if (!sheet || sheet.getLastRow() < 2) return [];
+  const values = sheet.getDataRange().getDisplayValues();
+  const headers = values[0].map(String);
+  const headerMap = indexMap_(headers);
+  const idx = {
+    unit_name: firstIndex_(headerMap, ["unit_name", "unit", "單元名稱"], 7),
+    textbook_text: firstIndex_(headerMap, ["textbook_text", "lesson_text", "課文內容", "課文"], 8),
+    vocabulary: firstIndex_(headerMap, ["vocabulary", "vocabulary_limit", "詞彙限制", "詞彙"], 9),
+    concept_node: firstIndex_(headerMap, ["concept_node", "concept_tag", "概念節點", "概念"], 19)
+  };
+  const selectedUnit = String(unit.unit_name || "").trim();
+  const selectedConcept = String(first_(unit.concept_tag, unit.concept_node, unit.concept, "") || "").trim();
+  const rows = [];
+  for (let r = 1; r < values.length; r++) {
+    const row = values[r];
+    const rowUnit = String(row[idx.unit_name] || "").trim();
+    const rowConcept = String(row[idx.concept_node] || "").trim();
+    const unitMatches = !selectedUnit || (!!rowUnit && (rowUnit === selectedUnit || rowUnit.indexOf(selectedUnit) >= 0 || selectedUnit.indexOf(rowUnit) >= 0));
+    const conceptMatches = !selectedConcept || (!!rowConcept && (rowConcept === selectedConcept || rowConcept.indexOf(selectedConcept) >= 0 || selectedConcept.indexOf(rowConcept) >= 0));
+    if (!unitMatches || !conceptMatches) continue;
+    rows.push({
+      row_number: r + 1,
+      unit_name: rowUnit,
+      textbook_text_reference: truncateForPrompt_(row[idx.textbook_text], 1200),
+      vocabulary_limit: truncateForPrompt_(row[idx.vocabulary], 700),
+      concept_node: rowConcept
+    });
+    if (rows.length >= 8) break;
+  }
+  return rows;
+}
+
+function firstIndex_(headerMap, names, fallback) {
+  for (let i = 0; i < names.length; i++) {
+    const key = canon_(names[i]);
+    if (headerMap[key] !== undefined) return headerMap[key];
+  }
+  return fallback;
+}
+
+function truncateForPrompt_(value, maxLen) {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  if (text.length <= maxLen) return text;
+  return text.slice(0, maxLen - 1) + "…";
 }
 
 function itemFromRow_(headers, row, rowNumber) {
@@ -441,16 +513,18 @@ function shouldGenerateAiItems_(params) {
     parseBoolean_(first_(params.generate_if_empty, params.ai_generation, params.use_ai_generation, ""), false);
 }
 
-function generateAiCatItems_(params, unit, maxItems, theta) {
+function generateAiCatItems_(params, unit, maxItems, theta, ss) {
   const apiKey = PropertiesService.getScriptProperties().getProperty("OPENAI_API_KEY");
   if (!apiKey) {
     throw new Error("CATItemBank has no matching rows, and OPENAI_API_KEY is not configured for AI item generation.");
   }
 
   const model = PropertiesService.getScriptProperties().getProperty("OPENAI_ITEM_MODEL") || DEFAULT_OPENAI_ITEM_MODEL;
-  const count = Math.max(maxItems, Math.min(36, Math.max(12, maxItems * 2)));
   const policy = parseJson_(params.generation_policy) || {};
-  const prompt = buildAiItemPrompt_(unit, count, theta, policy);
+  const requestedCount = Math.max(1, Math.min(36, Math.floor(num_(first_(policy.target_count_upper_limit, policy.target_count, params.max_items, params.n, params.num_items, maxItems), maxItems))));
+  const count = Math.max(1, Math.min(36, requestedCount));
+  const sourceContext = ss ? readSourceContext_(ss, params, unit) : [];
+  const prompt = buildAiItemPrompt_(unit, count, theta, policy, sourceContext);
   const parsed = callOpenAiJson_(apiKey, model, prompt);
   const rawItems = Array.isArray(parsed.items) ? parsed.items : Array.isArray(parsed) ? parsed : [];
   const items = rawItems.map((item, index) => normalizeAiGeneratedItem_(item, index, unit, theta)).filter(item => {
@@ -460,17 +534,23 @@ function generateAiCatItems_(params, unit, maxItems, theta) {
   return items;
 }
 
-function buildAiItemPrompt_(unit, count, theta, policy) {
+function buildAiItemPrompt_(unit, count, theta, policy, sourceContext) {
+  const directive = String(first_(policy.strict_directive, policy.system_instruction, policy.directive, PISA2025_ITEM_PROMPT_V51) || PISA2025_ITEM_PROMPT_V51);
+  const policySummary = Object.assign({}, policy || {});
+  delete policySummary.strict_directive;
+  delete policySummary.system_instruction;
+  delete policySummary.directive;
   return [
-    "你是一位臺灣國小、國中自然科學命題專家，熟悉 PISA 2025 科學評量與 Bloom 認知層次。",
-    "請依指定單元產生 AI School CATItemBank 試題。只有在題庫沒有符合單元題目時才會呼叫你，因此請直接命題。",
+    directive,
+    "",
+    "## 本次 AI fallback 命題任務",
+    "只有在 CATItemBank 沒有符合所選單元的可用文字題/表格題時才會呼叫你。請先完整閱讀並嚴格遵守上方 v5.1 指令，不得自主放寬。",
+    "本次目標題數上限：" + count + "。這是上限與建議，不是硬性湊數；若無法符合 Gate，寧可少出，不可產生弱題。",
+    "AI 適性測驗目前只可輸出「文字題」或「表格題」，不可輸出「圖示題」。若概念原本適合圖示，請改寫為文字情境或有真資料的 HTML 表格題。",
+    "請依 Sheet1 來源先抽出科學關係，完成內部 Concept Item Design Map 與每題 Item Brief 後再輸出正式題目；這些內部設計表不要輸出。",
     "輸出必須是純 JSON，不要 Markdown，不要額外說明。格式：{\"items\":[...]}。",
-    "每題必須包含：item_id, subject, grade, textbook_version, semester, unit_name, concept_tag, stem, correct_key, option_A, option_B, option_C, option_D, status, item_format, cognitive_level, PISA_context, PISA_knowledge, PISA_competency, IRT_a, IRT_b, IRT_c。",
-    "item_format 只能是「文字題」或「表格題」，不可產生圖示題。表格題的表格必須在 stem 中使用 HTML <table>、<thead>、<tbody> 格式。",
-    "題幹要有清楚情境，不可只問定義。情境須輪替個人、區域/國家、全球，並貼近學生可理解的生活或科學探究。",
-    "四個選項長度、語氣與完整度要接近；錯誤選項要來自常見迷思，不可明顯荒謬，不可讓正答一眼看出。",
-    "使用臺灣繁體中文與臺灣自然科常用語，不使用中國用語。",
-    "難度需依 IRT_b 分散在 -2 到 2；IRT_a 介於 0.7 到 1.8；IRT_c 介於 0.15 到 0.25。",
+    "每題必須包含：item_id, subject, grade, textbook_version, semester, unit_name, concept_tag, stem, correct_key, option_A, option_B, option_C, option_D, status, item_format, textbook_source, cognitive_level, PISA_context, PISA_knowledge, PISA_competency, initial_difficulty_guess, IRT_a, IRT_b, IRT_c, last_updated。",
+    "status 預設 Draft；correct_key 只能是 A/B/C/D；表格題的表格必須在 stem 中使用 HTML <table><thead><tbody> 格式；國中公式與化學式必須使用正確下標/上標。",
     "目前學生能力 theta 約為 " + theta + "，但仍需產生不同難度題供適性選題。",
     "單元資料：" + JSON.stringify({
       stage: unit.stage || "",
@@ -480,8 +560,8 @@ function buildAiItemPrompt_(unit, count, theta, policy) {
       unit_name: unit.unit_name || "",
       concept_tag: unit.concept_tag || unit.concept_node || ""
     }),
-    "產生題數：" + count,
-    "命題政策：" + JSON.stringify(policy || {})
+    "Sheet1 來源參考（只能參考，不可照抄到題幹或選項）：" + JSON.stringify(sourceContext || []),
+    "命題政策摘要：" + JSON.stringify(policySummary || {})
   ].join("\n");
 }
 
@@ -503,7 +583,7 @@ function tryOpenAiResponses_(apiKey, model, prompt) {
       payload: JSON.stringify({
         model: model,
         input: [
-          { role: "system", content: "Return only valid JSON. No markdown." },
+          { role: "system", content: "Return only valid JSON. No markdown. You must obey the PISA2025 CATItemBank v5.1 directive in the user message exactly; do not self-invent weaker item-writing rules." },
           { role: "user", content: prompt }
         ]
       })
@@ -530,7 +610,7 @@ function tryOpenAiChat_(apiKey, model, prompt) {
       payload: JSON.stringify({
         model: model,
         messages: [
-          { role: "system", content: "Return only valid JSON. No markdown." },
+          { role: "system", content: "Return only valid JSON. No markdown. You must obey the PISA2025 CATItemBank v5.1 directive in the user message exactly; do not self-invent weaker item-writing rules." },
           { role: "user", content: prompt }
         ],
         response_format: { type: "json_object" }
