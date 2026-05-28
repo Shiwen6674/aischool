@@ -4621,9 +4621,46 @@ function buildPdfFileName(){
   return sanitizeFileName(base) + ".pdf";
 }
 
-      
-function downloadPDF() {
+function downloadBlobFile(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename || "AI Science 學習診斷報告書.pdf";
+  link.rel = "noopener";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+}
+
+async function isProbablyPdfBlob(blob) {
+  if (!blob || !blob.size) return false;
+  try {
+    if (typeof blob.slice(0, 5).text === "function") {
+      return (await blob.slice(0, 5).text()) === "%PDF-";
+    }
+  } catch (err) {
+    console.warn("PDF blob header check failed", err);
+  }
+  return blob.type === "application/pdf";
+}
+
+function waitForNextPaint() {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  });
+}
+
+async function downloadPDF() {
   const el = document.getElementById("pdf-report-content");
+  if (!el) {
+    UI.toast("錯誤", "找不到 PDF 報告內容，請重新產生診斷結果。", "bad");
+    return;
+  }
+  if (typeof window.html2pdf !== "function") {
+    UI.toast("錯誤", "PDF 匯出套件尚未載入完成，請重新整理後再試。", "bad");
+    return;
+  }
   const previousStyle = {
     display: el.style.display,
     position: el.style.position,
@@ -4635,39 +4672,53 @@ function downloadPDF() {
     margin: el.style.margin,
     padding: el.style.padding,
     transform: el.style.transform,
-    zIndex: el.style.zIndex
+    zIndex: el.style.zIndex,
+    visibility: el.style.visibility,
+    pointerEvents: el.style.pointerEvents
   };
-  el.style.display = "block";
-  el.style.position = "fixed";
-  el.style.left = "0";
-  el.style.top = "0";
-  el.style.right = "auto";
-  el.style.bottom = "auto";
-  el.style.width = "210mm";
-  el.style.margin = "0";
-  el.style.padding = "0";
-  el.style.transform = "none";
-  el.style.zIndex = "2147483647";
-  renderPdfWrongItems(latestPdfWrongItems);
-  refreshPdfPageNumbers();
+  try {
+    el.style.display = "block";
+    el.style.position = "fixed";
+    el.style.left = "0";
+    el.style.top = "0";
+    el.style.right = "auto";
+    el.style.bottom = "auto";
+    el.style.width = "210mm";
+    el.style.margin = "0";
+    el.style.padding = "0";
+    el.style.transform = "none";
+    el.style.zIndex = "2147483647";
+    el.style.visibility = "visible";
+    el.style.pointerEvents = "none";
+    renderPdfWrongItems(latestPdfWrongItems);
+    refreshPdfPageNumbers();
 
-  const opt = {
-    margin: 0,
-    filename: buildPdfFileName(),
-    image: { type: "jpeg", quality: 1 },
-    html2canvas: { scale: 2.4, useCORS: true, allowTaint: true, backgroundColor: "#ffffff", letterRendering: true },
-    jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-    pagebreak: { mode: ["css"] }
-  };
+    if (document.fonts && document.fonts.ready) {
+      await document.fonts.ready;
+    }
+    await waitForNextPaint();
 
-  html2pdf().set(opt).from(el).save()
-    .catch((err) => {
-      console.error(err);
-      UI.toast("錯誤", "PDF 匯出失敗: " + (err && err.message ? err.message : err), "bad");
-    })
-    .finally(() => {
-      Object.assign(el.style, previousStyle);
-    });
+    const opt = {
+      margin: 0,
+      filename: buildPdfFileName(),
+      image: { type: "jpeg", quality: 1 },
+      html2canvas: { scale: 2.4, useCORS: true, allowTaint: true, backgroundColor: "#ffffff", letterRendering: true },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      pagebreak: { mode: ["css"] }
+    };
+
+    const pdfBlob = await html2pdf().set(opt).from(el).toPdf().outputPdf("blob");
+    if (!(await isProbablyPdfBlob(pdfBlob))) {
+      throw new Error("產生的檔案不是有效 PDF，已停止下載。");
+    }
+    downloadBlobFile(pdfBlob, opt.filename);
+    UI.toast("完成", "PDF 報告書已開始下載。", "good");
+  } catch (err) {
+    console.error(err);
+    UI.toast("錯誤", "PDF 匯出失敗: " + (err && err.message ? err.message : err), "bad");
+  } finally {
+    Object.assign(el.style, previousStyle);
+  }
 }
 function initQuestionCountStepper(){
   const inp = document.getElementById("inpN");
